@@ -1,0 +1,79 @@
+{
+  "NetworkTables": {
+    "transitory": {
+      "Robot": {
+        "drive": {
+          "frontRight": {
+            "SwerveModulePosition##v_/Robot/drive/frontRight/position": {
+              "Rotation2d##v_angle": {
+                "open": true
+              },
+              "open": true
+            },
+            "SwerveModuleState##v_/Robot/drive/frontRight/state": {
+              "Rotation2d##v_angle": {
+                "open": true
+              },
+              "open": true
+            }
+          },
+          "rearRight": {
+            "SwerveModulePosition##v_/Robot/drive/rearRight/position": {
+              "Rotation2d##v_angle": {
+                "open": true
+              },
+              "open": true
+            },
+            "module": {
+              "open": true
+            },
+            "open": true
+          }
+        },
+        "open": true
+      }
+    },
+    "types": {
+      "/FMSInfo": "FMSInfo",
+      "/Faults/Active Faults": "Alerts",
+      "/Faults/Total Faults": "Alerts",
+      "/Robot/autos": "String Chooser",
+      "/Robot/drive/field2d": "Field2d",
+      "/Robot/drive/frontLeft/driveFeedback": "PIDController",
+      "/Robot/drive/frontLeft/turnFeedback": "PIDController",
+      "/Robot/drive/frontRight/driveFeedback": "PIDController",
+      "/Robot/drive/frontRight/turnFeedback": "PIDController",
+      "/Robot/drive/rearLeft/driveFeedback": "PIDController",
+      "/Robot/drive/rearLeft/turnFeedback": "PIDController",
+      "/Robot/drive/rearRight/driveFeedback": "PIDController",
+      "/Robot/drive/rearRight/turnFeedback": "PIDController",
+      "/Robot/drive/rotationController": "PIDController",
+      "/Robot/drive/translationController": "ProfiledPIDController",
+      "/SmartDashboard/Scheduler": "Scheduler",
+      "/SmartDashboard/VisionSystemSim-main/Sim Field": "Field2d",
+      "/SmartDashboard/drive dynamic backward": "Command",
+      "/SmartDashboard/drive dynamic forward": "Command",
+      "/SmartDashboard/drive quasistatic backward": "Command",
+      "/SmartDashboard/drive quasistatic forward": "Command",
+      "/SmartDashboard/rotation dynamic backward": "Command",
+      "/SmartDashboard/rotation dynamic forward": "Command",
+      "/SmartDashboard/rotation quasistatic backward": "Command",
+      "/SmartDashboard/rotation quasistatic forward": "Command",
+      "/SmartDashboard/translation dynamic backward": "Command",
+      "/SmartDashboard/translation dynamic forward": "Command",
+      "/SmartDashboard/translation quasistatic backward": "Command",
+      "/SmartDashboard/translation quasistatic forward": "Command",
+      "/SmartDashboard/turn dynamic backward": "Command",
+      "/SmartDashboard/turn dynamic forward": "Command",
+      "/SmartDashboard/turn quasistatic backward": "Command",
+      "/SmartDashboard/turn quasistatic forward": "Command"
+    }
+  },
+  "NetworkTables Info": {
+    "visible": true
+  },
+  "NetworkTables Settings": {
+    "mode": "Client (NT4)",
+    "serverTeam": "1155"
+  }
+}

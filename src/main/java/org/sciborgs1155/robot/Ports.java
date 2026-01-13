@@ -47,6 +47,10 @@ public final class Ports {
     public static final int REAR_RIGHT_CANCODER = 8;
   }
 
+  public static final class Hopper {
+    public static final int MOTOR = 1;
+  }
+
   public static final class LEDs {
     public static final int LED_PORT = 9;
   }

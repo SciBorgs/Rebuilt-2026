@@ -4,15 +4,18 @@ import static edu.wpi.first.units.Units.Radians;
 
 import edu.wpi.first.units.measure.Angle;
 
-public class NoHood implements HoodIO{
+public class NoHood implements HoodIO {
 
-    @Override
-    public Angle angle() {
-      return Radians.of(0);
-    }
+  @Override
+  public Angle angle() {
+    return Radians.of(0);
+  }
 
-    @Override
-    public void setVoltage(double v) {}
+  @Override
+  public void setVoltage(double v) {}
 
- 
+  @Override
+  public double velocity() {
+    return 0;
+  }
 }

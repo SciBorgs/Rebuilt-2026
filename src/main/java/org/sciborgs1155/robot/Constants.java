@@ -2,6 +2,7 @@ package org.sciborgs1155.robot;
 
 import static edu.wpi.first.units.Units.*;
 
+import com.ctre.phoenix6.CANBus;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Mass;
@@ -62,5 +63,5 @@ public class Constants {
   public static final double FULL_SPEED_MULTIPLIER = 1.0;
 
   // The name of seperate canivore, set to rio if no seperate canivore
-  public static final String DRIVE_CANIVORE = "drivetrain";
+  public static final CANBus DRIVE_CANIVORE = new CANBus("drivetrain");
 }

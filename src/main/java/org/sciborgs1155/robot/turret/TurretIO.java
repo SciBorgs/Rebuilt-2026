@@ -5,4 +5,3 @@ import monologue.Logged;
 public interface TurretIO extends AutoCloseable, Logged {
     
 }
-

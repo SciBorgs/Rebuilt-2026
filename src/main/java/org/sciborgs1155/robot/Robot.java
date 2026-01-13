@@ -73,7 +73,7 @@ public class Robot extends CommandRobot {
     configureBindings();
 
     // Warms up pathfinding commands, as the first run could have significant delays.
-    align.warmupCommand().schedule();
+    CommandScheduler.getInstance().schedule(align.warmupCommand());
   }
 
   @Override

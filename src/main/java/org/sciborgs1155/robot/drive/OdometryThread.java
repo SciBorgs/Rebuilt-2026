@@ -6,7 +6,6 @@ import static org.sciborgs1155.robot.Constants.DRIVE_CANIVORE;
 import static org.sciborgs1155.robot.Constants.ODOMETRY_PERIOD;
 
 import com.ctre.phoenix6.BaseStatusSignal;
-import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusSignal;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.RobotController;
@@ -28,7 +27,7 @@ public class OdometryThread extends Thread {
   private final List<Queue<Double>> otherQueues = new ArrayList<>();
   private final List<Queue<Double>> timestampQueues = new ArrayList<>();
 
-  private static boolean isCANFD = new CANBus(DRIVE_CANIVORE).isNetworkFD();
+  private static boolean isCANFD = DRIVE_CANIVORE.isNetworkFD();
   private static OdometryThread instance = null;
 
   public static OdometryThread getInstance() {

@@ -7,15 +7,15 @@ import static org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.COUPLI
 
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.ClosedLoopSlot;
+import com.revrobotics.spark.FeedbackSensor;
 import com.revrobotics.spark.SparkAbsoluteEncoder;
 import com.revrobotics.spark.SparkBase.ControlType;
-import com.revrobotics.spark.SparkBase.PersistMode;
-import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.PersistMode;
+import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.config.ClosedLoopConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
@@ -87,7 +87,7 @@ public class SparkModule implements ModuleIO {
         driveMotorConfig
             .closedLoop
             .pid(Driving.PID.P, Driving.PID.I, Driving.PID.D)
-            .feedbackSensor(ClosedLoopConfig.FeedbackSensor.kAbsoluteEncoder));
+            .feedbackSensor(FeedbackSensor.kAbsoluteEncoder));
 
     driveMotorConfig.apply(
         driveMotorConfig
@@ -131,7 +131,7 @@ public class SparkModule implements ModuleIO {
             .pid(Turning.PID.P, Turning.PID.I, Turning.PID.D)
             .positionWrappingEnabled(true)
             .positionWrappingInputRange(-Math.PI, Math.PI)
-            .feedbackSensor(ClosedLoopConfig.FeedbackSensor.kAbsoluteEncoder));
+            .feedbackSensor(FeedbackSensor.kAbsoluteEncoder));
 
     turnMotorConfig.apply(
         turnMotorConfig
@@ -238,13 +238,13 @@ public class SparkModule implements ModuleIO {
 
   @Override
   public void setDriveSetpoint(double velocity) {
-    drivePID.setReference(
+    drivePID.setSetpoint(
         velocity, ControlType.kVelocity, ClosedLoopSlot.kSlot0, driveFF.calculate(velocity));
   }
 
   @Override
   public void setTurnSetpoint(Rotation2d angle) {
-    turnPID.setReference(angle.getRadians(), ControlType.kPosition);
+    turnPID.setSetpoint(angle.getRadians(), ControlType.kPosition);
   }
 
   @Override

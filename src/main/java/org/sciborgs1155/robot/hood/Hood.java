@@ -41,6 +41,7 @@ public class Hood extends SubsystemBase {
     this.hardware = hardware;
 
     fb.setTolerance(POS_TOLERANCE.in(Radians));
+    setDefaultCommand(goTo(DEFAULT_ANGLE));
 
     sysIdRoutine =
         new SysIdRoutine(
@@ -80,16 +81,28 @@ public class Hood extends SubsystemBase {
     return fb.getSetpoint().velocity;
   }
 
-  public Command goTo(Angle goal) {
+  private Command goTo(Angle goal) {
     return goTo(() -> goal.in(Radians));
   }
 
-  public Command goTo(DoubleSupplier goal) {
+  private Command goTo(DoubleSupplier goal) {
     return run(
         () -> {
           double feedback = fb.calculate(angle(), goal.getAsDouble());
           double feedforward = ff.calculate(angleSetpoint(), velocitySetpoint());
           hardware.setVoltage(feedback + feedforward);
         });
+  }
+
+  public Command goToShootingAngle(DoubleSupplier angle) {
+    return goTo(
+        () ->
+            ((angle.getAsDouble() - HOOD_ANGLE.in(Radians) - Math.PI / 2)
+                * HOOD_RADIUS
+                / MOTOR_RADIUS));
+  }
+
+  public Command goToShootingAngle(Angle angle) {
+    return goToShootingAngle(() -> angle.in(Radians));
   }
 }

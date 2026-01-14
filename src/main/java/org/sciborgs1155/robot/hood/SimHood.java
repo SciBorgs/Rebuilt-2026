@@ -2,7 +2,7 @@ package org.sciborgs1155.robot.hood;
 
 import static edu.wpi.first.units.Units.Radians;
 import static org.sciborgs1155.robot.hood.HoodConstants.GEARING;
-import static org.sciborgs1155.robot.hood.HoodConstants.HOOD_LENGTH;
+import static org.sciborgs1155.robot.hood.HoodConstants.HOOD_RADIUS;
 import static org.sciborgs1155.robot.hood.HoodConstants.MAX_ANGLE;
 import static org.sciborgs1155.robot.hood.HoodConstants.MIN_ANGLE;
 import static org.sciborgs1155.robot.hood.HoodConstants.MOI;
@@ -23,7 +23,7 @@ public class SimHood implements HoodIO {
             DCMotor.getKrakenX60(1),
             GEARING,
             MOI,
-            HOOD_LENGTH,
+            HOOD_RADIUS,
             MIN_ANGLE,
             MAX_ANGLE,
             true,

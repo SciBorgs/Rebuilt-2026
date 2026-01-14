@@ -3,6 +3,8 @@ package org.sciborgs1155.robot.turret;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.Volts;
 import static org.sciborgs1155.robot.turret.TurretConstants.*;
 
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -12,7 +14,6 @@ import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 
 public class SimTurret implements TurretIO {
-  @SuppressWarnings("unused")
   private final SingleJointedArmSim sim =
       new SingleJointedArmSim(
           DCMotor.getKrakenX60(1),
@@ -23,22 +24,19 @@ public class SimTurret implements TurretIO {
           MAX_ANGLE.in(Radians),
           false,
           START_ANGLE.in(Radians));
-
+  
   @Override
   public void setVoltage(Voltage voltage) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'setVoltage'");
+    sim.setInputVoltage(voltage.in(Volts));
   }
 
   @Override
   public Angle getPosition() {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'getPosition'");
+    return Radians.of(sim.getAngleRads());
   }
 
   @Override
   public AngularVelocity getVelocity() {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'getVelocity'");
+    return RadiansPerSecond.of(sim.getVelocityRadPerSec());
   }
 }

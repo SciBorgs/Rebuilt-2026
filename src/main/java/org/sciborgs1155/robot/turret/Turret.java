@@ -21,8 +21,11 @@ public class Turret extends SubsystemBase {
     return new Turret(new NoTurret());
   }
 
+  @SuppressWarnings("unused")
   private final TurretIO motor;
+  @SuppressWarnings("unused")
   private final ProfiledPIDController controller;
+  @SuppressWarnings("unused")
   private final SimpleMotorFeedforward feedfoward;
 
   public Turret(TurretIO turretIO) {

@@ -24,7 +24,7 @@ public class SimTurret implements TurretIO {
           MAX_ANGLE.in(Radians),
           false,
           START_ANGLE.in(Radians));
-  
+
   @Override
   public void setVoltage(Voltage voltage) {
     sim.setInputVoltage(voltage.in(Volts));

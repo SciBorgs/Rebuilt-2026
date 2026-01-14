@@ -32,7 +32,7 @@ public class TurretConstants {
 
   public static final Angle START_ANGLE = Radians.of(0);
 
-  public static final AngularVelocity MAX_VELOCITY =  RadiansPerSecond.of(0);
+  public static final AngularVelocity MAX_VELOCITY = RadiansPerSecond.of(0);
   public static final AngularAcceleration MAX_ACCELERATION = RadiansPerSecondPerSecond.of(0);
 
   public static final class PID {

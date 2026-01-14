@@ -1,16 +1,16 @@
 package org.sciborgs1155.robot.turret;
 
-import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
-import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import org.sciborgs1155.robot.Robot;
-
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.turret.TurretConstants.*;
+
+import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.sciborgs1155.robot.Robot;
 
 public class Turret extends SubsystemBase {
   public static Turret create() {
@@ -23,16 +23,23 @@ public class Turret extends SubsystemBase {
 
   @SuppressWarnings("unused")
   private final TurretIO motor;
+
   @SuppressWarnings("unused")
   private final ProfiledPIDController controller;
+
   @SuppressWarnings("unused")
   private final SimpleMotorFeedforward feedfoward;
 
   public Turret(TurretIO turretIO) {
     motor = turretIO;
     feedfoward = new SimpleMotorFeedforward(FFD.S, FFD.V, FFD.A, PERIOD.in(Seconds));
-    controller = new ProfiledPIDController(
-      PID.P, PID.I, PID.D, new Constraints(MAX_VELOCITY.in(RadiansPerSecond), 
-      MAX_ACCELERATION.in(RadiansPerSecondPerSecond)), PERIOD.in(Seconds));
+    controller =
+        new ProfiledPIDController(
+            PID.P,
+            PID.I,
+            PID.D,
+            new Constraints(
+                MAX_VELOCITY.in(RadiansPerSecond), MAX_ACCELERATION.in(RadiansPerSecondPerSecond)),
+            PERIOD.in(Seconds));
   }
 }

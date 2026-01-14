@@ -27,14 +27,4 @@ public class Turret extends SubsystemBase {
   public Command follow(Pose3d pose3d) {
     return idle();
   }
-
-  // TODO: Implement.
-  public Command followX(Pose3d pose3d) {
-    return idle();
-  }
-
-  // TODO: Implement.
-  public Command followY(Pose3d pose3d) {
-    return idle();
-  }
 }

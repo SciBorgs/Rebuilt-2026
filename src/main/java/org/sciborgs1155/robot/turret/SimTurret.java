@@ -1,30 +1,25 @@
 package org.sciborgs1155.robot.turret;
 
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Voltage;
 
 public class SimTurret implements TurretIO {
   @Override
-  public void setXVoltage(Voltage voltage) {
+  public void setVoltage(Voltage voltage) {
     // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'setXVoltage'");
+    throw new UnsupportedOperationException("Unimplemented method 'setVoltage'");
   }
 
   @Override
-  public void setYVoltage(Voltage voltage) {
+  public Angle getPosition() {
     // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'setYVoltage'");
+    throw new UnsupportedOperationException("Unimplemented method 'getPosition'");
   }
 
   @Override
-  public Angle getXAngle() {
+  public AngularVelocity getVelocity() {
     // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'getXAngle'");
-  }
-
-  @Override
-  public Angle getYAngle() {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'getYAngle'");
+    throw new UnsupportedOperationException("Unimplemented method 'getVelocity'");
   }
 }

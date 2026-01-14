@@ -1,22 +1,21 @@
 package org.sciborgs1155.robot.turret;
 
-import org.sciborgs1155.lib.FaultLogger;
-import org.sciborgs1155.lib.TalonUtils;
+import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.Volts;
+import static org.sciborgs1155.robot.Ports.Turret.*;
+import static org.sciborgs1155.robot.turret.TurretConstants.*;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import static org.sciborgs1155.robot.turret.TurretConstants.*;
-import static edu.wpi.first.units.Units.Amps;
-import static edu.wpi.first.units.Units.Volts;
-import static org.sciborgs1155.robot.Ports.Turret.*;
-
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Voltage;
+import org.sciborgs1155.lib.FaultLogger;
+import org.sciborgs1155.lib.TalonUtils;
 
-public class RealTurret implements TurretIO { // x44 for y and x60 for x
-  public final TalonFX x = new TalonFX(X_MOTOR, CAN_BUS);
-  public final TalonFX y = new TalonFX(Y_MOTOR, CAN_BUS);
+public class RealTurret implements TurretIO {
+  public final TalonFX motor = new TalonFX(MOTOR, CAN_BUS);
 
   public RealTurret() {
     // CONFIG
@@ -27,35 +26,29 @@ public class RealTurret implements TurretIO { // x44 for y and x60 for x
     configuration.CurrentLimits.SupplyCurrentLimit = CURRENT_LIMIT.in(Amps);
 
     // CONFIG
-    x.getConfigurator().apply(configuration);
-    y.getConfigurator().apply(configuration);
+    motor.getConfigurator().apply(configuration);
 
     // TALON UTILS
-    TalonUtils.addMotor(x);
-    TalonUtils.addMotor(y);
+    TalonUtils.addMotor(motor);
+    TalonUtils.addMotor(motor);
 
     // FAULT LOGGER
-    FaultLogger.register(x);
-    FaultLogger.register(y);
+    FaultLogger.register(motor);
+    FaultLogger.register(motor);
   }
 
   @Override
-  public void setXVoltage(Voltage voltage) {
-    x.setVoltage(voltage.in(Volts));
+  public void setVoltage(Voltage voltage) {
+    motor.setVoltage(voltage.in(Volts));
   }
 
   @Override
-  public void setYVoltage(Voltage voltage) {
-    y.setVoltage(voltage.in(Volts));
+  public Angle getPosition() {
+    return motor.getPosition().getValue();
   }
 
   @Override
-  public Angle getXAngle() {
-    return x.getPosition().getValue();
-  }
-
-  @Override
-  public Angle getYAngle() {
-    return y.getPosition().getValue();
+  public AngularVelocity getVelocity() {
+    return motor.getVelocity().getValue();
   }
 }

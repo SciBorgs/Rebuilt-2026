@@ -22,8 +22,7 @@ public final class Ports {
           entry(Drive.REAR_LEFT_CANCODER, "RL cancoder"),
           entry(Drive.FRONT_RIGHT_CANCODER, "FR cancoder"),
           entry(Drive.REAR_RIGHT_CANCODER, "RR cancoder"),
-          entry(Turret.X_MOTOR, "Turret X motor"),
-          entry(Turret.Y_MOTOR, "Turret Y motor"));
+          entry(Turret.MOTOR, "Turret motor"));
 
   public static final class OI {
     public static final int OPERATOR = 0;
@@ -54,7 +53,6 @@ public final class Ports {
   }
 
   public static final class Turret {
-    public static final int X_MOTOR = 67;
-    public static final int Y_MOTOR = 69;
+    public static final int MOTOR = 67;
   }
 }

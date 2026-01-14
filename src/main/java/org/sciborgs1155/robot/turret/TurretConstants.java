@@ -1,8 +1,8 @@
 package org.sciborgs1155.robot.turret;
 
 import static edu.wpi.first.units.Units.Amps;
-
 import com.ctre.phoenix6.CANBus;
+
 import edu.wpi.first.units.measure.Current;
 
 public class TurretConstants {

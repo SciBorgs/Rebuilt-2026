@@ -15,9 +15,9 @@ import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.lib.TalonUtils;
 
 public class RealTurret implements TurretIO {
-  public final TalonFX motor = new TalonFX(MOTOR, CAN_BUS);
+  private final TalonFX motor = new TalonFX(MOTOR, CAN_BUS);
 
-  public RealTurret() {
+  protected RealTurret() {
     // CONFIG
     final TalonFXConfiguration configuration = new TalonFXConfiguration();
 

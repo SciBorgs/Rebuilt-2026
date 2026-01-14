@@ -14,13 +14,13 @@ import org.sciborgs1155.lib.Beambreak;
 import org.sciborgs1155.lib.SimpleMotor;
 import org.sciborgs1155.robot.Robot;
 
-public class Hopper extends SubsystemBase {
+public class Hopper extends SubsystemBase implements AutoCloseable {
   private final SimpleMotor hardware;
   private final Beambreak beambreak;
   public final Trigger blocked;
 
   public static Hopper create() {
-    return Robot.isReal() ? new Hopper(realMotor(), Beambreak.none()) : none();
+    return Robot.isReal() ? new Hopper(realMotor(), Beambreak.real(BEAMBREAK)) : none();
   }
 
   public static Hopper none() {
@@ -46,19 +46,24 @@ public class Hopper extends SubsystemBase {
     setDefaultCommand(stop());
   }
 
-  public Command run(double power) {
+  public Command runHopper(double power) {
     return run(() -> hardware.set(power));
   }
 
   public Command intake() {
-    return run(INTAKING_POWER);
+    return runHopper(INTAKING_POWER);
   }
 
   public Command outtake() {
-    return run(-INTAKING_POWER);
+    return runHopper(-INTAKING_POWER);
   }
 
   public Command stop() {
-    return run(0);
+    return runHopper(0);
+  }
+
+  @Override
+  public void close() throws Exception {
+      hardware.close();
   }
 }

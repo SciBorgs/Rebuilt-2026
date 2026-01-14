@@ -1,14 +1,11 @@
 package org.sciborgs1155.robot.turret;
 
 import static edu.wpi.first.units.Units.Amps;
-import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.Radian;
 import static edu.wpi.first.units.Units.Radians;
 
 import com.ctre.phoenix6.CANBus;
-
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
@@ -30,5 +27,4 @@ public class TurretConstants {
   public static final Angle MIN_ANGLE = Radians.of(-Math.PI);
 
   public static final Angle START_ANGLE = Radians.of(0);
-
 }

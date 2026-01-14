@@ -1,17 +1,15 @@
 package org.sciborgs1155.robot.commands;
 
-import java.util.function.BooleanSupplier;
-import java.util.function.DoubleSupplier;
-
-import org.sciborgs1155.robot.drive.Drive;
-
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
+import java.util.function.BooleanSupplier;
+import java.util.function.DoubleSupplier;
+import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.shooter.Shooter;
 
 public class Shooting {
-    private final Shooter shooter;
-    private final Drive drive;
+  private final Shooter shooter;
+  private final Drive drive;
 
   public Shooting(Shooter shooter, Drive drive) {
     this.shooter = shooter;

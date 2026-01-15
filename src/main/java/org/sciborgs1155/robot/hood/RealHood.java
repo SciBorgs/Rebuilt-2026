@@ -1,15 +1,19 @@
 package org.sciborgs1155.robot.hood;
 
 import static edu.wpi.first.units.Units.Amps;
-import static org.sciborgs1155.robot.Ports.Hood.*;
-import static org.sciborgs1155.robot.hood.HoodConstants.*;
+import static edu.wpi.first.units.Units.Radians;
+import static org.sciborgs1155.robot.Ports.Hood.CANCODER;
+import static org.sciborgs1155.robot.Ports.Hood.MOTOR_PORT;
+import static org.sciborgs1155.robot.hood.HoodConstants.GEARING;
+import static org.sciborgs1155.robot.hood.HoodConstants.MIN_ANGLE;
+import static org.sciborgs1155.robot.hood.HoodConstants.STATOR_LIMIT;
+import static org.sciborgs1155.robot.hood.HoodConstants.SUPPLY_LIMIT;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.units.measure.Angle;
 
 public class RealHood implements HoodIO {
 
@@ -24,7 +28,7 @@ public class RealHood implements HoodIO {
     config.CurrentLimits.StatorCurrentLimit = STATOR_LIMIT.in(Amps);
     config.CurrentLimits.SupplyCurrentLimit = SUPPLY_LIMIT.in(Amps);
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    config.Feedback.SensorToMechanismRatio = CANCODER_GEARING;
+    config.Feedback.SensorToMechanismRatio = GEARING;
 
     config.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
     config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
@@ -34,8 +38,8 @@ public class RealHood implements HoodIO {
   }
 
   @Override
-  public Angle angle() {
-    return motor.getPosition().getValue();
+  public double angle() {
+    return motor.getPosition().getValueAsDouble() * GEARING + MIN_ANGLE.in(Radians) + Math.PI / 2;
   }
 
   @Override

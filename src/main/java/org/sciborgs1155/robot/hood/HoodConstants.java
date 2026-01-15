@@ -8,6 +8,8 @@ import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
+import static org.sciborgs1155.robot.hood.HoodConstants.HOOD_RADIUS;
+import static org.sciborgs1155.robot.hood.HoodConstants.MIN_ANGLE;
 
 import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.units.measure.Angle;
@@ -20,12 +22,10 @@ import edu.wpi.first.units.measure.Voltage;
 
 public class HoodConstants {
 
-  public static final double GEARING = 0;
-  public static final double MAX_ANGLE = 45.8 + 14.196795;
-  public static final double MIN_ANGLE = 14.196795;
+  public static final Angle MIN_ANGLE = Radians.of(14.196795);
+  public static final Angle MAX_ANGLE = Radians.of(45.8).plus(MIN_ANGLE);
   public static final double MOI = 0;
-  public static final double STARTING_ANGLE = 14.196795;
-  public static final double CANCODER_GEARING = 0;
+  public static final Angle STARTING_ANGLE = MIN_ANGLE;
   public static final Current SUPPLY_LIMIT = Amps.of(0);
   public static final Current STATOR_LIMIT = Amps.of(0);
   public static final AngularAcceleration MAX_ACCEL = RadiansPerSecondPerSecond.of(1);
@@ -49,4 +49,5 @@ public class HoodConstants {
   public static final double MOTOR_RADIUS = 1;
   public static final Angle HOOD_ANGLE = Degrees.of(45.8);
   public static final Angle DEFAULT_ANGLE = Radians.of(0);
+  public static final double GEARING = HOOD_RADIUS / MOTOR_RADIUS;
 }

@@ -4,9 +4,25 @@ import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Volts;
-import static org.sciborgs1155.robot.hood.HoodConstants.*;
+import static org.sciborgs1155.robot.hood.HoodConstants.DEFAULT_ANGLE;
+import static org.sciborgs1155.robot.hood.HoodConstants.MAX_ACCEL;
+import static org.sciborgs1155.robot.hood.HoodConstants.MAX_ANGLE;
+import static org.sciborgs1155.robot.hood.HoodConstants.MAX_VELOCITY;
+import static org.sciborgs1155.robot.hood.HoodConstants.MIN_ANGLE;
+import static org.sciborgs1155.robot.hood.HoodConstants.POS_TOLERANCE;
+import static org.sciborgs1155.robot.hood.HoodConstants.RAMP_RATE;
+import static org.sciborgs1155.robot.hood.HoodConstants.STEP_VOLTAGE;
+import static org.sciborgs1155.robot.hood.HoodConstants.TIME_OUT;
+import static org.sciborgs1155.robot.hood.HoodConstants.kA;
+import static org.sciborgs1155.robot.hood.HoodConstants.kD;
+import static org.sciborgs1155.robot.hood.HoodConstants.kG;
+import static org.sciborgs1155.robot.hood.HoodConstants.kI;
+import static org.sciborgs1155.robot.hood.HoodConstants.kP;
+import static org.sciborgs1155.robot.hood.HoodConstants.kS;
+import static org.sciborgs1155.robot.hood.HoodConstants.kV;
 
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
@@ -59,7 +75,7 @@ public class Hood extends SubsystemBase {
 
   @Logged
   public double angle() {
-    return hardware.angle().in(Radians);
+    return hardware.angle();
   }
 
   public void setVoltage(double v) {
@@ -81,28 +97,27 @@ public class Hood extends SubsystemBase {
     return fb.getSetpoint().velocity;
   }
 
-  private Command goTo(Angle goal) {
+  public Command goTo(Angle goal) {
     return goTo(() -> goal.in(Radians));
   }
 
-  private Command goTo(DoubleSupplier goal) {
-    return run(
-        () -> {
-          double feedback = fb.calculate(angle(), goal.getAsDouble());
-          double feedforward = ff.calculate(angleSetpoint(), velocitySetpoint());
-          hardware.setVoltage(feedback + feedforward);
-        });
+  /**
+   * @return Whether or not the elevator is at its desired state.
+   */
+  @Logged
+  public boolean atGoal() {
+    return fb.atGoal();
   }
 
-  public Command goToShootingAngle(DoubleSupplier angle) {
-    return goTo(
-        () ->
-            ((angle.getAsDouble() - HOOD_ANGLE.in(Radians) - Math.PI / 2)
-                * HOOD_RADIUS
-                / MOTOR_RADIUS));
+  public Command goTo(DoubleSupplier goal) {
+    return run(() -> update(goal.getAsDouble())).withName("Hood GoTo");
   }
 
-  public Command goToShootingAngle(Angle angle) {
-    return goToShootingAngle(() -> angle.in(Radians));
+  private void update(double position) {
+    double goal = MathUtil.clamp(position, MIN_ANGLE.in(Radians), MAX_ANGLE.in(Radians));
+    double feedback = fb.calculate(angle(), goal);
+    double feedforward =
+        ff.calculate(fb.getSetpoint().position - MIN_ANGLE.in(Radians), fb.getSetpoint().velocity);
+    hardware.setVoltage(feedback + feedforward);
   }
 }

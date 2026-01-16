@@ -5,7 +5,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Voltage;
 
 /** A hardware interface for the {@code Turret} subsystem. */
-public interface TurretIO {
+public interface TurretIO extends AutoCloseable {
   /**
    * Applies a voltage to the motor.
    *

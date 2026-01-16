@@ -16,7 +16,9 @@ import org.sciborgs1155.lib.TalonUtils;
 
 /** Real hardware interface for the {@code Turret} subsystem. */
 public class RealTurret implements TurretIO {
-  /** Motor controller that operates a {@code Kraken x60} motor which is used to turn the turret. */
+  /**
+   * Motor controller that operates a {@code Kraken x60} motor which is used to rotate the turret.
+   */
   private final TalonFX motor = new TalonFX(MOTOR, CAN_BUS);
 
   public RealTurret() {
@@ -49,5 +51,10 @@ public class RealTurret implements TurretIO {
   @Override
   public AngularVelocity velocity() {
     return motor.getVelocity().getValue();
+  }
+
+  @Override
+  public void close() throws Exception {
+    motor.close();
   }
 }

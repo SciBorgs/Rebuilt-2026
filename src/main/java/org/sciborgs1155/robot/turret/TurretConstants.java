@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 
 import com.ctre.phoenix6.CANBus;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -38,14 +39,22 @@ public class TurretConstants {
       RadiansPerSecondPerSecond.of(0); // TODO: Update.
 
   public static final class PID {
-    public static final int P = 1;
-    public static final int I = 0;
-    public static final int D = 0;
+    public static final double P = 1; // TODO: Update.
+    public static final double I = 0; // TODO: Update.
+    public static final double D = 0; // TODO: Update.
+
+    public static final Angle POSITION_TOLERANCE = Radians.of(0.01); // TODO: Update.
+    public static final AngularVelocity VELOCITY_TOLERANCE =
+        RadiansPerSecond.of(0.01); // TODO: Update.
+
+    public static final Constraints CONSTRAINTS =
+        new Constraints(
+            MAX_VELOCITY.in(RadiansPerSecond), MAX_ACCELERATION.in(RadiansPerSecondPerSecond));
   }
 
-  public static final class FFD {
-    public static final int S = 1;
-    public static final int V = 0;
-    public static final int A = 0;
+  public static final class FF {
+    public static final double S = 1; // TODO: Update.
+    public static final double V = 0; // TODO: Update.
+    public static final double A = 0; // TODO: Update.
   }
 }

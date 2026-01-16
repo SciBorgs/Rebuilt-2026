@@ -21,4 +21,7 @@ public class NoTurret implements TurretIO {
   public AngularVelocity velocity() {
     return RadiansPerSecond.zero();
   }
+
+  @Override
+  public void close() throws Exception {}
 }

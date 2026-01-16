@@ -7,7 +7,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 
 public class SimIntake implements IntakeIO{
     public static TalonFX rightMotor = new TalonFX(0);
-    public static TalonFX leftMotor = new TalonFX(0);
+    //public static TalonFX leftMotor = new TalonFX(0);
     public static TalonFX extensionMotor = new TalonFX(0);
 
 

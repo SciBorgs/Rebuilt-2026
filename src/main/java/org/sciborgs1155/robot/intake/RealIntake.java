@@ -21,7 +21,7 @@ public class RealIntake implements IntakeIO{
     public static TalonFX extensionMotor;
 
     public RealIntake() {
-        leftMotor = new TalonFX(-1);
+        //leftMotor = new TalonFX(-1);
         rightMotor = new TalonFX(-2);
         extensionMotor = new TalonFX(-3);
 
@@ -41,18 +41,18 @@ public class RealIntake implements IntakeIO{
         rightMotorConfig.CurrentLimits.SupplyCurrentLimit = IntakeConstants.CURRENT_LIMIT.in(Amps);
 
         rightMotor.getConfigurator().apply(rightMotorConfig);
-        leftMotor.getConfigurator().apply(rightMotorConfig);
+        //leftMotor.getConfigurator().apply(rightMotorConfig);
 
         extensionMotor.getConfigurator().apply(rightMotorConfig);
 
-        leftMotor.setControl(new Follower(-2, MotorAlignmentValue.Opposed));
+        //leftMotor.setControl(new Follower(-2, MotorAlignmentValue.Opposed));
 
         TalonUtils.addMotor(rightMotor);
-        TalonUtils.addMotor(leftMotor);
+        //TalonUtils.addMotor(leftMotor);
         TalonUtils.addMotor(extensionMotor);
 
         FaultLogger.register(rightMotor);
-        FaultLogger.register(leftMotor);
+        //FaultLogger.register(leftMotor);
         FaultLogger.register(extensionMotor);
     }
 

@@ -9,18 +9,19 @@ import org.junit.jupiter.api.Test;
 import org.sciborgs1155.robot.hopper.Hopper;
 
 public class HopperTest {
-    Hopper hopper; 
-    @BeforeEach
-    public void setup(){
-        setupTests();
-        hopper = Hopper.create();
-    }
-    @AfterEach
-    public void destroy() throws Exception{
-        reset(hopper);
-    }
+  Hopper hopper;
 
-    @Test
-    public void testHopper(){}
-    
+  @BeforeEach
+  public void setup() {
+    setupTests();
+    hopper = Hopper.create();
+  }
+
+  @AfterEach
+  public void destroy() throws Exception {
+    reset(hopper);
+  }
+
+  @Test
+  public void testHopper() {}
 }

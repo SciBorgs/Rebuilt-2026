@@ -64,6 +64,6 @@ public class Hopper extends SubsystemBase implements AutoCloseable {
 
   @Override
   public void close() throws Exception {
-      hardware.close();
+    hardware.close();
   }
 }

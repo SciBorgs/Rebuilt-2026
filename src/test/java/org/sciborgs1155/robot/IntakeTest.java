@@ -9,28 +9,28 @@ import org.junit.jupiter.api.Test;
 import org.sciborgs1155.robot.intake.Intake;
 
 public class IntakeTest {
-    Intake intake;
+  Intake intake;
 
-    final double TOLERANCE = 0.1;
+  final double TOLERANCE = 0.1;
 
-    @BeforeEach
-    public void setup(){
-        setupTests();
-        intake = Intake.create();
-    }
+  @BeforeEach
+  public void setup() {
+    setupTests();
+    intake = Intake.create();
+  }
 
-    @AfterEach
-    public void destroy() throws Exception{
-        reset(intake);
-    }
+  @AfterEach
+  public void destroy() throws Exception {
+    reset(intake);
+  }
 
-    @Test
-    public void Extend(){
-        intake.extend();
-    }
+  @Test
+  public void Extend() {
+    intake.extend();
+  }
 
-    @Test
-    public void Retract(){
-        intake.retract();
-    }
+  @Test
+  public void Retract() {
+    intake.retract();
+  }
 }

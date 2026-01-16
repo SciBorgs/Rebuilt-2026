@@ -7,7 +7,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 
-public class Intake{
+public class Intake implements AutoCloseable{
     //hardware initialization
     public static IntakeIO hardware;
 
@@ -41,9 +41,17 @@ public class Intake{
     public Command extend(){
         return new InstantCommand(() -> hardware.extend());
     }
+
     public Command startRollers(){
         return Commands.run(() -> hardware.setRollerVoltage());
     }
+    
+    public Command retract(){
+        return new InstantCommand(() -> hardware.retract());
+    }
+
+    @Override
+    public void close() throws Exception {}
 
 
     /*public AngularVelocity rollerVelocity() {

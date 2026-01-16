@@ -2,7 +2,7 @@ package org.sciborgs1155.robot.shooter;
 
 import static edu.wpi.first.units.Units.Seconds;
 import static org.sciborgs1155.robot.Constants.PERIOD;
-import static org.sciborgs1155.robot.shooter.ShooterConstants.GEARING;
+import static org.sciborgs1155.robot.shooter.ShooterConstants.*;
 
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
@@ -11,10 +11,10 @@ import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 public class SimWheel implements WheelIO {
   private final FlywheelSim flywheel;
 
-  public SimWheel(double kV, double kA) {
+  public SimWheel() {
     flywheel =
         new FlywheelSim(
-            LinearSystemId.identifyVelocitySystem(kV, kA), DCMotor.getKrakenX44(2), GEARING);
+            LinearSystemId.identifyVelocitySystem(kV, kA), DCMotor.getKrakenX60(1), GEARING);
   }
 
   @Override

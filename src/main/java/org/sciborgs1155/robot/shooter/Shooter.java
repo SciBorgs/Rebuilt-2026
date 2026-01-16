@@ -5,6 +5,7 @@ import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.*;
 
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -13,7 +14,7 @@ import java.util.function.DoubleSupplier;
 import org.sciborgs1155.robot.Robot;
 
 public class Shooter extends SubsystemBase implements AutoCloseable {
-  private final WheelIO motor;
+  private final WheelIO hardware;
 
   @Logged private double setpoint;
 
@@ -21,22 +22,17 @@ public class Shooter extends SubsystemBase implements AutoCloseable {
   private final SimpleMotorFeedforward ff =
       new SimpleMotorFeedforward(kS, kV, kA, PERIOD.in(Seconds));
 
-  public Shooter(WheelIO motor) {
-    this.motor = motor;
+  public Shooter(WheelIO hardware) {
+    this.hardware = hardware;
 
     pid.setTolerance(VELOCITY_TOLERANCE.in(RadiansPerSecond));
 
-    setDefaultCommand(
-        runOnce(
-                () -> {
-                  motor.setVoltage(0);
-                })
-            .withName("Idle"));
+    setDefaultCommand(runShooter(IDLE_VELOCITY.in(RadiansPerSecond)).withName("Idle"));
   }
 
   /** Creates real or simulated shooter based on {@link Robot#isReal()}. */
   public static Shooter create() {
-    return Robot.isReal() ? new Shooter(new RealWheel()) : new Shooter(new SimWheel(kV, kA));
+    return Robot.isReal() ? new Shooter(new RealWheel()) : new Shooter(new SimWheel());
   }
 
   /** Creates a fake shooter. */
@@ -44,19 +40,22 @@ public class Shooter extends SubsystemBase implements AutoCloseable {
     return new Shooter(new NoWheel());
   }
 
-  public void setVoltage(double voltage) {
-    motor.setVoltage(voltage);
-  }
-
   @Logged
   public double getVelocity() {
-    return motor.velocity();
+    return hardware.velocity();
   }
 
   public void update(double velocitySetpoint) {
-    double FF = ff.calculate(velocitySetpoint);
-    double FB = pid.calculate(getVelocity(), velocitySetpoint);
-    motor.setVoltage(FB + FF);
+    double velocity =
+        Double.isNaN(velocitySetpoint)
+            ? DEFAULT_VELOCITY.in(RadiansPerSecond)
+            : MathUtil.clamp(
+                velocitySetpoint,
+                -MAX_VELOCITY.in(RadiansPerSecond),
+                MAX_VELOCITY.in(RadiansPerSecond));
+    double FF = ff.calculate(velocity);
+    double FB = pid.calculate(getVelocity(), velocity);
+    hardware.setVoltage(MathUtil.clamp(FB + FF, -12, 12));
   }
 
   @Logged
@@ -86,12 +85,8 @@ public class Shooter extends SubsystemBase implements AutoCloseable {
     return runShooter(() -> velocity);
   }
 
-  public Command ejectStuck(double velocity) {
-    return runShooter(velocity);
-  }
-
   @Override
   public void close() throws Exception {
-    motor.close();
+    hardware.close();
   }
 }

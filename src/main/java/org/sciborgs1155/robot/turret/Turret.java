@@ -3,16 +3,19 @@ package org.sciborgs1155.robot.turret;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
+import static edu.wpi.first.units.Units.Volts;
 import static org.sciborgs1155.robot.Constants.PERIOD;
-import static org.sciborgs1155.robot.turret.TurretConstants.*;
 
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.robot.Robot;
+import org.sciborgs1155.robot.turret.TurretConstants.FF;
+import org.sciborgs1155.robot.turret.TurretConstants.PID;
 
 /**
  * The {@code Turret} subsystem consists of a single motor that is used to aim a variable hood
@@ -57,6 +60,7 @@ public class Turret extends SubsystemBase implements AutoCloseable {
     feedforward = new SimpleMotorFeedforward(FF.S, FF.V, FF.A, PERIOD.in(Seconds));
 
     controller = new ProfiledPIDController(PID.P, PID.I, PID.D, PID.CONSTRAINTS);
+    controller.enableContinuousInput(-Math.PI, Math.PI);
     controller.setTolerance(
         PID.POSITION_TOLERANCE.in(Radians), PID.VELOCITY_TOLERANCE.in(RadiansPerSecond));
   }
@@ -67,16 +71,38 @@ public class Turret extends SubsystemBase implements AutoCloseable {
    *
    * @param angle The angle to orient the turret towards (front of robot is 0 DEG).
    */
-  public void orient(Angle angle) {} // TODO: Implement.
+  public void setAngle(Angle angle) {
+    controller.setGoal(angle.in(Radians));
+  }
 
-  /** Updates the motor voltage based on the setpoint specified by the {@code orient} method. */
+  /**
+   * Returns the angular position of the turret.
+   *
+   * @return The angular position of the turret.
+   */
+  public Angle position() {
+    return motor.position();
+  }
+
+  /**
+   * Continuously orients the turret based on the setpoint specified in the {@code setAngle} method.
+   *
+   * @return A command to continuously orient to the angle setpoint.
+   */
+  public Command run() {
+    return run(
+        () -> {
+          double pidVolts = controller.calculate(motor.position().in(Radians));
+          double ffdVolts = feedforward.calculate(motor.velocity().in(RadiansPerSecond));
+
+          motor.setVoltage(Volts.of(pidVolts + ffdVolts));
+        });
+  }
+
   @Override
   public void periodic() {
-    // TODO: VOLTAGE SETTING
-
-    // LOGGING
-    LoggingUtils.log("POSITION", motor.position());
-    LoggingUtils.log("VELOCITY", motor.velocity());
+    LoggingUtils.log("Robot/Turret/POSITION", motor.position());
+    LoggingUtils.log("Robot/Turret/VELOCITY", motor.velocity());
   }
 
   @Override

@@ -1,31 +1,30 @@
 {
-    "fileName": "ReduxLib-2025.0.1.json",
+    "fileName": "ReduxLib-2026.1.1.json",
     "name": "ReduxLib",
-    "version": "2025.0.1",
-    "frcYear": "2025",
+    "version": "2026.1.1",
+    "frcYear": "2026",
     "uuid": "151ecca8-670b-4026-8160-cdd2679ef2bd",
     "mavenUrls": [
         "https://maven.reduxrobotics.com/"
     ],
-    "jsonUrl": "https://frcsdk.reduxrobotics.com/ReduxLib_2025.json",
+    "jsonUrl": "https://frcsdk.reduxrobotics.com/ReduxLib_2026.json",
     "javaDependencies": [
         {
             "groupId": "com.reduxrobotics.frc",
             "artifactId": "ReduxLib-java",
-            "version": "2025.0.1"
+            "version": "2026.1.1"
         }
     ],
     "jniDependencies": [
         {
             "groupId": "com.reduxrobotics.frc",
-            "artifactId": "ReduxLib-driver",
-            "version": "2025.0.1",
+            "artifactId": "ReduxLib-fifo",
+            "version": "2026.1.1",
             "isJar": false,
             "skipInvalidPlatforms": true,
             "validPlatforms": [
                 "linuxathena",
                 "linuxx86-64",
-                "linuxarm32",
                 "linuxarm64",
                 "osxuniversal",
                 "windowsx86-64"
@@ -36,7 +35,7 @@
         {
             "groupId": "com.reduxrobotics.frc",
             "artifactId": "ReduxLib-cpp",
-            "version": "2025.0.1",
+            "version": "2026.1.1",
             "libName": "ReduxLib",
             "headerClassifier": "headers",
             "sourcesClassifier": "sources",
@@ -45,7 +44,6 @@
             "binaryPlatforms": [
                 "linuxathena",
                 "linuxx86-64",
-                "linuxarm32",
                 "linuxarm64",
                 "osxuniversal",
                 "windowsx86-64"
@@ -53,16 +51,15 @@
         },
         {
             "groupId": "com.reduxrobotics.frc",
-            "artifactId": "ReduxLib-driver",
-            "version": "2025.0.1",
-            "libName": "ReduxCore",
+            "artifactId": "ReduxLib-fifo",
+            "version": "2026.1.1",
+            "libName": "reduxfifo",
             "headerClassifier": "headers",
             "sharedLibrary": true,
             "skipInvalidPlatforms": true,
             "binaryPlatforms": [
                 "linuxathena",
                 "linuxx86-64",
-                "linuxarm32",
                 "linuxarm64",
                 "osxuniversal",
                 "windowsx86-64"

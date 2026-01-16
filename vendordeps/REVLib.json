@@ -7,7 +7,7 @@
     "mavenUrls": [
         "https://maven.revrobotics.com/"
     ],
-    "jsonUrl": "https://software-metadata.revrobotics.com/REVLib-2025.json",
+    "jsonUrl": "https://software-metadata.revrobotics.com/REVLib-2026.json",
     "javaDependencies": [
         {
             "groupId": "com.revrobotics.frc",

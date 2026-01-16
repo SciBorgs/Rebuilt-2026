@@ -72,7 +72,7 @@ public class UnitTestingUtil {
    * @param command The command to run.
    */
   public static void run(Command command) {
-    command.schedule();
+    CommandScheduler.getInstance().schedule(command);
     CommandScheduler.getInstance().run();
   }
 
@@ -83,7 +83,7 @@ public class UnitTestingUtil {
    * @param runs The number of times CommandScheduler is run.
    */
   public static void run(Command command, int runs) {
-    command.schedule();
+    CommandScheduler.getInstance().schedule(command);
     fastForward(runs);
   }
 
@@ -94,7 +94,7 @@ public class UnitTestingUtil {
    * @param command
    */
   public static void runToCompletion(Command command) {
-    command.schedule();
+    CommandScheduler.getInstance().schedule(command);
     fastForward(1);
     while (command.isScheduled()) {
       fastForward(1);

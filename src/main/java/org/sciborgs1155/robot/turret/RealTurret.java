@@ -14,10 +14,18 @@ import edu.wpi.first.units.measure.Voltage;
 import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.lib.TalonUtils;
 
+/** Real hardware interface for the {@code Turret} subsystem. */
 public class RealTurret implements TurretIO {
+  /** Motor controller that operates a {@code Kraken x60} motor which is used to turn the turret. */
   private final TalonFX motor = new TalonFX(MOTOR, CAN_BUS);
 
   public RealTurret() {
+    // TALON UTILS
+    TalonUtils.addMotor(motor);
+
+    // FAULT LOGGER
+    FaultLogger.register(motor);
+
     // CONFIG
     final TalonFXConfiguration configuration = new TalonFXConfiguration();
 
@@ -25,16 +33,7 @@ public class RealTurret implements TurretIO {
     configuration.Feedback.SensorToMechanismRatio = CONVERSION_FACTOR;
     configuration.CurrentLimits.SupplyCurrentLimit = CURRENT_LIMIT.in(Amps);
 
-    // CONFIG
     motor.getConfigurator().apply(configuration);
-
-    // TALON UTILS
-    TalonUtils.addMotor(motor);
-    TalonUtils.addMotor(motor);
-
-    // FAULT LOGGER
-    FaultLogger.register(motor);
-    FaultLogger.register(motor);
   }
 
   @Override
@@ -43,12 +42,12 @@ public class RealTurret implements TurretIO {
   }
 
   @Override
-  public Angle getPosition() {
+  public Angle position() {
     return motor.getPosition().getValue();
   }
 
   @Override
-  public AngularVelocity getVelocity() {
+  public AngularVelocity velocity() {
     return motor.getVelocity().getValue();
   }
 }

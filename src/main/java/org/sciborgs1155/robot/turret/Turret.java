@@ -13,10 +13,24 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.sciborgs1155.robot.Robot;
 
 public class Turret extends SubsystemBase {
+  /**
+   * Factory for the {@code Turret} subsystem. The hardware interface is varied depending on the
+   * type of robot being operated on.
+   *
+   * @return A newly instantiated instance of {@code Turret} using a {@code RealTurret} hardware
+   *     interface if the robot is real and a {@code SimTurret} hardware interface is the robot is
+   *     simulated.
+   */
   public static Turret create() {
     return Robot.isReal() ? new Turret(new RealTurret()) : new Turret(new SimTurret());
   }
 
+  /**
+   * Factory for a fake {@code Turret} subsystem.
+   *
+   * @return A newly instantiated instance of {@code Turret} using a {@code NoTurret} hardware
+   *     interface.
+   */
   public static Turret none() {
     return new Turret(new NoTurret());
   }
@@ -28,11 +42,11 @@ public class Turret extends SubsystemBase {
   private final ProfiledPIDController controller;
 
   @SuppressWarnings("unused")
-  private final SimpleMotorFeedforward feedfoward;
+  private final SimpleMotorFeedforward feedforward;
 
   public Turret(TurretIO turretIO) {
     motor = turretIO;
-    feedfoward = new SimpleMotorFeedforward(FFD.S, FFD.V, FFD.A, PERIOD.in(Seconds));
+    feedforward = new SimpleMotorFeedforward(FFD.S, FFD.V, FFD.A, PERIOD.in(Seconds));
     controller =
         new ProfiledPIDController(
             PID.P,

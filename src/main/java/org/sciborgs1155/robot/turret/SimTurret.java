@@ -13,8 +13,10 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 
+/** Simulated hardware interface for the {@code Turret} subsystem. */
 public class SimTurret implements TurretIO {
-  private final SingleJointedArmSim sim =
+  /** Simulated servo motor representing the turret. */
+  private final SingleJointedArmSim simulation =
       new SingleJointedArmSim(
           DCMotor.getKrakenX60(1),
           GEAR_RATIO,
@@ -27,16 +29,16 @@ public class SimTurret implements TurretIO {
 
   @Override
   public void setVoltage(Voltage voltage) {
-    sim.setInputVoltage(voltage.in(Volts));
+    simulation.setInputVoltage(voltage.in(Volts));
   }
 
   @Override
-  public Angle getPosition() {
-    return Radians.of(sim.getAngleRads());
+  public Angle position() {
+    return Radians.of(simulation.getAngleRads());
   }
 
   @Override
-  public AngularVelocity getVelocity() {
-    return RadiansPerSecond.of(sim.getVelocityRadPerSec());
+  public AngularVelocity velocity() {
+    return RadiansPerSecond.of(simulation.getVelocityRadPerSec());
   }
 }

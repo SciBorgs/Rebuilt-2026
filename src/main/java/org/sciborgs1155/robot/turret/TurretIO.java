@@ -4,10 +4,26 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Voltage;
 
+/** A hardware interface for the {@code Turret} subsystem. */
 public interface TurretIO {
+  /**
+   * Applies a voltage to the motor.
+   *
+   * @param voltage The voltage to apply to the motor.
+   */
   public void setVoltage(Voltage voltage);
 
-  public Angle getPosition();
+  /**
+   * Returns the angular position of the motor.
+   *
+   * @return The angular position of the motor.
+   */
+  public Angle position();
 
-  public AngularVelocity getVelocity();
+  /**
+   * Returns the angular velocity of the motor.
+   *
+   * @return The angular velocity of the motor.
+   */
+  public AngularVelocity velocity();
 }

@@ -15,7 +15,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 
 import org.sciborgs1155.lib.FaultLogger;
 
-public class RealIntake implements IntakeIO{
+public class RealIntake implements IntakeIO, AutoCloseable{
     public static TalonFX leftMotor;
     public static TalonFX rightMotor;
     public static TalonFX extensionMotor;
@@ -79,6 +79,12 @@ public class RealIntake implements IntakeIO{
     @Override
     public void retract() {
         extensionMotor.setVoltage(-IntakeConstants.EXTEND_VOLTAGE);
+    }
+
+    @Override
+    public void close() throws Exception {
+        rightMotor.close();
+        extensionMotor.close();
     }
 
 }

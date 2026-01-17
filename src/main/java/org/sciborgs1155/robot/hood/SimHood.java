@@ -45,4 +45,7 @@ public class SimHood implements HoodIO {
   public double velocity() {
     return sim.getVelocityRadPerSec();
   }
+
+  @Override
+  public void close() throws Exception {}
 }

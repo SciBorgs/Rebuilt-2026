@@ -1,6 +1,6 @@
 package org.sciborgs1155.robot.hood;
 
-public interface HoodIO {
+public interface HoodIO extends AutoCloseable {
 
   /**
    * gets the current angle of the hood
@@ -22,4 +22,6 @@ public interface HoodIO {
    * @return vel in rads/sec
    */
   public double velocity();
+
+  public void close() throws Exception;
 }

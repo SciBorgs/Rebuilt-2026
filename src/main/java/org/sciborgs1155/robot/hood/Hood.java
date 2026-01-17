@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Volts;
+import static org.sciborgs1155.lib.Assertion.eAssert;
 import static org.sciborgs1155.robot.hood.HoodConstants.DEFAULT_ANGLE;
 import static org.sciborgs1155.robot.hood.HoodConstants.MAX_ACCEL;
 import static org.sciborgs1155.robot.hood.HoodConstants.MAX_ANGLE;
@@ -34,11 +35,14 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
+import java.util.Set;
 import java.util.function.DoubleSupplier;
+import org.sciborgs1155.lib.Assertion;
+import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.robot.Robot;
 
 /** Hood subsystem for adjusting vertical shooting angle of the fuel */
-public class Hood extends SubsystemBase {
+public class Hood extends SubsystemBase implements AutoCloseable {
 
   private final HoodIO hardware;
 
@@ -191,5 +195,25 @@ public class Hood extends SubsystemBase {
     double feedforward =
         ff.calculate(fb.getSetpoint().position - MIN_ANGLE.in(Radians), fb.getSetpoint().velocity);
     hardware.setVoltage(feedback + feedforward);
+  }
+
+  public Test goToTest(Angle goal) {
+
+    Command testCommand = goTo(goal).until(this::atGoal).withTimeout(5);
+    Set<Assertion> assertions =
+        Set.of(
+            eAssert(
+                "hood system check (angle)",
+                () -> goal.in(Radians),
+                this::angle,
+                POS_TOLERANCE.in(Radians)));
+
+    return new Test(testCommand, assertions);
+  }
+
+  /** closes the hood */
+  @Override
+  public void close() throws Exception {
+    hardware.close();
   }
 }

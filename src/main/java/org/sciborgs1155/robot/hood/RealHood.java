@@ -55,4 +55,9 @@ public class RealHood implements HoodIO {
   public double velocity() {
     return motor.getVelocity().getValueAsDouble();
   }
+
+  @Override
+  public void close() throws Exception {
+    motor.close();
+  }
 }

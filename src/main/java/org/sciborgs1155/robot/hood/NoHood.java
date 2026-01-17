@@ -15,4 +15,7 @@ public class NoHood implements HoodIO {
   public double velocity() {
     return 0;
   }
+
+  @Override
+  public void close() throws Exception {}
 }

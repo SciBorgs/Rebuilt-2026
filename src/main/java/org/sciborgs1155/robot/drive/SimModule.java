@@ -41,6 +41,11 @@ public class SimModule implements ModuleIO {
 
   private final String name;
 
+  /**
+   * Creates a new simulated swerve module.
+   *
+   * @param name The name of the module.
+   */
   public SimModule(String name) {
     this.name = name;
 
@@ -143,10 +148,12 @@ public class SimModule implements ModuleIO {
     return new double[][] {};
   }
 
+  @Override
   public SwerveModulePosition[] odometryData() {
     return new SwerveModulePosition[] {};
   }
 
+  @Override
   public double[] timestamps() {
     return new double[] {};
   }

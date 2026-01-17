@@ -8,7 +8,7 @@ import static edu.wpi.first.wpilibj2.command.button.RobotModeTriggers.*;
 import static org.sciborgs1155.lib.LoggingUtils.log;
 import static org.sciborgs1155.robot.Constants.DEADBAND;
 import static org.sciborgs1155.robot.Constants.PERIOD;
-import static org.sciborgs1155.robot.Constants.TUNING;
+import static org.sciborgs1155.robot.Constants.tuning;
 import static org.sciborgs1155.robot.drive.DriveConstants.*;
 
 import com.ctre.phoenix6.SignalLogger;
@@ -97,7 +97,7 @@ public class Robot extends CommandRobot {
     FaultLogger.register(pdh);
     SmartDashboard.putData("Auto Chooser", autos);
 
-    if (TUNING) {
+    if (tuning) {
       addPeriodic(
           () ->
               log(
@@ -137,21 +137,21 @@ public class Robot extends CommandRobot {
   /** Configures trigger -> command bindings. */
   private void configureBindings() {
     // x and y are switched: we use joystick Y axis to control field x motion
-    InputStream raw_x = InputStream.of(driver::getLeftY).log("/Robot/raw x").negate();
-    InputStream raw_y = InputStream.of(driver::getLeftX).log("/Robot/raw y").negate();
+    InputStream rawX = InputStream.of(driver::getLeftY).log("/Robot/raw x").negate();
+    InputStream rawY = InputStream.of(driver::getLeftX).log("/Robot/raw y").negate();
 
     // Apply speed multiplier, deadband, square inputs, and scale translation to max speed
     InputStream r =
-        InputStream.hypot(raw_x, raw_y)
+        InputStream.hypot(rawX, rawY)
             .log("/Robot/raw joystick")
             .scale(() -> speedMultiplier)
             .clamp(1.0)
-            .deadband(Constants.DEADBAND, 1.0)
+            .deadband(DEADBAND, 1.0)
             .signedPow(2.0)
             .log("/Robot/processed joystick")
             .scale(MAX_SPEED.in(MetersPerSecond));
 
-    InputStream theta = InputStream.atan(raw_x, raw_y);
+    InputStream theta = InputStream.atan(rawX, rawY);
 
     // Split x and y components of translation input
     InputStream x =
@@ -174,7 +174,7 @@ public class Robot extends CommandRobot {
 
     drive.setDefaultCommand(drive.drive(x, y, omega).withName("joysticks"));
 
-    if (TUNING) {
+    if (tuning) {
       SignalLogger.enableAutoLogging(false);
 
       // manual .start() call is blocking, for up to 100ms
@@ -217,6 +217,11 @@ public class Robot extends CommandRobot {
             });
   }
 
+  /**
+   * Creates a command that runs a systems check on all mechanisms.
+   *
+   * @return A command that tests all mechanisms.
+   */
   public Command systemsCheck() {
     return Test.toCommand(drive.systemsCheck()).withName("Test Mechanisms");
   }
@@ -226,7 +231,7 @@ public class Robot extends CommandRobot {
     super.close();
     try {
       drive.close();
-    } catch (Exception e) {
+    } catch (Exception ignored) {
     }
   }
 }

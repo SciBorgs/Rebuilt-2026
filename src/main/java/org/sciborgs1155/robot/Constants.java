@@ -21,7 +21,11 @@ import org.sciborgs1155.robot.drive.DriveConstants;
  *
  * @see Units
  */
-public class Constants {
+public final class Constants {
+
+  // Prevents instantiation
+  private Constants() {}
+
   // TODO: Modify as needed.
   /** Returns the robot's alliance. */
   public static Alliance alliance() {
@@ -34,17 +38,19 @@ public class Constants {
   }
 
   /** Defines the various types the robot can be. Useful for only using select subsystems. */
-  public static enum RobotType {
+  public enum RobotType {
     FULL,
     CHASSIS,
     NONE
   }
 
   /** The current robot state, as in the type. Remember to update! */
-  public static RobotType ROBOT_TYPE = RobotType.FULL;
+  @SuppressWarnings("PMD.MutableStaticState") // Let's not do this please
+  public static RobotType robotType = RobotType.FULL;
 
   /** States if we are in tuning mode. Ideally, keep it at false when not used. */
-  public static boolean TUNING = false;
+  @SuppressWarnings("PMD.MutableStaticState") // Let's not do this please
+  public static boolean tuning;
 
   // TODO: UPDATE ALL OF THESE VALUES.
   /** Describes physical properites of the robot. */

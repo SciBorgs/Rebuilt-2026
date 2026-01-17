@@ -1,6 +1,6 @@
 package org.sciborgs1155.robot.hood;
 
-//*placeholder for when hood is inoperable */
+// *placeholder for when hood is inoperable */
 public class NoHood implements HoodIO {
 
   @Override

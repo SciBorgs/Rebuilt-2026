@@ -15,7 +15,7 @@ import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
-/**Hood class with a  motor controller */
+/** Hood class with a motor controller */
 public class RealHood implements HoodIO {
 
   private final TalonFX motor;
@@ -38,25 +38,19 @@ public class RealHood implements HoodIO {
     motor.getConfigurator().apply(config);
   }
 
-  /**
-   * gets the hood angle in rads
-   */
+  /** gets the hood angle in rads */
   @Override
   public double angle() {
-    return motor.getPosition().getValueAsDouble() * GEARING + MIN_ANGLE.in(Radians) + Math.PI / 2;
+    return motor.getPosition().getValueAsDouble() + MIN_ANGLE.in(Radians) + Math.PI / 2;
   }
 
-  /**
-   * sets the voltage of the hood motor
-   */
+  /** sets the voltage of the hood motor */
   @Override
   public void setVoltage(double v) {
     motor.setVoltage(v);
   }
 
-  /**
-   * rotational velocity of the hood in rads/sec
-   */
+  /** rotational velocity of the hood in rads/sec */
   @Override
   public double velocity() {
     return motor.getVelocity().getValueAsDouble();

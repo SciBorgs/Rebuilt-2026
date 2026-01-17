@@ -27,10 +27,12 @@ import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
 import java.util.function.DoubleSupplier;
 import org.sciborgs1155.robot.Robot;
@@ -64,11 +66,35 @@ public class Hood extends SubsystemBase {
         new SysIdRoutine(
             new Config(RAMP_RATE, STEP_VOLTAGE, TIME_OUT),
             new Mechanism(voltage -> hardware.setVoltage(voltage.in(Volts)), null, this));
+    SmartDashboard.putData(
+        "Robot/hood/quasistatic forward",
+        sysIdRoutine
+            .quasistatic(Direction.kForward)
+            .until(() -> atPosition(MAX_ANGLE.in(Radians)))
+            .withName("hood quasistatic forward"));
+    SmartDashboard.putData(
+        "Robot/hood/quasistatic backward",
+        sysIdRoutine
+            .quasistatic(Direction.kReverse)
+            .until(() -> atPosition(MIN_ANGLE.in(Radians)))
+            .withName("hood quasistatic backward"));
+    SmartDashboard.putData(
+        "Robot/hood/dynamic forward",
+        sysIdRoutine
+            .dynamic(Direction.kForward)
+            .until(() -> atPosition(MAX_ANGLE.in(Radians)))
+            .withName("hood dynamic forward"));
+    SmartDashboard.putData(
+        "Robot/hood/dynamic backward",
+        sysIdRoutine
+            .dynamic(Direction.kReverse)
+            .until(() -> atPosition(MIN_ANGLE.in(Radians)))
+            .withName("hood dynamic backward"));
   }
 
   /**
-   * returns a new hood subsystem, which will have hardware if hood is real and
-   * sim if not
+   * returns a new hood subsystem, which will have hardware if hood is real and sim if not
+   *
    * @return a real or sim hood subsystem
    */
   public static Hood create() {
@@ -77,6 +103,7 @@ public class Hood extends SubsystemBase {
 
   /**
    * returns a hood with no interface
+   *
    * @return
    */
   public static Hood none() {
@@ -85,6 +112,7 @@ public class Hood extends SubsystemBase {
 
   /**
    * gets the current angle of the hood
+   *
    * @return the angle in radians
    */
   @Logged
@@ -93,7 +121,8 @@ public class Hood extends SubsystemBase {
   }
 
   /**
-   * sets the voltage of the motor 
+   * sets the voltage of the motor
+   *
    * @param v
    */
   public void setVoltage(double v) {
@@ -102,6 +131,7 @@ public class Hood extends SubsystemBase {
 
   /**
    * returns the angle setpoint of the hood
+   *
    * @return the position of the setpoint
    */
   @Logged
@@ -111,13 +141,13 @@ public class Hood extends SubsystemBase {
 
   /**
    * gets the current velocity of the hood
-   * @return current velocity of the hood 
+   *
+   * @return current velocity of the hood
    */
   @Logged
   public double velocity() {
     return hardware.velocity();
   }
-
 
   @Logged
   public double velocitySetpoint() {
@@ -126,13 +156,13 @@ public class Hood extends SubsystemBase {
 
   /**
    * moves the hood to a specified angle
+   *
    * @param goal
    * @return a goTo command set the hood to goal angle
    */
   private Command goTo(Angle goal) {
     return goTo(() -> goal.in(Radians));
   }
-
 
   /**
    * @return Whether or not the elevator is at its desired state.
@@ -142,10 +172,19 @@ public class Hood extends SubsystemBase {
     return fb.atGoal();
   }
 
+  public boolean atPosition(double angle) {
+    return Math.abs(angle - angle()) < POS_TOLERANCE.in(Radians);
+  }
+
   public Command goTo(DoubleSupplier goal) {
     return run(() -> update(goal.getAsDouble())).withName("Hood GoTo");
   }
 
+  /**
+   * method to set the voltage of the motor based of ff and fb calculations
+   *
+   * @param position Goal angle for hood to reach
+   */
   private void update(double position) {
     double goal = MathUtil.clamp(position, MIN_ANGLE.in(Radians), MAX_ANGLE.in(Radians));
     double feedback = fb.calculate(angle(), goal);
@@ -153,5 +192,4 @@ public class Hood extends SubsystemBase {
         ff.calculate(fb.getSetpoint().position - MIN_ANGLE.in(Radians), fb.getSetpoint().velocity);
     hardware.setVoltage(feedback + feedforward);
   }
-
 }

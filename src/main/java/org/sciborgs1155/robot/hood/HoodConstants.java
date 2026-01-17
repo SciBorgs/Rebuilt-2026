@@ -48,5 +48,4 @@ public class HoodConstants {
   public static final Angle HOOD_ANGLE = Degrees.of(45.8);
   public static final Angle DEFAULT_ANGLE = Radians.of(0);
   public static final double GEARING = HOOD_RADIUS / MOTOR_RADIUS;
-
 }

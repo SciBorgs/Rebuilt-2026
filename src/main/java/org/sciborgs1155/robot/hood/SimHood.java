@@ -11,10 +11,10 @@ import static org.sciborgs1155.robot.hood.HoodConstants.STARTING_ANGLE;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 
-//*hood simulated hardware interface */
+// *hood simulated hardware interface */
 public class SimHood implements HoodIO {
 
-  private SingleJointedArmSim sim; 
+  private SingleJointedArmSim sim;
 
   public SimHood() {
 
@@ -38,6 +38,7 @@ public class SimHood implements HoodIO {
   @Override
   public void setVoltage(double v) {
     sim.setInputVoltage(v);
+    sim.update(v);
   }
 
   @Override

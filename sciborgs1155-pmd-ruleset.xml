@@ -13,7 +13,9 @@
     If you exclude a rule, please list the reason you excluded it.
   </description>
 
-  <rule ref="category/java/bestpractices.xml" />
+  <rule ref="category/java/bestpractices.xml">
+    <exclude name="UnitTestAssertionsShouldIncludeMessage" /> <!-- Not our current style, but maybe it should -->
+  </rule>
 
   <rule ref="category/java/codestyle.xml">
     <exclude name="AtLeastOneConstructor" /> <!-- Unnecessary code if only default needed -->
@@ -27,6 +29,7 @@
     <exclude name="ShortClassName" /> <!-- Too sensitive -->
     <exclude name="ShortMethodName" /> <!-- Too sensitive -->
     <exclude name="ShortVariable" /> <!-- Too sensitive -->
+    <exclude name="TooManyStaticImports" /> <!-- Welcome to FRC... -->
   </rule>
 
   <rule ref="category/java/design.xml">
@@ -42,9 +45,15 @@
     <exclude name="CommentSize" /> <!-- I'm fine with long comments as long as they maintain good information. -->
   </rule>
 
-  <rule ref="category/java/errorprone.xml" />
+  <rule ref="category/java/errorprone.xml">
+    <exclude name="AvoidLiteralsInIfCondition" /> <!-- I personally think this is fine and readable -->
+    <exclude name="CloseResource" /> <!-- Many violations exist currently. We may want to do something about this
+      to prevent resource leaks. -->
+  </rule>
 
-  <rule ref="category/java/multithreading.xml" />
+  <rule ref="category/java/multithreading.xml">
+    <exclude name="DoNotUseThreads" /> <!-- Need to use threads -->
+  </rule>
 
   <rule ref="category/java/performance.xml" />
 

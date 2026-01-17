@@ -14,7 +14,7 @@ import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 
 public class SimHood implements HoodIO {
 
-  private SingleJointedArmSim sim;
+  private SingleJointedArmSim sim; 
 
   public SimHood() {
 

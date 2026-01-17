@@ -57,20 +57,36 @@ public class Hood extends SubsystemBase {
     return new Hood(new NoHood());
   }
 
+  /**
+   * gets the current angle of the hood
+   * @return the angle in radians
+   */
   @Logged
   public double angle() {
     return hardware.angle().in(Radians);
   }
 
+  /**
+   * sets the voltage of the motor 
+   * @param v
+   */
   public void setVoltage(double v) {
     hardware.setVoltage(v);
   }
 
+  /**
+   * returns the angle setpoint of the hood
+   * @return the position of the setpoint
+   */
   @Logged
   public double angleSetpoint() {
     return fb.getSetpoint().position;
   }
 
+  /**
+   * gets the current velocity of the hood
+   * @return current velocity of the hood
+   */
   @Logged
   public double velocity() {
     return hardware.velocity();
@@ -81,9 +97,15 @@ public class Hood extends SubsystemBase {
     return fb.getSetpoint().velocity;
   }
 
+  /**
+   * moves the hood to a specified angle
+   * @param goal
+   * @return a goTo command set the hood to goal angle
+   */
   private Command goTo(Angle goal) {
     return goTo(() -> goal.in(Radians));
   }
+
 
   private Command goTo(DoubleSupplier goal) {
     return run(
@@ -94,6 +116,11 @@ public class Hood extends SubsystemBase {
         });
   }
 
+  /**
+   * moves the hood to a specified exit angle for the projectile
+   * @param angle
+   * @return a goTo command setting t
+   */
   public Command goToShootingAngle(DoubleSupplier angle) {
     return goTo(
         () ->

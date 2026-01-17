@@ -1,63 +1,51 @@
 package org.sciborgs1155.robot.turret;
 
 import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 
 import com.ctre.phoenix6.CANBus;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularAcceleration;
-import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.MomentOfInertia;
 
 /** Constants used in the {@code Turret} subsystem. */
 public class TurretConstants {
-  public static final CANBus CAN_BUS = new CANBus(); // TODO: Update.
-  public static final Current CURRENT_LIMIT = Amps.of(60); // TODO: Update.
+  public static final CANBus CAN_BUS = new CANBus();
+  public static final Current CURRENT_LIMIT = Amps.of(60);
 
   public static final double GEAR_RATIO = 100.0; // TODO: Update.
-
-  public static final double CONVERSION_FACTOR = 2.0 * Math.PI / GEAR_RATIO; // TODO: Update.
-
+  public static final double SENSOR_TO_MECHANISM_RATIO = 2 * Math.PI / GEAR_RATIO; // TODO: Update.
   public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.026); // TODO: Update.
+  public static final Constraints CONSTRAINTS = new Constraints(0, 0); // TODO: Update.
 
   public static final Distance TURRET_LENGTH = Meters.of(0.1); // TODO: Update.
+  public static final Pose2d TURRET_ORIGIN = new Pose2d(); // TODO: Update.
 
-  public static final Angle MAX_ANGLE = Radians.of(Math.PI); // TODO: Update.
-  public static final Angle MIN_ANGLE = Radians.of(-Math.PI); // TODO: Update.
-
-  public static final Angle START_ANGLE = Radians.of(0); // TODO: Update.
-
-  public static final AngularVelocity MAX_VELOCITY = RadiansPerSecond.of(0); // TODO: Update.
-  public static final AngularAcceleration MAX_ACCELERATION =
-      RadiansPerSecondPerSecond.of(0); // TODO: Update.
+  public static final Angle MAX_ANGLE = Degrees.of(175);
+  public static final Angle MIN_ANGLE = Degrees.of(-175);
+  public static final Angle START_ANGLE = Radians.of(0);
 
   public static final int VISUALIZER_WIDTH = 6;
   public static final int VISUALIZER_HEIGHT = 6;
 
-  public static final class PID {
-    public static final double P = 1; // TODO: Update.
-    public static final double I = 0; // TODO: Update.
-    public static final double D = 0; // TODO: Update.
+  public static final class ControlConstants {
+    // PID CONSTANTS
+    public static final double PROPORTIONAL_GAIN = 1;
+    public static final double INTEGRAL_GAIN = 0;
+    public static final double DERIVATIVE_GAIN = 0;
 
-    public static final Angle POSITION_TOLERANCE = Radians.of(0.01); // TODO: Update.
-    public static final AngularVelocity VELOCITY_TOLERANCE =
-        RadiansPerSecond.of(0.01); // TODO: Update.
+    // FEEDFORWARD CONSTANTS (VELOCITY IN RAD/SEC)
+    public static final double STATIC_GAIN = 0; // TODO: Update.
+    public static final double VELOCITY_GAIN = 0; // TODO: Update.
+    public static final double ACCELERATION_GAIN = 0; // TODO: Update.
 
-    public static final Constraints CONSTRAINTS =
-        new Constraints(
-            MAX_VELOCITY.in(RadiansPerSecond), MAX_ACCELERATION.in(RadiansPerSecondPerSecond));
-  }
-
-  public static final class FF {
-    public static final double S = 0; // TODO: Update.
-    public static final double V = 0; // TODO: Update.
-    public static final double A = 0; // TODO: Update.
+    // TOLERANCES
+    public static final Angle TOLERANCE = Radians.of(0.01);
   }
 }

@@ -1,21 +1,20 @@
 package org.sciborgs1155.robot.turret;
 
 import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 import static org.sciborgs1155.robot.Constants.PERIOD;
+import static org.sciborgs1155.robot.turret.TurretConstants.CONSTRAINTS;
+import static org.sciborgs1155.robot.turret.TurretConstants.ControlConstants.*;
 
 import edu.wpi.first.epilogue.NotLogged;
-import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.robot.Robot;
-import org.sciborgs1155.robot.turret.TurretConstants.FF;
-import org.sciborgs1155.robot.turret.TurretConstants.PID;
 
 /**
  * The {@code Turret} subsystem consists of a single motor that is used to aim a variable hood
@@ -50,10 +49,14 @@ public class Turret extends SubsystemBase implements AutoCloseable {
   @NotLogged private final TurretIO motor;
 
   /** {@code PIDController} used to orient the turret to a specified angle. */
-  @NotLogged private final ProfiledPIDController controller;
+  @NotLogged
+  private final ProfiledPIDController controller =
+      new ProfiledPIDController(PROPORTIONAL_GAIN, INTEGRAL_GAIN, DERIVATIVE_GAIN, CONSTRAINTS);
 
   /** {@code Feedforward} used to aid in orienting the turret to a specified angle. */
-  @NotLogged private final ArmFeedforward feedforward;
+  @NotLogged
+  private final SimpleMotorFeedforward feedforward =
+      new SimpleMotorFeedforward(STATIC_GAIN, VELOCITY_GAIN, ACCELERATION_GAIN, PERIOD.in(Seconds));
 
   /** Visualization. Green = Position, Red = Setpoint */
   private final TurretVisualizer visualizer = new TurretVisualizer(6, 7);
@@ -65,12 +68,7 @@ public class Turret extends SubsystemBase implements AutoCloseable {
    */
   public Turret(TurretIO turretIO) {
     motor = turretIO;
-    feedforward = new ArmFeedforward(FF.S, FF.V, FF.A, PERIOD.in(Seconds));
-
-    controller = new ProfiledPIDController(PID.P, PID.I, PID.D, PID.CONSTRAINTS);
-    controller.enableContinuousInput(-Math.PI, Math.PI);
-    controller.setTolerance(
-        PID.POSITION_TOLERANCE.in(Radians), PID.VELOCITY_TOLERANCE.in(RadiansPerSecond));
+    controller.setTolerance(TOLERANCE.in(Radians));
 
     setDefaultCommand(run());
   }
@@ -112,12 +110,15 @@ public class Turret extends SubsystemBase implements AutoCloseable {
   public Command run() {
     return run(
         () -> {
-          double positionRad = motor.position().in(Radians);
-          double velocityRadPerSec = motor.velocity().in(RadiansPerSecond);
+          // PID CONTROL (RADIANS)
+          double targetPosition = motor.position().in(Radians);
+          double pidVolts = controller.calculate(targetPosition);
 
-          double pidVolts = controller.calculate(positionRad);
-          double ffdVolts = feedforward.calculate(positionRad, velocityRadPerSec);
+          // FEEDFORWARD CONTROL (RADIANS/SEC)
+          double targetVelocity = controller.getSetpoint().velocity;
+          double ffdVolts = feedforward.calculate(targetVelocity);
 
+          // VOLTAGE SETTING
           motor.setVoltage(Volts.of(pidVolts + ffdVolts));
         });
   }

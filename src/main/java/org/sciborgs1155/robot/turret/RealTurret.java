@@ -31,7 +31,7 @@ public class RealTurret implements TurretIO {
     final TalonFXConfiguration configuration = new TalonFXConfiguration();
 
     configuration.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    configuration.Feedback.SensorToMechanismRatio = CONVERSION_FACTOR;
+    configuration.Feedback.SensorToMechanismRatio = SENSOR_TO_MECHANISM_RATIO;
     configuration.CurrentLimits.SupplyCurrentLimit = CURRENT_LIMIT.in(Amps);
 
     motor.getConfigurator().apply(configuration);

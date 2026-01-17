@@ -40,7 +40,7 @@ public class SimTurret implements TurretIO {
 
   @Override
   public Angle position() {
-    return Radians.of(simulation.getAngleRads());
+    return Radians.of(simulation.getAngleRads() / SENSOR_TO_MECHANISM_RATIO);
   }
 
   @Override

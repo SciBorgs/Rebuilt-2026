@@ -126,6 +126,12 @@ public final class DriveConstants {
     public static final Angle TOLERANCE = Degrees.of(2);
   }
 
+  public static final class ObjectRotation {
+    public static final double P = 0.01;
+    public static final double I = 0;
+    public static final double D = 0;
+  }
+
   public static final class ModuleConstants {
     public static final double COUPLING_RATIO = 0;
 

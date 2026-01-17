@@ -78,10 +78,12 @@ import org.sciborgs1155.robot.Robot;
 import org.sciborgs1155.robot.drive.DriveConstants.Assisted;
 import org.sciborgs1155.robot.drive.DriveConstants.ControlMode;
 import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Driving;
+import org.sciborgs1155.robot.drive.DriveConstants.ObjectRotation;
 import org.sciborgs1155.robot.drive.DriveConstants.Rotation;
 import org.sciborgs1155.robot.drive.DriveConstants.Skid;
 import org.sciborgs1155.robot.drive.DriveConstants.Translation;
 import org.sciborgs1155.robot.vision.Vision.PoseEstimate;
+import org.sciborgs1155.robot.vision.VisionConstants;
 
 public class Drive extends SubsystemBase implements AutoCloseable {
   // Modules
@@ -123,6 +125,18 @@ public class Drive extends SubsystemBase implements AutoCloseable {
   @NotLogged
   private final DoubleEntry rotationD = Tuning.entry("Robot/tuning/drive/rotation d", Rotation.D);
 
+  @NotLogged
+  private final DoubleEntry objectRotationP =
+      Tuning.entry("Robot/tuning/drive/orotation p", ObjectRotation.P);
+
+  @NotLogged
+  private final DoubleEntry objectRotationI =
+      Tuning.entry("Robot/tuning/drive/orotation i", ObjectRotation.I);
+
+  @NotLogged
+  private final DoubleEntry objectRotationD =
+      Tuning.entry("Robot/tuning/drive/orotation d", ObjectRotation.D);
+
   // Max acceleration and skid
   @NotLogged
   private final DoubleEntry maxAccel =
@@ -163,6 +177,10 @@ public class Drive extends SubsystemBase implements AutoCloseable {
   @Logged
   private final PIDController rotationController =
       new PIDController(rotationP.get(), rotationI.get(), rotationD.get());
+
+  @Logged
+  private final PIDController objectRotationController =
+      new PIDController(objectRotationP.get(), objectRotationI.get(), objectRotationD.get());
 
   /**
    * A factory to create a new swerve drive based on the type of module used / real or simulation.
@@ -508,6 +526,23 @@ public class Drive extends SubsystemBase implements AutoCloseable {
               ControlMode.CLOSED_LOOP_VELOCITY);
         })
         .repeatedly();
+  }
+
+  public Command driveFacingAlgae(DoubleSupplier vx, DoubleSupplier vy, DoubleSupplier algaeX) {
+    return run(() -> {
+          // Set chassis speeds
+          setChassisSpeeds(
+              ChassisSpeeds.fromFieldRelativeSpeeds(
+                  vx.getAsDouble(),
+                  vy.getAsDouble(),
+                  Math.abs(algaeX.getAsDouble() - VisionConstants.WIDTH / 2) < 10
+                      ? 0
+                      : objectRotationController.calculate(
+                          algaeX.getAsDouble(), VisionConstants.WIDTH / 2),
+                  heading().plus(allianceRotation())),
+              ControlMode.OPEN_LOOP_VELOCITY);
+        })
+        .beforeStarting(rotationController::reset);
   }
 
   /**

@@ -1,5 +1,6 @@
 package org.sciborgs1155.robot.vision;
 
+import static edu.wpi.first.units.Units.Seconds;
 import static org.sciborgs1155.lib.LoggingUtils.*;
 import static org.sciborgs1155.robot.Constants.*;
 import static org.sciborgs1155.robot.vision.VisionConstants.*;
@@ -7,6 +8,7 @@ import static org.sciborgs1155.robot.vision.VisionConstants.*;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -14,6 +16,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -32,6 +35,7 @@ import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.lib.Tracer;
+import org.sciborgs1155.robot.Constants;
 import org.sciborgs1155.robot.FieldConstants;
 import org.sciborgs1155.robot.Robot;
 
@@ -47,6 +51,10 @@ public class Vision {
   private final PhotonPipelineResult[] lastResults;
   private final Map<String, Boolean> camerasEnabled;
   @Logged private final List<Pose3d> filteredEstimates;
+
+  private boolean hasTargets;
+  private double algaeX = WIDTH / 2;
+  private LinearFilter filter = LinearFilter.singlePoleIIR(.3, Constants.PERIOD.in(Seconds));
 
   private VisionSystemSim visionSim;
 
@@ -282,5 +290,58 @@ public class Vision {
    */
   public void simulationPeriodic(Pose2d robotSimPose) {
     visionSim.update(robotSimPose);
+  }
+
+  public void updateCorners() {
+    var unread = cameras[0].getAllUnreadResults();
+    PhotonPipelineResult result;
+    if (unread.size() > 1) {
+      // gets the latest result if there are multiple unread results
+      int maxIndex = 0;
+      double max = 0;
+      int unreadLength = unread.size();
+      for (int ie = 0; ie < unreadLength; ie++) {
+        double temp = unread.get(ie).getTimestampSeconds();
+        if (temp > max) {
+          max = temp;
+          maxIndex = ie;
+        }
+      }
+      result = unread.get(maxIndex);
+      lastResults[0] = result;
+    } else if (unread.size() == 1) {
+      result = unread.get(0);
+      lastResults[0] = result;
+    } else {
+      result = lastResults[0];
+    }
+
+    hasTargets = result.hasTargets();
+
+    SmartDashboard.putBoolean("/Robot/Detection/hasTargets", result.hasTargets());
+    if (result.hasTargets()) {
+      var corners = result.getBestTarget().getMinAreaRectCorners();
+      SmartDashboard.putNumber("/Robot/Detection/DetectedCorners", corners.size());
+
+      for (int i = 0; i < corners.size(); i++) {
+        SmartDashboard.putNumber("/Robot/Detection/" + i + "/x", corners.get(i).x);
+        SmartDashboard.putNumber("/Robot/Detection/" + i + "/y", corners.get(i).y);
+      }
+
+      algaeX = filter.calculate((corners.get(0).x + corners.get(1).x) / 2);
+      SmartDashboard.putNumber("/Robot/Detection/AlgaeX", algaeX);
+    }
+  }
+
+  public boolean hasTargets() {
+    return hasTargets;
+  }
+
+  public double getAlgaeX() {
+    if (!hasTargets) {
+      return WIDTH / 2;
+    }
+
+    return algaeX;
   }
 }

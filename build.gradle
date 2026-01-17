@@ -1,7 +1,13 @@
 plugins {
     id "java"
     id "edu.wpi.first.GradleRIO" version "2026.1.1"
-    id 'com.diffplug.spotless' version '6.24.0'
+    id 'com.diffplug.spotless' version '6.24.0' // Spotless for styling
+    id 'pmd' // PMD for static analysis
+}
+
+pmd {
+    toolVersion = "7.20.0"
+    consoleOutput = true
 }
 
 java {

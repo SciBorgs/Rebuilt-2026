@@ -19,45 +19,71 @@ public class Hopper extends SubsystemBase implements AutoCloseable {
   private final Beambreak beambreak;
   public final Trigger blocked;
 
+  /**
+   * @return Creates a real hopper or no hopper based on Robot.isReal()
+   */
   public static Hopper create() {
     return Robot.isReal() ? new Hopper(realMotor(), Beambreak.real(BEAMBREAK)) : none();
   }
 
+  /**
+   * @return Non-real hopper object
+   */
   public static Hopper none() {
     return new Hopper(SimpleMotor.none(), Beambreak.none());
   }
 
+  /**
+   * @return A simple motor with hardware configurations
+   */
   private static SimpleMotor realMotor() {
     TalonFX motor = new TalonFX(MOTOR);
     TalonFXConfiguration config = new TalonFXConfiguration();
 
-    config.CurrentLimits.SupplyCurrentLimit = HopperConstants.CURRENT_LIMIT.in(Amps);
+    config.CurrentLimits.SupplyCurrentLimit = CURRENT_LIMIT.in(Amps);
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
     return SimpleMotor.talon(motor, config);
   }
 
+  /**
+   * @param hardware represents the motor
+   * @param beambreak represents the beambreak
+   */
   public Hopper(SimpleMotor hardware, Beambreak beambreak) {
     this.hardware = hardware;
     this.beambreak = beambreak;
 
-    this.blocked = new Trigger(() -> !beambreak.get());
+    this.blocked = new Trigger(() -> !beambreak.getState());
 
     setDefaultCommand(stop());
   }
 
+  /**
+   * @param power Power of hopper motors
+   * @return Run command that sets hopper motor power to power
+   */
   public Command runHopper(double power) {
     return run(() -> hardware.set(power));
   }
 
+  /**
+   * @return Run motors at motor power for intake
+   */
   public Command intake() {
     return runHopper(INTAKING_POWER);
   }
 
+  /**
+   * @return Run motors at motor power for outtake
+   */
   public Command outtake() {
     return runHopper(-INTAKING_POWER);
   }
 
+  /**
+   * @return Run motors with no power (stop)
+   */
   public Command stop() {
     return runHopper(0);
   }

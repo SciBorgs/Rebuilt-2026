@@ -11,8 +11,9 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 public class RealClimb implements ClimbIO {
   private final TalonFX motor;
 
-  private TalonFXConfiguration config;
+  private final TalonFXConfiguration config;
 
+  /** A constuctor for a real climb object. */
   public RealClimb() {
     motor = new TalonFX(MOTOR_ID);
 

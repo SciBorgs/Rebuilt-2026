@@ -2,23 +2,23 @@ package org.sciborgs1155.robot.climb;
 
 public interface ClimbIO extends AutoCloseable {
   /**
-   * sets the voltage of the motor
+   * Sets the voltage of the motor.
    *
-   * @param volt the voltage to set the motor to
+   * @param volt The voltage to set the motor to.
    */
-  public void setVoltage(double volt);
+  void setVoltage(double volt);
 
   /**
-   * returns the position of the elevator
+   * Returns the position of the elevator.
    *
-   * @return position in meters
+   * @return The position in meters.
    */
-  public double position();
+  double position();
 
   /**
-   * returns velocity of elevator in m/s
+   * Returns velocity of elevator in m/s.
    *
-   * @return velocity in m/s
+   * @return Velocity in m/s.
    */
-  public double velocity();
+  double velocity();
 }

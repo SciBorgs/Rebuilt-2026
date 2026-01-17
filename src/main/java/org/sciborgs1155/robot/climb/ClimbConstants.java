@@ -3,7 +3,6 @@ package org.sciborgs1155.robot.climb;
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Centimeters;
 import static edu.wpi.first.units.Units.Inches;
-import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Pounds;
@@ -17,14 +16,14 @@ import edu.wpi.first.units.measure.Mass;
 
 public class ClimbConstants {
 
-  public static final double kP = 10;
-  public static final double kI = 0;
-  public static final double kD = 0;
+  public static final double P = 10;
+  public static final double I = 0;
+  public static final double D = 0;
 
-  public static final double kS = 0;
-  public static final double kG = 0;
-  public static final double kV = 0;
-  public static final double kA = 0;
+  public static final double S = 0;
+  public static final double G = 0;
+  public static final double V = 0;
+  public static final double A = 0;
 
   public static final LinearVelocity MAX_VELOCITY = MetersPerSecond.of(.5);
   public static final LinearAcceleration MAX_ACCEL = MetersPerSecondPerSecond.of(.2);

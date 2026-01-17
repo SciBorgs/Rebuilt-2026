@@ -3,11 +3,7 @@ package org.sciborgs1155.robot.climb;
 import static edu.wpi.first.units.Units.Meters;
 import static org.sciborgs1155.robot.climb.ClimbConstants.MIN_HEIGHT;
 
-import org.sciborgs1155.lib.LoggingUtils;
-
-import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.NotLogged;
-import edu.wpi.first.epilogue.logging.EpilogueBackend;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
@@ -19,6 +15,12 @@ public class ClimbVisualizer {
   private final MechanismLigament2d elevator; // The elevator mechanism
   private final String name;
 
+  /**
+   * Constuctor for a climb visualizer
+   *
+   * @param name The name of the mechanism
+   * @param color The color the mechanism will show up as in the sim
+   */
   public ClimbVisualizer(String name, Color8Bit color) {
     this.name = name;
     mech = new Mechanism2d(50, 50);
@@ -37,5 +39,4 @@ public class ClimbVisualizer {
     elevator.setLength(length * 10);
     SmartDashboard.putData("Robot/climb/" + name, mech);
   }
-  
 }

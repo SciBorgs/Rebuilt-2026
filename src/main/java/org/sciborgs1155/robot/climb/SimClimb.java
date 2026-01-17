@@ -21,6 +21,7 @@ public class SimClimb implements ClimbIO {
           true,
           MIN_HEIGHT.in(Meters));
 
+  /** Constructor of the climb simulator */
   public SimClimb() {
     climb.update(PERIOD.in(Seconds));
   }
@@ -41,11 +42,11 @@ public class SimClimb implements ClimbIO {
     return climb.getVelocityMetersPerSecond();
   }
 
+  /** Sets sim climb position to 0 and velocity to 0 */
   public void resetPosition() {
     climb.setState(0, 0);
   }
 
   @Override
   public void close() throws Exception {}
-  ;
 }

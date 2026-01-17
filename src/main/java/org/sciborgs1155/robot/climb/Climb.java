@@ -7,7 +7,6 @@ import static edu.wpi.first.units.Units.Volts;
 import static org.sciborgs1155.robot.climb.ClimbConstants.*;
 
 import com.ctre.phoenix6.SignalLogger;
-
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
@@ -31,13 +30,13 @@ public class Climb extends SubsystemBase implements AutoCloseable {
 
   private final ProfiledPIDController pid =
       new ProfiledPIDController(
-          kP,
-          kI,
-          kD,
+          P,
+          I,
+          D,
           new TrapezoidProfile.Constraints(
               MAX_VELOCITY.in(MetersPerSecond), MAX_ACCEL.in(MetersPerSecondPerSecond)));
 
-  private final ElevatorFeedforward ff = new ElevatorFeedforward(kS, kG, kV);
+  private final ElevatorFeedforward ff = new ElevatorFeedforward(S, G, V);
 
   private final ClimbVisualizer setpoint =
       new ClimbVisualizer("setpoint visualizer", new Color8Bit(0, 0, 255));
@@ -45,11 +44,16 @@ public class Climb extends SubsystemBase implements AutoCloseable {
   private final ClimbVisualizer measurement =
       new ClimbVisualizer("measurement visualizer", new Color8Bit(255, 0, 0));
 
-  private final DoubleEntry S = Tuning.entry("/Robot/tuning/elevator/kS", kS);
-  private final DoubleEntry G = Tuning.entry("/Robot/tuning/elevator/kG", kG);
-  private final DoubleEntry V = Tuning.entry("/Robot/tuning/elevator/kV", kV);
-  private final DoubleEntry A = Tuning.entry("/Robot/tuning/elevator/kA", kA);
+  private final DoubleEntry kS = Tuning.entry("/Robot/tuning/elevator/kS", S);
+  private final DoubleEntry kG = Tuning.entry("/Robot/tuning/elevator/kG", G);
+  private final DoubleEntry kV = Tuning.entry("/Robot/tuning/elevator/kV", V);
+  private final DoubleEntry kA = Tuning.entry("/Robot/tuning/elevator/kA", A);
 
+  /**
+   * The constructor of the climb subsystem.
+   *
+   * @param hardware our IO interface that represents the mechanism
+   */
   public Climb(ClimbIO hardware) {
     setDefaultCommand(retract());
 
@@ -96,20 +100,37 @@ public class Climb extends SubsystemBase implements AutoCloseable {
     }
   }
 
+  /**
+   * Checks if the position of the climb mechanism is within the error margins. The margin is {@link
+   * #POSITION_TOLERANCE} centimeters.
+   *
+   * @param position The position of the climb mechanisms.
+   * @return A boolean for if the climb is within the margins.
+   */
   public boolean atPosition(double position) {
     // given position - |actual position| < tolerance
     return Meters.of(position).minus(Meters.of(position())).magnitude()
         < POSITION_TOLERANCE.in(Meters);
   }
 
+  /**
+   * @return The position of the climb mechanism in meters.
+   */
   public double position() {
     return hardware.position();
   }
 
+  /**
+   * @return A climb object that either returns a climb with hardware or a simulated climb depending
+   *     on if the robot exists or not.
+   */
   public static Climb create() {
     return new Climb(Robot.isReal() ? new RealClimb() : new SimClimb());
   }
 
+  /**
+   * @return A climb object without hardware.
+   */
   public static Climb none() {
     return new Climb(new NoClimb());
   }
@@ -119,6 +140,11 @@ public class Climb extends SubsystemBase implements AutoCloseable {
     hardware.close();
   }
 
+  /**
+   * Calculates and sets the next voltage input to the motor.
+   *
+   * @param position The position to set the climb mechanism to.
+   */
   private void update(double position) {
     double goal =
         Double.isNaN(position)
@@ -131,34 +157,60 @@ public class Climb extends SubsystemBase implements AutoCloseable {
     hardware.setVoltage(feedforward + feedback);
   }
 
+  /**
+   * @return The position setpoint of the PID.
+   */
   public double positionSetpoint() {
     return pid.getSetpoint().position;
   }
 
+  @Override
   public void periodic() {
     setpoint.setLength(positionSetpoint());
     measurement.setLength(position());
 
     if (TUNING) {
-      ff.setKs(S.get());
-      ff.setKg(G.get());
-      ff.setKv(V.get());
-      ff.setKa(A.get());
+      ff.setKs(kS.get());
+      ff.setKg(kG.get());
+      ff.setKv(kV.get());
+      ff.setKa(kA.get());
     }
   }
 
+  /**
+   * A command to move the climb to a certain height.
+   *
+   * @param height The height to set the climb to.
+   * @return A command to move the climb.
+   */
   public Command goTo(DoubleSupplier height) {
     return run(() -> update(height.getAsDouble())).finallyDo(() -> hardware.setVoltage(0));
   }
 
+  /**
+   * Wraps the {@link #goTo(DoubleSupplier height)} to be a double instead of a supplier.
+   *
+   * @param height The height to set the climb mechanism to.
+   * @return A command to go to the height given.
+   */
   public Command goTo(double height) {
     return goTo(() -> height);
   }
 
+  /**
+   * A command to retract the climb to the minimum height it can go to.
+   *
+   * @return A retracting command.
+   */
   public Command retract() {
     return goTo(MIN_HEIGHT.in(Meters)).withName("retracting");
   }
 
+  /**
+   * A command to extend the climb to the max height it can go to.
+   *
+   * @return An extending command.
+   */
   public Command extend() {
     return goTo(MAX_HEIGHT.in(Meters)).withName("extending");
   }

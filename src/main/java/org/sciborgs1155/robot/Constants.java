@@ -46,8 +46,7 @@ public final class Constants {
   }
 
   /** The current robot state, as in the type. Remember to update! */
-  public static final ReferenceHolder<RobotType> ROBOT_TYPE =
-      new ReferenceHolder<>(RobotType.FULL);
+  public static final ReferenceHolder<RobotType> ROBOT_TYPE = new ReferenceHolder<>(RobotType.FULL);
 
   /** States if we are in tuning mode. Ideally, keep it at false when not used. */
   public static final ReferenceHolder<Boolean> TUNING = new ReferenceHolder<>(false);

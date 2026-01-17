@@ -12,7 +12,6 @@ import static org.sciborgs1155.lib.LoggingUtils.*;
 import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.Constants.TUNING;
 import static org.sciborgs1155.robot.Constants.allianceRotation;
-import static org.sciborgs1155.robot.Constants.tuning;
 import static org.sciborgs1155.robot.Ports.Drive.*;
 import static org.sciborgs1155.robot.drive.DriveConstants.*;
 

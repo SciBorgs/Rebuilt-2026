@@ -1,7 +1,6 @@
 package org.sciborgs1155.robot.vision;
 
 import static org.sciborgs1155.lib.LoggingUtils.*;
-import static org.sciborgs1155.robot.Constants.*;
 import static org.sciborgs1155.robot.vision.VisionConstants.*;
 
 import edu.wpi.first.epilogue.Logged;
@@ -19,6 +18,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import org.photonvision.EstimatedRobotPose;
@@ -37,9 +37,9 @@ import org.sciborgs1155.robot.Robot;
 
 @Logged
 public class Vision {
-  public static record CameraConfig(String name, Transform3d robotToCam) {}
+  public record CameraConfig(String name, Transform3d robotToCam) {}
 
-  public static record PoseEstimate(EstimatedRobotPose estimatedPose, Matrix<N3, N1> standardDev) {}
+  public record PoseEstimate(EstimatedRobotPose estimatedPose, Matrix<N3, N1> standardDev) {}
 
   private final PhotonCamera[] cameras;
   private final PhotonPoseEstimator[] estimators;
@@ -71,9 +71,7 @@ public class Vision {
       PhotonCamera camera = new PhotonCamera(configs[i].name());
       PhotonPoseEstimator estimator =
           new PhotonPoseEstimator(
-              VisionConstants.TAG_LAYOUT,
-              PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-              configs[i].robotToCam());
+              TAG_LAYOUT, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, configs[i].robotToCam());
 
       estimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
       cameras[i] = camera;
@@ -86,7 +84,7 @@ public class Vision {
 
     if (Robot.isSimulation()) {
       visionSim = new VisionSystemSim("main");
-      visionSim.addAprilTags(VisionConstants.TAG_LAYOUT);
+      visionSim.addAprilTags(TAG_LAYOUT);
 
       for (int i = 0; i < cameras.length; i++) {
         var prop = new SimCameraProperties();
@@ -113,7 +111,8 @@ public class Vision {
     boolean[] booleanArray = new boolean[camerasEnabled.values().size()];
     int i = 0;
     for (Boolean value : camerasEnabled.values()) {
-      booleanArray[i++] = value != null && value;
+      booleanArray[i] = value != null && value;
+      i++;
     }
     return booleanArray;
   }
@@ -135,7 +134,7 @@ public class Vision {
 
         String name = cameras[i].getName();
 
-        Optional<EstimatedRobotPose> estimate = Optional.empty();
+        Optional<EstimatedRobotPose> estimate;
 
         int unreadLength = unreadChanges.size();
 
@@ -149,12 +148,11 @@ public class Vision {
         for (int j = 0; j < unreadLength; j++) {
           var change = unreadChanges.get(j);
           // THIS NEGATES PITCH!!!
-          if (cameras[i].getName() == "example camera") {
-            change.targets.stream()
-                .forEach(
-                    t -> {
-                      t.pitch = -t.pitch;
-                    });
+          if (Objects.equals(cameras[i].getName(), "example camera")) {
+            change.targets.forEach(
+                t -> {
+                  t.pitch = -t.pitch;
+                });
             change.multitagResult =
                 change.multitagResult.filter(
                     r ->
@@ -244,7 +242,7 @@ public class Vision {
    */
   public Matrix<N3, N1> estimationStdDevs(
       Pose2d estimatedPose, PhotonPipelineResult pipelineResult) {
-    var estStdDevs = VisionConstants.SINGLE_TAG_STD_DEVS;
+    var estStdDevs = SINGLE_TAG_STD_DEVS;
     var targets = pipelineResult.getTargets();
     double avgDist = 0;
     double avgWeight = 0;
@@ -255,13 +253,13 @@ public class Vision {
           tagPose.get().toPose2d().getTranslation().getDistance(estimatedPose.getTranslation());
       avgWeight += TAG_WEIGHTS[tgt.getFiducialId() - 1];
     }
-    if (targets.size() == 0) return estStdDevs;
+    if (targets.isEmpty()) return estStdDevs;
 
     avgDist /= targets.size();
     avgWeight /= targets.size();
 
     // Decrease std devs if multiple targets are visibleX
-    if (targets.size() > 1) estStdDevs = VisionConstants.MULTIPLE_TAG_STD_DEVS;
+    if (targets.size() > 1) estStdDevs = MULTIPLE_TAG_STD_DEVS;
     // Increase std devs based on (average) distance
     if (targets.size() == 1 && avgDist > 4)
       estStdDevs = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);

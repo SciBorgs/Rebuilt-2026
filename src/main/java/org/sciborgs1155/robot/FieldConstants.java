@@ -14,17 +14,20 @@ import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
-public class FieldConstants {
+public final class FieldConstants {
   // Origin at corner of blue alliance side of field
   public static final Distance LENGTH = Centimeters.of(1755);
   public static final Distance WIDTH = Centimeters.of(805);
 
+  // Prevents instantiation
+  private FieldConstants() {}
+
   /** Returns whether the provided position is within the boundaries of the field. */
   public static boolean inField(Pose3d pose) {
-    return (pose.getX() > 0
+    return pose.getX() > 0
         && pose.getX() < LENGTH.in(Meters)
         && pose.getY() > 0
-        && pose.getY() < WIDTH.in(Meters));
+        && pose.getY() < WIDTH.in(Meters);
   }
 
   /**
@@ -48,13 +51,11 @@ public class FieldConstants {
    * @return The reflected pose.
    */
   public static Pose2d allianceReflect(Pose2d pose) {
-    return Constants.alliance() == Alliance.Blue
+    return alliance() == Alliance.Blue
         ? pose
         : new Pose2d(
             pose.getTranslation()
-                .rotateAround(
-                    new Translation2d(FieldConstants.LENGTH.div(2), FieldConstants.WIDTH.div(2)),
-                    Rotation2d.k180deg),
+                .rotateAround(new Translation2d(LENGTH.div(2), WIDTH.div(2)), Rotation2d.k180deg),
             pose.getRotation().plus(Rotation2d.k180deg));
   }
 

@@ -35,6 +35,7 @@ public class AlignTest {
     DriverStationSim.notifyNewData();
   }
 
+  @SuppressWarnings("PMD.SignatureDeclareThrowsException")
   @AfterEach
   public void destroy() throws Exception {
     reset(drive);

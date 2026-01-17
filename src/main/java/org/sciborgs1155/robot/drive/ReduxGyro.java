@@ -51,7 +51,7 @@ public class ReduxGyro implements GyroIO {
 
   @Override
   public double[][] odometryData() {
-    Drive.lock.lock();
+    Drive.LOCK.lock();
     try {
       double[][] data = {
         position.stream().mapToDouble((Double d) -> d).toArray(),
@@ -61,7 +61,7 @@ public class ReduxGyro implements GyroIO {
       timestamp.clear();
       return data;
     } finally {
-      Drive.lock.unlock();
+      Drive.LOCK.unlock();
     }
   }
 

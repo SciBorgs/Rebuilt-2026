@@ -19,7 +19,11 @@ import java.util.Collection;
  * Epilogue.getConfig().backend.log(identifier, value);
  * </pre>
  */
-public class LoggingUtils {
+public final class LoggingUtils {
+
+  // Prevents instantiation
+  private LoggingUtils() {}
+
   public static void log(String identifier, int value) {
     Epilogue.getConfig().backend.log(identifier, value);
   }

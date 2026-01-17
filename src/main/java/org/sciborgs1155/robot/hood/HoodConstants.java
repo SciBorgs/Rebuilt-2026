@@ -35,13 +35,13 @@ public class HoodConstants {
   public static final Voltage STEP_VOLTAGE = Volts.of(0.3);
   public static final Time TIME_OUT = Seconds.of(3);
 
-  public static final double kP = 1;
-  public static final double kI = 0;
-  public static final double kD = 0;
-  public static final double kS = 0;
-  public static final double kV = 0;
-  public static final double kG = 0;
-  public static final double kA = 0;
+  public static final double K_P = 1;
+  public static final double K_I = 0;
+  public static final double K_D = 0;
+  public static final double K_S = 0;
+  public static final double K_V = 0;
+  public static final double K_G = 0;
+  public static final double K_A = 0;
 
   public static final double HOOD_RADIUS = 4.2;
   public static final double MOTOR_RADIUS = 1;

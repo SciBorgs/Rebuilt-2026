@@ -14,8 +14,9 @@ import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 // *hood simulated hardware interface */
 public class SimHood implements HoodIO {
 
-  private SingleJointedArmSim sim;
+  private final SingleJointedArmSim sim;
 
+  /** constructor for sim hood */
   public SimHood() {
 
     sim =

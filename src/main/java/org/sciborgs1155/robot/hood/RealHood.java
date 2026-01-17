@@ -21,6 +21,7 @@ public class RealHood implements HoodIO {
   private final TalonFX motor;
   private final TalonFXConfiguration config;
 
+  /** constructor for real hood */
   public RealHood() {
     motor = new TalonFX(MOTOR_PORT);
 

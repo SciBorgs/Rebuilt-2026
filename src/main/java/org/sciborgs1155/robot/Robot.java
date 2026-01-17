@@ -17,7 +17,7 @@ import static org.sciborgs1155.robot.drive.DriveConstants.MAX_SPEED;
 import static org.sciborgs1155.robot.drive.DriveConstants.TELEOP_ANGULAR_SPEED;
 
 import com.ctre.phoenix6.SignalLogger;
-import edu.wpi.first.epilogue.Epilogue;
+// import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -95,7 +95,7 @@ public class Robot extends CommandRobot {
     DataLogManager.start();
     SignalLogger.enableAutoLogging(true);
     addPeriodic(FaultLogger::update, 2);
-    Epilogue.bind(this);
+    // Epilogue.bind(this);
 
     FaultLogger.register(pdh);
     SmartDashboard.putData("Auto Chooser", autos);

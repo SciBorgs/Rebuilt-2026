@@ -6,6 +6,13 @@ import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 import static org.sciborgs1155.lib.Assertion.eAssert;
 import static org.sciborgs1155.robot.hood.HoodConstants.DEFAULT_ANGLE;
+import static org.sciborgs1155.robot.hood.HoodConstants.K_A;
+import static org.sciborgs1155.robot.hood.HoodConstants.K_D;
+import static org.sciborgs1155.robot.hood.HoodConstants.K_G;
+import static org.sciborgs1155.robot.hood.HoodConstants.K_I;
+import static org.sciborgs1155.robot.hood.HoodConstants.K_P;
+import static org.sciborgs1155.robot.hood.HoodConstants.K_S;
+import static org.sciborgs1155.robot.hood.HoodConstants.K_V;
 import static org.sciborgs1155.robot.hood.HoodConstants.MAX_ACCEL;
 import static org.sciborgs1155.robot.hood.HoodConstants.MAX_ANGLE;
 import static org.sciborgs1155.robot.hood.HoodConstants.MAX_VELOCITY;
@@ -14,13 +21,6 @@ import static org.sciborgs1155.robot.hood.HoodConstants.POS_TOLERANCE;
 import static org.sciborgs1155.robot.hood.HoodConstants.RAMP_RATE;
 import static org.sciborgs1155.robot.hood.HoodConstants.STEP_VOLTAGE;
 import static org.sciborgs1155.robot.hood.HoodConstants.TIME_OUT;
-import static org.sciborgs1155.robot.hood.HoodConstants.kA;
-import static org.sciborgs1155.robot.hood.HoodConstants.kD;
-import static org.sciborgs1155.robot.hood.HoodConstants.kG;
-import static org.sciborgs1155.robot.hood.HoodConstants.kI;
-import static org.sciborgs1155.robot.hood.HoodConstants.kP;
-import static org.sciborgs1155.robot.hood.HoodConstants.kS;
-import static org.sciborgs1155.robot.hood.HoodConstants.kV;
 
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.MathUtil;
@@ -48,18 +48,23 @@ public class Hood extends SubsystemBase implements AutoCloseable {
 
   private final ProfiledPIDController fb =
       new ProfiledPIDController(
-          kP,
-          kI,
-          kD,
+          K_P,
+          K_I,
+          K_D,
           new TrapezoidProfile.Constraints(
               MAX_VELOCITY.in(RadiansPerSecond), MAX_ACCEL.in(RadiansPerSecondPerSecond)));
 
   /** Arm feed forward controller. */
-  private final ArmFeedforward ff = new ArmFeedforward(kS, kG, kV, kA);
+  private final ArmFeedforward ff = new ArmFeedforward(K_S, K_G, K_V, K_A);
 
   /** Routine for recording and analyzing motor data. */
   private final SysIdRoutine sysIdRoutine;
 
+  /**
+   * Constructor
+   *
+   * @param hardware : The HoodIO object (real/simulated/nonexistent) that will be operated on.
+   */
   public Hood(HoodIO hardware) {
     this.hardware = hardware;
 
@@ -153,6 +158,11 @@ public class Hood extends SubsystemBase implements AutoCloseable {
     return hardware.velocity();
   }
 
+  /**
+   * returns the velocity setpoint of the hood
+   *
+   * @return the velocity of the setpoint
+   */
   @Logged
   public double velocitySetpoint() {
     return fb.getSetpoint().velocity;
@@ -164,11 +174,13 @@ public class Hood extends SubsystemBase implements AutoCloseable {
    * @param goal
    * @return a goTo command set the hood to goal angle
    */
-  private Command goTo(Angle goal) {
+  public Command goTo(Angle goal) {
     return goTo(() -> goal.in(Radians));
   }
 
   /**
+   * checks whether the hood is at a set desired state
+   *
    * @return Whether or not the elevator is at its desired state.
    */
   @Logged
@@ -176,10 +188,12 @@ public class Hood extends SubsystemBase implements AutoCloseable {
     return fb.atGoal();
   }
 
+  /** checks if the hood is at a certain position within tolerance */
   public boolean atPosition(double angle) {
     return Math.abs(angle - angle()) < POS_TOLERANCE.in(Radians);
   }
 
+  /** makes hood go to a set goal position */
   public Command goTo(DoubleSupplier goal) {
     return run(() -> update(goal.getAsDouble())).withName("Hood GoTo");
   }
@@ -197,6 +211,7 @@ public class Hood extends SubsystemBase implements AutoCloseable {
     hardware.setVoltage(feedback + feedforward);
   }
 
+  /** test for hood to go to a set goal angle */
   public Test goToTest(Angle goal) {
 
     Command testCommand = goTo(goal).until(this::atGoal).withTimeout(5);

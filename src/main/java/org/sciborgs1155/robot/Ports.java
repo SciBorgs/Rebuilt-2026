@@ -52,6 +52,6 @@ public final class Ports {
   }
 
   public static final class Shooter {
-    public static final int SHOOTER_MOTOR = 30;
+    public static final int SHOOTER_MOTOR = 30; // placeholder
   }
 }

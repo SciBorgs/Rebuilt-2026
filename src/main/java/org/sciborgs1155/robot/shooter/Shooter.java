@@ -53,9 +53,9 @@ public class Shooter extends SubsystemBase implements AutoCloseable {
                 velocitySetpoint,
                 -MAX_VELOCITY.in(RadiansPerSecond),
                 MAX_VELOCITY.in(RadiansPerSecond));
-    double FF = ff.calculate(velocity);
-    double FB = pid.calculate(getVelocity(), velocity);
-    hardware.setVoltage(MathUtil.clamp(FB + FF, -12, 12));
+    double FF = ff.calculate(velocity); // feedforward
+    double PID = pid.calculate(getVelocity(), velocity);
+    hardware.setVoltage(MathUtil.clamp(PID + FF, -12, 12));
   }
 
   @Logged

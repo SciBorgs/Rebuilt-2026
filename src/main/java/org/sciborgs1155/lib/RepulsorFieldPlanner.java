@@ -72,6 +72,7 @@ public class RepulsorFieldPlanner {
   static class PointObstacle extends Obstacle {
     Translation2d loc;
     double radius = 0.5;
+    static final int MAX_DIST = 4;
 
     /**
      * Creates a new point obstacle.
@@ -89,7 +90,7 @@ public class RepulsorFieldPlanner {
     public Force getForceAtPosition(Translation2d position, Translation2d target) {
       // displacement from obstacle
       double dist = loc.getDistance(position);
-      if (dist > 4) {
+      if (dist > MAX_DIST) {
         return new Force();
       }
       // distance from the position to the outer radius of the target.

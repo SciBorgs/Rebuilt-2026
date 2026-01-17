@@ -33,6 +33,7 @@ public class SwerveTest {
 
   static final double DELTA = 0.15;
 
+  /** Sets up the test environment and initializes drive modules before each test. */
   @BeforeEach
   public void setup() {
     setupTests();
@@ -44,12 +45,14 @@ public class SwerveTest {
     drive = new Drive(gyro, frontLeft, frontRight, rearLeft, rearRight);
   }
 
+  /** Cleans up resources after each test. */
   @SuppressWarnings("PMD.SignatureDeclareThrowsException")
   @AfterEach
   public void destroy() throws Exception {
     reset(drive);
   }
 
+  /** Tests the drive systems check functionality. */
   @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
   @Disabled
   @Test
@@ -57,6 +60,7 @@ public class SwerveTest {
     runUnitTest(drive.systemsCheck());
   }
 
+  /** Tests that the robot reaches the commanded velocity. */
   @RepeatedTest(5)
   public void reachesRobotVelocity() {
     double xVelocitySetpoint = Math.random() * 2 * 2.265 - 2.265;
@@ -71,6 +75,7 @@ public class SwerveTest {
     assertEquals(yVelocitySetpoint, chassisSpeed.vyMetersPerSecond, DELTA);
   }
 
+  /** Tests that the robot reaches the commanded angular velocity. */
   @RepeatedTest(5)
   public void reachesAngularVelocity() {
     double omegaRadiansPerSecond = Math.random() * 2 - 1;
@@ -86,6 +91,7 @@ public class SwerveTest {
     assertEquals(omegaRadiansPerSecond, chassisSpeed.omegaRadiansPerSecond, DELTA);
   }
 
+  /** Tests that the robot travels the expected distance based on velocity and time. */
   @RepeatedTest(value = 5, failureThreshold = 1)
   public void testModuleDistance() {
     assertEquals(0, drive.pose().getX());

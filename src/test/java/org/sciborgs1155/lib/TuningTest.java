@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 
 public class TuningTest {
 
+  /** Sets up the test environment before each test. */
   @BeforeEach
   public void setup() {
     setupTests();

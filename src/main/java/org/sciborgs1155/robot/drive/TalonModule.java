@@ -50,6 +50,17 @@ public class TalonModule implements ModuleIO {
 
   private final String name;
 
+  /**
+   * Creates a new TalonModule with the specified configuration.
+   *
+   * @param drivePort The CAN ID of the drive motor.
+   * @param turnPort The CAN ID of the turn motor.
+   * @param sensorID The CAN ID of the CANcoder.
+   * @param angularOffset The angular offset of the module's encoder.
+   * @param ff The feedforward constants for the drive motor.
+   * @param name The name of the module.
+   * @param invert Whether to invert the motor direction.
+   */
   public TalonModule(
       int drivePort,
       int turnPort,

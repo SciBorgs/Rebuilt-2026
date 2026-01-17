@@ -9,6 +9,11 @@ import java.util.function.Supplier;
 import org.sciborgs1155.lib.FaultLogger.FaultType;
 
 public sealed interface Assertion {
+  /**
+   * Applies this assertion, either in a unit test context or a runtime context.
+   *
+   * @param unitTest Whether this is being run in a unit test.
+   */
   void apply(boolean unitTest);
 
   /** Asserts that a condition is true and reports to FaultLogger. */

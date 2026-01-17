@@ -15,12 +15,14 @@ import org.sciborgs1155.lib.FaultLogger.FaultType;
 
 public class FaultLoggerTest {
 
+  /** Clears all faults and unregisters all fault reporters before running tests. */
   @BeforeAll
   public static void reset() {
     FaultLogger.clear();
     FaultLogger.unregisterAll();
   }
 
+  /** Sets up the test environment before each test. */
   @BeforeEach
   public void setup() {
     setupTests();

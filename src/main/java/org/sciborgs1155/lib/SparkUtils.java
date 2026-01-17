@@ -12,10 +12,20 @@ import org.sciborgs1155.robot.Ports;
 public final class SparkUtils {
   private static final List<Runnable> RUNNABLES = new ArrayList<>();
 
+  /**
+   * Adds a checker runnable to the list of checkers.
+   *
+   * @param runnable The runnable to add.
+   */
   public static void addChecker(Runnable runnable) {
     RUNNABLES.add(runnable);
   }
 
+  /**
+   * Returns the list of registered checker runnables.
+   *
+   * @return The list of checker runnables.
+   */
   public static List<Runnable> getRunnables() {
     return RUNNABLES;
   }

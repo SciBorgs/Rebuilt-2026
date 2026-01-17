@@ -70,6 +70,12 @@ public final class FieldConstants {
     return alliance() == Alliance.Blue ? blueDist : WIDTH.minus(blueDist);
   }
 
+  /**
+   * Determines the alliance based on the pose's x-coordinate on the field.
+   *
+   * @param pose The pose to check.
+   * @return The alliance corresponding to the pose's position.
+   */
   public static Alliance allianceFromPose(Pose2d pose) {
     return pose.getX() > LENGTH.in(Meters) / 2 ? Alliance.Red : Alliance.Blue;
   }

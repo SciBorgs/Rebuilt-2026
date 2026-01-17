@@ -554,6 +554,11 @@ public class Drive extends SubsystemBase implements AutoCloseable {
     return drive(vx, vy, () -> translation.get().minus(pose().getTranslation()).getAngle());
   }
 
+  /**
+   * Checks whether the robot is at its rotational setpoint.
+   *
+   * @return Whether the rotation controller is at its setpoint.
+   */
   @Logged
   public boolean atRotationalSetpoint() {
     return rotationController.atSetpoint();
@@ -744,6 +749,13 @@ public class Drive extends SubsystemBase implements AutoCloseable {
         .withName("drive to pose");
   }
 
+  /**
+   * Command factory that automatically path-follows, in a straight line, to a position on the
+   * field.
+   *
+   * @param goal The pose to reach.
+   * @return The command to run the control loop until the pose is reached.
+   */
   public Command driveTo(Pose2d goal) {
     return driveTo(() -> goal);
   }
@@ -784,6 +796,11 @@ public class Drive extends SubsystemBase implements AutoCloseable {
     return gyro.acceleration().norm() > MAX_ACCEL.in(MetersPerSecondPerSecond) * 2;
   }
 
+  /**
+   * Checks whether any module is stalling.
+   *
+   * @return If any module is stalling.
+   */
   @Logged
   public boolean isStalling() {
     return Arrays.stream(modulesStalling)

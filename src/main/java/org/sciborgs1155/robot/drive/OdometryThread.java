@@ -44,6 +44,12 @@ public class OdometryThread extends Thread {
     }
   }
 
+  /**
+   * Registers a Talon status signal for odometry updates.
+   *
+   * @param signal The status signal to register.
+   * @return A queue containing the signal values.
+   */
   public Queue<Double> registerSignal(StatusSignal<Angle> signal) {
     Queue<Double> queue = new ArrayBlockingQueue<>(20);
     Drive.LOCK.lock();
@@ -59,6 +65,12 @@ public class OdometryThread extends Thread {
     return queue;
   }
 
+  /**
+   * Registers a generic double supplier for odometry updates.
+   *
+   * @param signal The double supplier to register.
+   * @return A queue containing the signal values.
+   */
   public Queue<Double> registerSignal(DoubleSupplier signal) {
     Queue<Double> queue = new ArrayBlockingQueue<>(20);
     Drive.LOCK.lock();
@@ -71,6 +83,11 @@ public class OdometryThread extends Thread {
     return queue;
   }
 
+  /**
+   * Creates a new timestamp queue for odometry timing.
+   *
+   * @return A queue that will receive timestamps.
+   */
   public Queue<Double> makeTimestampQueue() {
     Queue<Double> queue = new ArrayBlockingQueue<>(20);
     Drive.LOCK.lock();

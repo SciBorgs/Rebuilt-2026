@@ -31,12 +31,14 @@ import org.sciborgs1155.lib.FaultLogger.FaultType;
 public class TestingUtilTest {
   int x;
 
+  /** Sets up the test environment and initializes x to 0 before each test. */
   @BeforeEach
   public void setup() {
     setupTests();
     x = 0;
   }
 
+  /** Resets the test environment and x to 0 after each test. */
   @SuppressWarnings("PMD.SignatureDeclareThrowsException")
   @AfterEach
   public void clear() throws Exception {
@@ -52,11 +54,13 @@ public class TestingUtilTest {
     this.x = x;
   }
 
+  /** Tests that the driver station is enabled during tests. */
   @org.junit.jupiter.api.Test
   public void enabled() {
     assertTrue(DriverStation.isEnabled());
   }
 
+  /** Tests creating a Test from a Command and running it to completion. */
   @org.junit.jupiter.api.Test
   public void fromCommandTest() {
     assertEquals(0, x);
@@ -66,6 +70,11 @@ public class TestingUtilTest {
     assertEquals(1, x);
   }
 
+  /**
+   * Tests that runToCompletion correctly advances simulation time.
+   *
+   * @param timeout The timeout duration to test with.
+   */
   @ParameterizedTest
   @ValueSource(doubles = {0.4, 2, 3.2, 4.03})
   public void runToCompletionTest(double timeout) {
@@ -75,6 +84,13 @@ public class TestingUtilTest {
     assertEquals(timeout, Timer.getFPGATimestamp() - startTime, 0.3);
   }
 
+  /**
+   * Asserts that the fault counts match the expected values.
+   *
+   * @param infoCount Expected number of info faults.
+   * @param warningCount Expected number of warning faults.
+   * @param errorCount Expected number of error faults.
+   */
   public void assertFaultCount(int infoCount, int warningCount, int errorCount) {
     FaultLogger.update();
     Set<Fault> faults = FaultLogger.totalFaults();
@@ -89,6 +105,11 @@ public class TestingUtilTest {
     assertEquals(errorCount, errors.size());
   }
 
+  /**
+   * Tests the system check functionality with passing and failing assertions.
+   *
+   * @param x The value to test with.
+   */
   @ParameterizedTest
   @ValueSource(ints = {-4, 3, 9})
   public void systemCheckTest(int x) {
@@ -109,6 +130,11 @@ public class TestingUtilTest {
     assertFaultCount(1, 1, 0);
   }
 
+  /**
+   * Tests the unit test functionality with passing and failing assertions.
+   *
+   * @param x The value to test with.
+   */
   @ParameterizedTest
   @ValueSource(ints = {-4, 3, 9})
   public void unitTestTest(int x) {

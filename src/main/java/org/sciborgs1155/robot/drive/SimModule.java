@@ -41,6 +41,11 @@ public class SimModule implements ModuleIO {
 
   private final String name;
 
+  /**
+   * Creates a new simulated swerve module.
+   *
+   * @param name The name of the module.
+   */
   public SimModule(String name) {
     this.name = name;
 

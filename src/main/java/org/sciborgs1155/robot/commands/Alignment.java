@@ -136,7 +136,11 @@ public class Alignment {
     return pathfind(goal, Translation.TOLERANCE);
   }
 
-  // * Warms up the pathfind command by telling drive to drive to itself. */
+  /**
+   * Warms up the pathfind command by telling drive to drive to itself.
+   *
+   * @return A warmup command that pathfinds to the robot's current position.
+   */
   @SuppressWarnings("PMD.SystemPrintln") // Please replace with better logging
   public Command warmupCommand() {
     return pathfind(() -> drive.pose(), MetersPerSecond.of(0))

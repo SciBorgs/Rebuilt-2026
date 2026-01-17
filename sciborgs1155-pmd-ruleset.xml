@@ -50,8 +50,8 @@
     <exclude name="LawOfDemeter" /> <!-- This happens a lot for us. To fix, it would require a lot of copying.
       I'll save my programmers time... -->
     <exclude name="LoosePackageCoupling" /> <!-- This rule was causing bugs in PMD itself. Disabling -->
-    <exclude name="TooManyMethods" /> <!-- Violated a lot -->
     <exclude name="SignatureDeclareThrowsException" /> <!-- Used in AutoCloseable -->
+    <exclude name="TooManyMethods" /> <!-- Violated a lot -->
   </rule>
 
   <rule ref="category/java/documentation.xml/CommentRequired"> <!-- This is listed separately so that we can configure it. We must list

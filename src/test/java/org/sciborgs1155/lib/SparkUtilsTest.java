@@ -17,6 +17,7 @@ import org.sciborgs1155.lib.SparkUtils.Sensor;
 
 public class SparkUtilsTest {
 
+  /** Sets up the test environment before each test. */
   @BeforeEach
   public void setup() {
     setupTests();

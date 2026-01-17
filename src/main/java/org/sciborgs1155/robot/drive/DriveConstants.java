@@ -22,15 +22,15 @@ import java.util.List;
  */
 public final class DriveConstants {
   /** The type of control loop to use when controlling a module's drive motor. */
-  public static enum ControlMode {
+  public enum ControlMode {
     CLOSED_LOOP_VELOCITY,
     OPEN_LOOP_VELOCITY;
   }
 
-  public static record FFConstants(double kS, double kV, double kA) {}
+  public record FFConstants(double kS, double kV, double kA) {}
 
   /** The type of modules being used. */
-  public static enum ModuleType {
+  public enum ModuleType {
     TALON, // Kraken X60 Drive, Kraken X60 Turn
     SPARK; // NEO Vortex Drive, NEO 550 Turn
   }
@@ -44,7 +44,7 @@ public final class DriveConstants {
     // The angle between the velocity and the displacement from a target, above which the robot will
     // not use assisted driving to the target. (the driver must be driving in the general direction
     // of the assisted driving target.)
-    public static final Angle DRIVING_THRESHOLD = Radians.of(Math.PI / 6);
+    public static final Angle DRIVING_THRESHOLD = Radians.of(PI / 6);
 
     // The input of the joystick beyond which the assisted driving will not control the rotation of
     // the swerve.
@@ -88,7 +88,7 @@ public final class DriveConstants {
       RadiansPerSecondPerSecond.of(MAX_ACCEL.in(MetersPerSecondPerSecond) / RADIUS.in(Meters));
 
   // Arbitrary max rotational velocity for the driver to effectively control the robot
-  public static final AngularVelocity TELEOP_ANGULAR_SPEED = RadiansPerSecond.of(2 * Math.PI);
+  public static final AngularVelocity TELEOP_ANGULAR_SPEED = RadiansPerSecond.of(2 * PI);
 
   public static final Translation2d[] MODULE_OFFSET = {
     new Translation2d(WHEEL_BASE.div(2), TRACK_WIDTH.div(2)), // front left
@@ -107,7 +107,7 @@ public final class DriveConstants {
           Rotation2d.kZero // rear right
           );
 
-  public static final Rotation3d GYRO_OFFSET = new Rotation3d(0, 0, Math.PI);
+  public static final Rotation3d GYRO_OFFSET = new Rotation3d(0, 0, PI);
 
   // TODO: Change ALL characterization constants for each unique robot as needed.
   public static final class Translation {

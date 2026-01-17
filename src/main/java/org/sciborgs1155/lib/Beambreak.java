@@ -10,11 +10,17 @@ import java.util.function.BooleanSupplier;
  * resources as necessary.
  */
 public class Beambreak {
-  private final BooleanSupplier beambreak;
+  private final BooleanSupplier beambreakState;
   private final Runnable close;
 
+  /**
+   * Creates a new Beambreak wrapper.
+   *
+   * @param beambreak A supplier for the beambreak's state; true for unbroken, false for broken.
+   * @param close A runnable that closes all resources as necessary.
+   */
   public Beambreak(BooleanSupplier beambreak, Runnable close) {
-    this.beambreak = beambreak;
+    this.beambreakState = beambreak;
     this.close = close;
   }
 
@@ -38,9 +44,10 @@ public class Beambreak {
   /**
    * @return the value of the beambreak; true for unbroken, false for broken
    */
+  @SuppressWarnings("PMD.BooleanGetMethodName")
   @Logged
-  public boolean get() {
-    return beambreak.getAsBoolean();
+  public boolean getState() {
+    return beambreakState.getAsBoolean();
   }
 
   /** Closes all resources as necessary */

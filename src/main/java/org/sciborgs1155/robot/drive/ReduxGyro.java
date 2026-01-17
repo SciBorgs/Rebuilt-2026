@@ -21,6 +21,7 @@ public class ReduxGyro implements GyroIO {
   private final Queue<Double> position;
   private final Queue<Double> timestamp;
 
+  /** Creates a new ReduxGyro and configures it with appropriate settings. */
   public ReduxGyro() {
     CanandgyroSettings settings =
         new CanandgyroSettings()

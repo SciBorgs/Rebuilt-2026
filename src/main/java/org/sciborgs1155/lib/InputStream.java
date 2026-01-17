@@ -25,10 +25,24 @@ public interface InputStream extends DoubleSupplier {
     return base::getAsDouble;
   }
 
+  /**
+   * Creates an input stream that returns the hypotenuse of two streams.
+   *
+   * @param x The x component stream.
+   * @param y The y component stream.
+   * @return A new input stream.
+   */
   static InputStream hypot(InputStream x, InputStream y) {
     return () -> Math.hypot(x.get(), y.get());
   }
 
+  /**
+   * Creates an input stream that returns the angle from the positive x-axis to the point (x, y).
+   *
+   * @param x The x component stream.
+   * @param y The y component stream.
+   * @return A new input stream.
+   */
   static InputStream atan(InputStream x, InputStream y) {
     return () -> Math.atan2(y.get(), x.get());
   }

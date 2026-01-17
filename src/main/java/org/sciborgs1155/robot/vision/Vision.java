@@ -55,10 +55,20 @@ public class Vision {
     return new Vision(BACK_LEFT_CAMERA, BACK_RIGHT_CAMERA);
   }
 
+  /**
+   * Creates a Vision instance with no cameras.
+   *
+   * @return An empty Vision instance.
+   */
   public static Vision none() {
     return new Vision();
   }
 
+  /**
+   * Creates a new Vision subsystem with the specified camera configurations.
+   *
+   * @param configs The camera configurations to use.
+   */
   public Vision(CameraConfig... configs) {
     cameras = new PhotonCamera[configs.length];
     estimators = new PhotonPoseEstimator[configs.length];
@@ -106,6 +116,11 @@ public class Vision {
     }
   }
 
+  /**
+   * Returns an array of booleans indicating which cameras are enabled.
+   *
+   * @return An array of camera enabled states.
+   */
   @Logged
   public boolean[] logCamEnabled() {
     boolean[] booleanArray = new boolean[camerasEnabled.values().size()];
@@ -194,14 +209,30 @@ public class Vision {
     return estimates.toArray(PoseEstimate[]::new);
   }
 
+  /**
+   * Disables a camera by name.
+   *
+   * @param name The name of the camera to disable.
+   */
   public void disableCam(String name) {
     camerasEnabled.put(name, false);
   }
 
+  /**
+   * Enables a camera by name.
+   *
+   * @param name The name of the camera to enable.
+   */
   public void enableCam(String name) {
     camerasEnabled.put(name, true);
   }
 
+  /**
+   * Gets the enabled status of a camera by name.
+   *
+   * @param name The name of the camera.
+   * @return Whether the camera is enabled.
+   */
   public boolean getCameraStatus(String name) {
     return camerasEnabled.get(name);
   }

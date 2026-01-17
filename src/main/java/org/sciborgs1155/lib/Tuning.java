@@ -60,6 +60,12 @@ public final class Tuning {
   // Prevents instantiation
   private Tuning() {}
 
+  /**
+   * Creates a trigger that activates when a DoubleEntry has been changed recently.
+   *
+   * @param entry The DoubleEntry to monitor for changes.
+   * @return A Trigger that activates when the entry changes.
+   */
   public static Trigger changes(DoubleEntry entry) {
     return new Trigger(
         Constants.tuning
@@ -270,6 +276,13 @@ public final class Tuning {
     return new ArrayList<>();
   }
 
+  /**
+   * Returns a list of the most recent changes of the given topic.
+   *
+   * @param topic The topic that you want to get changes from.
+   * @param pastNIndexes The number of recent changes to retrieve.
+   * @return An ArrayList containing the most recent changes of the given topic.
+   */
   public static List<Double> recentChanges(DoubleTopic topic, int pastNIndexes) {
     List<Double> arrayList = recentChanges(topic);
 
@@ -300,6 +313,13 @@ public final class Tuning {
     return new ArrayList<>();
   }
 
+  /**
+   * Returns a list of the most recent changes of the given topic.
+   *
+   * @param topic The topic that you want to get changes from.
+   * @param pastNIndexes The number of recent changes to retrieve.
+   * @return An ArrayList containing the most recent changes of the given topic.
+   */
   @SuppressWarnings("PMD.AvoidReassigningParameters")
   public static List<Long> recentChanges(IntegerTopic topic, int pastNIndexes) {
     List<Long> arrayList = recentChanges(topic);
@@ -324,6 +344,13 @@ public final class Tuning {
     return new ArrayList<>();
   }
 
+  /**
+   * Returns a list of the most recent changes of the given topic.
+   *
+   * @param topic The topic that you want to get changes from.
+   * @param pastNIndexes The number of recent changes to retrieve.
+   * @return An ArrayList containing the most recent changes of the given topic.
+   */
   @SuppressWarnings("PMD.AvoidReassigningParameters")
   public static List<String> recentChanges(StringTopic topic, int pastNIndexes) {
     List<String> arrayList = recentChanges(topic);
@@ -348,6 +375,13 @@ public final class Tuning {
     return new ArrayList<>();
   }
 
+  /**
+   * Returns a list of the most recent changes of the given topic.
+   *
+   * @param topic The topic that you want to get changes from.
+   * @param pastNIndexes The number of recent changes to retrieve.
+   * @return An ArrayList containing the most recent changes of the given topic.
+   */
   @SuppressWarnings("PMD.AvoidReassigningParameters")
   public static List<Boolean> recentChanges(BooleanTopic topic, int pastNIndexes) {
     List<Boolean> arrayList = recentChanges(topic);

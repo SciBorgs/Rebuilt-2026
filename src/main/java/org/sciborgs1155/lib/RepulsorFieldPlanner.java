@@ -28,6 +28,12 @@ public class RepulsorFieldPlanner {
     double strength;
     boolean positive;
 
+    /**
+     * Creates a new obstacle.
+     *
+     * @param strength The strength of the repulsor field.
+     * @param positive Whether the force is positive (repelling) or negative (attracting).
+     */
     public Obstacle(double strength, boolean positive) {
       this.strength = strength;
       this.positive = positive;
@@ -67,6 +73,13 @@ public class RepulsorFieldPlanner {
     Translation2d loc;
     double radius = 0.5;
 
+    /**
+     * Creates a new point obstacle.
+     *
+     * @param loc The location of the obstacle.
+     * @param strength The strength of the repulsor field.
+     * @param positive Whether the force is positive (repelling) or negative (attracting).
+     */
     public PointObstacle(Translation2d loc, double strength, boolean positive) {
       super(strength, positive);
       this.loc = loc;
@@ -103,6 +116,14 @@ public class RepulsorFieldPlanner {
     Translation2d loc;
     double radius;
 
+    /**
+     * Creates a new circular obstacle.
+     *
+     * @param loc The center location of the obstacle.
+     * @param strength The strength of the repulsor field.
+     * @param radius The radius of the obstacle.
+     * @param positive Whether the force is positive (repelling) or negative (attracting).
+     */
     public CircleObstacle(Translation2d loc, double strength, double radius, boolean positive) {
       super(strength, positive);
       this.loc = loc;
@@ -150,6 +171,13 @@ public class RepulsorFieldPlanner {
   static class HorizontalObstacle extends Obstacle {
     double y;
 
+    /**
+     * Creates a new horizontal line obstacle.
+     *
+     * @param y The y-coordinate of the horizontal line.
+     * @param strength The strength of the repulsor field.
+     * @param positive Whether the force is positive (repelling) or negative (attracting).
+     */
     public HorizontalObstacle(double y, double strength, boolean positive) {
       super(strength, positive);
       this.y = y;
@@ -164,6 +192,13 @@ public class RepulsorFieldPlanner {
   static class VerticalObstacle extends Obstacle {
     double x;
 
+    /**
+     * Creates a new vertical line obstacle.
+     *
+     * @param x The x-coordinate of the vertical line.
+     * @param strength The strength of the repulsor field.
+     * @param positive Whether the force is positive (repelling) or negative (attracting).
+     */
     public VerticalObstacle(double x, double strength, boolean positive) {
       super(strength, positive);
       this.x = x;
@@ -195,6 +230,11 @@ public class RepulsorFieldPlanner {
   private final List<Obstacle> fixedObstacles = new ArrayList<>();
   private Optional<Translation2d> goalOpt = Optional.empty();
 
+  /**
+   * Returns the current goal position as a Pose2d.
+   *
+   * @return The goal position, or zero if no goal is set.
+   */
   @Logged
   public Pose2d goal() {
     return new Pose2d(goalOpt.orElse(Translation2d.kZero), Rotation2d.kZero);
@@ -209,6 +249,7 @@ public class RepulsorFieldPlanner {
   @SuppressWarnings("PMD.SingularField")
   private SwerveSample prevSample;
 
+  /** Creates a new RepulsorFieldPlanner with default field obstacles and walls. */
   public RepulsorFieldPlanner() {
     fixedObstacles.addAll(FIELD_OBSTACLES);
     fixedObstacles.addAll(WALLS);
@@ -366,6 +407,16 @@ public class RepulsorFieldPlanner {
     return getCmd(pose, currentSpeeds, maxSpeed, useGoal, pose.getRotation());
   }
 
+  /**
+   * Gets the next command sample with a specified goal rotation.
+   *
+   * @param pose The current pose of the robot.
+   * @param currentSpeeds The current chassis speeds of the robot.
+   * @param maxSpeed The desired maximum speed of the robot.
+   * @param useGoal Whether or not to use the given goal.
+   * @param goalRotation The desired goal rotation.
+   * @return A SwerveSample representing the next desired robot swerve state.
+   */
   public SwerveSample getCmd(
       Pose2d pose,
       ChassisSpeeds currentSpeeds,
@@ -421,6 +472,14 @@ public class RepulsorFieldPlanner {
 
   public double pathLength;
 
+  /**
+   * Generates a trajectory from the current position to the goal.
+   *
+   * @param current The current position.
+   * @param goalTranslation The goal position.
+   * @param stepSizeM The step size in meters.
+   * @return A list of Translation2d waypoints forming the trajectory.
+   */
   public List<Translation2d> getTrajectory(
       Translation2d current, Translation2d goalTranslation, double stepSizeM) {
     pathLength = 0;

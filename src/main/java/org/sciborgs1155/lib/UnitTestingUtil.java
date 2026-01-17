@@ -24,6 +24,7 @@ public final class UnitTestingUtil {
     DriverStationSim.notifyNewData();
     FaultLogger.clear();
     FaultLogger.unregisterAll();
+    FaultLogger.setSuppressConsoleOutput(true);
     SimHooks.restartTiming();
   }
 

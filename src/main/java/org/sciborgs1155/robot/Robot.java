@@ -215,6 +215,11 @@ public class Robot extends CommandRobot {
             });
   }
 
+  /**
+   * Creates a command that runs a systems check on all mechanisms.
+   *
+   * @return A command that tests all mechanisms.
+   */
   public Command systemsCheck() {
     return Test.toCommand(drive.systemsCheck()).withName("Test Mechanisms");
   }

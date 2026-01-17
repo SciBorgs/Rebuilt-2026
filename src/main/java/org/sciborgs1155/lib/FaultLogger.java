@@ -41,6 +41,14 @@ public final class FaultLogger {
   // Prevents instantiation
   private FaultLogger() {}
 
+  /** Whether to suppress console output (useful for tests). Defaults to false. */
+  private static boolean suppressConsoleOutput;
+
+  /** Enables or disables console output for faults. */
+  public static void setSuppressConsoleOutput(boolean suppress) {
+    suppressConsoleOutput = suppress;
+  }
+
   /** An individual fault, containing necessary information. */
   public record Fault(String name, String description, FaultType type) {
     @Override
@@ -66,6 +74,12 @@ public final class FaultLogger {
     private StringArrayPublisher warnings;
     private StringArrayPublisher infos;
 
+    /**
+     * Creates a new Alerts widget on NetworkTables.
+     *
+     * @param base The base NetworkTable to create the subtable in.
+     * @param name The name of the alerts subtable.
+     */
     public Alerts(NetworkTable base, String name) {
       table = base.getSubTable(name);
       table.getStringTopic(".type").publish().set("Alerts");
@@ -74,12 +88,18 @@ public final class FaultLogger {
       infos = table.getStringArrayTopic("infos").publish();
     }
 
+    /**
+     * Sets the alerts from the given set of faults.
+     *
+     * @param faults The set of faults to display.
+     */
     public void set(Set<Fault> faults) {
       errors.set(filteredStrings(faults, FaultType.ERROR));
       warnings.set(filteredStrings(faults, FaultType.WARNING));
       infos.set(filteredStrings(faults, FaultType.INFO));
     }
 
+    /** Resets the alerts by closing and recreating the publishers. */
     public void reset() {
       errors.close();
       warnings.close();
@@ -153,10 +173,12 @@ public final class FaultLogger {
   @SuppressWarnings("PMD.SystemPrintln") // Should use logger instead
   public static void report(Fault fault) {
     ACTIVE_FAULTS.add(fault);
-    switch (fault.type) {
-      case ERROR -> DriverStation.reportError(fault.toString(), false);
-      case WARNING -> DriverStation.reportWarning(fault.toString(), false);
-      case INFO -> System.out.println(fault);
+    if (!suppressConsoleOutput) {
+      switch (fault.type) {
+        case ERROR -> DriverStation.reportError(fault.toString(), false);
+        case WARNING -> DriverStation.reportWarning(fault.toString(), false);
+        case INFO -> System.out.println(fault);
+      }
     }
   }
 

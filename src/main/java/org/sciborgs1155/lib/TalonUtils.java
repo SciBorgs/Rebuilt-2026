@@ -28,6 +28,11 @@ public final class TalonUtils {
     TALONS.add(talon);
   }
 
+  /**
+   * Adds a status signal to the refresh list.
+   *
+   * @param signal The status signal to add.
+   */
   public static void addSignal(StatusSignal signal) {
     BaseStatusSignal[] newSignals = new BaseStatusSignal[talonSignals.length + 1];
     System.arraycopy(talonSignals, 0, newSignals, 0, talonSignals.length);
@@ -35,6 +40,7 @@ public final class TalonUtils {
     talonSignals = newSignals;
   }
 
+  /** Refreshes all registered status signals. */
   public static void refreshAll() {
     BaseStatusSignal.refreshAll(talonSignals);
   }

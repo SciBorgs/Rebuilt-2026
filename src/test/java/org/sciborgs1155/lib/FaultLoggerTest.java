@@ -15,12 +15,14 @@ import org.sciborgs1155.lib.FaultLogger.FaultType;
 
 public class FaultLoggerTest {
 
+  /** Clears all faults and unregisters all fault reporters before running tests. */
   @BeforeAll
   public static void reset() {
     FaultLogger.clear();
     FaultLogger.unregisterAll();
   }
 
+  /** Sets up the test environment before each test. */
   @BeforeEach
   public void setup() {
     setupTests();
@@ -82,9 +84,10 @@ public class FaultLoggerTest {
     spark.close();
   }
 
-  @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
+  @SuppressWarnings({"PMD.UnitTestShouldIncludeAssert", "PMD.SystemPrintln"})
   @Test
   void registerTalon() {
+    System.out.println("--- The test is about to complain. This is good. ---");
     TalonFX talon = new TalonFX(10);
     FaultLogger.register(talon);
     talon.close();

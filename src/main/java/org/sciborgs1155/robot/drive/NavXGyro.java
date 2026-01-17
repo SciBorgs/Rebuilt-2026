@@ -17,6 +17,7 @@ public class NavXGyro implements GyroIO {
   private final Queue<Double> position;
   private final Queue<Double> timestamp;
 
+  /** Creates a new NavXGyro and registers it with FaultLogger. */
   public NavXGyro() {
     FaultLogger.register(ahrs);
 

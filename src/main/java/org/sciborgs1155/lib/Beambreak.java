@@ -13,6 +13,12 @@ public class Beambreak {
   private final BooleanSupplier beambreakState;
   private final Runnable close;
 
+  /**
+   * Creates a new Beambreak wrapper.
+   *
+   * @param beambreak A supplier for the beambreak's state; true for unbroken, false for broken.
+   * @param close A runnable that closes all resources as necessary.
+   */
   public Beambreak(BooleanSupplier beambreak, Runnable close) {
     this.beambreakState = beambreak;
     this.close = close;

@@ -9,6 +9,9 @@ import edu.wpi.first.units.measure.Voltage;
 
 /** Fake hardware interface for the {@code Turret} subsystem. */
 public class NoTurret implements TurretIO {
+  /** Fake hardware interface for the {@code Turret} subsystem. */
+  public NoTurret() {}
+
   @Override
   public void setVoltage(Voltage voltage) {}
 

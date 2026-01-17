@@ -38,6 +38,9 @@ public class TurretConstants {
   public static final AngularAcceleration MAX_ACCELERATION =
       RadiansPerSecondPerSecond.of(0); // TODO: Update.
 
+  public static final int VISUALIZER_WIDTH = 6;
+  public static final int VISUALIZER_HEIGHT = 6;
+
   public static final class PID {
     public static final double P = 1; // TODO: Update.
     public static final double I = 0; // TODO: Update.

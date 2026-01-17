@@ -56,7 +56,7 @@ public class Turret extends SubsystemBase implements AutoCloseable {
   @NotLogged private final ArmFeedforward feedforward;
 
   /** Visualization. Green = Position, Red = Setpoint */
-  private final TurretVisualizer visualizer = new TurretVisualizer();
+  private final TurretVisualizer visualizer = new TurretVisualizer(6, 7);
 
   /**
    * Constructs a new turret subsystem.
@@ -95,18 +95,28 @@ public class Turret extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * Continuously orients the turret based on the setpoint specified in the {@code setAngle} method.
+   * Returns the angular setpoint of the turret specified by the {@code setAngle} method.
    *
-   * @return A command to continuously orient to the angle setpoint.
+   * @return The angular setpoint of the turret.
+   */
+  public Angle setpoint() {
+    return motor.position();
+  }
+
+  /**
+   * Continuously orients the turret towards the angle setpoint specified in the {@code setAngle}
+   * method.
+   *
+   * @return A command to continuously orient the turret towards the angle setpoint.
    */
   public Command run() {
     return run(
         () -> {
-          double position = motor.position().in(Radians);
-          double velocity = motor.velocity().in(RadiansPerSecond);
+          double positionRad = motor.position().in(Radians);
+          double velocityRadPerSec = motor.velocity().in(RadiansPerSecond);
 
-          double pidVolts = controller.calculate(position);
-          double ffdVolts = feedforward.calculate(position, velocity);
+          double pidVolts = controller.calculate(positionRad);
+          double ffdVolts = feedforward.calculate(positionRad, velocityRadPerSec);
 
           motor.setVoltage(Volts.of(pidVolts + ffdVolts));
         });
@@ -114,12 +124,13 @@ public class Turret extends SubsystemBase implements AutoCloseable {
 
   @Override
   public void periodic() {
+    // LOGGING
     LoggingUtils.log("Robot/Turret/POSITION", motor.position());
     LoggingUtils.log("Robot/Turret/VELOCITY", motor.velocity());
     LoggingUtils.log("Robot/Turret/SETPOINT", controller.getSetpoint().position);
 
-    visualizer.setPosition(motor.position().in(Radians));
-    visualizer.setSetpoint(controller.getSetpoint().position);
+    // VISUALIZATION
+    visualizer.update(motor.position().in(Radians), controller.getSetpoint().position);
   }
 
   @Override

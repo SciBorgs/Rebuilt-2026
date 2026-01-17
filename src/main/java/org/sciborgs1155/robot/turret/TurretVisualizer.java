@@ -1,5 +1,8 @@
 package org.sciborgs1155.robot.turret;
 
+import static org.sciborgs1155.robot.turret.TurretConstants.VISUALIZER_HEIGHT;
+import static org.sciborgs1155.robot.turret.TurretConstants.VISUALIZER_WIDTH;
+
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
@@ -7,41 +10,36 @@ import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 
+/** Visualizes the {@code Turret} subsystem using {@code Mechanism2d}. */
 public class TurretVisualizer {
-  private final Mechanism2d mech;
-  private final MechanismLigament2d positionArm;
-  private final MechanismLigament2d setpointArm;
+  /** Contains all roots and ligaments of the visualizer. */
+  private final Mechanism2d mechanism = new Mechanism2d(VISUALIZER_WIDTH, VISUALIZER_HEIGHT);
 
-  /** Creates a new turret visualizer using two mechanism2ds. (Current position and setpoint) */
-  public TurretVisualizer() {
-    mech = new Mechanism2d(6, 7);
+  /** Center of rotation for the ligaments. */
+  private final MechanismRoot2d root =
+      mechanism.getRoot("Chassis", VISUALIZER_WIDTH / 2, VISUALIZER_HEIGHT / 2);
 
-    MechanismRoot2d chassis = mech.getRoot("Chassis", 3, 3.5);
+  /** Visualizes the angular position of the {@code Turret}. */
+  private final MechanismLigament2d position =
+      root.append(new MechanismLigament2d("Position", 3, 0, 4, new Color8Bit(0, 255, 0)));
 
-    positionArm =
-        chassis.append(new MechanismLigament2d("Position", 3, 0, 4, new Color8Bit(0, 255, 0)));
+  /** Visualizes the angular position of the {@code Turret}'s setpoint. */
+  private final MechanismLigament2d setpoint =
+      root.append(new MechanismLigament2d("Setpoint", 3, 0, 2, new Color8Bit(255, 0, 0)));
 
-    setpointArm =
-        chassis.append(new MechanismLigament2d("Setpoint", 3, 0, 2, new Color8Bit(255, 0, 0)));
-
-    SmartDashboard.putData("TurretVisualizer", mech);
+  /** Visualizes the {@code Turret} subsystem using {@code Mechanism2d}. */
+  public TurretVisualizer(int width, int height) {
+    SmartDashboard.putData("TurretVisualizer", mechanism);
   }
 
   /**
-   * Set the angle of the visualized position arm.
+   * Updates the visualizer. To be called periodically.
    *
-   * @param double The angle in radians.
+   * @param positionRadians The angular position of the turret.
+   * @param setpointRadians The angular setpoint of the turret (radians).
    */
-  public void setPosition(double angleRad) {
-    positionArm.setAngle(Units.radiansToDegrees(angleRad));
-  }
-
-  /**
-   * Set the angle of the visualized setpoint arm.
-   *
-   * @param double The angle in radians.
-   */
-  public void setSetpoint(double angleRad) {
-    setpointArm.setAngle(Units.radiansToDegrees(angleRad));
+  public void update(double positionRadians, double setpointRadians) {
+    position.setAngle(Units.radiansToDegrees(positionRadians));
+    setpoint.setAngle(Units.radiansToDegrees(setpointRadians));
   }
 }

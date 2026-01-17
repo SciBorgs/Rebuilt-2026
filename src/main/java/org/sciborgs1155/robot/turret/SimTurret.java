@@ -29,6 +29,9 @@ public class SimTurret implements TurretIO {
           false, // GRAVITY ENABLED
           START_ANGLE.in(Radians)); // STARTING ANGLE
 
+  /** Simulated hardware interface for the {@code Turret} subsystem. */
+  public SimTurret() {}
+
   @Override
   public void setVoltage(Voltage voltage) {
     simulation.setInputVoltage(voltage.in(Volts));

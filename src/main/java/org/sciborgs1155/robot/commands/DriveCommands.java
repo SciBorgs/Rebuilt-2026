@@ -21,7 +21,7 @@ import org.sciborgs1155.robot.drive.DriveConstants.ControlMode;
  * https://github.com/Mechanical-Advantage/AdvantageKit/blob/02b7b64d8ebe399c931458f906b544582b765df7/template_projects/sources/talonfx_swerve/src/main/java/frc/robot/subsystems/drive/Drive.java
  * https://docs.advantagekit.org/getting-started/template-projects/spark-swerve-template/#wheel-radius-characterization
  */
-public class DriveCommands {
+public final class DriveCommands {
   private static final double WHEEL_RADIUS_MAX_VELOCITY = 1; // Rad/Sec
   private static final double WHEEL_RADIUS_RAMP_RATE = 0.25; // Rad/Sec^2
   public static final double DRIVE_BASE_RADIUS =
@@ -40,6 +40,9 @@ public class DriveCommands {
               Math.hypot(
                   DriveConstants.MODULE_OFFSET[3].getMeasureX().in(Meters),
                   DriveConstants.MODULE_OFFSET[3].getMeasureY().in(Meters))));
+
+  // Prevents instantiation
+  private DriveCommands() {}
 
   /** Measures the robot's wheel radius by spinning in a circle. */
   public static Command wheelRadiusCharacterization(Drive drive) {
@@ -93,7 +96,7 @@ public class DriveCommands {
                       for (int i = 0; i < 4; i++) {
                         wheelDelta += Math.abs(positions[i] - state.positions[i]) / 4.0;
                       }
-                      double wheelRadius = (state.gyroDelta * DRIVE_BASE_RADIUS) / wheelDelta;
+                      double wheelRadius = state.gyroDelta * DRIVE_BASE_RADIUS / wheelDelta;
 
                       NumberFormat formatter = new DecimalFormat("#0.000");
                       FaultLogger.report(
@@ -107,9 +110,9 @@ public class DriveCommands {
                     })));
   }
 
-  private static class WheelRadiusCharacterizationState {
+  private static final class WheelRadiusCharacterizationState {
     double[] positions = new double[4];
     Rotation2d lastAngle = Rotation2d.kZero;
-    double gyroDelta = 0.0;
+    double gyroDelta;
   }
 }

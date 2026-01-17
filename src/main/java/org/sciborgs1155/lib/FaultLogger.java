@@ -41,6 +41,14 @@ public final class FaultLogger {
   // Prevents instantiation
   private FaultLogger() {}
 
+  /** Whether to suppress console output (useful for tests). Defaults to false. */
+  private static boolean suppressConsoleOutput;
+
+  /** Enables or disables console output for faults. */
+  public static void setSuppressConsoleOutput(boolean suppress) {
+    suppressConsoleOutput = suppress;
+  }
+
   /** An individual fault, containing necessary information. */
   public record Fault(String name, String description, FaultType type) {
     @Override
@@ -165,10 +173,12 @@ public final class FaultLogger {
   @SuppressWarnings("PMD.SystemPrintln") // Should use logger instead
   public static void report(Fault fault) {
     ACTIVE_FAULTS.add(fault);
-    switch (fault.type) {
-      case ERROR -> DriverStation.reportError(fault.toString(), false);
-      case WARNING -> DriverStation.reportWarning(fault.toString(), false);
-      case INFO -> System.out.println(fault);
+    if (!suppressConsoleOutput) {
+      switch (fault.type) {
+        case ERROR -> DriverStation.reportError(fault.toString(), false);
+        case WARNING -> DriverStation.reportWarning(fault.toString(), false);
+        case INFO -> System.out.println(fault);
+      }
     }
   }
 

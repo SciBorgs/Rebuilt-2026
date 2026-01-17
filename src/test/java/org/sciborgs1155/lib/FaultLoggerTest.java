@@ -84,9 +84,10 @@ public class FaultLoggerTest {
     spark.close();
   }
 
-  @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
+  @SuppressWarnings({"PMD.UnitTestShouldIncludeAssert", "PMD.SystemPrintln"})
   @Test
   void registerTalon() {
+    System.out.println("--- The test is about to complain. This is good. ---");
     TalonFX talon = new TalonFX(10);
     FaultLogger.register(talon);
     talon.close();

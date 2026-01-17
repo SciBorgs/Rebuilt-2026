@@ -9,15 +9,15 @@ import java.util.Set;
 import org.sciborgs1155.robot.Ports;
 
 /** Utility class for configuration of Spark motor controllers */
-public class SparkUtils {
-  private static final List<Runnable> runnables = new ArrayList<>();
+public final class SparkUtils {
+  private static final List<Runnable> RUNNABLES = new ArrayList<>();
 
   public static void addChecker(Runnable runnable) {
-    runnables.add(runnable);
+    RUNNABLES.add(runnable);
   }
 
   public static List<Runnable> getRunnables() {
-    return runnables;
+    return RUNNABLES;
   }
 
   // REV's docs have the size of a signed value of 65535ms for the max period
@@ -35,6 +35,9 @@ public class SparkUtils {
 
   public static final int MAX_ATTEMPTS = 3;
 
+  // Prevents instantiation
+  private SparkUtils() {}
+
   /**
    * Formats the name of a spark with its CAN ID.
    *
@@ -42,11 +45,11 @@ public class SparkUtils {
    * @return The name of a spark.
    */
   public static String name(SparkBase spark) {
-    return "Spark " + Ports.idToName.get(spark.getDeviceId());
+    return "Spark " + Ports.ID_TO_NAME.get(spark.getDeviceId());
   }
 
   /** Represents a type of sensor that can be plugged into the spark */
-  public static enum Sensor {
+  public enum Sensor {
     INTEGRATED,
     ANALOG,
     ALTERNATE,
@@ -54,7 +57,7 @@ public class SparkUtils {
   }
 
   /** Represents a type of data that can be sent from the spark */
-  public static enum Data {
+  public enum Data {
     POSITION,
     VELOCITY,
     CURRENT,
@@ -74,6 +77,7 @@ public class SparkUtils {
    * @see Data
    * @see https://docs.revrobotics.com/brushless/spark-max/control-interfaces
    */
+  @SuppressWarnings({"PMD.NPathComplexity", "PMD.CyclomaticComplexity"}) // Let's fix this
   public static SignalsConfig getSignalsConfigurationFrameStrategy(
       Set<Data> data, Set<Sensor> sensors, boolean withFollower) {
     SignalsConfig config =
@@ -112,10 +116,8 @@ public class SparkUtils {
       config = config.externalOrAltEncoderPosition(FRAME_STRATEGY_FAST); // status 4
     }
 
-    if (sensors.contains(Sensor.ABSOLUTE)) {
-      if (data.contains(Data.POSITION)) {
-        config = config.absoluteEncoderPositionPeriodMs(FRAME_STRATEGY_LUDICROUS); // status 5
-      }
+    if (sensors.contains(Sensor.ABSOLUTE) && data.contains(Data.POSITION)) {
+      config = config.absoluteEncoderPositionPeriodMs(FRAME_STRATEGY_LUDICROUS); // status 5
     }
 
     return config;

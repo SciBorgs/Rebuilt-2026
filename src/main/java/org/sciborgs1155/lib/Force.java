@@ -38,10 +38,10 @@ public class Force implements Interpolatable<Force>, ProtobufSerializable, Struc
    *
    * <p>This exists to avoid allocations for common translations.
    */
-  public static final Force kZero = new Force();
+  public static final Force K_ZERO = new Force();
 
-  private final double m_x;
-  private final double m_y;
+  private final double mX;
+  private final double mY;
 
   /** Constructs a Force with X and Y components equal to zero. */
   public Force() {
@@ -58,8 +58,8 @@ public class Force implements Interpolatable<Force>, ProtobufSerializable, Struc
   public Force(
       @JsonProperty(required = true, value = "x") double x,
       @JsonProperty(required = true, value = "y") double y) {
-    m_x = x;
-    m_y = y;
+    mX = x;
+    mY = y;
   }
 
   /**
@@ -70,8 +70,8 @@ public class Force implements Interpolatable<Force>, ProtobufSerializable, Struc
    * @param angle The angle between the x-axis and the translation vector.
    */
   public Force(double distance, Rotation2d angle) {
-    m_x = distance * angle.getCos();
-    m_y = distance * angle.getSin();
+    mX = distance * angle.getCos();
+    mY = distance * angle.getSin();
   }
 
   /**
@@ -104,7 +104,7 @@ public class Force implements Interpolatable<Force>, ProtobufSerializable, Struc
    * @return The distance between the two translations.
    */
   public double getDistance(Force other) {
-    return Math.hypot(other.m_x - m_x, other.m_y - m_y);
+    return Math.hypot(other.mX - mX, other.mY - mY);
   }
 
   /**
@@ -114,7 +114,7 @@ public class Force implements Interpolatable<Force>, ProtobufSerializable, Struc
    */
   @JsonProperty
   public double getX() {
-    return m_x;
+    return mX;
   }
 
   /**
@@ -124,7 +124,7 @@ public class Force implements Interpolatable<Force>, ProtobufSerializable, Struc
    */
   @JsonProperty
   public double getY() {
-    return m_y;
+    return mY;
   }
 
   /**
@@ -133,7 +133,7 @@ public class Force implements Interpolatable<Force>, ProtobufSerializable, Struc
    * @return The x component of the translation in a measure.
    */
   public Distance getMeasureX() {
-    return Meters.of(m_x);
+    return Meters.of(mX);
   }
 
   /**
@@ -142,7 +142,7 @@ public class Force implements Interpolatable<Force>, ProtobufSerializable, Struc
    * @return The y component of the translation in a measure.
    */
   public Distance getMeasureY() {
-    return Meters.of(m_y);
+    return Meters.of(mY);
   }
 
   /**
@@ -151,7 +151,7 @@ public class Force implements Interpolatable<Force>, ProtobufSerializable, Struc
    * @return A Vector representation of this translation.
    */
   public Vector<N2> toVector() {
-    return VecBuilder.fill(m_x, m_y);
+    return VecBuilder.fill(mX, mY);
   }
 
   /**
@@ -160,7 +160,7 @@ public class Force implements Interpolatable<Force>, ProtobufSerializable, Struc
    * @return The norm of the translation.
    */
   public double getNorm() {
-    return Math.hypot(m_x, m_y);
+    return Math.hypot(mX, mY);
   }
 
   /**
@@ -169,7 +169,7 @@ public class Force implements Interpolatable<Force>, ProtobufSerializable, Struc
    * @return The angle of the translation
    */
   public Rotation2d getAngle() {
-    return new Rotation2d(m_x, m_y);
+    return new Rotation2d(mX, mY);
   }
 
   /**
@@ -191,7 +191,7 @@ public class Force implements Interpolatable<Force>, ProtobufSerializable, Struc
    */
   public Force rotateBy(Rotation2d other) {
     return new Force(
-        m_x * other.getCos() - m_y * other.getSin(), m_x * other.getSin() + m_y * other.getCos());
+        mX * other.getCos() - mY * other.getSin(), mX * other.getSin() + mY * other.getCos());
   }
 
   /**
@@ -208,8 +208,8 @@ public class Force implements Interpolatable<Force>, ProtobufSerializable, Struc
    */
   public Force rotateAround(Force other, Rotation2d rot) {
     return new Force(
-        (m_x - other.getX()) * rot.getCos() - (m_y - other.getY()) * rot.getSin() + other.getX(),
-        (m_x - other.getX()) * rot.getSin() + (m_y - other.getY()) * rot.getCos() + other.getY());
+        (mX - other.getX()) * rot.getCos() - (mY - other.getY()) * rot.getSin() + other.getX(),
+        (mX - other.getX()) * rot.getSin() + (mY - other.getY()) * rot.getCos() + other.getY());
   }
 
   /**
@@ -221,7 +221,7 @@ public class Force implements Interpolatable<Force>, ProtobufSerializable, Struc
    * @return The sum of the translations.
    */
   public Force plus(Force other) {
-    return new Force(m_x + other.m_x, m_y + other.m_y);
+    return new Force(mX + other.mX, mY + other.mY);
   }
 
   /**
@@ -233,7 +233,7 @@ public class Force implements Interpolatable<Force>, ProtobufSerializable, Struc
    * @return The difference between the two translations.
    */
   public Force minus(Force other) {
-    return new Force(m_x - other.m_x, m_y - other.m_y);
+    return new Force(mX - other.mX, mY - other.mY);
   }
 
   /**
@@ -243,7 +243,7 @@ public class Force implements Interpolatable<Force>, ProtobufSerializable, Struc
    * @return The inverse of the current translation.
    */
   public Force unaryMinus() {
-    return new Force(-m_x, -m_y);
+    return new Force(-mX, -mY);
   }
 
   /**
@@ -255,7 +255,7 @@ public class Force implements Interpolatable<Force>, ProtobufSerializable, Struc
    * @return The scaled translation.
    */
   public Force times(double scalar) {
-    return new Force(m_x * scalar, m_y * scalar);
+    return new Force(mX * scalar, mY * scalar);
   }
 
   /**
@@ -267,7 +267,7 @@ public class Force implements Interpolatable<Force>, ProtobufSerializable, Struc
    * @return The reference to the new mutated object.
    */
   public Force div(double scalar) {
-    return new Force(m_x / scalar, m_y / scalar);
+    return new Force(mX / scalar, mY / scalar);
   }
 
   /**
@@ -282,7 +282,7 @@ public class Force implements Interpolatable<Force>, ProtobufSerializable, Struc
 
   @Override
   public String toString() {
-    return String.format("Force(X: %.2f, Y: %.2f)", m_x, m_y);
+    return String.format("Force(X: %.2f, Y: %.2f)", mX, mY);
   }
 
   /**
@@ -294,13 +294,13 @@ public class Force implements Interpolatable<Force>, ProtobufSerializable, Struc
   @Override
   public boolean equals(Object obj) {
     return obj instanceof Force other
-        && Math.abs(other.m_x - m_x) < 1E-9
-        && Math.abs(other.m_y - m_y) < 1E-9;
+        && Math.abs(other.mX - mX) < 1E-9
+        && Math.abs(other.mY - mY) < 1E-9;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(m_x, m_y);
+    return Objects.hash(mX, mY);
   }
 
   @Override

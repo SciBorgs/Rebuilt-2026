@@ -12,6 +12,7 @@ public class RobotTest {
     setupTests();
   }
 
+  @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
   @Test
   void initialize() throws Exception {
     new Robot().close();

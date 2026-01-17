@@ -24,7 +24,11 @@ import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Driving;
 import org.sciborgs1155.robot.drive.DriveConstants.Rotation;
 import org.sciborgs1155.robot.drive.DriveConstants.Translation;
 
-public class Autos {
+public final class Autos {
+
+  // Prevents instantiation
+  private Autos() {}
+
   @NotLogged
   public static SendableChooser<Command> configureAutos(Drive drive) {
     AutoBuilder.configure(

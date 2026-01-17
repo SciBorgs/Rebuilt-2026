@@ -143,10 +143,12 @@ public class SimModule implements ModuleIO {
     return new double[][] {};
   }
 
+  @Override
   public SwerveModulePosition[] odometryData() {
     return new SwerveModulePosition[] {};
   }
 
+  @Override
   public double[] timestamps() {
     return new double[] {};
   }

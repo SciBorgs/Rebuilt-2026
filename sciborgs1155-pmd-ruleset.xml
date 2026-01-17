@@ -14,13 +14,19 @@
   </description>
 
   <rule ref="category/java/bestpractices.xml">
+    <exclude name="AvoidPrintStackTrace" /> <!-- Violated a lot. Should probably fix with better logging -->
+    <exclude name="JUnit5TestShouldBePackagePrivate" /> <!-- Violated a lot but this isn't a big deal -->
     <exclude name="UnitTestAssertionsShouldIncludeMessage" /> <!-- Not our current style, but maybe it should -->
+    <exclude name="UnitTestContainsTooManyAsserts" /> <!-- I personally think this is fine -->
+    <exclude name="UseVarargs" /> <!-- Does not fit our use cases -->
   </rule>
 
   <rule ref="category/java/codestyle.xml">
     <exclude name="AtLeastOneConstructor" /> <!-- Unnecessary code if only default needed -->
     <exclude name="CallSuperInConstructor" /> <!-- Compiler will catch this automatically if needed -->
     <exclude name="CommentDefaultAccessModifier" /> <!-- Annoying and confusing -->
+    <exclude name="ControlStatementBraces" /> <!-- Violated a lot -->
+    <exclude name="FieldDeclarationsShouldBeAtStartOfClass" /> <!-- Violated a lot -->
     <exclude name="LambdaCanBeMethodReference" /> <!-- I like doing this but some people can find this confusing -->
     <exclude name="LocalVariableCouldBeFinal" /> <!-- Too verbose -->
     <exclude name="LongVariable" /> <!-- Too sensitive -->
@@ -30,32 +36,46 @@
     <exclude name="ShortMethodName" /> <!-- Too sensitive -->
     <exclude name="ShortVariable" /> <!-- Too sensitive -->
     <exclude name="TooManyStaticImports" /> <!-- Welcome to FRC... -->
+    <exclude name="UseExplicitTypes" /> <!-- Seems to be pretty standard in the project -->
+    <exclude name="UseUnderscoresInNumericLiterals" /> <!-- Not necessary -->
   </rule>
 
   <rule ref="category/java/design.xml">
+    <exclude name="CognitiveComplexity" /> <!-- Violated a lot -->
+    <exclude name="CouplingBetweenObjects" /> <!-- This is done a lot. I'll leave it for now. -->
     <exclude name="DataClass" /> <!-- We should not use data classes -->
     <exclude name="ExcessiveImports" /> <!-- Welcome to FRC... -->
     <exclude name="LawOfDemeter" /> <!-- This happens a lot for us. To fix, it would require a lot of copying.
       I'll save my programmers time... -->
+    <exclude name="LoosePackageCoupling" /> <!-- This rule was causing bugs in PMD itself. Disabling -->
+    <exclude name="TooManyMethods" /> <!-- Violated a lot -->
   </rule>
 
   <rule ref="category/java/documentation.xml">
     <exclude name="CommentRequired" /> <!-- Currently, our style doesn't require JavaDoc but we should. Let's enable
       this later. -->
     <exclude name="CommentSize" /> <!-- I'm fine with long comments as long as they maintain good information. -->
+    <exclude name="UncommentedEmptyConstructor" /> <!-- Not necessary -->
+    <exclude name="UncommentedEmptyMethodBody" /> <!-- Not necessary -->
   </rule>
 
   <rule ref="category/java/errorprone.xml">
+    <exclude name="AvoidCatchingGenericException" /> <!-- Used a lot in lock context. I'll stay far away -->
+    <exclude name="AvoidFieldNameMatchingMethodName" /> <!-- Violated often -->
     <exclude name="AvoidLiteralsInIfCondition" /> <!-- I personally think this is fine and readable -->
     <exclude name="CloseResource" /> <!-- Many violations exist currently. We may want to do something about this
       to prevent resource leaks. -->
+    <exclude name="ConstructorCallsOverridableMethod" /> <!-- This is used often in subsystem construction -->
   </rule>
 
   <rule ref="category/java/multithreading.xml">
+    <exclude name="AvoidSynchronizedAtMethodLevel" /> <!-- Leads to complicated locking -->
     <exclude name="DoNotUseThreads" /> <!-- Need to use threads -->
   </rule>
 
-  <rule ref="category/java/performance.xml" />
+  <rule ref="category/java/performance.xml">
+    <exclude name="AvoidInstantiatingObjectsInLoops" /> <!-- We do this a lot and I think this is fine. Minimal performance effect. -->
+  </rule>
 
   <rule ref="category/java/security.xml" />
 

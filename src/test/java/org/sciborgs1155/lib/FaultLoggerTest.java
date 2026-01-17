@@ -70,15 +70,11 @@ public class FaultLoggerTest {
     FaultLogger.update();
     FaultLogger.update();
 
-    // System.out.println(totalErrors.get().toString());
-    for (var e : totalErrors.get()) {
-      System.out.println(e);
-    }
-
     assertEquals(1, activeErrors.get().length);
     assertEquals(1, totalErrors.get().length);
   }
 
+  @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
   @Test
   void registerSpark() {
     SparkFlex spark = new SparkFlex(10, MotorType.kBrushless);
@@ -86,6 +82,7 @@ public class FaultLoggerTest {
     spark.close();
   }
 
+  @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
   @Test
   void registerTalon() {
     TalonFX talon = new TalonFX(10);

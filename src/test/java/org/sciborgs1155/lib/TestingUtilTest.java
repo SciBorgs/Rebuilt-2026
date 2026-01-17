@@ -37,17 +37,18 @@ public class TestingUtilTest {
     x = 0;
   }
 
+  @SuppressWarnings("PMD.SignatureDeclareThrowsException")
   @AfterEach
   public void clear() throws Exception {
     reset();
     x = 0;
   }
 
-  public void increment() {
+  private void increment() {
     x += 1;
   }
 
-  public void set(int x) {
+  private void set(int x) {
     this.x = x;
   }
 
@@ -57,9 +58,9 @@ public class TestingUtilTest {
   }
 
   @org.junit.jupiter.api.Test
-  public void fromCommandTest() throws Exception {
+  public void fromCommandTest() {
     assertEquals(0, x);
-    Test t = Test.fromCommand(Commands.runOnce(this::increment));
+    Test t = Test.fromCommand(runOnce(this::increment));
     Command c = toCommand(t);
     runToCompletion(c);
     assertEquals(1, x);

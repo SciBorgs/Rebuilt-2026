@@ -5,11 +5,6 @@ plugins {
     id 'pmd' // PMD for static analysis
 }
 
-pmd {
-    toolVersion = "7.20.0"
-    consoleOutput = true
-}
-
 java {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
@@ -145,6 +140,13 @@ wpi.java.configureTestTasks(test)
 // Configure string concat to always inline compile
 tasks.withType(JavaCompile) {
     options.compilerArgs.add '-XDstringConcat=inline'
+}
+
+// Static analysis
+
+pmd {
+    toolVersion = "7.20.0"
+    consoleOutput = true
 }
 
 

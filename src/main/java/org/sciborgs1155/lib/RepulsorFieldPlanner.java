@@ -6,6 +6,7 @@ import static org.sciborgs1155.lib.LoggingUtils.*;
 
 import choreo.trajectory.SwerveSample;
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -216,6 +217,16 @@ public class RepulsorFieldPlanner {
     // }
     this.prevSample = sample(Translation2d.kZero, Rotation2d.kZero, 0, 0, 0);
   }
+
+  @NotLogged private boolean useGoalInArrows;
+
+  @SuppressWarnings("PMD.ImmutableField")
+  @NotLogged
+  private boolean useObstaclesInArrows = true;
+
+  @SuppressWarnings("PMD.ImmutableField")
+  @NotLogged
+  private boolean useWallsInArrows = true;
 
   // private Pose2d arrowBackstage = new Pose2d(-10, -10, Rotation2d.kZero);
 

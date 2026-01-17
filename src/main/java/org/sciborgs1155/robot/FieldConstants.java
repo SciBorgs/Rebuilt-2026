@@ -59,6 +59,17 @@ public final class FieldConstants {
             pose.getRotation().plus(Rotation2d.k180deg));
   }
 
+  /**
+   * Reflects width-wise distances through the middle of the field if the alliance is red, otherwise
+   * does nothing
+   *
+   * @param blueDist The input distance, usually for the blue alliance.
+   * @return A reflected distance, only if the alliance is red.
+   */
+  private static Distance reflectDistance(Distance blueDist) {
+    return alliance() == Alliance.Blue ? blueDist : WIDTH.minus(blueDist);
+  }
+
   public static Alliance allianceFromPose(Pose2d pose) {
     return pose.getX() > LENGTH.in(Meters) / 2 ? Alliance.Red : Alliance.Blue;
   }

@@ -655,6 +655,33 @@ public class Drive extends SubsystemBase implements AutoCloseable {
   }
 
   /**
+   * Applies forward acceleration limiting to the desired acceleration based on the current
+   * velocity. Limits the acceleration in the direction of the current velocity to prevent excessive
+   * acceleration.
+   *
+   * @param desiredAccel The desired field-relative acceleration vector.
+   * @return The adjusted acceleration vector after applying forward acceleration limits.
+   */
+  private Vector<N2> forwardAccelerationLimit(Vector<N2> deltaV) {
+    Vector<N2> currVel =
+        VecBuilder.fill(
+            fieldRelativeChassisSpeeds().vxMetersPerSecond,
+            fieldRelativeChassisSpeeds().vyMetersPerSecond);
+    double limit =
+        maxAccel.get()
+            * PERIOD.in(Seconds)
+            * (1 - Math.min(1, currVel.norm() / MAX_SPEED.in(MetersPerSecond)));
+    log("/Robot/drive/accel limit", limit);
+    Vector<N2> proj = deltaV.projection(currVel);
+    if (proj.norm() > limit && proj.dot(currVel) > 0) {
+      Vector<N2> parallel = proj.unit().times(limit);
+      Vector<N2> perpendicular = deltaV.minus(proj);
+      return parallel.plus(perpendicular);
+    }
+    return deltaV;
+  }
+
+  /**
    * Applies skid acceleration limiting based on the maximum allowed skid acceleration. Ensures that
    * the acceleration does not exceed the skid limit to prevent skidding.
    *

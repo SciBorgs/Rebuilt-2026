@@ -4,9 +4,25 @@ import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Volts;
-import static org.sciborgs1155.robot.hood.HoodConstants.*;
+import static org.sciborgs1155.robot.hood.HoodConstants.DEFAULT_ANGLE;
+import static org.sciborgs1155.robot.hood.HoodConstants.MAX_ACCEL;
+import static org.sciborgs1155.robot.hood.HoodConstants.MAX_ANGLE;
+import static org.sciborgs1155.robot.hood.HoodConstants.MAX_VELOCITY;
+import static org.sciborgs1155.robot.hood.HoodConstants.MIN_ANGLE;
+import static org.sciborgs1155.robot.hood.HoodConstants.POS_TOLERANCE;
+import static org.sciborgs1155.robot.hood.HoodConstants.RAMP_RATE;
+import static org.sciborgs1155.robot.hood.HoodConstants.STEP_VOLTAGE;
+import static org.sciborgs1155.robot.hood.HoodConstants.TIME_OUT;
+import static org.sciborgs1155.robot.hood.HoodConstants.kA;
+import static org.sciborgs1155.robot.hood.HoodConstants.kD;
+import static org.sciborgs1155.robot.hood.HoodConstants.kG;
+import static org.sciborgs1155.robot.hood.HoodConstants.kI;
+import static org.sciborgs1155.robot.hood.HoodConstants.kP;
+import static org.sciborgs1155.robot.hood.HoodConstants.kS;
+import static org.sciborgs1155.robot.hood.HoodConstants.kV;
 
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
@@ -19,6 +35,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
 import java.util.function.DoubleSupplier;
 import org.sciborgs1155.robot.Robot;
 
+/** Hood subsystem for adjusting vertical shooting angle of the fuel */
 public class Hood extends SubsystemBase {
 
   private final HoodIO hardware;
@@ -49,10 +66,19 @@ public class Hood extends SubsystemBase {
             new Mechanism(voltage -> hardware.setVoltage(voltage.in(Volts)), null, this));
   }
 
+  /**
+   * returns a new hood subsystem, which will have hardware if hood is real and
+   * sim if not
+   * @return a real or sim hood subsystem
+   */
   public static Hood create() {
     return new Hood(Robot.isReal() ? new RealHood() : new SimHood());
   }
 
+  /**
+   * returns a hood with no interface
+   * @return
+   */
   public static Hood none() {
     return new Hood(new NoHood());
   }
@@ -63,7 +89,7 @@ public class Hood extends SubsystemBase {
    */
   @Logged
   public double angle() {
-    return hardware.angle().in(Radians);
+    return hardware.angle();
   }
 
   /**
@@ -85,12 +111,13 @@ public class Hood extends SubsystemBase {
 
   /**
    * gets the current velocity of the hood
-   * @return current velocity of the hood
+   * @return current velocity of the hood 
    */
   @Logged
   public double velocity() {
     return hardware.velocity();
   }
+
 
   @Logged
   public double velocitySetpoint() {
@@ -107,29 +134,24 @@ public class Hood extends SubsystemBase {
   }
 
 
-  private Command goTo(DoubleSupplier goal) {
-    return run(
-        () -> {
-          double feedback = fb.calculate(angle(), goal.getAsDouble());
-          double feedforward = ff.calculate(angleSetpoint(), velocitySetpoint());
-          hardware.setVoltage(feedback + feedforward);
-        });
-  }
-
   /**
-   * moves the hood to a specified exit angle for the projectile
-   * @param angle
-   * @return a goTo command setting t
+   * @return Whether or not the elevator is at its desired state.
    */
-  public Command goToShootingAngle(DoubleSupplier angle) {
-    return goTo(
-        () ->
-            ((angle.getAsDouble() - HOOD_ANGLE.in(Radians) - Math.PI / 2)
-                * HOOD_RADIUS
-                / MOTOR_RADIUS));
+  @Logged
+  public boolean atGoal() {
+    return fb.atGoal();
   }
 
-  public Command goToShootingAngle(Angle angle) {
-    return goToShootingAngle(() -> angle.in(Radians));
+  public Command goTo(DoubleSupplier goal) {
+    return run(() -> update(goal.getAsDouble())).withName("Hood GoTo");
   }
+
+  private void update(double position) {
+    double goal = MathUtil.clamp(position, MIN_ANGLE.in(Radians), MAX_ANGLE.in(Radians));
+    double feedback = fb.calculate(angle(), goal);
+    double feedforward =
+        ff.calculate(fb.getSetpoint().position - MIN_ANGLE.in(Radians), fb.getSetpoint().velocity);
+    hardware.setVoltage(feedback + feedforward);
+  }
+
 }

@@ -9,9 +9,9 @@ import static org.sciborgs1155.robot.hood.HoodConstants.MOI;
 import static org.sciborgs1155.robot.hood.HoodConstants.STARTING_ANGLE;
 
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 
+//*hood simulated hardware interface */
 public class SimHood implements HoodIO {
 
   private SingleJointedArmSim sim; 
@@ -24,15 +24,15 @@ public class SimHood implements HoodIO {
             GEARING,
             MOI,
             HOOD_RADIUS,
-            MIN_ANGLE,
-            MAX_ANGLE,
+            MIN_ANGLE.in(Radians),
+            MAX_ANGLE.in(Radians),
             true,
-            STARTING_ANGLE);
+            STARTING_ANGLE.in(Radians));
   }
 
   @Override
-  public Angle angle() {
-    return Radians.of(sim.getAngleRads());
+  public double angle() {
+    return sim.getAngleRads() + MIN_ANGLE.in(Radians) + Math.PI / 2;
   }
 
   @Override

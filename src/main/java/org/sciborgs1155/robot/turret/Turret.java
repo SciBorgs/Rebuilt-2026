@@ -1,18 +1,24 @@
 package org.sciborgs1155.robot.turret;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 import static org.sciborgs1155.robot.Constants.PERIOD;
-import static org.sciborgs1155.robot.turret.TurretConstants.CONSTRAINTS;
+import static org.sciborgs1155.robot.turret.TurretConstants.*;
 import static org.sciborgs1155.robot.turret.TurretConstants.ControlConstants.*;
 
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.robot.Robot;
 
@@ -61,6 +67,9 @@ public class Turret extends SubsystemBase implements AutoCloseable {
   /** Visualization. Green = Position, Red = Setpoint */
   private final TurretVisualizer visualizer = new TurretVisualizer(6, 7);
 
+  // TODO ADD
+  private final SysIdRoutine sysIdRoutine;
+
   /**
    * Constructs a new turret subsystem.
    *
@@ -68,9 +77,32 @@ public class Turret extends SubsystemBase implements AutoCloseable {
    */
   public Turret(TurretIO turretIO) {
     motor = turretIO;
+
     controller.setTolerance(TOLERANCE.in(Radians));
 
-    setDefaultCommand(run());
+    sysIdRoutine =
+      new SysIdRoutine(
+          new SysIdRoutine.Config(RAMP_RATE, STEP_VOLTAGE, TIME_OUT),
+          new SysIdRoutine.Mechanism(
+              v -> motor.setVoltage(v), 
+              log -> {
+                log.motor("turret")
+                    .angularPosition(motor.position())
+                    .angularVelocity(motor.velocity());
+              },
+              this));
+
+    SmartDashboard.putData(
+        "Turret quasistatic clockwise", sysIdTest(SysIdTestType.QUASISTATIC, Direction.kForward));
+    SmartDashboard.putData(
+        "Turret quasistatic counterclockwise",
+        sysIdTest(SysIdTestType.QUASISTATIC, Direction.kReverse));
+    SmartDashboard.putData(
+        "Turret dynamic clockwise", sysIdTest(SysIdTestType.DYNAMIC, Direction.kForward));
+    SmartDashboard.putData(
+        "Turret dynamic counterclockwise", sysIdTest(SysIdTestType.DYNAMIC, Direction.kReverse));
+
+    // setDefaultCommand(run());
   }
 
   /**
@@ -101,6 +133,35 @@ public class Turret extends SubsystemBase implements AutoCloseable {
     return motor.position();
   }
 
+  // TODO ADD SYSID STUFF
+  private static final Angle MARGIN = Degrees.of(2);
+
+  public enum SysIdTestType {
+    QUASISTATIC,
+    DYNAMIC
+  }
+
+  public Command sysIdTest(SysIdTestType type, Direction direction) {
+    Angle startAngle = (direction == Direction.kForward) ? MIN_ANGLE : MAX_ANGLE;
+    Angle endAngle = (direction == Direction.kForward) ? MAX_ANGLE : MIN_ANGLE;
+
+    Command goToStart =
+        Commands.runOnce(() -> setAngle(startAngle)).andThen(run().until(controller::atGoal));
+
+    Command test =
+        switch (type) {
+          case QUASISTATIC -> sysIdRoutine.quasistatic(direction);
+          case DYNAMIC -> sysIdRoutine.dynamic(direction);
+        };
+
+    return goToStart.andThen(test.until(() -> motor.position().isNear(endAngle, MARGIN)));
+  }
+
+  public void randomAngle() {
+    Angle setpoint = Radians.of(Math.random() * Math.PI * 2).minus(Radians.of(Math.PI));
+    setAngle(setpoint);
+  }
+
   /**
    * Continuously orients the turret towards the angle setpoint specified in the {@code setAngle}
    * method.
@@ -108,6 +169,7 @@ public class Turret extends SubsystemBase implements AutoCloseable {
    * @return A command to continuously orient the turret towards the angle setpoint.
    */
   public Command run() {
+    System.out.println("help");
     return run(
         () -> {
           // PID CONTROL (RADIANS)

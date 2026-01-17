@@ -5,14 +5,20 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.Second;
+import static edu.wpi.first.units.Units.Seconds;
+import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix6.CANBus;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.MomentOfInertia;
+import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.units.measure.Velocity;
+import edu.wpi.first.units.measure.Voltage;
 
 /** Constants used in the {@code Turret} subsystem. */
 public class TurretConstants {
@@ -23,9 +29,7 @@ public class TurretConstants {
   public static final double SENSOR_TO_MECHANISM_RATIO = 2 * Math.PI / GEAR_RATIO; // TODO: Update.
   public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.026); // TODO: Update.
   public static final Constraints CONSTRAINTS = new Constraints(0, 0); // TODO: Update.
-
   public static final Distance TURRET_LENGTH = Meters.of(0.1); // TODO: Update.
-  public static final Pose2d TURRET_ORIGIN = new Pose2d(); // TODO: Update.
 
   public static final Angle MAX_ANGLE = Degrees.of(175);
   public static final Angle MIN_ANGLE = Degrees.of(-175);
@@ -48,4 +52,8 @@ public class TurretConstants {
     // TOLERANCES
     public static final Angle TOLERANCE = Radians.of(0.01);
   }
+
+  public static final Velocity<VoltageUnit> RAMP_RATE = Volts.of(0.25).per(Second);
+  public static final Voltage STEP_VOLTAGE = Volts.of(0.25);
+  public static final Time TIME_OUT = Seconds.of(6.0);
 }

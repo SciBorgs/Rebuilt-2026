@@ -41,9 +41,41 @@ public class Shooting {
   /**
    * 
    * I just want to write down some Pseudocode for now, since it seems like this is probably something that would not get done until a lot later. 
-   * I will be mostly repurposing and
+   * I will be mostly repurposing and reusing most of these commands
    * 
+   * --> it would be best if I can softcode this into a sort of utility class
+   * --> it would be pretty cool if we could give something like this its own repository, too!
    * 
+   *  shootWhileDriving (InputStream vx, vy) {
+   *    return shoot(
+   *      () -> rotationalVelocityFromNoteVelocity(CalculateFuelVelocity()); //I wonder if this is a new calation because the shooters's angular velocity doesn't translate perfectly into note-velocity (translational and rotational)
+   *      () ->
+   *          turret.atPosition(yawFromFuelVelocity(calculateFuelVelocity()));
+   *      
+   *           
+    *    )
+   *  }
+   * 
+   * I think that this structure is one of the most important to implement: 
+   * 
+   * public Vector<N3> calculateNoteVelocity(Pose2d robotPose) {
+      ChassisSpeeds speeds = drive.getFieldRelativeChassisSpeeds();
+      Vector<N3> robotVelocity =
+          VecBuilder.fill(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond, 0);
+      Translation2d difference = translationToSpeaker(robotPose.getTranslation());
+      double shotVelocity = calculateStationaryVelocity(difference.getNorm());
+      Rotation3d noteOrientation =
+          new Rotation3d(
+              0,
+              -calculateStationaryPitch(
+                  robotPoseFacingSpeaker(robotPose.getTranslation()), shotVelocity, pivot.position()),
+              difference.getAngle().getRadians());
+      // rotate unit forward vector by note orientation and scale by our shot velocity
+      Vector<N3> noteVelocity =
+          new Translation3d(1, 0, 0).rotateBy(noteOrientation).toVector().unit().times(shotVelocity);
+
+      return noteVelocity.minus(robotVelocity);
+    }
    * 
    */
 }

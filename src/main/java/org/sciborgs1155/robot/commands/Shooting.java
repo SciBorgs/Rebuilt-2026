@@ -36,4 +36,14 @@ public class Shooting {
   public Command shoot(DoubleSupplier desiredVelocity, BooleanSupplier shootCondition) {
     return null;
   }
+
+
+  /**
+   * 
+   * I just want to write down some Pseudocode for now, since it seems like this is probably something that would not get done until a lot later. 
+   * I will be mostly repurposing and
+   * 
+   * 
+   * 
+   */
 }

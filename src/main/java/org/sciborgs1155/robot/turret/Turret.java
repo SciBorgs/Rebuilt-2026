@@ -55,6 +55,9 @@ public class Turret extends SubsystemBase implements AutoCloseable {
   /** {@code Feedforward} used to aid in orienting the turret to a specified angle. */
   @NotLogged private final SimpleMotorFeedforward feedforward;
 
+  /** Visualization. Green = Position, Red = Setpoint */
+  private final TurretVisualizer visualizer = new TurretVisualizer();
+
   public Turret(TurretIO turretIO) {
     motor = turretIO;
     feedforward = new SimpleMotorFeedforward(FF.S, FF.V, FF.A, PERIOD.in(Seconds));
@@ -63,6 +66,8 @@ public class Turret extends SubsystemBase implements AutoCloseable {
     controller.enableContinuousInput(-Math.PI, Math.PI);
     controller.setTolerance(
         PID.POSITION_TOLERANCE.in(Radians), PID.VELOCITY_TOLERANCE.in(RadiansPerSecond));
+
+    setDefaultCommand(run());
   }
 
   /**
@@ -103,6 +108,10 @@ public class Turret extends SubsystemBase implements AutoCloseable {
   public void periodic() {
     LoggingUtils.log("Robot/Turret/POSITION", motor.position());
     LoggingUtils.log("Robot/Turret/VELOCITY", motor.velocity());
+    LoggingUtils.log("Robot/Turret/SETPOINT", controller.getSetpoint().position);
+
+    visualizer.setPosition(motor.position().in(Radians));
+    visualizer.setSetpoint(controller.getSetpoint().position);
   }
 
   @Override

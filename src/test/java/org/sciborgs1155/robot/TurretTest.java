@@ -37,7 +37,9 @@ public class TurretTest {
     turret.setAngle(setpoint);
     run(turret.run());
 
-    fastForward(500);
+    fastForward(10000);
+    System.out.println("setpoint = " + setpoint.in(Radians));
+    System.out.println("position = " + turret.position().in(Radians));
     assertEquals(
         setpoint.in(Radians), turret.position().in(Radians), 0.01, "Turret orientation failed!");
   }

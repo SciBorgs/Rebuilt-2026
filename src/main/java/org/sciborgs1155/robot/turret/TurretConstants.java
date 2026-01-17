@@ -53,7 +53,7 @@ public class TurretConstants {
   }
 
   public static final class FF {
-    public static final double S = 1; // TODO: Update.
+    public static final double S = 0; // TODO: Update.
     public static final double V = 0; // TODO: Update.
     public static final double A = 0; // TODO: Update.
   }

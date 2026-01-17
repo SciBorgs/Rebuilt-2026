@@ -147,6 +147,8 @@ tasks.withType(JavaCompile) {
 pmd {
     toolVersion = "7.20.0"
     consoleOutput = true
+    ruleSetFiles = files("sciborgs1155-pmd-ruleset.xml")
+    ruleSets = [] // Explicitly set so we don't use the default ruleset
 }
 
 

@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<ruleset name="sciborgs1155-pmd-ruleset"
+  xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
+
+  <description>
+    The PMD config for FRC team 1155, the SciBorgs.
+    Please ask Jacob the programming mentor or the programming heads before
+    excluding rules.
+    If we are suppressing many violations of the same rule, we should
+    probably exclude it.
+    If you exclude a rule, please list the reason you excluded it.
+  </description>
+
+  <rule ref="category/java/bestpractices.xml" />
+
+  <rule ref="category/java/codestyle.xml">
+    <exclude name="AtLeastOneConstructor" /> <!-- Unnecessary code if only default needed -->
+    <exclude name="CallSuperInConstructor" /> <!-- Compiler will catch this automatically if needed -->
+    <exclude name="CommentDefaultAccessModifier" /> <!-- Annoying and confusing -->
+    <exclude name="LambdaCanBeMethodReference" /> <!-- I like doing this but some people can find this confusing -->
+    <exclude name="LocalVariableCouldBeFinal" /> <!-- Too verbose -->
+    <exclude name="LongVariable" /> <!-- Too sensitive -->
+    <exclude name="MethodArgumentCouldBeFinal" /> <!-- Too verbose -->
+    <exclude name="OnlyOneReturn" /> <!-- I disagree with this style -->
+    <exclude name="ShortClassName" /> <!-- Too sensitive -->
+    <exclude name="ShortMethodName" /> <!-- Too sensitive -->
+    <exclude name="ShortVariable" /> <!-- Too sensitive -->
+  </rule>
+
+  <rule ref="category/java/design.xml">
+    <exclude name="DataClass" /> <!-- We should not use data classes -->
+    <exclude name="ExcessiveImports" /> <!-- Welcome to FRC... -->
+    <exclude name="LawOfDemeter" /> <!-- This happens a lot for us. To fix, it would require a lot of copying.
+      I'll save my programmers time... -->
+  </rule>
+
+  <rule ref="category/java/documentation.xml">
+    <exclude name="CommentRequired" /> <!-- Currently, our style doesn't require JavaDoc but we should. Let's enable
+      this later. -->
+    <exclude name="CommentSize" /> <!-- I'm fine with long comments as long as they maintain good information. -->
+  </rule>
+
+  <rule ref="category/java/errorprone.xml" />
+
+  <rule ref="category/java/multithreading.xml" />
+
+  <rule ref="category/java/performance.xml" />
+
+  <rule ref="category/java/security.xml" />
+
+</ruleset>

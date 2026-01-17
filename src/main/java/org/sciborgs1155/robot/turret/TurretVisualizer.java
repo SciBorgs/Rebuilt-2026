@@ -12,6 +12,7 @@ public class TurretVisualizer {
   private final MechanismLigament2d positionArm;
   private final MechanismLigament2d setpointArm;
 
+  /** Creates a new turret visualizer using two mechanism2ds. (Current position and setpoint) */
   public TurretVisualizer() {
     mech = new Mechanism2d(6, 7);
 
@@ -26,10 +27,20 @@ public class TurretVisualizer {
     SmartDashboard.putData("TurretVisualizer", mech);
   }
 
+  /**
+   * Set the angle of the visualized position arm.
+   *
+   * @param double The angle in radians.
+   */
   public void setPosition(double angleRad) {
     positionArm.setAngle(Units.radiansToDegrees(angleRad));
   }
 
+  /**
+   * Set the angle of the visualized setpoint arm.
+   *
+   * @param double The angle in radians.
+   */
   public void setSetpoint(double angleRad) {
     setpointArm.setAngle(Units.radiansToDegrees(angleRad));
   }

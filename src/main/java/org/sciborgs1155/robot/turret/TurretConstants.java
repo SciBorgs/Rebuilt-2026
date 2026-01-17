@@ -23,7 +23,7 @@ public class TurretConstants {
 
   public static final double GEAR_RATIO = 100.0; // TODO: Update.
 
-  public static final double CONVERSION_FACTOR = (2.0 * Math.PI) / GEAR_RATIO; // TODO: Update.
+  public static final double CONVERSION_FACTOR = 2.0 * Math.PI / GEAR_RATIO; // TODO: Update.
 
   public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.026); // TODO: Update.
 

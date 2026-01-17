@@ -11,19 +11,19 @@ public interface TurretIO extends AutoCloseable {
    *
    * @param voltage The voltage to apply to the motor.
    */
-  public void setVoltage(Voltage voltage);
+  void setVoltage(Voltage voltage);
 
   /**
    * Returns the angular position of the motor.
    *
    * @return The angular position of the motor.
    */
-  public Angle position();
+  Angle position();
 
   /**
    * Returns the angular velocity of the motor.
    *
    * @return The angular velocity of the motor.
    */
-  public AngularVelocity velocity();
+  AngularVelocity velocity();
 }

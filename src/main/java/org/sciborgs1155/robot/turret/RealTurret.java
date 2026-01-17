@@ -21,6 +21,7 @@ public class RealTurret implements TurretIO {
    */
   private final TalonFX motor = new TalonFX(MOTOR, CAN_BUS);
 
+  /** Constructs the hardware implementation of the turret motor. */
   public RealTurret() {
     // TALON UTILS
     TalonUtils.addMotor(motor);

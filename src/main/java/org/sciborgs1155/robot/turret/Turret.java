@@ -58,6 +58,11 @@ public class Turret extends SubsystemBase implements AutoCloseable {
   /** Visualization. Green = Position, Red = Setpoint */
   private final TurretVisualizer visualizer = new TurretVisualizer();
 
+  /**
+   * Constructs a new turret subsystem.
+   *
+   * @param pivot The hardware implementation to use.
+   */
   public Turret(TurretIO turretIO) {
     motor = turretIO;
     feedforward = new ArmFeedforward(FF.S, FF.V, FF.A, PERIOD.in(Seconds));

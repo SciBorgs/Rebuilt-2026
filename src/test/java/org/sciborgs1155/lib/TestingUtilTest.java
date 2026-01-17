@@ -39,7 +39,6 @@ public class TestingUtilTest {
   }
 
   /** Resets the test environment and x to 0 after each test. */
-  @SuppressWarnings("PMD.SignatureDeclareThrowsException")
   @AfterEach
   public void clear() throws Exception {
     reset();

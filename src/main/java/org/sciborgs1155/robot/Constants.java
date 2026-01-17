@@ -10,6 +10,7 @@ import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import org.sciborgs1155.lib.ReferenceHolder;
 import org.sciborgs1155.robot.drive.DriveConstants;
 
 /**
@@ -45,12 +46,11 @@ public final class Constants {
   }
 
   /** The current robot state, as in the type. Remember to update! */
-  @SuppressWarnings("PMD.MutableStaticState") // Let's not do this please
-  public static RobotType robotType = RobotType.FULL;
+  public static final ReferenceHolder<RobotType> ROBOT_TYPE =
+      new ReferenceHolder<>(RobotType.FULL);
 
   /** States if we are in tuning mode. Ideally, keep it at false when not used. */
-  @SuppressWarnings("PMD.MutableStaticState") // Let's not do this please
-  public static boolean tuning;
+  public static final ReferenceHolder<Boolean> TUNING = new ReferenceHolder<>(false);
 
   // TODO: UPDATE ALL OF THESE VALUES.
   /** Describes physical properites of the robot. */

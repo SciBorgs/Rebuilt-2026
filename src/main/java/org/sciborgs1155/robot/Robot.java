@@ -8,7 +8,7 @@ import static edu.wpi.first.wpilibj2.command.button.RobotModeTriggers.*;
 import static org.sciborgs1155.lib.LoggingUtils.log;
 import static org.sciborgs1155.robot.Constants.DEADBAND;
 import static org.sciborgs1155.robot.Constants.PERIOD;
-import static org.sciborgs1155.robot.Constants.tuning;
+import static org.sciborgs1155.robot.Constants.TUNING;
 import static org.sciborgs1155.robot.drive.DriveConstants.*;
 
 import com.ctre.phoenix6.SignalLogger;
@@ -95,7 +95,7 @@ public class Robot extends CommandRobot {
     FaultLogger.register(pdh);
     SmartDashboard.putData("Auto Chooser", autos);
 
-    if (tuning) {
+    if (TUNING.get()) {
       addPeriodic(
           () ->
               log(
@@ -172,7 +172,7 @@ public class Robot extends CommandRobot {
 
     drive.setDefaultCommand(drive.drive(x, y, omega).withName("joysticks"));
 
-    if (tuning) {
+    if (TUNING.get()) {
       SignalLogger.enableAutoLogging(false);
 
       // manual .start() call is blocking, for up to 100ms

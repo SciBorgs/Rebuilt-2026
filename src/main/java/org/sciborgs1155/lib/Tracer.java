@@ -9,6 +9,8 @@ import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
@@ -40,185 +42,188 @@ import java.util.function.Supplier;
  *
  * @see https://github.com/wpilibsuite/allwpilib/pull/7099
  */
-public class Tracer {
+@SuppressWarnings("PMD.UseConcurrentHashMap") // Not sure if concurrent access
+public final class Tracer {
+
+  // Prevents instantiation
+  private Tracer() {}
+
   private static final class TraceStartData {
-    private double m_startTime;
-    private double m_startGCTotalTime;
+    private double mStartTime;
+    private double mStartGCTotalTime;
 
     private void set(double startTime, double startGCTotalTime) {
-      this.m_startTime = startTime;
-      this.m_startGCTotalTime = startGCTotalTime;
+      this.mStartTime = startTime;
+      this.mStartGCTotalTime = startGCTotalTime;
     }
   }
 
-  /**
-   * All of the tracers persistent state in a single object to be stored in a {@link ThreadLocal}.
-   */
+  /** All the tracers persistent state in a single object to be stored in a {@link ThreadLocal}. */
   @SuppressWarnings("PMD.RedundantFieldInitializer")
   private static final class TracerState {
-    private final NetworkTable m_rootTable;
+    private final NetworkTable mRootTable;
 
     /**
      * The stack of traces, every startTrace will add to this stack and every endTrace will remove
      * from this stack.
      */
-    private final ArrayList<String> m_traceStack = new ArrayList<>();
+    private final List<String> mTraceStack = new ArrayList<>();
 
     /**
      * ideally we only need `traceStack` but in the interest of memory optimization and string
      * concatenation speed we store the history of the stack to reuse the stack names.
      */
-    private final ArrayList<String> m_traceStackHistory = new ArrayList<>();
+    private final List<String> mTraceStackHistory = new ArrayList<>();
 
     /** The time of each trace, the key is the trace name, modified every endTrace. */
-    private final HashMap<String, Double> m_traceTimes = new HashMap<>();
+    private final Map<String, Double> mTraceTimes = new HashMap<>();
 
     /**
      * The start time of each trace and the gc time at the start of the trace, the key is the trace
      * name, modified every startTrace and endTrace.
      */
-    private final HashMap<String, TraceStartData> m_traceStartTimes = new HashMap<>();
+    private final Map<String, TraceStartData> mTraceStartTimes = new HashMap<>();
 
     /** the publishers for each trace, the key is the trace name, modified every endCycle. */
-    private final HashMap<String, DoublePublisher> m_publishers = new HashMap<>();
+    private final Map<String, DoublePublisher> mPublishers = new HashMap<>();
 
     /*
      * If the cycle is poisoned, it will warn the user
      * and not publish any data.
      */
-    boolean m_cyclePoisoned = false;
+    boolean mCyclePoisoned = false;
 
     /** If the tracer is disabled, it will not publish any data or do any string manipulation. */
-    boolean m_disabled = false;
+    boolean mDisabled = false;
 
     /**
      * If the tracer should be disabled next cycle and every cycle after that until this flag is set
      * to false. Disabling is done this way to prevent disabling/enabling.
      */
-    boolean m_disableNextCycle = false;
+    boolean mDisableNextCycle = false;
 
     /**
      * Stack size is used to keep track of stack size even when disabled, calling `EndCycle` is
      * important when disabled or not to update the disabled state in a safe manner.
      */
-    int m_stackSize = 0;
+    int mStackSize = 0;
 
     // the garbage collector beans
-    private final ArrayList<GarbageCollectorMXBean> m_gcs =
+    private final List<GarbageCollectorMXBean> mGcs =
         new ArrayList<>(ManagementFactory.getGarbageCollectorMXBeans());
-    private final DoublePublisher m_gcTimeEntry;
-    private double m_gcTimeThisCycle = 0.0;
+    private final DoublePublisher mGcTimeEntry;
+    private double mGcTimeThisCycle = 0.0;
 
     private TracerState(String name, boolean threadLocalConstruction) {
-      if (singleThreadedMode.get() && threadLocalConstruction) {
+      if (SINGLE_THREADED_MODE.get() && threadLocalConstruction) {
         DriverStation.reportError(
             "[Tracer] Tracer is in single threaded mode, cannot start traces on multiple threads",
             true);
-        this.m_disabled = true;
+        this.mDisabled = true;
       }
-      anyTracesStarted.set(true);
+      ANY_TRACES_STARTED.set(true);
       if (name == null) {
-        this.m_rootTable = NetworkTableInstance.getDefault().getTable("Tracer");
+        this.mRootTable = NetworkTableInstance.getDefault().getTable("Tracer");
       } else {
-        this.m_rootTable = NetworkTableInstance.getDefault().getTable("Tracer").getSubTable(name);
+        this.mRootTable = NetworkTableInstance.getDefault().getTable("Tracer").getSubTable(name);
       }
-      this.m_gcTimeEntry = m_rootTable.getDoubleTopic("GCTime").publish();
+      this.mGcTimeEntry = mRootTable.getDoubleTopic("GCTime").publish();
     }
 
     private String appendTraceStack(String trace) {
-      m_stackSize++;
-      if (m_disabled) {
+      mStackSize++;
+      if (mDisabled) {
         return "";
       }
-      m_traceStack.add(trace);
+      mTraceStack.add(trace);
       StringBuilder sb = new StringBuilder();
-      for (int i = 0; i < m_traceStack.size(); i++) {
-        sb.append(m_traceStack.get(i));
-        if (i < m_traceStack.size() - 1) {
+      for (int i = 0; i < mTraceStack.size(); i++) {
+        sb.append(mTraceStack.get(i));
+        if (i < mTraceStack.size() - 1) {
           sb.append('/');
         }
       }
       String str = sb.toString();
-      m_traceStackHistory.add(str);
+      mTraceStackHistory.add(str);
       return str;
     }
 
     private String popTraceStack() {
-      m_stackSize = Math.max(0, m_stackSize - 1);
-      if (m_disabled) {
+      mStackSize = Math.max(0, mStackSize - 1);
+      if (mDisabled) {
         return "";
       }
-      if (m_traceStack.isEmpty() || m_traceStackHistory.isEmpty() || m_cyclePoisoned) {
-        m_cyclePoisoned = true;
+      if (mTraceStack.isEmpty() || mTraceStackHistory.isEmpty() || mCyclePoisoned) {
+        mCyclePoisoned = true;
         return "";
       }
-      m_traceStack.remove(m_traceStack.size() - 1);
-      return m_traceStackHistory.remove(m_traceStackHistory.size() - 1);
+      mTraceStack.remove(mTraceStack.size() - 1);
+      return mTraceStackHistory.remove(mTraceStackHistory.size() - 1);
     }
 
     private double totalGCTime() {
       double gcTime = 0;
-      for (GarbageCollectorMXBean gc : m_gcs) {
+      for (GarbageCollectorMXBean gc : mGcs) {
         gcTime += gc.getCollectionTime() / 1000.0;
       }
       return gcTime;
     }
 
     private void endCycle() {
-      if (m_disabled != m_disableNextCycle || m_cyclePoisoned) {
+      if (mDisabled != mDisableNextCycle || mCyclePoisoned) {
         // Gives publishers empty times,
         // reporting no data is better than bad data
-        for (var publisher : m_publishers.entrySet()) {
+        for (var publisher : mPublishers.entrySet()) {
           publisher.getValue().set(0.0);
         }
         return;
-      } else if (!m_disabled) {
+      } else if (!mDisabled) {
         // update times for all already existing publishers
-        for (var publisher : m_publishers.entrySet()) {
-          Double time = m_traceTimes.remove(publisher.getKey());
+        for (var publisher : mPublishers.entrySet()) {
+          Double time = mTraceTimes.remove(publisher.getKey());
           if (time == null) {
             time = 0.0;
           }
           publisher.getValue().set(time);
         }
         // create publishers for all new entries
-        for (var traceTime : m_traceTimes.entrySet()) {
-          DoublePublisher publisher = m_rootTable.getDoubleTopic(traceTime.getKey()).publish();
+        for (var traceTime : mTraceTimes.entrySet()) {
+          DoublePublisher publisher = mRootTable.getDoubleTopic(traceTime.getKey()).publish();
           publisher.set(traceTime.getValue());
-          m_publishers.put(traceTime.getKey(), publisher);
+          mPublishers.put(traceTime.getKey(), publisher);
         }
         // log gc time
-        if (!m_gcs.isEmpty()) {
-          m_gcTimeEntry.set(m_gcTimeThisCycle);
+        if (!mGcs.isEmpty()) {
+          mGcTimeEntry.set(mGcTimeThisCycle);
         }
-        m_gcTimeThisCycle = 0.0;
+        mGcTimeThisCycle = 0.0;
       }
 
       // clean up state
-      m_traceTimes.clear();
-      m_traceStackHistory.clear();
+      mTraceTimes.clear();
+      mTraceStackHistory.clear();
 
-      m_disabled = m_disableNextCycle;
+      mDisabled = mDisableNextCycle;
     }
   }
 
-  private static final AtomicBoolean singleThreadedMode = new AtomicBoolean(false);
-  private static final AtomicBoolean anyTracesStarted = new AtomicBoolean(false);
-  private static final ThreadLocal<TracerState> threadLocalState =
+  private static final AtomicBoolean SINGLE_THREADED_MODE = new AtomicBoolean(false);
+  private static final AtomicBoolean ANY_TRACES_STARTED = new AtomicBoolean(false);
+  private static final ThreadLocal<TracerState> THREAD_LOCAL_STATE =
       ThreadLocal.withInitial(() -> new TracerState(Thread.currentThread().getName(), true));
 
   private static void startTraceInner(final String name, final TracerState state) {
     String stack = state.appendTraceStack(name);
-    if (state.m_disabled) {
+    if (state.mDisabled) {
       return;
     }
-    TraceStartData data = state.m_traceStartTimes.computeIfAbsent(stack, k -> new TraceStartData());
+    TraceStartData data = state.mTraceStartTimes.computeIfAbsent(stack, k -> new TraceStartData());
     data.set(Timer.getFPGATimestamp(), state.totalGCTime());
   }
 
   private static void endTraceInner(final TracerState state) {
     String stack = state.popTraceStack();
-    if (!state.m_disabled) {
+    if (!state.mDisabled) {
       if (stack.isEmpty()) {
         DriverStation.reportError(
             "[Tracer] Stack is empty,"
@@ -226,13 +231,13 @@ public class Tracer {
             true);
         return;
       }
-      var startData = state.m_traceStartTimes.get(stack);
-      double gcTimeSinceStart = state.totalGCTime() - startData.m_startGCTotalTime;
-      state.m_gcTimeThisCycle += gcTimeSinceStart;
-      state.m_traceTimes.put(
-          stack, Timer.getFPGATimestamp() - startData.m_startTime - gcTimeSinceStart);
+      var startData = state.mTraceStartTimes.get(stack);
+      double gcTimeSinceStart = state.totalGCTime() - startData.mStartGCTotalTime;
+      state.mGcTimeThisCycle += gcTimeSinceStart;
+      state.mTraceTimes.put(
+          stack, Timer.getFPGATimestamp() - startData.mStartTime - gcTimeSinceStart);
     }
-    if (state.m_traceStack.isEmpty()) {
+    if (state.mTraceStack.isEmpty()) {
       state.endCycle();
     }
   }
@@ -244,7 +249,7 @@ public class Tracer {
    * @param name the name of the trace, should be unique to the function.
    */
   public static void startTrace(String name) {
-    startTraceInner(name, threadLocalState.get());
+    startTraceInner(name, THREAD_LOCAL_STATE.get());
   }
 
   /**
@@ -253,7 +258,7 @@ public class Tracer {
    * be dropped or incorrect data.
    */
   public static void endTrace() {
-    endTraceInner(threadLocalState.get());
+    endTraceInner(THREAD_LOCAL_STATE.get());
   }
 
   /**
@@ -265,9 +270,9 @@ public class Tracer {
    * threaded mode.
    */
   public static void disableGcLoggingForCurrentThread() {
-    TracerState state = threadLocalState.get();
-    state.m_gcTimeEntry.close();
-    state.m_gcs.clear();
+    TracerState state = THREAD_LOCAL_STATE.get();
+    state.mGcTimeEntry.close();
+    state.mGcs.clear();
   }
 
   /**
@@ -278,12 +283,12 @@ public class Tracer {
    * <p>This function should be called before any traces are started.
    */
   public static void enableSingleThreadedMode() {
-    if (anyTracesStarted.get()) {
+    if (ANY_TRACES_STARTED.get()) {
       DriverStation.reportError(
           "[Tracer] Cannot enable single-threaded mode after traces have been started", true);
     } else {
-      threadLocalState.set(new TracerState(null, false));
-      singleThreadedMode.set(true);
+      THREAD_LOCAL_STATE.set(new TracerState(null, false));
+      SINGLE_THREADED_MODE.set(true);
     }
   }
 
@@ -296,8 +301,8 @@ public class Tracer {
    * function was called.
    */
   public static void disableTracingForCurrentThread() {
-    final TracerState state = threadLocalState.get();
-    state.m_disableNextCycle = true;
+    final TracerState state = THREAD_LOCAL_STATE.get();
+    state.mDisableNextCycle = true;
   }
 
   /**
@@ -305,10 +310,10 @@ public class Tracer {
    * {@link #endTrace()} and {@link #trace(String, Runnable)} to work as normal.
    */
   public static void enableTracingForCurrentThread() {
-    final TracerState state = threadLocalState.get();
-    state.m_disableNextCycle = false;
-    if (state.m_stackSize == 0) {
-      state.m_disabled = false;
+    final TracerState state = THREAD_LOCAL_STATE.get();
+    state.mDisableNextCycle = false;
+    if (state.mStackSize == 0) {
+      state.mDisabled = false;
     }
   }
 
@@ -321,7 +326,7 @@ public class Tracer {
    * @param runnable the function to trace.
    */
   public static void trace(String name, Runnable runnable) {
-    final TracerState state = threadLocalState.get();
+    final TracerState state = THREAD_LOCAL_STATE.get();
     startTraceInner(name, state);
     runnable.run();
     endTraceInner(state);
@@ -337,7 +342,7 @@ public class Tracer {
    * @return the return value of the function.
    */
   public static <R> R trace(String name, Supplier<R> supplier) {
-    final TracerState state = threadLocalState.get();
+    final TracerState state = THREAD_LOCAL_STATE.get();
     startTraceInner(name, state);
     try {
       return supplier.get();
@@ -348,8 +353,8 @@ public class Tracer {
 
   /** This function is only to be used in tests and is package private to prevent misuse. */
   static void resetForTest() {
-    threadLocalState.remove();
-    singleThreadedMode.set(false);
-    anyTracesStarted.set(false);
+    THREAD_LOCAL_STATE.remove();
+    SINGLE_THREADED_MODE.set(false);
+    ANY_TRACES_STARTED.set(false);
   }
 }

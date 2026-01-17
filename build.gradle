@@ -1,7 +1,8 @@
 plugins {
     id "java"
     id "edu.wpi.first.GradleRIO" version "2026.1.1"
-    id 'com.diffplug.spotless' version '6.24.0'
+    id 'com.diffplug.spotless' version '6.24.0' // Spotless for styling
+    id 'pmd' // PMD for static analysis
 }
 
 java {
@@ -139,6 +140,15 @@ wpi.java.configureTestTasks(test)
 // Configure string concat to always inline compile
 tasks.withType(JavaCompile) {
     options.compilerArgs.add '-XDstringConcat=inline'
+}
+
+// Static analysis
+
+pmd {
+    toolVersion = "7.20.0"
+    consoleOutput = true
+    ruleSetFiles = files("sciborgs1155-pmd-ruleset.xml")
+    ruleSets = [] // Explicitly set so we don't use the default ruleset
 }
 
 

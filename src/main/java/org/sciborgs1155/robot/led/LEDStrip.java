@@ -22,9 +22,9 @@ import java.util.function.DoubleSupplier;
 import org.sciborgs1155.robot.Constants;
 
 public class LEDStrip extends SubsystemBase implements AutoCloseable {
-  private static final AddressableLED led = new AddressableLED(LED_PORT);
-  private static final AddressableLEDBuffer allBuffer = new AddressableLEDBuffer(LED_LENGTH);
-  private static boolean ledInitalized = false;
+  private static final AddressableLED LED = new AddressableLED(LED_PORT);
+  private static final AddressableLEDBuffer ALL_BUFFER = new AddressableLEDBuffer(LED_LENGTH);
+  private static boolean ledInitalized;
 
   public final int startLED;
   public final int endLED;
@@ -40,15 +40,16 @@ public class LEDStrip extends SubsystemBase implements AutoCloseable {
    * @param end The ending LED index, inclusive.
    * @param invert Whether or not apply the pattern backwards.
    */
+  @SuppressWarnings("PMD.AssignmentToNonFinalStatic") // Intended behavior
   public LEDStrip(int start, int end, boolean invert) {
     startLED = start;
     endLED = end;
     inverted = invert;
     if (!ledInitalized) {
       ledInitalized = true;
-      led.setLength(LED_LENGTH);
-      led.setData(allBuffer);
-      led.start();
+      LED.setLength(LED_LENGTH);
+      LED.setData(ALL_BUFFER);
+      LED.start();
     }
     selfBuffer = new AddressableLEDBuffer(end - start + 1);
     setDefaultCommand(
@@ -152,9 +153,9 @@ public class LEDStrip extends SubsystemBase implements AutoCloseable {
   private void update(LEDPattern pattern) {
     (inverted ? pattern.reversed() : pattern).applyTo(selfBuffer);
     for (int i = startLED; i <= endLED; i++) {
-      allBuffer.setLED(i, selfBuffer.getLED(i - startLED));
+      ALL_BUFFER.setLED(i, selfBuffer.getLED(i - startLED));
     }
-    led.setData(allBuffer);
+    LED.setData(ALL_BUFFER);
   }
 
   /** Alternates between two colors, for a given length for each. */
@@ -163,7 +164,7 @@ public class LEDStrip extends SubsystemBase implements AutoCloseable {
     return (reader, writer) -> {
       int bufLen = reader.getLength();
       for (int i = 0; i < bufLen; i++) {
-        writer.setLED(i, (((i % (color1length + color2length)) < color1length) ? color1 : color2));
+        writer.setLED(i, ((i % (color1length + color2length)) < color1length) ? color1 : color2);
       }
     };
   }
@@ -190,6 +191,6 @@ public class LEDStrip extends SubsystemBase implements AutoCloseable {
 
   @Override
   public void close() throws Exception {
-    led.close();
+    LED.close();
   }
 }

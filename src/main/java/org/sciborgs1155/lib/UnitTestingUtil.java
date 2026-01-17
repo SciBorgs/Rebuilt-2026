@@ -9,8 +9,11 @@ import edu.wpi.first.wpilibj.simulation.SimHooks;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
-public class UnitTestingUtil {
+public final class UnitTestingUtil {
   public static final Time TICK_RATE = Seconds.of(0.02);
+
+  // Prevents instantiation
+  private UnitTestingUtil() {}
 
   /** Sets up DS and initializes HAL with default values and asserts that it doesn't fail. */
   public static void setupTests() {
@@ -21,6 +24,7 @@ public class UnitTestingUtil {
     DriverStationSim.notifyNewData();
     FaultLogger.clear();
     FaultLogger.unregisterAll();
+    FaultLogger.setSuppressConsoleOutput(true);
     SimHooks.restartTiming();
   }
 
@@ -29,6 +33,7 @@ public class UnitTestingUtil {
    *
    * @param subsystems All subsystems that need to be closed
    */
+  @SuppressWarnings("PMD.SignatureDeclareThrowsException")
   public static void reset(AutoCloseable... subsystems) throws Exception {
     CommandScheduler.getInstance().unregisterAllSubsystems();
     CommandScheduler.getInstance().cancelAll();

@@ -107,6 +107,11 @@ public interface ModuleIO extends AutoCloseable {
    */
   void updateInputs(Rotation2d angle, double voltage);
 
+  /**
+   * Returns raw odometry data from the module.
+   *
+   * @return A 2D array containing odometry data.
+   */
   double[][] moduleOdometryData();
 
   /** Returns the list of positions of the module for the last tick, from a faster thread. */

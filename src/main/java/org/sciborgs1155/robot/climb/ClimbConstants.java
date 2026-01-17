@@ -17,7 +17,7 @@ import edu.wpi.first.units.measure.Mass;
 
 public class ClimbConstants {
 
-  public static final double kP = 1;
+  public static final double kP = 10;
   public static final double kI = 0;
   public static final double kD = 0;
 
@@ -43,19 +43,5 @@ public class ClimbConstants {
   public static final Mass WEIGHT = Pounds.of(6.42);
   public static final Distance SPROCKET_RADIUS = Inches.of(5);
 
-  public enum Level {
-    L1(Meters.of(0.3)),
-    L2(Meters.of(0.488)),
-    L3(Meters.of(0.838)),
-    L4(Meters.of(1.408)),
-
-    L2_ALGAE(Meters.of(0.119)),
-    L3_ALGAE(Meters.of(0.496));
-
-    public final Distance extension;
-
-    Level(Distance extension) {
-      this.extension = extension;
-    }
-  }
+  public static final boolean TUNING = true;
 }

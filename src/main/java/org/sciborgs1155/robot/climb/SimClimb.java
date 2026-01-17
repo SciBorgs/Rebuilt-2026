@@ -22,7 +22,7 @@ public class SimClimb implements ClimbIO {
           MIN_HEIGHT.in(Meters));
 
   public SimClimb() {
-    climb.update(0);
+    climb.update(PERIOD.in(Seconds));
   }
 
   @Override

@@ -27,6 +27,12 @@
       "/SmartDashboard/Drive Field": "Field2d",
       "/SmartDashboard/PathPlanner": "Alerts",
       "/SmartDashboard/PhotonAlerts": "Alerts",
+      "/SmartDashboard/Robot/climb/measurement visualizer": "Mechanism2d",
+      "/SmartDashboard/Robot/climb/setpoint visualizer": "Mechanism2d",
+      "/SmartDashboard/Robot/elevator/dynamic backward": "Command",
+      "/SmartDashboard/Robot/elevator/dynamic forward": "Command",
+      "/SmartDashboard/Robot/elevator/quasistatic backward": "Command",
+      "/SmartDashboard/Robot/elevator/quasistatic forward": "Command",
       "/SmartDashboard/Scheduler": "Scheduler",
       "/SmartDashboard/VisionSystemSim-main/Sim Field": "Field2d",
       "/SmartDashboard/drive dynamic backward": "Command",
@@ -46,6 +52,7 @@
       "/SmartDashboard/turn quasistatic backward": "Command",
       "/SmartDashboard/turn quasistatic forward": "Command",
       "Robot/autos": "String Chooser",
+      "Robot/climb/pid": "ProfiledPIDController",
       "Robot/drive/rotationController": "PIDController",
       "Robot/drive/translationController": "ProfiledPIDController"
     },
@@ -88,6 +95,16 @@
         "window": {
           "visible": true
         }
+      },
+      "/SmartDashboard/Robot/climb/measurement visualizer": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/Robot/climb/setpoint visualizer": {
+        "window": {
+          "visible": true
+        }
       }
     }
   },
@@ -102,6 +119,12 @@
         }
       },
       "Robot": {
+        "climb": {
+          "open": true,
+          "pid": {
+            "open": true
+          }
+        },
         "drive": {
           "Pose2d##v_/Robot/drive/getPose": {
             "Rotation2d##v_rotation": {
@@ -171,8 +194,7 @@
               "open": true
             },
             "open": true
-          },
-          "open": true
+          }
         },
         "open": true
       }

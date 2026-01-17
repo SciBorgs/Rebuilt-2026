@@ -7,6 +7,8 @@ import static edu.wpi.first.units.Units.Volts;
 import static org.sciborgs1155.robot.climb.ClimbConstants.*;
 
 import com.ctre.phoenix6.SignalLogger;
+
+import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -21,8 +23,8 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import java.util.function.DoubleSupplier;
 import org.sciborgs1155.lib.Tuning;
 import org.sciborgs1155.robot.Robot;
-import org.sciborgs1155.robot.climb.ClimbConstants.Level;
 
+@Logged
 public class Climb extends SubsystemBase implements AutoCloseable {
   private final ClimbIO hardware;
   private final SysIdRoutine sysIdRoutine;
@@ -37,11 +39,11 @@ public class Climb extends SubsystemBase implements AutoCloseable {
 
   private final ElevatorFeedforward ff = new ElevatorFeedforward(kS, kG, kV);
 
-  private final ElevatorVisualizer setpoint =
-      new ElevatorVisualizer("setpoint visualizer", new Color8Bit(0, 0, 255));
+  private final ClimbVisualizer setpoint =
+      new ClimbVisualizer("setpoint visualizer", new Color8Bit(0, 0, 255));
 
-  private final ElevatorVisualizer measurement =
-      new ElevatorVisualizer("measurement visualizer", new Color8Bit(255, 0, 0));
+  private final ClimbVisualizer measurement =
+      new ClimbVisualizer("measurement visualizer", new Color8Bit(255, 0, 0));
 
   private final DoubleEntry S = Tuning.entry("/Robot/tuning/elevator/kS", kS);
   private final DoubleEntry G = Tuning.entry("/Robot/tuning/elevator/kG", kG);
@@ -66,30 +68,30 @@ public class Climb extends SubsystemBase implements AutoCloseable {
                 (state) -> SignalLogger.writeString("elevator state", state.toString())),
             new SysIdRoutine.Mechanism(v -> hardware.setVoltage(v.in(Volts)), null, this));
 
-    if (true) {
+    if (TUNING) {
       SmartDashboard.putData(
           "Robot/elevator/quasistatic forward",
           sysIdRoutine
               .quasistatic(Direction.kForward)
-              .until(() -> atPosition(Level.L4.extension.in(Meters))) // explain extension
+              .until(() -> atPosition(MAX_HEIGHT.in(Meters)))
               .withName("elevator quasistatic forward"));
       SmartDashboard.putData(
           "Robot/elevator/quasistatic backward",
           sysIdRoutine
               .quasistatic(Direction.kReverse)
-              // .until(() -> atPosition(MIN_HEIGHT.in(Meters) + 0.1))
+              .until(() -> atPosition(MIN_HEIGHT.in(Meters) + 0.1))
               .withName("elevator quasistatic backward"));
       SmartDashboard.putData(
           "Robot/elevator/dynamic forward",
           sysIdRoutine
               .dynamic(Direction.kForward)
-              .until(() -> atPosition(Level.L4.extension.in(Meters)))
+              .until(() -> atPosition(MAX_HEIGHT.in(Meters)))
               .withName("elevator dynamic forward"));
       SmartDashboard.putData(
           "Robot/elevator/dynamic backward",
           sysIdRoutine
               .dynamic(Direction.kReverse)
-              // .until(() -> atPosition(MIN_HEIGHT.in(Meters) + 0.1))
+              .until(() -> atPosition(MIN_HEIGHT.in(Meters) + 0.1))
               .withName("elevator dynamic backward"));
     }
   }
@@ -125,12 +127,8 @@ public class Climb extends SubsystemBase implements AutoCloseable {
     double lastVelocity = pid.getSetpoint().velocity;
     double feedback = pid.calculate(hardware.position(), goal);
     double feedforward = ff.calculateWithVelocities(lastVelocity, pid.getSetpoint().velocity);
-    // Explain why the same thing is passed in.
-    // Last velocity (current setpoint) and velocity to go to?
-    // How does it differentiate?
 
     hardware.setVoltage(feedforward + feedback);
-    // Did not include the epilogue line
   }
 
   public double positionSetpoint() {
@@ -140,6 +138,13 @@ public class Climb extends SubsystemBase implements AutoCloseable {
   public void periodic() {
     setpoint.setLength(positionSetpoint());
     measurement.setLength(position());
+
+    if (TUNING) {
+      ff.setKs(S.get());
+      ff.setKg(G.get());
+      ff.setKv(V.get());
+      ff.setKa(A.get());
+    }
   }
 
   public Command goTo(DoubleSupplier height) {

@@ -181,18 +181,7 @@ public class Vision {
           change.multitagResult =
               change.multitagResult.filter(r -> r.estimatedPose.ambiguity < MAX_AMBIGUITY);
 
-          estimate =
-              switch (change.targets.size() == 1 ? MULTI_TAG_FALLBACK : estimatorStrategies[i]) {
-                case LOWEST_AMBIGUITY -> estimators[i].estimateLowestAmbiguityPose(change);
-                case CLOSEST_TO_CAMERA_HEIGHT ->
-                    estimators[i].estimateClosestToCameraHeightPose(change);
-                case AVERAGE_BEST_TARGETS -> estimators[i].estimateAverageBestTargetsPose(change);
-                case MULTI_TAG_PNP_ON_COPROCESSOR ->
-                    estimators[i].estimateCoprocMultiTagPose(change);
-                case PNP_DISTANCE_TRIG_SOLVE ->
-                    estimators[i].estimatePnpDistanceTrigSolvePose(change);
-                default -> estimators[i].estimateLowestAmbiguityPose(change);
-              };
+          estimate = updateEstimate(estimators[i], change, estimatorStrategies[i]);
 
           log("Robot/vision/ " + name + " estimates present", estimate.isPresent());
           estimate
@@ -219,6 +208,18 @@ public class Vision {
     }
     Tracer.endTrace();
     return estimates.toArray(PoseEstimate[]::new);
+  }
+
+  private Optional<EstimatedRobotPose> updateEstimate(
+      PhotonPoseEstimator estimator, PhotonPipelineResult change, PoseStrategy strategy) {
+    return switch (change.targets.size() == 1 ? MULTI_TAG_FALLBACK : strategy) {
+      case LOWEST_AMBIGUITY -> estimator.estimateLowestAmbiguityPose(change);
+      case CLOSEST_TO_CAMERA_HEIGHT -> estimator.estimateClosestToCameraHeightPose(change);
+      case AVERAGE_BEST_TARGETS -> estimator.estimateAverageBestTargetsPose(change);
+      case MULTI_TAG_PNP_ON_COPROCESSOR -> estimator.estimateCoprocMultiTagPose(change);
+      case PNP_DISTANCE_TRIG_SOLVE -> estimator.estimatePnpDistanceTrigSolvePose(change);
+      default -> estimator.estimateLowestAmbiguityPose(change);
+    };
   }
 
   /**

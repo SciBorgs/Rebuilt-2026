@@ -37,12 +37,13 @@ import org.sciborgs1155.robot.Robot;
 
 @Logged
 public class Vision {
-  public record CameraConfig(String name, Transform3d robotToCam) {}
+  public record CameraConfig(String name, Transform3d robotToCam, PoseStrategy strategy) {}
 
   public record PoseEstimate(EstimatedRobotPose estimatedPose, Matrix<N3, N1> standardDev) {}
 
   private final PhotonCamera[] cameras;
   private final PhotonPoseEstimator[] estimators;
+  private final PoseStrategy[] estimatorStrategies;
   private final PhotonCameraSim[] simCameras;
   private final PhotonPipelineResult[] lastResults;
   private final Map<String, Boolean> camerasEnabled;
@@ -72,6 +73,7 @@ public class Vision {
   public Vision(CameraConfig... configs) {
     cameras = new PhotonCamera[configs.length];
     estimators = new PhotonPoseEstimator[configs.length];
+    estimatorStrategies = new PoseStrategy[configs.length];
     simCameras = new PhotonCameraSim[configs.length];
     lastResults = new PhotonPipelineResult[configs.length];
     filteredEstimates = new ArrayList<>();
@@ -79,13 +81,11 @@ public class Vision {
 
     for (int i = 0; i < configs.length; i++) {
       PhotonCamera camera = new PhotonCamera(configs[i].name());
-      PhotonPoseEstimator estimator =
-          new PhotonPoseEstimator(
-              TAG_LAYOUT, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, configs[i].robotToCam());
+      PhotonPoseEstimator estimator = new PhotonPoseEstimator(TAG_LAYOUT, configs[i].robotToCam());
 
-      estimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
       cameras[i] = camera;
       estimators[i] = estimator;
+      estimatorStrategies[i] = configs[i].strategy();
       lastResults[i] = new PhotonPipelineResult();
       camerasEnabled.put(camera.getName(), true);
 
@@ -153,7 +153,7 @@ public class Vision {
 
         int unreadLength = unreadChanges.size();
 
-        if (estimators[i].getPrimaryStrategy() == PoseStrategy.PNP_DISTANCE_TRIG_SOLVE) {
+        if (estimatorStrategies[i] == PoseStrategy.PNP_DISTANCE_TRIG_SOLVE) {
           estimators[i].addHeadingData(Timer.getFPGATimestamp(), rotation);
         }
 
@@ -181,7 +181,19 @@ public class Vision {
           change.multitagResult =
               change.multitagResult.filter(r -> r.estimatedPose.ambiguity < MAX_AMBIGUITY);
 
-          estimate = estimators[i].update(change);
+          estimate =
+              switch (change.targets.size() == 1 ? MULTI_TAG_FALLBACK : estimatorStrategies[i]) {
+                case LOWEST_AMBIGUITY -> estimators[i].estimateLowestAmbiguityPose(change);
+                case CLOSEST_TO_CAMERA_HEIGHT ->
+                    estimators[i].estimateClosestToCameraHeightPose(change);
+                case AVERAGE_BEST_TARGETS -> estimators[i].estimateAverageBestTargetsPose(change);
+                case MULTI_TAG_PNP_ON_COPROCESSOR ->
+                    estimators[i].estimateCoprocMultiTagPose(change);
+                case PNP_DISTANCE_TRIG_SOLVE ->
+                    estimators[i].estimatePnpDistanceTrigSolvePose(change);
+                default -> estimators[i].estimateLowestAmbiguityPose(change);
+              };
+
           log("Robot/vision/ " + name + " estimates present", estimate.isPresent());
           estimate
               .filter(
@@ -244,7 +256,7 @@ public class Vision {
   public void setPoseStrategy(PoseStrategy strategy) {
     for (int i = 0; i < estimators.length; i++) {
       if (Set.of("example camera").contains(cameras[i].getName())) {
-        estimators[i].setPrimaryStrategy(strategy);
+        estimatorStrategies[i] = strategy;
       }
     }
   }

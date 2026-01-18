@@ -13,11 +13,15 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import java.util.Set;
+import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.sciborgs1155.robot.vision.Vision.CameraConfig;
 
 public class VisionConstants {
   public static final AprilTagFieldLayout TAG_LAYOUT =
       AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
+
+  // The PoseStrategy in multitag mode when only one tag is seen. Do NOT use MULTI_TAG_PNP varients.
+  public static final PoseStrategy MULTI_TAG_FALLBACK = PoseStrategy.LOWEST_AMBIGUITY;
 
   /** TODO: Create cameras with updated constants; be sure to add in {@link Vision#create} */
   // WARNING: EMPTY TRANSFORMS WILL CRASH SIMULATION UPON TAG DETECTION
@@ -29,7 +33,8 @@ public class VisionConstants {
               Inches.of(1),
               Inches.of(1),
               new Rotation3d(Degrees.zero(), Degrees.of(-45), Degrees.zero())
-                  .rotateBy(new Rotation3d(Degrees.zero(), Degrees.zero(), Degrees.of(45)))));
+                  .rotateBy(new Rotation3d(Degrees.zero(), Degrees.zero(), Degrees.of(45)))),
+          PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
 
   public static final CameraConfig BACK_RIGHT_CAMERA =
       new CameraConfig(
@@ -39,7 +44,8 @@ public class VisionConstants {
               Inches.of(1),
               Inches.of(1),
               new Rotation3d(Degrees.zero(), Degrees.of(-45), Degrees.zero())
-                  .rotateBy(new Rotation3d(Degrees.zero(), Degrees.zero(), Degrees.of(45)))));
+                  .rotateBy(new Rotation3d(Degrees.zero(), Degrees.zero(), Degrees.of(45)))),
+          PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
 
   // ThriftyCam constants for our configuration
   public static final int WIDTH = 1280;

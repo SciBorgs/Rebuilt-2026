@@ -53,7 +53,7 @@ public class Vision {
 
   /** A factory to create new vision classes with our cameras. */
   public static Vision create() {
-    return new Vision(BACK_LEFT_CAMERA, BACK_RIGHT_CAMERA);
+    return new Vision(CAMERA_0, CAMERA_1, CAMERA_2, CAMERA_3, CAMERA_4, CAMERA_5);
   }
 
   /**
@@ -212,9 +212,11 @@ public class Vision {
 
   /**
    * Updates an estimator given the pipeline result and default strategy.
+   *
    * @param estimator The PhotonPoseEstimator.
    * @param change The pipleline result from the camera.
-   * @param strategy The default strategy to use. Falls back to {@code SINGLE_TAG_FALLBACK} when only one tag is seen.
+   * @param strategy The default strategy to use. Falls back to {@code SINGLE_TAG_FALLBACK} when
+   *     only one tag is seen.
    * @return
    */
   private Optional<EstimatedRobotPose> updateEstimate(
@@ -323,7 +325,14 @@ public class Vision {
   /** Returns all camera transforms from the robot. TODO: update this! */
   @Logged
   public Transform3d[] cameraTransforms() {
-    return new Transform3d[] {BACK_LEFT_CAMERA.robotToCam(), BACK_RIGHT_CAMERA.robotToCam()};
+    return new Transform3d[] {
+      CAMERA_0.robotToCam(),
+      CAMERA_1.robotToCam(),
+      CAMERA_2.robotToCam(),
+      CAMERA_3.robotToCam(),
+      CAMERA_4.robotToCam(),
+      CAMERA_5.robotToCam()
+    };
   }
 
   /**

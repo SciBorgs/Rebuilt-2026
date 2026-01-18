@@ -7,7 +7,6 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N1;
@@ -25,9 +24,10 @@ public class VisionConstants {
 
   /** TODO: Create cameras with updated constants; be sure to add in {@link Vision#create} */
   // WARNING: EMPTY TRANSFORMS WILL CRASH SIMULATION UPON TAG DETECTION
-  public static final CameraConfig BACK_LEFT_CAMERA =
+  // TODO: actually add camera positions, figure out if its actually 148 fov
+  public static final CameraConfig CAMERA_0 =
       new CameraConfig(
-          "back left",
+          "cam 0 RENAME",
           78,
           new Transform3d(
               Inches.of(1),
@@ -37,10 +37,54 @@ public class VisionConstants {
                   .rotateBy(new Rotation3d(Degrees.zero(), Degrees.zero(), Degrees.of(45)))),
           PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
 
-  public static final CameraConfig BACK_RIGHT_CAMERA =
+  public static final CameraConfig CAMERA_1 =
       new CameraConfig(
-          "back right",
+          "cam 1 RENAME",
           78,
+          new Transform3d(
+              Inches.of(1),
+              Inches.of(1),
+              Inches.of(1),
+              new Rotation3d(Degrees.zero(), Degrees.of(-45), Degrees.zero())
+                  .rotateBy(new Rotation3d(Degrees.zero(), Degrees.zero(), Degrees.of(45)))),
+          PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
+  public static final CameraConfig CAMERA_2 =
+      new CameraConfig(
+          "cam 2 RENAME",
+          78,
+          new Transform3d(
+              Inches.of(1),
+              Inches.of(1),
+              Inches.of(1),
+              new Rotation3d(Degrees.zero(), Degrees.of(-45), Degrees.zero())
+                  .rotateBy(new Rotation3d(Degrees.zero(), Degrees.zero(), Degrees.of(45)))),
+          PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
+  public static final CameraConfig CAMERA_3 =
+      new CameraConfig(
+          "cam 3 RENAME",
+          148,
+          new Transform3d(
+              Inches.of(1),
+              Inches.of(1),
+              Inches.of(1),
+              new Rotation3d(Degrees.zero(), Degrees.of(-45), Degrees.zero())
+                  .rotateBy(new Rotation3d(Degrees.zero(), Degrees.zero(), Degrees.of(45)))),
+          PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
+  public static final CameraConfig CAMERA_4 =
+      new CameraConfig(
+          "cam 4 RENAME",
+          148,
+          new Transform3d(
+              Inches.of(1),
+              Inches.of(1),
+              Inches.of(1),
+              new Rotation3d(Degrees.zero(), Degrees.of(-45), Degrees.zero())
+                  .rotateBy(new Rotation3d(Degrees.zero(), Degrees.zero(), Degrees.of(45)))),
+          PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
+  public static final CameraConfig CAMERA_5 =
+      new CameraConfig(
+          "cam 5 RENAME",
+          148,
           new Transform3d(
               Inches.of(1),
               Inches.of(1),

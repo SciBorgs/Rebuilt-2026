@@ -50,4 +50,9 @@ public final class Ports {
   public static final class LEDs {
     public static final int LED_PORT = 9;
   }
+
+  public static final class Intake {
+    public static final int RIGHT_MOTOR_PORT = -2;
+    public static final int EXTENSION_PORT = -3;
+  }
 }

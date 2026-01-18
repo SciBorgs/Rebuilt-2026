@@ -25,12 +25,12 @@ public class IntakeTest {
   }
 
   @Test
-  public void Extend() {
+  public void extend() {
     intake.extend();
   }
 
   @Test
-  public void Retract() {
+  public void retract() {
     intake.retract();
   }
 }

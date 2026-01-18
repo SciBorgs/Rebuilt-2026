@@ -8,9 +8,7 @@ public interface IntakeIO {
 
   public void setRollerVoltage();
 
-  public void extend();
+  public void setArmVoltage();
 
-  public void retract();
-
-  public Angle extensionPosition();
+  public double extensionPosition();
 }

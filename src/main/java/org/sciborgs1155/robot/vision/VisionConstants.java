@@ -21,13 +21,14 @@ public class VisionConstants {
       AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
 
   // The PoseStrategy in multitag mode when only one tag is seen. Do NOT use MULTI_TAG_PNP varients.
-  public static final PoseStrategy MULTI_TAG_FALLBACK = PoseStrategy.LOWEST_AMBIGUITY;
+  public static final PoseStrategy SINGLE_TAG_FALLBACK = PoseStrategy.LOWEST_AMBIGUITY;
 
   /** TODO: Create cameras with updated constants; be sure to add in {@link Vision#create} */
   // WARNING: EMPTY TRANSFORMS WILL CRASH SIMULATION UPON TAG DETECTION
   public static final CameraConfig BACK_LEFT_CAMERA =
       new CameraConfig(
           "back left",
+          78,
           new Transform3d(
               Inches.of(1),
               Inches.of(1),
@@ -39,6 +40,7 @@ public class VisionConstants {
   public static final CameraConfig BACK_RIGHT_CAMERA =
       new CameraConfig(
           "back right",
+          78,
           new Transform3d(
               Inches.of(1),
               Inches.of(1),
@@ -47,10 +49,9 @@ public class VisionConstants {
                   .rotateBy(new Rotation3d(Degrees.zero(), Degrees.zero(), Degrees.of(45)))),
           PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
 
-  // ThriftyCam constants for our configuration
+  // Camera constants for our configuration
   public static final int WIDTH = 1280;
   public static final int HEIGHT = 720;
-  public static final Rotation2d FOV = Rotation2d.fromDegrees(80);
 
   public static final Matrix<N3, N1> SINGLE_TAG_STD_DEVS = VecBuilder.fill(1.5, 1.5, 7);
   public static final Matrix<N3, N1> MULTIPLE_TAG_STD_DEVS = VecBuilder.fill(0.3, 0.3, 4);

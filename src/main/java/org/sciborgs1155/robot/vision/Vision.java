@@ -37,7 +37,7 @@ import org.sciborgs1155.robot.Robot;
 
 @Logged
 public class Vision {
-  public record CameraConfig(String name, Transform3d robotToCam, PoseStrategy strategy) {}
+  public record CameraConfig(String name, int FOV, Transform3d robotToCam, PoseStrategy strategy) {}
 
   public record PoseEstimate(EstimatedRobotPose estimatedPose, Matrix<N3, N1> standardDev) {}
 
@@ -98,7 +98,7 @@ public class Vision {
 
       for (int i = 0; i < cameras.length; i++) {
         var prop = new SimCameraProperties();
-        prop.setCalibration(WIDTH, HEIGHT, FOV);
+        prop.setCalibration(WIDTH, HEIGHT, Rotation2d.fromDegrees(configs[i].FOV));
         prop.setCalibError(0.15, 0.05);
         prop.setFPS(45);
         prop.setAvgLatencyMs(12);
@@ -210,9 +210,16 @@ public class Vision {
     return estimates.toArray(PoseEstimate[]::new);
   }
 
+  /**
+   * Updates an estimator given the pipeline result and default strategy.
+   * @param estimator The PhotonPoseEstimator.
+   * @param change The pipleline result from the camera.
+   * @param strategy The default strategy to use. Falls back to {@code SINGLE_TAG_FALLBACK} when only one tag is seen.
+   * @return
+   */
   private Optional<EstimatedRobotPose> updateEstimate(
       PhotonPoseEstimator estimator, PhotonPipelineResult change, PoseStrategy strategy) {
-    return switch (change.targets.size() == 1 ? MULTI_TAG_FALLBACK : strategy) {
+    return switch (change.targets.size() == 1 ? SINGLE_TAG_FALLBACK : strategy) {
       case LOWEST_AMBIGUITY -> estimator.estimateLowestAmbiguityPose(change);
       case CLOSEST_TO_CAMERA_HEIGHT -> estimator.estimateClosestToCameraHeightPose(change);
       case AVERAGE_BEST_TARGETS -> estimator.estimateAverageBestTargetsPose(change);

@@ -17,7 +17,10 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.function.Supplier;
+
 import org.sciborgs1155.robot.FieldConstants;
 
 /**
@@ -48,28 +51,34 @@ public class FuelVisualizer {
    * A vector representing the X, Y, and Z components of the Fuel's pose (using the field coordinate
    * system).
    */
-  private static final double[] fuelPose = new double[3];
+  private final double[] fuelPose = new double[3];
 
   /**
    * A vector representing the X, Y, and Z components of the Fuel's velocity (using the field
    * coordinate system).
    */
-  private static final double[] fuelVelocity = new double[3];
+  private final double[] fuelVelocity = new double[3];
 
   /**
    * A vector representing the X, Y, and Z components of the Fuel's acceleration (using the field
    * coordinate system).
    */
-  private static final double[] fuelAcceleration = new double[3];
+  private final double[] fuelAcceleration = new double[3];
+
+  /**
+   * A list of timestamps (whose time-delta is specified by {@code RESOLUTION}) with POSITION,
+   * VELOCITY, AND ACCELERATION vectors (using the field coordinate system).
+   */
+  private final List<double[][]> trajectory = new ArrayList<>();
 
   /** The index of the timestamp of the trajectory of the fuel (what a mouthful!). */
-  private static int index = 0;
+  private int index = 0;
 
   /** The time, in seconds, since the last launch of the fuel. */
-  private static double timestamp = 0;
+  private double timestamp = 0;
 
   /** Acceleration due to drag. */
-  private static final double[] drag = {0, 0, 0};
+  private final double[] drag = {0, 0, 0};
 
   /** The mass of the Fuel. */
   private static final double mass = 0.225;
@@ -98,32 +107,25 @@ public class FuelVisualizer {
    * @return A list of timestamps (whose time-delta is specified by {@code RESOLUTION}) with
    *     POSITION, VELOCITY, AND ACCELERATION vectors (using the field coordinate system).
    */
-  private static List<double[][]> generateTrajectory(
+  private List<double[][]> generateTrajectory(
       double[] startingPose, double[] startingVelocity, double[] startingAcceleration) {
-    // INPUT VALIDATION
-    if (startingPose.length != 3)
-      throw new InvalidParameterException("Starting pose must be a 3D vector!");
-    if (startingVelocity.length != 3)
-      throw new InvalidParameterException("Starting velocity must be a 3D vector!");
-    if (startingAcceleration.length != 3)
-      throw new InvalidParameterException("Starting acceleration must be a 3D vector!");
-
     // STARTING STATE
-    final List<double[][]> trajectory = new ArrayList<>();
+    trajectory.clear();
 
-    // UNITS ARE METERS / FRAME
     final double[] generatedPose = new double[3];
     setTo(generatedPose, startingPose);
 
     final double[] generatedVelocity = new double[3];
-    setTo(generatedVelocity, scale(startingVelocity, 1 / RESOLUTION));
+    setTo(generatedVelocity, scale(startingVelocity, 1.0 / RESOLUTION));
 
     final double[] generatedAcceleration = new double[3];
-    setTo(generatedAcceleration, scale(startingAcceleration, 1 / RESOLUTION));
+    setTo(generatedAcceleration, scale(startingAcceleration, 1.0 / RESOLUTION));
 
+    System.out.println("GENERATION STARTED");
     // TRAJECTORY GENERATION
     while (inField(generatedPose)) {
       // ADD TIMESTAMP
+      System.out.println("POSE: " + Arrays.toString(generatedPose) + "VELO: " + Arrays.toString(generatedVelocity));
       trajectory.add(
           new double[][] {
             generatedPose,
@@ -136,7 +138,7 @@ public class FuelVisualizer {
 
       // APPLY FORCE
       setTo(drag, scale(negate(generatedVelocity), dragConstant / mass));
-      setTo(generatedAcceleration, sum(scale(gravity, 1 / RESOLUTION), drag));
+      setTo(generatedAcceleration, sum(scale(gravity, 1.0 / RESOLUTION), drag));
 
       // APPLY ACCELERATION
       setTo(generatedVelocity, sum(generatedVelocity, generatedAcceleration));
@@ -145,7 +147,20 @@ public class FuelVisualizer {
     return trajectory;
   }
 
-  public static Command shoot(
+  public Command shoot(
+      Supplier<LinearVelocity> launchVelocity,
+      Supplier<Angle> turretAngle,
+      Supplier<Angle> hoodAngle,
+      Supplier<Pose3d> robotPose) {
+
+    // COMMAND GENERATION
+    return Commands.runOnce(
+            () -> reset(launchVelocity.get(), turretAngle.get(), hoodAngle.get(), robotPose.get()))
+           .andThen(Commands.repeatingSequence(Commands.runOnce(this::update).andThen(Commands.waitSeconds(1 / RESOLUTION))).andThen(Commands.print("TIMESTAMP: " + timestamp))
+            .until(() -> index >= trajectory.size()));
+  }
+
+  private void reset(
       LinearVelocity launchVelocity, Angle turretAngle, Angle hoodAngle, Pose3d robotPose) {
     // CONVERT ROBOT COORDINATES TO SHOOTER COORDINATES
     final Translation3d shooterPose = robotPose.transformBy(robotToShooter).getTranslation();
@@ -162,23 +177,22 @@ public class FuelVisualizer {
             launchVelocity.in(MetersPerSecond), shooterRotation.getY(), shooterRotation.getZ());
 
     // TRAJECTORY GENERATION
-    final List<double[][]> trajectory =
-        generateTrajectory(startingPose, startingVelocity, new double[3]);
+    generateTrajectory(startingPose, startingVelocity, new double[3]);
+  }
 
-    // COMMAND GENERATION
-    return Commands.repeatingSequence(
-        Commands.runOnce(
-                () -> {
-                  final double[][] state = trajectory.get(index);
+  /**
+   * Updates the displayed fuel state based on the current trajectory timestamp. To be called
+   * periodically.
+   */
+  private void update() {
+    final double[][] state = trajectory.get(index);
 
-                  setTo(fuelPose, state[P]);
-                  setTo(fuelVelocity, state[V]);
-                  setTo(fuelAcceleration, state[A]);
+    setTo(fuelPose, state[P]);
+    setTo(fuelVelocity, state[V]);
+    setTo(fuelAcceleration, state[A]);
 
-                  timestamp = index / RESOLUTION;
-                  index++;
-                })
-            .andThen(Commands.waitSeconds(1 / RESOLUTION)));
+    timestamp = index / RESOLUTION;
+    index++;
   }
 
   /**
@@ -262,6 +276,7 @@ public class FuelVisualizer {
     if (pose[X] <= 0 || pose[Y] <= 0) return false;
     if (pose[X] >= FieldConstants.LENGTH.in(Meters)) return false;
     if (pose[Y] >= FieldConstants.WIDTH.in(Meters)) return false;
+    if (pose[Z] < 0) return false;
 
     return true;
   }
@@ -272,7 +287,7 @@ public class FuelVisualizer {
    * @return The pose of the Fuel (using the field coordinate system).
    */
   @Logged(name = "FUEL POSE")
-  public static Pose3d getPose() {
+  public Pose3d getPose() {
     return new Pose3d(fuelPose[X], fuelPose[Y], fuelPose[Z], Rotation3d.kZero);
   }
 
@@ -282,7 +297,7 @@ public class FuelVisualizer {
    * @return The velocity of the Fuel (using the field coordinate system).
    */
   @Logged(name = "FUEL VELOCITY")
-  public static Translation3d getVelocity() {
+  public Translation3d getVelocity() {
     return new Translation3d(fuelVelocity[X], fuelVelocity[Y], fuelVelocity[Z]);
   }
 
@@ -292,7 +307,7 @@ public class FuelVisualizer {
    * @return The acceleration of the Fuel (using the field coordinate system).
    */
   @Logged(name = "FUEL ACCELERATION")
-  public static Translation3d getAcceleration() {
+  public Translation3d getAcceleration() {
     return new Translation3d(fuelAcceleration[X], fuelAcceleration[Y], fuelAcceleration[Z]);
   }
 
@@ -302,7 +317,7 @@ public class FuelVisualizer {
    * @return The time since the last launch of the fuel.
    */
   @Logged(name = "TIMESTAMP")
-  public static Time getTimestamp() {
+  public Time getTimestamp() {
     return Seconds.of(timestamp);
   }
 }

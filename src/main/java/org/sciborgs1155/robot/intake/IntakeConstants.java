@@ -1,16 +1,11 @@
 package org.sciborgs1155.robot.intake;
 
 import static edu.wpi.first.units.Units.Amps;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
-
-import com.ctre.phoenix6.hardware.TalonFX;
+import static edu.wpi.first.units.Units.Radians;
 
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.units.measure.AngularAcceleration;
-import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Current;
-import edu.wpi.first.wpilibj.motorcontrol.Talon;
 
 public class IntakeConstants {
   /**
@@ -40,7 +35,9 @@ public class IntakeConstants {
   public static final double GEARING = 0;
   public static final double MOI = 0;
   public static final double LENGTH = 0;
-  public static final double MIN_ANGLE = 0;
-  public static final double MAX_ANGLE = Math.PI * 1/2;
+  public static final Angle MIN_ANGLE = Radians.of(0);
+  public static final Angle MAX_ANGLE = Radians.of(Math.PI * 1 / 2);
   public static final double START_ANGLE = 0;
+
+  public static final Angle POSITION_TOLERANCE = Radians.of(5);
 }

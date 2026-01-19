@@ -6,9 +6,6 @@ import static edu.wpi.first.units.Units.Radians;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-
-import edu.wpi.first.units.AngleUnit;
-import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.lib.TalonUtils;
@@ -19,9 +16,7 @@ public class RealIntake implements IntakeIO, AutoCloseable {
   public static TalonFX rightMotor;
   public static TalonFX extensionMotor;
 
-  /**
-   * Configures the motors
-   */
+  /** Configures the motors */
   public RealIntake() {
     rightMotor = new TalonFX(Ports.Intake.RIGHT_MOTOR_PORT);
     extensionMotor = new TalonFX(Ports.Intake.EXTENSION_PORT);
@@ -48,25 +43,25 @@ public class RealIntake implements IntakeIO, AutoCloseable {
   }
 
   @Override
-  /**velocity of the motor running the intake */
+  /** velocity of the motor running the intake */
   public AngularVelocity rollerVelocity() {
     return rightMotor.getVelocity().getValue();
   }
 
   @Override
-  /**starting the rollers to intake */
+  /** starting the rollers to intake */
   public void setRollerVoltage() {
     rightMotor.setVoltage(IntakeConstants.ROLLER_VOLTAGE);
   }
 
   @Override
-  /**extending/retracting the intake */
-  public void setArmVoltage() {
-    extensionMotor.setVoltage(IntakeConstants.EXTEND_VOLTAGE);
+  /** extending/retracting the intake */
+  public void setArmVoltage(double voltage) {
+    extensionMotor.setVoltage(voltage);
   }
 
   @Override
-  /**getting position of the intake (extended or retracted) */
+  /** getting position of the intake (extended or retracted) */
   public double extensionPosition() {
     return extensionMotor.getPosition().getValue().in(Radians);
   }

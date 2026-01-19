@@ -53,6 +53,11 @@ public class RealTurret implements TurretIO {
   }
 
   @Override
+  public Voltage voltage() {
+    return motor.getMotorVoltage().getValue();
+  }
+
+  @Override
   public void close() throws Exception {
     motor.close();
   }

@@ -49,5 +49,10 @@ public class SimTurret implements TurretIO {
   }
 
   @Override
+  public Voltage voltage() {
+    return Volts.of(simulation.getInput(0));
+  }
+
+  @Override
   public void close() throws Exception {}
 }

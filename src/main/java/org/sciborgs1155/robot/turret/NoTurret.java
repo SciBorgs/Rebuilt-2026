@@ -2,6 +2,7 @@ package org.sciborgs1155.robot.turret;
 
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -23,6 +24,11 @@ public class NoTurret implements TurretIO {
   @Override
   public AngularVelocity velocity() {
     return RadiansPerSecond.zero();
+  }
+
+  @Override
+  public Voltage voltage() {
+    return Volts.of(0);
   }
 
   @Override

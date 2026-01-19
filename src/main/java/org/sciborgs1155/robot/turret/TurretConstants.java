@@ -1,6 +1,7 @@
 package org.sciborgs1155.robot.turret;
 
 import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.Degree;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Meters;
@@ -50,10 +51,10 @@ public class TurretConstants {
     public static final double ACCELERATION_GAIN = 0; // TODO: Update.
 
     // TOLERANCES
-    public static final Angle TOLERANCE = Radians.of(0.01);
+    public static final Angle TOLERANCE = Degree.of(20);
   }
 
-  public static final Velocity<VoltageUnit> RAMP_RATE = Volts.of(0.25).per(Second);
-  public static final Voltage STEP_VOLTAGE = Volts.of(0.25);
-  public static final Time TIME_OUT = Seconds.of(6.0);
+  public static final Velocity<VoltageUnit> RAMP_RATE = Volts.of(0.2).per(Second);
+  public static final Voltage STEP_VOLTAGE = Volts.of(0.5);
+  public static final Time TIME_OUT = Seconds.of(6);
 }

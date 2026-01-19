@@ -29,6 +29,10 @@
       "/SmartDashboard/PathPlanner": "Alerts",
       "/SmartDashboard/PhotonAlerts": "Alerts",
       "/SmartDashboard/Scheduler": "Scheduler",
+      "/SmartDashboard/Turret dynamic clockwise": "Command",
+      "/SmartDashboard/Turret dynamic counterclockwise": "Command",
+      "/SmartDashboard/Turret quasistatic clockwise": "Command",
+      "/SmartDashboard/Turret quasistatic counterclockwise": "Command",
       "/SmartDashboard/TurretVisualizer": "Mechanism2d",
       "/SmartDashboard/VisionSystemSim-main/Sim Field": "Field2d",
       "/SmartDashboard/drive dynamic backward": "Command",
@@ -195,8 +199,7 @@
             },
             "open": true
           }
-        },
-        "open": true
+        }
       }
     }
   },

@@ -25,7 +25,6 @@ public class TurretTest {
   }
 
   /** Cleans up resources after each test. */
-  @SuppressWarnings("PMD.SignatureDeclareThrowsException")
   @AfterEach
   public void destroy() throws Exception {
     reset(turret);

@@ -7,7 +7,6 @@ import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.LinearVelocity;
@@ -61,28 +60,28 @@ public class FuelVisualizer {
   private static final double FRAME_LENGTH = 0.25;
 
   /** The dimensionless constant multiplied by velocity to attain the drag force. */
-  private static final double DRAG_CONSTANT = 1;
+  private static final double DRAG_CONSTANT = 0.1;
 
   /** Once added to the pose of the robot, returns the pose of the shooter. */
-  private static final Translation3d ROBOT_TO_SHOOTER = new Translation3d(0,0,1);
+  private static final Translation3d ROBOT_TO_SHOOTER = new Translation3d(0, 0, 1);
 
   /**
    * Acceleration due to gravity (GRAVITY FORCE = MASS * GRAVITY ACCELERATION).
    *
-   * @return A vector representing the acceleration due to gravity.
+   * @return A vector representing the acceleration due to gravity (METERS / FRAME^2).
    */
   private static final double[] getGravity() {
-    return new double[] {0, 0, -9.81};
+    return new double[] {0, 0, -9.81 * FRAME_LENGTH};
   }
 
   /**
    * Acceleration due to drag (DRAG FORCE = -VELOCITY * DRAG CONSTANT).
    *
    * @param velocity A vector representing the current velocity of the fuel.
-   * @return A vector representing the acceleration due to drag.
+   * @return A vector representing the acceleration due to drag (METERS / FRAME^2).
    */
   private static final double[] getDrag(double[] velocity) {
-    return scale(velocity, -(DRAG_CONSTANT / FUEL_MASS));
+    return scale(velocity, FRAME_LENGTH * -(DRAG_CONSTANT / FUEL_MASS));
   }
 
   /**
@@ -102,47 +101,56 @@ public class FuelVisualizer {
     // VELOCITY (METERS / SECOND) --> VELOCITY (METERS / FRAME)
     double[] velocity = scale(startingVelocity.clone(), FRAME_LENGTH);
 
+    // ACCELERATION (METERS / FRAME^2)
+    double[] acceleration = new double[3];
+
     // TRAJECTORY GENERATION
     List<double[][]> trajectory = new ArrayList<>();
 
     while (inField(pose)) {
-      // ACCELERATION = GRAVITY + DRAG (METERS / SECOND^2)
-      double[] acceleration = sum(getGravity(), getDrag(velocity));
+      // ACCELERATION = GRAVITY + DRAG (METERS / FRAME^2)
+      acceleration = sum(getDrag(velocity), getGravity());
 
       // VELOCITY = ACCELERATION * TIME (METERS / FRAME)
-      addTo(velocity, scale(acceleration, FRAME_LENGTH));
+      addTo(velocity, acceleration);
 
       // DISPLACEMENT = VELOCITY * TIME (METERS)
       addTo(pose, velocity);
 
-      // ADD STATE TO TRAJECTORY (CONVERT VELOCITY TO METERS / SECOND)
-      trajectory.add(new double[][] {pose, scale(velocity, 1 / FRAME_LENGTH), acceleration});
+      // ADD STATE TO TRAJECTORY (CONVERT VELOCITY AND ACCELERATION TO METERS / SECOND)
+      trajectory.add(
+          new double[][] {
+            pose, scale(velocity, 1 / FRAME_LENGTH), scale(acceleration, 1 / FRAME_LENGTH)
+          });
     }
 
     return trajectory;
   }
 
+  /**
+   * Resets and launches fuel from the robot.
+   *
+   * @param launchVelocity A supplier for the current launch velocity of the Fuel.
+   * @param turretAngle A supplier for the current angle of the turret.
+   * @param hoodAngle A supplier for the current angle of the hood.
+   * @param robotPose A supplier for the current pose of the robot.
+   * @return A command to launch the Fuel from the robot.
+   */
   public Command shoot(
       Supplier<LinearVelocity> launchVelocity,
       Supplier<Angle> turretAngle,
       Supplier<Angle> hoodAngle,
       Supplier<Pose3d> robotPose) {
-
-    // COMMAND GENERATION
     return Commands.runOnce(
-            () -> {
-              reset();
-              init(launchVelocity.get(), turretAngle.get(), hoodAngle.get(), robotPose.get());
-            })
+            () -> init(launchVelocity.get(), turretAngle.get(), hoodAngle.get(), robotPose.get()))
         .andThen(
             Commands.repeatingSequence(
                     Commands.runOnce(this::next).andThen(Commands.waitSeconds(FRAME_LENGTH)))
-                .until(() -> index >= trajectory.size()))
-        .finallyDo(this::reset);
+                .until(() -> index >= trajectory.size()));
   }
 
   /**
-   * Generates the trajectory of the Fuel.
+   * Resets {@code index} and generates the new trajectory for the Fuel.
    *
    * @param velocity The launch velocity of the Fuel.
    * @param yaw The yaw of the turret.
@@ -150,6 +158,11 @@ public class FuelVisualizer {
    * @param robotPose The current position of the robot.
    */
   private void init(LinearVelocity velocity, Angle yaw, Angle pitch, Pose3d robotPose) {
+    // RESET
+    index = 0;
+    trajectory.clear();
+
+    // TRAJECTORY GENERATION
     Translation3d shooterPose = robotPose.getTranslation().plus(ROBOT_TO_SHOOTER);
 
     double[] startingPose = {shooterPose.getX(), shooterPose.getY(), shooterPose.getZ()};
@@ -159,15 +172,6 @@ public class FuelVisualizer {
 
     for (double[][] generatedState : generateTrajectory(startingPose, startingVelocity))
       trajectory.add(generatedState);
-  }
-
-  /** Sets all Fuel properties to the default setting. */
-  private void reset() {
-    trajectory.clear();
-    state[POSITION] = new double[3];
-    state[VELOCITY] = new double[3];
-    state[ACCELERATION] = new double[3];
-    index = 0;
   }
 
   /** Displays the next {@code state} in the {@code trajectory}. To be called periodically. */
@@ -180,13 +184,13 @@ public class FuelVisualizer {
   }
 
   /**
-   * The current position of the Fuel on the field.
+   * The current pose of the Fuel on the field.
    *
    * @return The pose of the Fuel (using the field coordinate system).
    */
   @Logged(name = "FUEL POSE")
-  public Pose3d getPose() {
-    return new Pose3d(state[POSITION][X], state[POSITION][Y], state[POSITION][Z], Rotation3d.kZero);
+  public Translation3d getPose() {
+    return new Translation3d(state[POSITION][X], state[POSITION][Y], state[POSITION][Z]);
   }
 
   /**
@@ -289,7 +293,7 @@ public class FuelVisualizer {
     if (pose[X] <= 0 || pose[Y] <= 0) return false;
     if (pose[X] >= FieldConstants.LENGTH.in(Meters)) return false;
     if (pose[Y] >= FieldConstants.WIDTH.in(Meters)) return false;
-    if (pose[Z] < 0) return false;
+    if (pose[Z] <= 0) return false;
 
     return true;
   }

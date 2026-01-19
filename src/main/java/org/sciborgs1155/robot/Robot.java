@@ -199,9 +199,9 @@ public class Robot extends CommandRobot {
         .a()
         .onTrue(
             fuelVisualizer.shoot(
-                () -> MetersPerSecond.of(1000),
+                () -> MetersPerSecond.of(2),
                 () -> Radians.zero(),
-                () -> Radians.of(1),
+                () -> Radians.zero(),
                 () -> drive.pose3d()));
   }
 

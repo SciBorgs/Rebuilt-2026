@@ -35,6 +35,23 @@ public class Shooting {
   }
 
   /**
+   *  More general TODOs
+   *  - Replace feeder with / spindexer / hopper / something else
+   *  - Make sure the chain of logic still makes sense and that the information applies to 2026 robot
+   *  - Make mini-wrappers that are just the names of the functions of each component 
+   * --> just to make it more readable --> potentially have a more drafty version of each for looking at issues just at a glance 
+   * 
+   * Next Steps: 
+   *  - Look more into MoSim, AdvantageScope, Visualization, and just talking to Ankit more about those things generally
+   *  - look into how to modify or use the lookup table more
+   *  - try to make a virtual lookup table to be determeinded or replaced with the more real life one later
+   *  - try to work with more air resistance and elasticity stuff // , variablity of speed vs other stuff, boundary and range of shot 
+   * (where within the hopper should the fuel be aimed in which types of sitations --> something which has yet to be fully defined)
+   * 
+   * 
+   */
+
+  /**
    * Runs the shooter before feeding it the note.
    *
    * @param desiredVelocity The velocity in radians per second to shoot at.

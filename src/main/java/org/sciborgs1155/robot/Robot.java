@@ -1,9 +1,6 @@
 package org.sciborgs1155.robot;
 
-import static edu.wpi.first.units.Units.MetersPerSecond;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.Second;
-import static edu.wpi.first.units.Units.Seconds;
+import static edu.wpi.first.units.Units.*;
 import static edu.wpi.first.wpilibj2.command.button.RobotModeTriggers.autonomous;
 import static edu.wpi.first.wpilibj2.command.button.RobotModeTriggers.disabled;
 import static edu.wpi.first.wpilibj2.command.button.RobotModeTriggers.teleop;
@@ -17,7 +14,7 @@ import static org.sciborgs1155.robot.drive.DriveConstants.MAX_SPEED;
 import static org.sciborgs1155.robot.drive.DriveConstants.TELEOP_ANGULAR_SPEED;
 
 import com.ctre.phoenix6.SignalLogger;
-// import edu.wpi.first.epilogue.Epilogue;
+import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -44,6 +41,8 @@ import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
 import org.sciborgs1155.robot.drive.Drive;
+import org.sciborgs1155.robot.hood.Hood;
+import org.sciborgs1155.robot.hood.HoodConstants;
 import org.sciborgs1155.robot.vision.Vision;
 
 /**
@@ -62,6 +61,8 @@ public class Robot extends CommandRobot {
 
   // SUBSYSTEMS
   private final Drive drive = Drive.create();
+  private final Hood hood = Hood.create();
+  ;
   private final Vision vision = Vision.create();
 
   // COMMANDS
@@ -95,7 +96,7 @@ public class Robot extends CommandRobot {
     DataLogManager.start();
     SignalLogger.enableAutoLogging(true);
     addPeriodic(FaultLogger::update, 2);
-    // Epilogue.bind(this);
+    Epilogue.bind(this);
 
     FaultLogger.register(pdh);
     SmartDashboard.putData("Auto Chooser", autos);
@@ -195,6 +196,16 @@ public class Robot extends CommandRobot {
         .or(driver.rightBumper())
         .onTrue(Commands.runOnce(() -> speedMultiplier = Constants.SLOW_SPEED_MULTIPLIER))
         .onFalse(Commands.runOnce(() -> speedMultiplier = Constants.FULL_SPEED_MULTIPLIER));
+
+    operator
+        .a()
+        .onTrue(
+            hood.goTo(
+                Radians.of(
+                        Math.random()
+                            * (HoodConstants.MAX_ANGLE.minus(HoodConstants.MIN_ANGLE).in(Radians)))
+                    .plus(HoodConstants.MIN_ANGLE)
+                    .plus(Radians.of(Math.PI / 2))));
 
     // TODO: Add any additional bindings.
   }

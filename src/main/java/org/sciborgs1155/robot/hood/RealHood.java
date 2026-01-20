@@ -1,11 +1,8 @@
 package org.sciborgs1155.robot.hood;
 
-import static edu.wpi.first.units.Units.Amps;
-import static edu.wpi.first.units.Units.Radians;
 import static org.sciborgs1155.robot.Ports.Hood.CANCODER;
 import static org.sciborgs1155.robot.Ports.Hood.MOTOR_PORT;
 import static org.sciborgs1155.robot.hood.HoodConstants.GEARING;
-import static org.sciborgs1155.robot.hood.HoodConstants.MIN_ANGLE;
 import static org.sciborgs1155.robot.hood.HoodConstants.STATOR_LIMIT;
 import static org.sciborgs1155.robot.hood.HoodConstants.SUPPLY_LIMIT;
 
@@ -14,6 +11,8 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+
+import static edu.wpi.first.units.Units.Amps;
 
 /** Hood class with a motor controller */
 public class RealHood implements HoodIO {
@@ -42,7 +41,7 @@ public class RealHood implements HoodIO {
   /** gets the hood angle in rads */
   @Override
   public double angle() {
-    return motor.getPosition().getValueAsDouble() + MIN_ANGLE.in(Radians) + Math.PI / 2;
+    return motor.getPosition().getValueAsDouble();
   }
 
   /** sets the voltage of the hood motor */

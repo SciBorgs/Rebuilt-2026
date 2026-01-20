@@ -1,14 +1,11 @@
 package org.sciborgs1155.robot.hood;
 
-import static edu.wpi.first.units.Units.Radians;
-import static org.sciborgs1155.robot.hood.HoodConstants.GEARING;
-import static org.sciborgs1155.robot.hood.HoodConstants.HOOD_RADIUS;
-import static org.sciborgs1155.robot.hood.HoodConstants.MAX_ANGLE;
-import static org.sciborgs1155.robot.hood.HoodConstants.MIN_ANGLE;
-import static org.sciborgs1155.robot.hood.HoodConstants.MOI;
-import static org.sciborgs1155.robot.hood.HoodConstants.STARTING_ANGLE;
+import static org.sciborgs1155.robot.Constants.PERIOD;
+import static org.sciborgs1155.robot.hood.HoodConstants.*;
 
 import edu.wpi.first.math.system.plant.DCMotor;
+import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.Seconds;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 
 // *hood simulated hardware interface */
@@ -21,7 +18,7 @@ public class SimHood implements HoodIO {
 
     sim =
         new SingleJointedArmSim(
-            DCMotor.getKrakenX60(1),
+            DCMotor.getKrakenX44(1),
             GEARING,
             MOI,
             HOOD_RADIUS,
@@ -33,13 +30,14 @@ public class SimHood implements HoodIO {
 
   @Override
   public double angle() {
-    return sim.getAngleRads() + MIN_ANGLE.in(Radians) + Math.PI / 2;
+    return sim.getAngleRads();
   }
 
   @Override
-  public void setVoltage(double v) {
-    sim.setInputVoltage(v);
-    sim.update(v);
+  public void setVoltage(double volts) {
+    sim.setInputVoltage(volts);
+    System.out.println("Hood Voltage: " + volts);
+    sim.update(PERIOD.in(Seconds));
   }
 
   @Override

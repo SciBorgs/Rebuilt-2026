@@ -57,7 +57,7 @@ public class Robot extends CommandRobot {
 
   // SUBSYSTEMS
   private final Drive drive = Drive.create();
-  private final Vision vision = Vision.create();
+  private final Vision vision = Vision.none();
 
   // COMMANDS
   private final Alignment align = new Alignment(drive);

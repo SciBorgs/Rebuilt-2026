@@ -48,6 +48,7 @@ public class VisionConstants {
               new Rotation3d(Degrees.zero(), Degrees.of(-45), Degrees.zero())
                   .rotateBy(new Rotation3d(Degrees.zero(), Degrees.zero(), Degrees.of(45)))),
           PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
+
   public static final CameraConfig CAMERA_2 =
       new CameraConfig(
           "cam 2 RENAME",
@@ -59,6 +60,7 @@ public class VisionConstants {
               new Rotation3d(Degrees.zero(), Degrees.of(-45), Degrees.zero())
                   .rotateBy(new Rotation3d(Degrees.zero(), Degrees.zero(), Degrees.of(45)))),
           PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
+
   public static final CameraConfig CAMERA_3 =
       new CameraConfig(
           "cam 3 RENAME",
@@ -70,6 +72,7 @@ public class VisionConstants {
               new Rotation3d(Degrees.zero(), Degrees.of(-45), Degrees.zero())
                   .rotateBy(new Rotation3d(Degrees.zero(), Degrees.zero(), Degrees.of(45)))),
           PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
+
   public static final CameraConfig CAMERA_4 =
       new CameraConfig(
           "cam 4 RENAME",
@@ -81,6 +84,7 @@ public class VisionConstants {
               new Rotation3d(Degrees.zero(), Degrees.of(-45), Degrees.zero())
                   .rotateBy(new Rotation3d(Degrees.zero(), Degrees.zero(), Degrees.of(45)))),
           PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
+
   public static final CameraConfig CAMERA_5 =
       new CameraConfig(
           "cam 5 RENAME",
@@ -105,13 +109,20 @@ public class VisionConstants {
   public static final double MAX_AMBIGUITY = 0.18;
 
   /** TODO: Modify AprilTag information as needed. */
-  // Total of n AprilTags
-  // Reference:
-  // Tag Locations (1-n) | Description...
+  // Total of 32 AprilTags
+  // Reference: https://firstfrc.blob.core.windows.net/frc2026/Manual/2026GameManual.pdf (page 33)
+  // Red Climb 15, 16
+  // Blue Climb 31, 32
+  // Red Hub 3, 4, 5, 8, 9, 10, 11
+  // Blue Hub 18, 19, 20, 21, 24, 25, 26, 27
+  // Red Trenches 6, 7, 12, 1
+  // Blue Trenches 22, 23, 28, 17
+  // Red Outpost 13, 14
+  // Blue Outpost 29, 30
 
   public static final double[] TAG_WEIGHTS = {
-    0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
   };
 
-  public static final Set<Integer> REPUTABLE_TAGS = Set.of(6, 7, 8, 9, 10, 11, 17, 18, 19, 20, 22);
+  public static final Set<Integer> UNREPUTABLE_TAGS = Set.of();
 }

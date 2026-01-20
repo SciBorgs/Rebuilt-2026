@@ -172,7 +172,7 @@ public class Vision {
                 change.multitagResult.filter(
                     r ->
                         r.fiducialIDsUsed.stream()
-                            .map(id -> REPUTABLE_TAGS.contains((int) id))
+                            .map(id -> !UNREPUTABLE_TAGS.contains((int) id))
                             .reduce(true, (a, b) -> a && b));
           }
           // remove ambiguity

@@ -10,8 +10,8 @@ import static java.lang.Math.atan;
 import static org.sciborgs1155.lib.Assertion.*;
 import static org.sciborgs1155.lib.LoggingUtils.*;
 import static org.sciborgs1155.robot.Constants.PERIOD;
+import static org.sciborgs1155.robot.Constants.TUNING;
 import static org.sciborgs1155.robot.Constants.allianceRotation;
-import static org.sciborgs1155.robot.Constants.tuning;
 import static org.sciborgs1155.robot.Ports.Drive.*;
 import static org.sciborgs1155.robot.drive.DriveConstants.*;
 
@@ -339,7 +339,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
 
     OdometryThread.getInstance().start();
 
-    if (tuning) {
+    if (TUNING.get()) {
       SmartDashboard.putData(
           "Robot/translation/quasistatic forward",
           translationCharacterization
@@ -959,7 +959,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
       modules2d[i].setPose(pose().transformBy(transform));
     }
 
-    if (tuning) {
+    if (TUNING.get()) {
       translationController.setPID(translationP.get(), translationI.get(), translationD.get());
       rotationController.setPID(rotationP.get(), rotationI.get(), rotationD.get());
     }

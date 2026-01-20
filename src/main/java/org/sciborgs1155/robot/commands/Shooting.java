@@ -1,7 +1,10 @@
 package org.sciborgs1155.robot.commands;
 
+import static edu.wpi.first.units.Units.Seconds;
+
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -11,19 +14,12 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-
-import static edu.wpi.first.units.Units.Seconds;
-
-import java.util.Vector;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
-import java.util.spi.TimeZoneNameProvider;
-
 import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.drive.DriveConstants;
@@ -63,63 +59,54 @@ public class Shooting {
         .deadlineWith(shooter.runShooter(desiredVelocity));
   }
 
-
   /**
-   * 
-   * I just want to write down some Pseudocode for now, since it seems like this is probably something that would not get done until a lot later. 
-   * I will be mostly repurposing and reusing most of these commands
-   * 
-   * --> it would be best if I can softcode this into a sort of utility class
-   * --> it would be pretty cool if we could give something like this its own repository, too!
-   * 
-   *  shootWhileDriving (InputStream vx, vy) {
-   *    return shoot(
-   *      () -> rotationalVelocityFromNoteVelocity(CalculateFuelVelocity()); //I wonder if this is a new calation because the shooters's angular velocity doesn't translate perfectly into note-velocity (translational and rotational)
-   *      () ->
-   *          turret.atPosition(yawFromFuelVelocity(calculateFuelVelocity()));
-   *      
-   *           
-    *    )
-   *  }
-   * 
-   * I think that this structure is one of the most important to implement: 
-   * 
-   * public Vector<N3> calculateNoteVelocity(Pose2d robotPose) {
-      ChassisSpeeds speeds = drive.getFieldRelativeChassisSpeeds();
-      Vector<N3> robotVelocity =
-          VecBuilder.fill(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond, 0);
-      Translation2d difference = translationToSpeaker(robotPose.getTranslation());
-      double shotVelocity = calculateStationaryVelocity(difference.getNorm());
-      Rotation3d noteOrientation =
-          new Rotation3d(
-              0,
-              -calculateStationaryPitch(
-                  robotPoseFacingSpeaker(robotPose.getTranslation()), shotVelocity, pivot.position()),
-              difference.getAngle().getRadians());
-      // rotate unit forward vector by note orientation and scale by our shot velocity
-      Vector<N3> noteVelocity =
-          new Translation3d(1, 0, 0).rotateBy(noteOrientation).toVector().unit().times(shotVelocity);
-
-      return noteVelocity.minus(robotVelocity);
-    }
-   * 
+   * I just want to write down some Pseudocode for now, since it seems like this is probably
+   * something that would not get done until a lot later. I will be mostly repurposing and reusing
+   * most of these commands
+   *
+   * <p>--> it would be best if I can softcode this into a sort of utility class --> it would be
+   * pretty cool if we could give something like this its own repository, too!
+   *
+   * <p>shootWhileDriving (InputStream vx, vy) { return shoot( () ->
+   * rotationalVelocityFromNoteVelocity(CalculateFuelVelocity()); //I wonder if this is a new
+   * calation because the shooters's angular velocity doesn't translate perfectly into note-velocity
+   * (translational and rotational) () ->
+   * turret.atPosition(yawFromFuelVelocity(calculateFuelVelocity()));
+   *
+   * <p>) }
+   *
+   * <p>I think that this structure is one of the most important to implement:
+   *
+   * <p>public Vector<N3> calculateNoteVelocity(Pose2d robotPose) { ChassisSpeeds speeds =
+   * drive.getFieldRelativeChassisSpeeds(); Vector<N3> robotVelocity =
+   * VecBuilder.fill(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond, 0); Translation2d
+   * difference = translationToSpeaker(robotPose.getTranslation()); double shotVelocity =
+   * calculateStationaryVelocity(difference.getNorm()); Rotation3d noteOrientation = new Rotation3d(
+   * 0, -calculateStationaryPitch( robotPoseFacingSpeaker(robotPose.getTranslation()), shotVelocity,
+   * pivot.position()), difference.getAngle().getRadians()); // rotate unit forward vector by note
+   * orientation and scale by our shot velocity Vector<N3> noteVelocity = new Translation3d(1, 0,
+   * 0).rotateBy(noteOrientation).toVector().unit().times(shotVelocity);
+   *
+   * <p>return noteVelocity.minus(robotVelocity); }
    */
 
-
-    /**
+  /**
    * Shoots while driving at a manually inputted translational velocity.
    *
    * @param vx The field relative x velocity to drive in.
    * @param vy The field relative y velocity to drive in.
    * @return A command to shote while moving.
    */
-  public Command shootWhileDriving(InputStream vx, InputStream vy) { //this seems like something that could be mostly kept
+  public Command shootWhileDriving(
+      InputStream vx, InputStream vy) { // this seems like something that could be mostly kept
     return shoot(
             () -> rotationalVelocityFromNoteVelocity(calculateNoteVelocity()),
             () -> atYaw(yawFromNoteVelocity(calculateNoteVelocity())))
         .deadlineWith(
             drive.drive(
-                vx.scale(0.5), //see if we could speed this up in the future, this would be quite nice :>>
+                vx.scale(
+                    0.5), // see if we could speed this up in the future, this would be quite nice
+                // :>>
                 vy.scale(0.5),
                 () -> yawFromNoteVelocity(calculateNoteVelocity(Seconds.of(0.2)))));
   }
@@ -138,54 +125,84 @@ public class Shooting {
 
   public Vector<N3> calculateNoteVelocity(Time predictionTime) {
     return calculateNoteVelocity(
-        predictedPose(drive.pose(), drive.getFieldRelativeChassisSpeeds(), predictionTime)); //add the chassis speeds methods for drive including get field relative / robot relative etc
+        predictedPose(
+            drive.pose(),
+            drive.fieldRelativeChassisSpeeds(),
+            predictionTime)); // add the chassis speeds methods for drive including get field
+    // relative / robot relative etc
   }
 
   /**
-   * Calculates a vector for the desired note velocity relative to the robot for it to travel into
+   * Calculates a vector for the desired fuel velocity relative to the robot for it to travel into
    * the speaker, accounting for the robot's current motion.
    *
-   * @return A 3d vector representing the desired note initial velocity.
+   * @return A 3d vector representing the desired fuel initial velocity.
    */
-  public Vector<N3> calculateNoteVelocity(Pose2d robotPose) {
-    //TODO
-  }
+  public Vector<N3> calculateFuelVelocity(Pose2d robotPose) {
+  /**
+   * (1) It works
+   * (2) It's correct
+   * (3) It looks good and is readable (can add a bunch of other smaller components to the functions to, just so that it is readable through english)
+   */
 
-  /** 
-   * 
-   * ChassisSpeeds speeds = drive.getFieldRelativeChassisSpeeds();
-    Vector<N3> robotVelocity =
-        VecBuilder.fill(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond, 0);
+    ChassisSpeeds speeds = drive.fieldRelativeChassisSpeeds();
+
+    Vector<N3> robotVelocity = VecBuilder.fill(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond, 0);
     Translation2d difference = translationToSpeaker(robotPose.getTranslation());
-    double shotVelocity = calculateStationaryVelocity(difference.getNorm());
-    Rotation3d noteOrientation =
-        new Rotation3d(
-            0,
-            -calculateStationaryPitch(
-                robotPoseFacingSpeaker(robotPose.getTranslation()), shotVelocity, pivot.position()), //TODO, substitute with own function // change this block (eventually package this entire thing into a utility if possible)
-            difference.getAngle().getRadians());
-    // rotate unit forward vector by note orientation and scale by our shot velocity
-    Vector<N3> noteVelocity =
-        new Translation3d(1, 0, 0).rotateBy(noteOrientation).toVector().unit().times(shotVelocity);
+    double shotVelo = calculateStationaryVelocity(difference.getNorm());
 
-    return noteVelocity.minus(robotVelocity);
-   * 
-   */
+    //TODO make sure to look over this again next commit and get the correct values after understanding how exactly this translates to something different in Rebuilt2026
+    Rotation3d fuelOrientation = 
+      new Rotation3d(
+          0,
+          -calculateStationaryPitch(
+            robotPoseFacingSpeaker(robotPose.getTranslation()),
+            shotVelo, 
+            0.0), 
+          difference.getAngle().getRadians());
 
-  public static Pose2d predictedPose(
-      Pose2d robotPose, ChassisSpeeds speeds, Time predictionTime) {
-    //TODO
+    //rotate unit forwar vector by fuel orientation and scale by our shot velocity
+    Vector<N3> fuelVelocity = new Translation3d(1, 0, 0).rotateBy(fuelOrientation).toVector().unit().times(shotVelo);
+
+    return fuelVelocity.minus(robotVelocity);
   }
 
   /**
-   * Vector<N3> current =
-        VecBuilder.fill(robotPose.getX(), robotPose.getY(), robotPose.getRotation().getRadians());
-    Vector<N3> velocity =
-        VecBuilder.fill(
-            speeds.vxMetersPerSecond, speeds.vyMetersPerSecond, speeds.omegaRadiansPerSecond);
-    Vector<N3> predicted = current.plus(velocity.times(predictionTime.in(Seconds)));
-    return new Pose2d(predicted.get(0), predicted.get(1), Rotation2d.fromRadians(predicted.get(2)));
    * 
+   * Okay so ngl idk what happened here... I should probably organize it into something that I can actually physically read LMAO
+   * 
+   * ChassisSpeeds speeds = drive.getFieldRelativeChassisSpeeds(); 
+   * 
+   * Vector<N3> robotVelocity = VecBuilder.fill(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond, 0); 
+   * Translation2d difference = translationToSpeaker(robotPose.getTranslation()); 
+   * double shotVelocity = calculateStationaryVelocity(difference.getNorm()); 
+   * Rotation3d noteOrientation = new Rotation3d(0, -calculateStationaryPitch( robotPoseFacingSpeaker(robotPose.getTranslation()), shotVelocity, pivot.position()), //TODO, substitute with own function // change this block (eventually)
+   * 
+   * package this entire thing into a utility if possible) 
+   * 
+   * difference.getAngle().getRadians()); 
+   * //rotate unit forward vector by note orientation and scale by our shot velocity 
+   * Vector<N3> noteVelocity = new Translation3d(1, 0,
+   * 0).rotateBy(noteOrientation).toVector().unit().times(shotVelocity);
+   *
+   * <p>return noteVelocity.minus(robotVelocity);
+   */
+  
+  
+   /** 
+    * TODO Please write a JavaDoc for this.
+    */
+  
+   public static Pose2d predictedPose(Pose2d robotPose, ChassisSpeeds speeds, Time predictionTime) {
+    // TODO
+  }
+
+  /**
+   * Vector<N3> current = VecBuilder.fill(robotPose.getX(), robotPose.getY(),
+   * robotPose.getRotation().getRadians()); Vector<N3> velocity = VecBuilder.fill(
+   * speeds.vxMetersPerSecond, speeds.vyMetersPerSecond, speeds.omegaRadiansPerSecond); Vector<N3>
+   * predicted = current.plus(velocity.times(predictionTime.in(Seconds))); return new
+   * Pose2d(predicted.get(0), predicted.get(1), Rotation2d.fromRadians(predicted.get(2)));
    */
 
   /**
@@ -193,18 +210,16 @@ public class Shooting {
    *
    * @return The pose of the shooter in 3d space.
    */
-  @Logged
+  
+   @Logged
   public Pose3d shooterPose() {
-    //TODO
+    // TODO
   }
 
   /**
-   * return new Pose3d(drive.pose())
-        .transformBy(pivot.transform())
-        .transformBy(PivotConstants.SHOOTER_FROM_AXLE);
-   * 
+   * return new Pose3d(drive.pose()) .transformBy(pivot.transform())
+   * .transformBy(PivotConstants.SHOOTER_FROM_AXLE);
    */
-
   public static Pose3d shooterPose(Transform3d pivot, Pose2d robot) {
     return new Pose3d(robot).transformBy(pivot).transformBy(PivotConstants.SHOOTER_FROM_AXLE);
   }
@@ -215,25 +230,21 @@ public class Shooting {
    * @return Whether the robot can shoot from its current position at its current velocity.
    */
   @Logged
-  public boolean inRange() { //ooohh! this is a pretty nice concept
-    //TODO
+  public boolean inRange() { // ooohh! this is a pretty nice concept
+    // TODO
   }
 
   /**
-   * 
-   * Vector<N3> shot = calculateNoteVelocity();
-    double pitch = pitchFromNoteVelocity(shot);
-    return MIN_ANGLE.in(Radians) < pitch
-        && pitch < MAX_ANGLE.in(Radians)
-        && Math.abs(rotationalVelocityFromNoteVelocity(shot)) < MAX_VELOCITY.in(RadiansPerSecond)
-        && translationToSpeaker(drive.pose().getTranslation()).getNorm() < MAX_DISTANCE.in(Meters);
+   * Vector<N3> shot = calculateNoteVelocity(); double pitch = pitchFromNoteVelocity(shot); return
+   * MIN_ANGLE.in(Radians) < pitch && pitch < MAX_ANGLE.in(Radians) &&
+   * Math.abs(rotationalVelocityFromNoteVelocity(shot)) < MAX_VELOCITY.in(RadiansPerSecond) &&
+   * translationToSpeaker(drive.pose().getTranslation()).getNorm() < MAX_DISTANCE.in(Meters);
    */
-
   public boolean atYaw(Rotation2d yaw) {
     double tolerance = DriveConstants.Rotation.TOLERANCE.in(Radians) * (1 - yaw.getSin());
     Rotation2d diff = drive.heading().minus(yaw);
     return Math.abs(atan(diff.getTan())) < tolerance;
-  } 
+  }
 
   /**
    * Calculates pitch from note initial velocity vector. If given a robot relative initial velocity

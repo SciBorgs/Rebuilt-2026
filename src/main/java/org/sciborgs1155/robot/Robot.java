@@ -39,6 +39,7 @@ import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
 import org.sciborgs1155.robot.drive.Drive;
+import org.sciborgs1155.robot.slapdown.Slapdown;
 import org.sciborgs1155.robot.vision.Vision;
 
 /**
@@ -65,6 +66,13 @@ public class Robot extends CommandRobot {
   @NotLogged private final SendableChooser<Command> autos = Autos.configureAutos(drive);
 
   @Logged private double speedMultiplier = Constants.FULL_SPEED_MULTIPLIER;
+
+  @Logged
+  private final Slapdown slapdown =
+      switch (Constants.ROBOT_TYPE) {
+        case FULL, CHASSIS -> Slapdown.create();
+        default -> Slapdown.none();
+      };
 
   /** The robot contains subsystems, OI devices, and commands. */
   public Robot() {
@@ -135,6 +143,7 @@ public class Robot extends CommandRobot {
   /** Configures trigger -> command bindings. */
   private void configureBindings() {
     // x and y are switched: we use joystick Y axis to control field x motion
+    operator.a().whileTrue(slapdown.extend());
     InputStream raw_x = InputStream.of(driver::getLeftY).log("/Robot/raw x").negate();
     InputStream raw_y = InputStream.of(driver::getLeftX).log("/Robot/raw y").negate();
 

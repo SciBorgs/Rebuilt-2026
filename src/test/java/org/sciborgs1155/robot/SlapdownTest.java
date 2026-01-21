@@ -17,7 +17,7 @@ public class SlapdownTest {
   final double TOLERANCE = 0.1;
 
   @BeforeEach
-  /**make the slapdown */
+  /** make the slapdown */
   public void setup() {
     slapdown = Slapdown.create();
     setupTests();
@@ -25,7 +25,6 @@ public class SlapdownTest {
 
   @AfterEach
   /**
-   * 
    * @throws Exception reset the position
    */
   public void destroy() throws Exception {
@@ -33,7 +32,7 @@ public class SlapdownTest {
   }
 
   @Test
-  /**make the arm move */
+  /** make the arm move */
   public void setArmVoltage() {
 
     System.out.println(Robot.isReal());

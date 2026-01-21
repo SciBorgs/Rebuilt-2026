@@ -33,7 +33,6 @@ public class Intake extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * 
    * @return a simple motor that will run the rollers
    */
   public static SimpleMotor realMotor() {
@@ -59,14 +58,13 @@ public class Intake extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * 
    * @return stop the motors
    */
   public Command stop() {
     return run(() -> hardware.set(0));
   }
 
-  /**close the hardware */
+  /** close the hardware */
   @Override
   public void close() throws Exception {
     hardware.close();

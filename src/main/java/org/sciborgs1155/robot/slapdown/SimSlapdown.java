@@ -21,14 +21,14 @@ public class SimSlapdown implements SlapdownIO, AutoCloseable {
           measurementStDevs);
 
   @Override
-  /**set the voltage of the slapdown */
+  /** set the voltage of the slapdown */
   public void setArmVoltage(double voltage) {
     sim.setInputVoltage(voltage);
     sim.update(PERIOD.in(Seconds));
   }
 
   @Override
-  /**get the position of the slapdown */
+  /** get the position of the slapdown */
   public double extensionPosition() {
     return sim.getAngleRads();
   }

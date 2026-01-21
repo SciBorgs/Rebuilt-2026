@@ -99,7 +99,6 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * 
    * @return slap down the intake
    */
   public Command extend() {
@@ -107,7 +106,6 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * 
    * @return bring up the intake
    */
   public Command retract() {
@@ -116,7 +114,6 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
 
   @Logged
   /**
-   * 
    * @return the position of the slapdown
    */
   public double position() {
@@ -125,7 +122,6 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
 
   @Logged
   /**
-   * 
    * @return the position of the pid
    */
   public double setpoint() {

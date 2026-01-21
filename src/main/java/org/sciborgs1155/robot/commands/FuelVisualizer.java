@@ -6,7 +6,9 @@ import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.LinearVelocity;
@@ -26,7 +28,7 @@ import org.sciborgs1155.robot.FieldConstants;
  */
 public class FuelVisualizer {
   /** The index of the current {@code state} of the Fuel within the {@code trajectory} tensor. */
-  private int index = 0;
+  private int frame;
 
   /**
    * A matrix whose row's represent the POSITION, VELOCITY, and ACCELERATION vectors of the Fuel
@@ -48,29 +50,31 @@ public class FuelVisualizer {
    * respectively. The positive Z axis faces to the ceiling. The positive X axis faces towards the
    * red alliance. The positive Y axis faces towards the left side of the blue alliance.
    */
+  @SuppressWarnings("PMD.OneDeclarationPerLine")
   private static final int X = 0, Y = 1, Z = 2;
 
   /**
    * The first, second, and third components of the {@code state} matrix represent the POSITION,
    * VELOCITY, and ACCELERATION vectors respectively.
    */
+  @SuppressWarnings("PMD.OneDeclarationPerLine")
   private static final int POSITION = 0, VELOCITY = 1, ACCELERATION = 2;
 
   /** The difference in time between {@code state}'s in the {@code trajectory}. */
-  private static final double FRAME_LENGTH = 0.25;
+  private static final double FRAME_LENGTH = 0.016;
 
   /** The dimensionless constant multiplied by velocity to attain the drag force. */
   private static final double DRAG_CONSTANT = 0.1;
 
   /** Once added to the pose of the robot, returns the pose of the shooter. */
-  private static final Translation3d ROBOT_TO_SHOOTER = new Translation3d(0, 0, 1);
+  private static final Translation3d ROBOT_TO_SHOOTER = new Translation3d(0, 0, 0.1);
 
   /**
    * Acceleration due to gravity (GRAVITY FORCE = MASS * GRAVITY ACCELERATION).
    *
    * @return A vector representing the acceleration due to gravity (METERS / FRAME^2).
    */
-  private static final double[] getGravity() {
+  private static double[] getGravity() {
     return new double[] {0, 0, -9.81 * FRAME_LENGTH};
   }
 
@@ -80,7 +84,7 @@ public class FuelVisualizer {
    * @param velocity A vector representing the current velocity of the fuel.
    * @return A vector representing the acceleration due to drag (METERS / FRAME^2).
    */
-  private static final double[] getDrag(double[] velocity) {
+  private static double[] getDrag(double[] velocity) {
     return scale(velocity, FRAME_LENGTH * -(DRAG_CONSTANT / FUEL_MASS));
   }
 
@@ -108,21 +112,33 @@ public class FuelVisualizer {
     List<double[][]> trajectory = new ArrayList<>();
 
     while (inField(pose)) {
+      // ADD STATE TO TRAJECTORY (CONVERT VELOCITY AND ACCELERATION TO METERS / SECOND)
+      trajectory.add(
+          new double[][] {
+            scale(pose, 1), scale(velocity, 1 / FRAME_LENGTH), scale(acceleration, 1 / FRAME_LENGTH)
+          });
+
       // ACCELERATION = GRAVITY + DRAG (METERS / FRAME^2)
-      acceleration = sum(getDrag(velocity), getGravity());
+      acceleration = sum(getGravity(), getDrag(velocity));
 
       // VELOCITY = ACCELERATION * TIME (METERS / FRAME)
       addTo(velocity, acceleration);
 
       // DISPLACEMENT = VELOCITY * TIME (METERS)
       addTo(pose, velocity);
-
-      // ADD STATE TO TRAJECTORY (CONVERT VELOCITY AND ACCELERATION TO METERS / SECOND)
-      trajectory.add(
-          new double[][] {
-            pose, scale(velocity, 1 / FRAME_LENGTH), scale(acceleration, 1 / FRAME_LENGTH)
-          });
     }
+
+    // PREVENTS CLIPPING OUT OF FRAME
+    double[] finalPose = pose.clone();
+
+    finalPose[X] = MathUtil.clamp(pose[X], 0, FieldConstants.LENGTH.in(Meters));
+    finalPose[Y] = MathUtil.clamp(pose[Y], 0, FieldConstants.WIDTH.in(Meters));
+    finalPose[Z] = Math.max(0, pose[Z]);
+
+    trajectory.add(
+        new double[][] {
+          finalPose, scale(velocity, 1 / FRAME_LENGTH), scale(acceleration, 1 / FRAME_LENGTH)
+        });
 
     return trajectory;
   }
@@ -146,11 +162,11 @@ public class FuelVisualizer {
         .andThen(
             Commands.repeatingSequence(
                     Commands.runOnce(this::next).andThen(Commands.waitSeconds(FRAME_LENGTH)))
-                .until(() -> index >= trajectory.size()));
+                .onlyWhile(() -> frame < trajectory.size()));
   }
 
   /**
-   * Resets {@code index} and generates the new trajectory for the Fuel.
+   * Resets {@code frame} and generates the new trajectory for the Fuel.
    *
    * @param velocity The launch velocity of the Fuel.
    * @param yaw The yaw of the turret.
@@ -159,7 +175,7 @@ public class FuelVisualizer {
    */
   private void init(LinearVelocity velocity, Angle yaw, Angle pitch, Pose3d robotPose) {
     // RESET
-    index = 0;
+    frame = 0;
     trajectory.clear();
 
     // TRAJECTORY GENERATION
@@ -167,8 +183,7 @@ public class FuelVisualizer {
 
     double[] startingPose = {shooterPose.getX(), shooterPose.getY(), shooterPose.getZ()};
     double[] startingVelocity =
-        fromSpherical(
-            velocity.in(MetersPerSecond), yaw.in(Radians), pitch.in(Radians) - Math.PI / 2);
+        toCartesian(velocity.in(MetersPerSecond), yaw.in(Radians), pitch.in(Radians));
 
     for (double[][] generatedState : generateTrajectory(startingPose, startingVelocity))
       trajectory.add(generatedState);
@@ -176,11 +191,12 @@ public class FuelVisualizer {
 
   /** Displays the next {@code state} in the {@code trajectory}. To be called periodically. */
   private void next() {
-    double[][] generatedState = trajectory.get(index);
+    if (frame >= trajectory.size()) return;
+    double[][] generatedState = trajectory.get(frame);
     state[POSITION] = generatedState[POSITION];
     state[VELOCITY] = generatedState[VELOCITY];
     state[ACCELERATION] = generatedState[ACCELERATION];
-    index++;
+    frame++;
   }
 
   /**
@@ -189,8 +205,8 @@ public class FuelVisualizer {
    * @return The pose of the Fuel (using the field coordinate system).
    */
   @Logged(name = "FUEL POSE")
-  public Translation3d getPose() {
-    return new Translation3d(state[POSITION][X], state[POSITION][Y], state[POSITION][Z]);
+  public Pose3d getPose() {
+    return new Pose3d(state[POSITION][X], state[POSITION][Y], state[POSITION][Z], Rotation3d.kZero);
   }
 
   /**
@@ -221,7 +237,7 @@ public class FuelVisualizer {
    */
   @Logged(name = "TIMESTAMP")
   public Time getTimestamp() {
-    return Seconds.of(index * FRAME_LENGTH);
+    return Seconds.of(frame * FRAME_LENGTH);
   }
 
   /**
@@ -269,16 +285,16 @@ public class FuelVisualizer {
    * Converts spherical coordinates to cartesian coordinates.
    *
    * @param magnitude The magnitude of the polar coordinate.
-   * @param theta The angle above the positive z-axis in radians.
-   * @param alpha The angle to the left of the positive x-axis in radians.
+   * @param theta The angle in the xy-plane (polar angle).
+   * @param alpha The angle up from the xy-plane (towards positive z).
    * @return A vector representing the cartesian coordinates.
    */
-  private static double[] fromSpherical(double magnitude, double theta, double alpha) {
-    return scale(
-        new double[] {
-          Math.sin(theta) * Math.cos(alpha), Math.sin(theta) * Math.sin(alpha), Math.cos(theta)
-        },
-        magnitude);
+  private static double[] toCartesian(double magnitude, double theta, double alpha) {
+    return new double[] {
+      magnitude * Math.cos(theta) * Math.cos(alpha),
+      magnitude * Math.sin(theta) * Math.cos(alpha),
+      -magnitude * Math.sin(alpha)
+    };
   }
 
   /**
@@ -288,13 +304,12 @@ public class FuelVisualizer {
    * @param pose The pose of the object to evaluate.
    * @return True if the pose is within the field's bounds. False if otherwise.
    */
+  @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
   private static boolean inField(double[] pose) {
-    if (pose.length != 3) throw new InvalidParameterException("pose must be a 3D vector!");
+    if (pose.length != 3) throw new InvalidParameterException("Pose must be a 3D vector!");
     if (pose[X] <= 0 || pose[Y] <= 0) return false;
     if (pose[X] >= FieldConstants.LENGTH.in(Meters)) return false;
     if (pose[Y] >= FieldConstants.WIDTH.in(Meters)) return false;
-    if (pose[Z] <= 0) return false;
-
-    return true;
+    return !(pose[Z] <= 0);
   }
 }

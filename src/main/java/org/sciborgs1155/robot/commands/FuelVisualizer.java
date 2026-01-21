@@ -20,11 +20,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 import org.sciborgs1155.robot.FieldConstants;
+import org.sciborgs1155.robot.turret.TurretConstants;
 
 /**
  * Simulates a singular {@code Fuel} projectile as it is being launched. The Fuel is launched from
  * the robot using the {@code shoot} command. This Fuel is reused upon the next calling of the
- * command. Fuel position can be accessed via the {@code getPose} method. All units are SI.
+ * command. Fuel position can be accessed via the {@code getPose} method. All units are SI unless specified otherwise.
  */
 public class FuelVisualizer {
   /** The index of the current {@code state} of the Fuel within the {@code trajectory} tensor. */
@@ -42,8 +43,11 @@ public class FuelVisualizer {
    */
   private final List<double[][]> trajectory = new ArrayList<>();
 
-  /** The mass of the Fuel. */
+  /** The mass of the Fuel (kilograms). */
   private static final double FUEL_MASS = 0.225;
+
+  /** The diameter of the Fuel (centimeters). */
+  private static final double FUEL_DIAMETER = 15;
 
   /**
    * The first, second, and third components of a 3D vector represent the X,Y, and Z coordinates
@@ -182,6 +186,10 @@ public class FuelVisualizer {
     Translation3d shooterPose = robotPose.getTranslation().plus(ROBOT_TO_SHOOTER);
 
     double[] startingPose = {shooterPose.getX(), shooterPose.getY(), shooterPose.getZ()};
+    double[] shooterToFuel = toCartesian(TurretConstants.TURRET_LENGTH.in(Meters) + FUEL_DIAMETER, yaw.in(Radians), pitch.in(Radians));
+    
+    addTo(startingPose, shooterToFuel);
+
     double[] startingVelocity =
         toCartesian(velocity.in(MetersPerSecond), yaw.in(Radians), pitch.in(Radians));
 

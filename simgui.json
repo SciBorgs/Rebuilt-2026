@@ -68,7 +68,10 @@
         },
         "right": 3466,
         "top": 291,
-        "width": 17.54825210571289
+        "width": 17.54825210571289,
+        "window": {
+          "visible": true
+        }
       },
       "/SmartDashboard/Auto Chooser": {
         "window": {
@@ -172,7 +175,13 @@
           "open": true
         },
         "open": true
+      },
+      "SmartDashboard": {
+        "open": true
       }
     }
+  },
+  "NetworkTables Info": {
+    "visible": true
   }
 }

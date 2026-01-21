@@ -41,6 +41,7 @@ import org.sciborgs1155.lib.Assertion;
 import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.robot.Robot;
 
+@Logged
 /** Hood subsystem for adjusting vertical shooting angle of the fuel */
 public class Hood extends SubsystemBase implements AutoCloseable {
 

@@ -1,32 +1,23 @@
 package org.sciborgs1155.robot.hood;
 
-import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
-import static edu.wpi.first.units.Units.Volts;
+import java.util.Set;
+import java.util.function.DoubleSupplier;
+
+import org.sciborgs1155.lib.Assertion.EqualityAssertion;
 import static org.sciborgs1155.lib.Assertion.eAssert;
-import static org.sciborgs1155.robot.hood.HoodConstants.DEFAULT_ANGLE;
-import static org.sciborgs1155.robot.hood.HoodConstants.K_A;
-import static org.sciborgs1155.robot.hood.HoodConstants.K_D;
-import static org.sciborgs1155.robot.hood.HoodConstants.K_G;
-import static org.sciborgs1155.robot.hood.HoodConstants.K_I;
-import static org.sciborgs1155.robot.hood.HoodConstants.K_P;
-import static org.sciborgs1155.robot.hood.HoodConstants.K_S;
-import static org.sciborgs1155.robot.hood.HoodConstants.K_V;
-import static org.sciborgs1155.robot.hood.HoodConstants.MAX_ACCEL;
-import static org.sciborgs1155.robot.hood.HoodConstants.MAX_ANGLE;
-import static org.sciborgs1155.robot.hood.HoodConstants.MAX_VELOCITY;
-import static org.sciborgs1155.robot.hood.HoodConstants.MIN_ANGLE;
-import static org.sciborgs1155.robot.hood.HoodConstants.POS_TOLERANCE;
-import static org.sciborgs1155.robot.hood.HoodConstants.RAMP_RATE;
-import static org.sciborgs1155.robot.hood.HoodConstants.STEP_VOLTAGE;
-import static org.sciborgs1155.robot.hood.HoodConstants.TIME_OUT;
+import org.sciborgs1155.lib.Test;
+import org.sciborgs1155.robot.Robot;
+import static org.sciborgs1155.robot.hood.HoodConstants.*;
 
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
+import static edu.wpi.first.units.Units.Volts;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -35,11 +26,6 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
-import java.util.Set;
-import java.util.function.DoubleSupplier;
-import org.sciborgs1155.lib.Assertion;
-import org.sciborgs1155.lib.Test;
-import org.sciborgs1155.robot.Robot;
 
 @Logged
 /** Hood subsystem for adjusting vertical shooting angle of the fuel */
@@ -47,6 +33,7 @@ public class Hood extends SubsystemBase implements AutoCloseable {
 
   private final HoodIO hardware;
 
+  @Logged
   private final ProfiledPIDController fb =
       new ProfiledPIDController(
           K_P,
@@ -70,6 +57,7 @@ public class Hood extends SubsystemBase implements AutoCloseable {
     this.hardware = hardware;
 
     fb.setTolerance(POS_TOLERANCE.in(Radians));
+    fb.reset(angle());
     setDefaultCommand(goTo(DEFAULT_ANGLE));
 
     sysIdRoutine =
@@ -170,16 +158,6 @@ public class Hood extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * moves the hood to a specified angle
-   *
-   * @param goal
-   * @return a goTo command set the hood to goal angle
-   */
-  public Command goTo(Angle goal) {
-    return goTo(() -> goal.in(Radians));
-  }
-
-  /**
    * checks whether the hood is at a set desired state
    *
    * @return Whether or not the elevator is at its desired state.
@@ -194,9 +172,19 @@ public class Hood extends SubsystemBase implements AutoCloseable {
     return Math.abs(angle - angle()) < POS_TOLERANCE.in(Radians);
   }
 
+  /**
+   * moves the hood to a specified angle
+   *
+   * @param goal
+   * @return a goTo command set the hood to goal angle
+   */
+  public Command goTo(Angle goal) {
+    return goTo(() -> goal.in(Radians));
+  }
+
   /** makes hood go to a set goal position */
   public Command goTo(DoubleSupplier goal) {
-    return run(() -> update(goal.getAsDouble())).withName("Hood GoTo");
+    return run(() -> update(goal.getAsDouble())).until(this::atGoal).withName("Hood GoTo");
   }
 
   /**
@@ -205,26 +193,26 @@ public class Hood extends SubsystemBase implements AutoCloseable {
    * @param position Goal angle for hood to reach
    */
   private void update(double position) {
-    double goal = MathUtil.clamp(position, MIN_ANGLE.in(Radians), MAX_ANGLE.in(Radians));
+    double goal =
+        MathUtil.clamp(
+            position, MIN_ANGLE.in(Radians), MAX_ANGLE.in(Radians));
     double feedback = fb.calculate(angle(), goal);
     double feedforward =
-        ff.calculate(fb.getSetpoint().position - MIN_ANGLE.in(Radians), fb.getSetpoint().velocity);
+        ff.calculate(fb.getSetpoint().position - Math.PI / 2, fb.getSetpoint().velocity);
     hardware.setVoltage(feedback + feedforward);
   }
 
   /** test for hood to go to a set goal angle */
   public Test goToTest(Angle goal) {
-
     Command testCommand = goTo(goal).until(this::atGoal).withTimeout(5);
-    Set<Assertion> assertions =
-        Set.of(
-            eAssert(
-                "hood system check (angle)",
-                () -> goal.in(Radians),
-                this::angle,
-                POS_TOLERANCE.in(Radians)));
+    EqualityAssertion assertions =
+        eAssert(
+            "hood system check (angle)",
+            () -> goal.in(Radians),
+            this::angle,
+            POS_TOLERANCE.in(Radians));
 
-    return new Test(testCommand, assertions);
+    return new Test(testCommand, Set.of(assertions));
   }
 
   /** closes the hood */

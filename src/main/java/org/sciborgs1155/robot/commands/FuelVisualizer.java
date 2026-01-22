@@ -20,32 +20,214 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 import org.sciborgs1155.robot.FieldConstants;
-import org.sciborgs1155.robot.turret.TurretConstants;
 
-/**
- * Simulates a singular {@code Fuel} projectile as it is being launched. The Fuel is launched from
- * the robot using the {@code shoot} command. This Fuel is reused upon the next calling of the
- * command. Fuel position can be accessed via the {@code getPose} method. All units are SI unless
- * specified otherwise.
- */
+/** Simulates the behavior multiple {@code Fuel} projectiles using {@code FuelSim}. */
 public class FuelVisualizer {
   /** All Fuel currently being simulated on the field. */
-  private static final List<FuelSim> fuel = new ArrayList<>();
+  private final List<FuelSim> fuels = new ArrayList<>();
+
+  /** A supplier for the launch velocity of the Fuel. */
+  private final Supplier<LinearVelocity> launchVelocitySupplier;
+
+  /** A supplier for the angle of the turret. */
+  private final Supplier<Angle> turretAngleSupplier;
+
+  /** A supplier for the angle of the hood. */
+  private final Supplier<Angle> hoodAngleSupplier;
+
+  /** A supplier for the current pose of the robot. */
+  private final Supplier<Pose3d> robotPoseSupplier;
 
   /**
-   * Adds a {@code FuelSim} to the field.
+   * Simulates the behavior multiple {@code Fuel} projectiles using {@code FuelSim}.
    *
-   * @param pose The starting pose of the Fuel.
+   * @param launchVelocitySupplier A supplier for the launch velocity of the Fuel.
+   * @param turretAngleSupplier A supplier for the angle of the turret.
+   * @param hoodAngleSupplier A supplier for the angle of the hood.
+   * @param robotPoseSupplier A supplier for the pose of the robot.
    */
-  public static final void addFuel(Pose3d pose) {
-    fuel.add(new FuelSim(pose));
+  public FuelVisualizer(
+      Supplier<LinearVelocity> launchVelocitySupplier,
+      Supplier<Angle> turretAngleSupplier,
+      Supplier<Angle> hoodAngleSupplier,
+      Supplier<Pose3d> robotPoseSupplier) {
+    this.launchVelocitySupplier = launchVelocitySupplier;
+    this.turretAngleSupplier = turretAngleSupplier;
+    this.hoodAngleSupplier = hoodAngleSupplier;
+    this.robotPoseSupplier = robotPoseSupplier;
+  }
+
+  /** Adds a {@code FuelSim} to the field. */
+  public void addFuel() {
+    fuels.add(
+        new FuelSim(
+            launchVelocitySupplier, turretAngleSupplier, hoodAngleSupplier, robotPoseSupplier));
+  }
+
+  /**
+   * Simulates a singular {@code Fuel} projectile as it is being launched. The Fuel is launched from
+   * the robot using the {@code shoot} command. This Fuel is reused upon the next calling of the
+   * command. Fuel position can be accessed via the {@code getPose} method. All units are SI unless
+   * specified otherwise.
+   */
+  public static class FuelSim {
+    /** The index of the current {@code state} of the Fuel within the {@code trajectory} tensor. */
+    private int frame;
+
+    /** Whether or not the Fuel is currently being launched. */
+    private boolean idle = true;
+
+    /**
+     * A matrix whose row's represent the POSITION, VELOCITY, and ACCELERATION vectors of the Fuel
+     * (using the field coordinate system).
+     */
+    private final double[][] state = new double[3][3];
+
+    /**
+     * A list of {@code state}'s (whose time-delta is specified by {@code FRAME_LENGTH}) specifying
+     * the trajectory of the Fuel at the last call of the {@code shoot} method.
+     */
+    private final List<double[][]> trajectory = new ArrayList<>();
+
+    /** A supplier for the launch velocity of the Fuel. */
+    private final Supplier<LinearVelocity> launchVelocity;
+
+    /** A supplier for the angle of the turret. */
+    private final Supplier<Angle> turretAngle;
+
+    /** A supplier for the angle of the hood. */
+    private final Supplier<Angle> hoodAngle;
+
+    /** A supplier for the current pose of the robot. */
+    private final Supplier<Pose3d> robotPose;
+
+    /**
+     * Simulates a singular {@code Fuel} projectile as it is being launched. The Fuel is launched
+     * from the robot using the {@code shoot} command. This Fuel is reused upon the next calling of
+     * the command. Fuel position can be accessed via the {@code getPose} method. All units are SI
+     * unless specified otherwise.
+     *
+     * @param launchVelocity A supplier for the launch velocity of the Fuel.
+     * @param turretAngle A supplier for the angle of the turret.
+     * @param hoodAngle A supplier for the angle of the hood.
+     * @param robotPose A supplier for the pose of the robot.
+     * @param startingPose The starting position of the Fuel.
+     */
+    public FuelSim(
+        Supplier<LinearVelocity> launchVelocity,
+        Supplier<Angle> turretAngle,
+        Supplier<Angle> hoodAngle,
+        Supplier<Pose3d> robotPose) {
+      this.launchVelocity = launchVelocity;
+      this.turretAngle = turretAngle;
+      this.hoodAngle = hoodAngle;
+      this.robotPose = robotPose;
+    }
+
+    /**
+     * Resets and launches Fuel from the robot.
+     *
+     * @return A command to launch the Fuel from the robot.
+     */
+    public Command shoot() {
+      return Commands.runOnce(this::init)
+          .andThen(
+              Commands.repeatingSequence(
+                      Commands.runOnce(this::next).andThen(Commands.waitSeconds(FRAME_LENGTH)))
+                  .onlyWhile(() -> frame < trajectory.size()))
+          .finallyDo(this::end);
+    }
+
+    /** Resets {@code frame} and generates the new trajectory for the Fuel. */
+    private void init() {
+      // RESET
+      frame = 0;
+      idle = false;
+      trajectory.clear();
+
+      // TRAJECTORY GENERATION
+      double[] startingPose =
+          getFuelStartingPose(robotPose.get(), turretAngle.get(), hoodAngle.get());
+      double[] startingVelocity =
+          getFuelStartingVelocity(launchVelocity.get(), turretAngle.get(), hoodAngle.get());
+
+      for (double[][] generatedState : generateTrajectory(startingPose, startingVelocity))
+        trajectory.add(generatedState);
+    }
+
+    /** Displays the next {@code state} in the {@code trajectory}. To be called periodically. */
+    private void next() {
+      if (frame >= trajectory.size()) return;
+      double[][] generatedState = trajectory.get(frame);
+      state[POSITION] = generatedState[POSITION];
+      state[VELOCITY] = generatedState[VELOCITY];
+      state[ACCELERATION] = generatedState[ACCELERATION];
+      frame++;
+    }
+
+    /** Called when Fuel completes it's trajectory. */
+    private void end() {
+      idle = true;
+    }
+
+    /**
+     * The current pose of the Fuel on the field.
+     *
+     * @return The pose of the Fuel (using the field coordinate system).
+     */
+    @Logged(name = "FUEL POSE")
+    public Pose3d getPose() {
+      return new Pose3d(
+          state[POSITION][X], state[POSITION][Y], state[POSITION][Z], Rotation3d.kZero);
+    }
+
+    /**
+     * The current velocity of the Fuel.
+     *
+     * @return The velocity of the Fuel (using the field coordinate system).
+     */
+    @Logged(name = "FUEL VELOCITY")
+    public Translation3d getVelocity() {
+      return new Translation3d(state[VELOCITY][X], state[VELOCITY][Y], state[VELOCITY][Z]);
+    }
+
+    /**
+     * The current acceleration of the Fuel.
+     *
+     * @return The acceleration of the Fuel (using the field coordinate system).
+     */
+    @Logged(name = "FUEL ACCELERATION")
+    public Translation3d getAcceleration() {
+      return new Translation3d(
+          state[ACCELERATION][X], state[ACCELERATION][Y], state[ACCELERATION][Z]);
+    }
+
+    /**
+     * The timestamp of the latest launch.
+     *
+     * @return The time since the last launch of the fuel.
+     */
+    @Logged(name = "TIMESTAMP")
+    public Time getTimestamp() {
+      return Seconds.of(frame * FRAME_LENGTH);
+    }
+
+    /**
+     * Whether or not the Fuel is currently being launched.
+     *
+     * @return True if it is not being launched, False if it is being launched.
+     */
+    @Logged(name = "IDLE")
+    public boolean isIdle() {
+      return idle;
+    }
   }
 
   /** The mass of the Fuel (kilograms). */
   private static final double FUEL_MASS = 0.225;
 
-  /** The diameter of the Fuel (centimeters). */
-  private static final double FUEL_DIAMETER = 15;
+  /** The diameter of the Fuel (meters). */
+  private static final double FUEL_DIAMETER = 0.15;
 
   /**
    * The first, second, and third components of a 3D vector represent the X,Y, and Z coordinates
@@ -91,158 +273,6 @@ public class FuelVisualizer {
   }
 
   /**
-   * Simulates a singular {@code Fuel} projectile as it is being launched. The Fuel is launched from
-   * the robot using the {@code shoot} command. This Fuel is reused upon the next calling of the
-   * command. Fuel position can be accessed via the {@code getPose} method. All units are SI unless
-   * specified otherwise.
-   */
-  public static class FuelSim {
-    /** The index of the current {@code state} of the Fuel within the {@code trajectory} tensor. */
-    private int frame;
-
-    /**
-     * A matrix whose row's represent the POSITION, VELOCITY, and ACCELERATION vectors of the Fuel
-     * (using the field coordinate system).
-     */
-    private final double[][] state = new double[3][3];
-
-    /**
-     * A list of {@code state}'s (whose time-delta is specified by {@code FRAME_LENGTH}) specifying
-     * the trajectory of the Fuel at the last call of the {@code shoot} method.
-     */
-    private final List<double[][]> trajectory = new ArrayList<>();
-
-    /**
-     * Simulates a singular {@code Fuel} projectile as it is being launched. The Fuel is launched
-     * from the robot using the {@code shoot} command. This Fuel is reused upon the next calling of
-     * the command. Fuel position can be accessed via the {@code getPose} method. All units are SI
-     * unless specified otherwise.
-     *
-     * @param startingPose The starting position of the Fuel.
-     */
-    public FuelSim(Pose3d startingPose) {
-      state[POSITION] =
-          new double[] {startingPose.getX(), startingPose.getY(), startingPose.getZ()};
-    }
-
-    /**
-     * Resets and launches Fuel from the robot.
-     *
-     * @param launchVelocity A supplier for the current launch velocity of the Fuel.
-     * @param turretAngle A supplier for the current angle of the turret.
-     * @param hoodAngle A supplier for the current angle of the hood.
-     * @param robotPose A supplier for the current pose of the robot.
-     * @return A command to launch the Fuel from the robot.
-     */
-    public Command shoot(
-        Supplier<LinearVelocity> launchVelocity,
-        Supplier<Angle> turretAngle,
-        Supplier<Angle> hoodAngle,
-        Supplier<Pose3d> robotPose) {
-      return Commands.runOnce(
-              () -> init(launchVelocity.get(), turretAngle.get(), hoodAngle.get(), robotPose.get()))
-          .andThen(
-              Commands.repeatingSequence(
-                      Commands.runOnce(this::next).andThen(Commands.waitSeconds(FRAME_LENGTH)))
-                  .onlyWhile(() -> frame < trajectory.size()));
-    }
-
-    /**
-     * Teleports Fuel to the robot and keeps it in the same robot-relative position until the next
-     * launch.
-     *
-     * @param launchVelocity A supplier for the current launch velocity of the Fuel.
-     * @param turretAngle A supplier for the current angle of the turret.
-     * @param hoodAngle A supplier for the current angle of the hood.
-     * @param robotPose A supplier for the current pose of the robot.
-     * @return A command to intake the Fuel.
-     */
-    public Command intake(
-        Supplier<LinearVelocity> launchVelocity,
-        Supplier<Angle> turretAngle,
-        Supplier<Angle> hoodAngle,
-        Supplier<Pose3d> robotPose) {
-      return Commands.run(
-          () ->
-              state[POSITION] =
-                  getFuelStartingPose(robotPose.get(), turretAngle.get(), hoodAngle.get()));
-    }
-
-    /**
-     * Resets {@code frame} and generates the new trajectory for the Fuel.
-     *
-     * @param velocity The launch velocity of the Fuel.
-     * @param yaw The yaw of the turret.
-     * @param pitch The pitch of the hood.
-     * @param robotPose The current position of the robot.
-     */
-    private void init(LinearVelocity velocity, Angle yaw, Angle pitch, Pose3d robotPose) {
-      // RESET
-      frame = 0;
-      trajectory.clear();
-
-      // TRAJECTORY GENERATION
-      double[] startingPose = getFuelStartingPose(robotPose, yaw, pitch);
-      double[] startingVelocity = getFuelStartingVelocity(velocity, yaw, pitch);
-
-      for (double[][] generatedState : generateTrajectory(startingPose, startingVelocity))
-        trajectory.add(generatedState);
-    }
-
-    /** Displays the next {@code state} in the {@code trajectory}. To be called periodically. */
-    private void next() {
-      if (frame >= trajectory.size()) return;
-      double[][] generatedState = trajectory.get(frame);
-      state[POSITION] = generatedState[POSITION];
-      state[VELOCITY] = generatedState[VELOCITY];
-      state[ACCELERATION] = generatedState[ACCELERATION];
-      frame++;
-    }
-
-    /**
-     * The current pose of the Fuel on the field.
-     *
-     * @return The pose of the Fuel (using the field coordinate system).
-     */
-    @Logged(name = "FUEL POSE")
-    public Pose3d getPose() {
-      return new Pose3d(
-          state[POSITION][X], state[POSITION][Y], state[POSITION][Z], Rotation3d.kZero);
-    }
-
-    /**
-     * The current velocity of the Fuel.
-     *
-     * @return The velocity of the Fuel (using the field coordinate system).
-     */
-    @Logged(name = "FUEL VELOCITY")
-    public Translation3d getVelocity() {
-      return new Translation3d(state[VELOCITY][X], state[VELOCITY][Y], state[VELOCITY][Z]);
-    }
-
-    /**
-     * The current acceleration of the Fuel.
-     *
-     * @return The acceleration of the Fuel (using the field coordinate system).
-     */
-    @Logged(name = "FUEL ACCELERATION")
-    public Translation3d getAcceleration() {
-      return new Translation3d(
-          state[ACCELERATION][X], state[ACCELERATION][Y], state[ACCELERATION][Z]);
-    }
-
-    /**
-     * The timestamp of the latest launch.
-     *
-     * @return The time since the last launch of the fuel.
-     */
-    @Logged(name = "TIMESTAMP")
-    public Time getTimestamp() {
-      return Seconds.of(frame * FRAME_LENGTH);
-    }
-  }
-
-  /**
    * Generates the starting pose vector for the Fuel based on robot properties.
    *
    * @param yaw The yaw of the turret.
@@ -255,11 +285,7 @@ public class FuelVisualizer {
     double[] startingPose = {shooterPose.getX(), shooterPose.getY(), shooterPose.getZ()};
 
     // TRANSFORM BASED ON TURRET / HOOD DIRECTION.
-    double[] shooterToFuel =
-        toCartesian(
-            TurretConstants.TURRET_LENGTH.in(Meters) + FUEL_DIAMETER,
-            yaw.in(Radians),
-            pitch.in(Radians));
+    double[] shooterToFuel = toCartesian(0.2 + FUEL_DIAMETER, yaw.in(Radians), pitch.in(Radians));
 
     addTo(startingPose, shooterToFuel);
     return startingPose;
@@ -332,7 +358,8 @@ public class FuelVisualizer {
   }
 
   /**
-   * Determines whether or not the Fuel, launched with specified starting pose and velocity, will go through the Hub.
+   * Determines whether or not the Fuel, launched with specified starting pose and velocity, will go
+   * through the Hub.
    *
    * @param startingPose The pose of the Fuel after losing contact with the shooter rollers
    *     utilizing the field coordinate system (X, Y, and Z).
@@ -340,7 +367,8 @@ public class FuelVisualizer {
    *     utilizing the field coordinate system (X, Y, and Z).
    * @return True if the Fuel will score in the Hub, False if the Fuel will miss the Hub.
    */
-  private static boolean willScore(double[] startingPose, double[] startingVelocity) { // TODO: Implement.
+  private static boolean willScore(
+      double[] startingPose, double[] startingVelocity) { // TODO: Implement.
     double[] pose = startingPose.clone();
 
     // VELOCITY (METERS / SECOND) --> VELOCITY (METERS / FRAME)

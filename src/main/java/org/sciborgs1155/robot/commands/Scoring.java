@@ -3,24 +3,20 @@ package org.sciborgs1155.robot.commands;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import org.sciborgs1155.robot.drive.Drive;
-import org.sciborgs1155.robot.hood.Hood;
-import org.sciborgs1155.robot.shooter.Shooter;
-import org.sciborgs1155.robot.turret.Turret;
 
 /** Command factory for scoring Fuel into the Hub. All units are SI. */
 public class Scoring {
   /** Controls the position of the robot. */
-  private final Drive drive;
+  // private final Drive drive;
 
   /** Controls the speed at which Fuel is launched. */
-  private final Shooter shooter;
+  // private final Shooter shooter;
 
   /** Controls the yaw component of the Fuel's launch angle. */
-  private final Turret turret;
+  // private final Turret turret;
 
   /** Controls the pitch component of the Fuel's launch angle. */
-  private final Hood hood;
+  // private final Hood hood;
 
   /**
    * Command factory for scoring Fuel into the Hub.
@@ -30,12 +26,12 @@ public class Scoring {
    * @param turret The {@code Turret} subsystem (controls launch yaw).
    * @param hood The {@code Hood} subsystem (controls launch pitch).
    */
-  public Scoring(Drive drive, Shooter shooter, Turret turret, Hood hood) {
-    this.drive = drive;
-    this.shooter = shooter;
-    this.turret = turret;
-    this.hood = hood;
-  }
+  // public Scoring(Drive drive, Shooter shooter, Turret turret, Hood hood) {
+  //   this.drive = drive;
+  //   this.shooter = shooter;
+  //   this.turret = turret;
+  //   this.hood = hood;
+  // }
 
   /**
    * Continuously command all scoring mechanisms to the appropriate configuration for scoring Fuel

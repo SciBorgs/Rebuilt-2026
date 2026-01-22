@@ -10,6 +10,8 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
@@ -22,83 +24,88 @@ import java.util.function.Supplier;
 import org.sciborgs1155.robot.FieldConstants;
 
 /** Simulates the behavior multiple {@code Fuel} projectiles using {@code FuelSim}. */
-public class FuelVisualizer {
+public final class FuelVisualizer {
+  /** Not meant to be used. */
+  private FuelVisualizer() {}
+
   /** All Fuel currently being simulated on the field. */
-  private final List<FuelSim> fuelSimulations = new ArrayList<>();
+  private static List<FuelSim> fuelSims = new ArrayList<>();
 
   /** A supplier for the launch velocity of the Fuel. */
-  private final Supplier<LinearVelocity> launchVelocitySupplier;
+  private static Supplier<LinearVelocity> launchVelocitySupplier;
 
   /** A supplier for the angle of the turret. */
-  private final Supplier<Angle> turretAngleSupplier;
+  private static Supplier<Angle> turretAngleSupplier;
 
   /** A supplier for the angle of the hood. */
-  private final Supplier<Angle> hoodAngleSupplier;
+  private static Supplier<Angle> hoodAngleSupplier;
 
   /** A supplier for the current pose of the robot. */
-  private final Supplier<Pose3d> robotPoseSupplier;
+  private static Supplier<Pose3d> robotPoseSupplier;
 
   /**
-   * Simulates the behavior multiple {@code Fuel} projectiles using {@code FuelSim}.
+   * A publisher for the positions of the {@code FuelSim}'s. Used to view Fuel in logging framework.
+   */
+  private static StructArrayPublisher<Pose3d> publisher =
+      NetworkTableInstance.getDefault().getStructArrayTopic("Visualizer", Pose3d.struct).publish();
+
+  /**
+   * Initializes suppliers for Fuel launch parameters. To be called on robot startup.
    *
    * @param launchVelocitySupplier A supplier for the launch velocity of the Fuel.
    * @param turretAngleSupplier A supplier for the angle of the turret.
    * @param hoodAngleSupplier A supplier for the angle of the hood.
    * @param robotPoseSupplier A supplier for the pose of the robot.
    */
-  public FuelVisualizer(
+  public static void init(
       Supplier<LinearVelocity> launchVelocitySupplier,
       Supplier<Angle> turretAngleSupplier,
       Supplier<Angle> hoodAngleSupplier,
       Supplier<Pose3d> robotPoseSupplier) {
-    this.launchVelocitySupplier = launchVelocitySupplier;
-    this.turretAngleSupplier = turretAngleSupplier;
-    this.hoodAngleSupplier = hoodAngleSupplier;
-    this.robotPoseSupplier = robotPoseSupplier;
+    FuelVisualizer.launchVelocitySupplier = launchVelocitySupplier;
+    FuelVisualizer.turretAngleSupplier = turretAngleSupplier;
+    FuelVisualizer.hoodAngleSupplier = hoodAngleSupplier;
+    FuelVisualizer.robotPoseSupplier = robotPoseSupplier;
   }
 
-  /** Adds a {@code FuelSim} to the visualizer. */
-  public void addFuel(int quantity) {
+  /**
+   * Adds {@code FuelSim}'s to the visualizer.
+   *
+   * @param quantity The amount of {@code FuelSim}'s to add.
+   */
+  public static void addFuel(int quantity) {
     for (int index = 0; index < quantity; index++)
-      fuelSimulations.add(
-        new FuelSim(
-            launchVelocitySupplier, turretAngleSupplier, hoodAngleSupplier, robotPoseSupplier));
+      fuelSims.add(
+          new FuelSim(
+              launchVelocitySupplier, turretAngleSupplier, hoodAngleSupplier, robotPoseSupplier));
   }
 
-  /** 
-   * Shoots the first idle {@code FuelSim} in the visualizer. If no idle Fuel are present, the earliest launched Fuel is used.
-   * 
+  /**
+   * Shoots the first idle {@code FuelSim} in the visualizer. If no idle Fuel are present, the
+   * earliest launched Fuel is used.
+   *
    * @return A command to launch Fuel.
    */
-  public Command shoot() {
-    return getIdleFuelSim().shoot();
+  public static Command shootFuel() {
+    return getLaunchableFuel().shoot();
+  }
+
+  /** Publishes the current poses of the {@code FuelSim}'s to {@code NetworkTables}. */
+  public static void update() {
+    Pose3d[] poses = new Pose3d[fuelSims.size()];
+    for (int index = 0; index < poses.length; index++) poses[index] = fuelSims.get(index).getPose();
+    publisher.accept(poses);
   }
 
   /**
-   * Returns the current poses of the {@code FuelSim}'s.
-   * 
-   * @return The current poses of every Fuel in the visualizer.
-   */
-  @Logged(name = "FUEL POSES")
-  public Pose3d[] fuelPoses() {
-    Pose3d[] poses = new Pose3d[fuelSimulations.size()];
-    for (int index = 0; index < poses.length; index++)
-      poses[index] = fuelSimulations.get(index).getPose();
-    return poses;
-  }
-
-  /**
-   * Indexes and returns the first idle {@code FuelSim} in the visualizer. If no idle Fuel are present, the earliest launched Fuel is used.
-   * 
+   * Indexes and returns the first idle {@code FuelSim} in the visualizer. If no idle Fuel are
+   * present, the earliest launched Fuel is used.
+   *
    * @return The first idle Fuel in the visualizer.
    */
-  private FuelSim getIdleFuelSim() {
-    for (int index = 0; index < fuelSimulations.size(); index++) {
-      if (!fuelSimulations.get(index).isIdle()) continue;
-      return fuelSimulations.get(index);
-    }
-
-    return fuelSimulations.get(0);
+  private static FuelSim getLaunchableFuel() {
+    for (FuelSim fuelSim : fuelSims) if (fuelSim.isIdle()) return fuelSim;
+    return fuelSims.get(0);
   }
 
   /**
@@ -395,20 +402,6 @@ public class FuelVisualizer {
   }
 
   /**
-   * Determines whether or not the Fuel, launched with specified starting pose and velocity, will go
-   * through the Hub.
-   *
-   * @param startingPose The pose of the Fuel after losing contact with the shooter rollers
-   *     utilizing the field coordinate system (X, Y, and Z).
-   * @param startingVelocity The velocity of the Fuel after losing contact with the shooter rollers
-   *     utilizing the field coordinate system (X, Y, and Z).
-   * @return True if the Fuel will score in the Hub, False if the Fuel will miss the Hub.
-   */
-  private static boolean willScore(double[] startingPose, double[] startingVelocity) { // TODO: Implement.
-    return false;
-  }
-
-  /**
    * Adds all elements of the added vector into the original vector.
    *
    * @param original The vector to be added to.
@@ -475,9 +468,10 @@ public class FuelVisualizer {
   @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
   private static boolean inField(double[] pose) {
     if (pose.length != 3) throw new InvalidParameterException("Pose must be a 3D vector!");
-    if (pose[X] <= 0 || pose[Y] <= 0) return false;
-    if (pose[X] >= FieldConstants.LENGTH.in(Meters)) return false;
-    if (pose[Y] >= FieldConstants.WIDTH.in(Meters)) return false;
-    return !(pose[Z] <= 0);
+    return pose[X] > 0
+        && pose[Y] > 0
+        && pose[X] < FieldConstants.LENGTH.in(Meters)
+        && pose[Y] < FieldConstants.WIDTH.in(Meters)
+        && pose[Z] > 0;
   }
 }

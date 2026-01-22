@@ -66,7 +66,7 @@ public final class FieldConstants {
    * @param blueDist The input distance, usually for the blue alliance.
    * @return A reflected distance, only if the alliance is red.
    */
-  private static Distance reflectDistance(Distance blueDist) {
+  public static Distance reflectDistance(Distance blueDist) {
     return alliance() == Alliance.Blue ? blueDist : WIDTH.minus(blueDist);
   }
 

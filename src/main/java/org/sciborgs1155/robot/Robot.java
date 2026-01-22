@@ -38,6 +38,7 @@ import org.sciborgs1155.lib.Tracer;
 import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
+import org.sciborgs1155.robot.commands.FuelVisualizer;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.vision.Vision;
 
@@ -74,6 +75,10 @@ public class Robot extends CommandRobot {
 
     // Warms up pathfinding commands, as the first run could have significant delays.
     CommandScheduler.getInstance().schedule(align.warmupCommand());
+    FuelVisualizer.init(
+        () -> MetersPerSecond.of(5), Radians::zero, () -> Radians.of(1), drive::pose3d);
+
+    FuelVisualizer.addFuel(25);
   }
 
   @Override
@@ -119,6 +124,7 @@ public class Robot extends CommandRobot {
     // Configure pose estimation updates every tick
     addPeriodic(
         () -> drive.updateEstimates(vision.estimatedGlobalPoses(drive.gyroHeading())), PERIOD);
+    addPeriodic(FuelVisualizer::update, PERIOD);
 
     RobotController.setBrownoutVoltage(6.0);
 

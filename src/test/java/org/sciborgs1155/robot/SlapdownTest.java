@@ -12,7 +12,7 @@ import org.sciborgs1155.robot.slapdown.SimSlapdown;
 import org.sciborgs1155.robot.slapdown.Slapdown;
 
 public class SlapdownTest {
-  Slapdown slapdown;
+  private Slapdown slapdown;
 
   final double TOLERANCE = 0.1;
 

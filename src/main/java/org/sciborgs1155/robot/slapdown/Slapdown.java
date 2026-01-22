@@ -137,9 +137,9 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
         Assertion.eAssert(
             "Slapdown angle",
             () -> angle.in(Radians),
-            () -> hardware.extensionPosition(),
+            hardware::extensionPosition,
             SlapdownConstants.POSITION_TOLERANCE.in(Radians));
-    Command testCommand = goTo(angle).until(() -> pid.atGoal());
+    Command testCommand = goTo(angle).until(pid::atGoal);
     return new Test(testCommand, Set.of(atGoal));
   }
 

@@ -332,6 +332,47 @@ public class FuelVisualizer {
   }
 
   /**
+   * Determines whether or not the Fuel, launched with specified starting pose and velocity, will go through the Hub.
+   *
+   * @param startingPose The pose of the Fuel after losing contact with the shooter rollers
+   *     utilizing the field coordinate system (X, Y, and Z).
+   * @param startingVelocity The velocity of the Fuel after losing contact with the shooter rollers
+   *     utilizing the field coordinate system (X, Y, and Z).
+   * @return True if the Fuel will score in the Hub, False if the Fuel will miss the Hub.
+   */
+  private static boolean willScore(double[] startingPose, double[] startingVelocity) { // TODO: Implement.
+    double[] pose = startingPose.clone();
+
+    // VELOCITY (METERS / SECOND) --> VELOCITY (METERS / FRAME)
+    double[] velocity = scale(startingVelocity.clone(), FRAME_LENGTH);
+
+    // ACCELERATION (METERS / FRAME^2)
+    double[] acceleration = new double[3];
+
+    // TRAJECTORY GENERATION
+    List<double[][]> trajectory = new ArrayList<>();
+
+    while (inField(pose)) {
+      // ADD STATE TO TRAJECTORY (CONVERT VELOCITY AND ACCELERATION TO METERS / SECOND)
+      trajectory.add(
+          new double[][] {
+            scale(pose, 1), scale(velocity, 1 / FRAME_LENGTH), scale(acceleration, 1 / FRAME_LENGTH)
+          });
+
+      // ACCELERATION = GRAVITY + DRAG (METERS / FRAME^2)
+      acceleration = sum(getGravity(), getDrag(velocity));
+
+      // VELOCITY = ACCELERATION * TIME (METERS / FRAME)
+      addTo(velocity, acceleration);
+
+      // DISPLACEMENT = VELOCITY * TIME (METERS)
+      addTo(pose, velocity);
+    }
+
+    return false;
+  }
+
+  /**
    * Adds all elements of the added vector into the original vector.
    *
    * @param original The vector to be added to.

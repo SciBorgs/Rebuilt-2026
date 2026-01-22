@@ -17,7 +17,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 public final class FieldConstants {
   // Origin at corner of blue alliance side of field
   public static final Distance LENGTH = Centimeters.of(1755);
-  public static final Distance WIDTH = Centimeters.of(805);
+  public static final Distance WIDTH = Centimeters.of(805); // TODO these are not right
 
   // Prevents instantiation
   private FieldConstants() {}
@@ -105,4 +105,7 @@ public final class FieldConstants {
   }
 
   // List field constants below!
+
+  public static final Translation2d HUB =
+      new Translation2d(); // TODO the hub is not actually at 0,0
 }

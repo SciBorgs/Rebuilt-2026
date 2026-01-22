@@ -16,6 +16,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
@@ -87,7 +88,7 @@ public final class FuelVisualizer {
    * @return A command to launch Fuel.
    */
   public static Command shootFuel() {
-    return getLaunchableFuel().shoot();
+    return Commands.runOnce(() -> CommandScheduler.getInstance().schedule(getLaunchableFuel().shoot()));
   }
 
   /** Publishes the current poses of the {@code FuelSim}'s to {@code NetworkTables}. */

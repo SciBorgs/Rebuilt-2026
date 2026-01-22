@@ -1,6 +1,7 @@
 package org.sciborgs1155.robot.hood;
 
 import static edu.wpi.first.units.Units.*;
+
 import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;

@@ -1,12 +1,10 @@
 package org.sciborgs1155.robot.hood;
 
-import java.util.Set;
-import java.util.function.DoubleSupplier;
-
-import org.sciborgs1155.lib.Assertion.EqualityAssertion;
+import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
+import static edu.wpi.first.units.Units.Volts;
 import static org.sciborgs1155.lib.Assertion.eAssert;
-import org.sciborgs1155.lib.Test;
-import org.sciborgs1155.robot.Robot;
 import static org.sciborgs1155.robot.hood.HoodConstants.*;
 
 import edu.wpi.first.epilogue.Logged;
@@ -14,10 +12,6 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
-import static edu.wpi.first.units.Units.Volts;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -26,6 +20,11 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
+import java.util.Set;
+import java.util.function.DoubleSupplier;
+import org.sciborgs1155.lib.Assertion.EqualityAssertion;
+import org.sciborgs1155.lib.Test;
+import org.sciborgs1155.robot.Robot;
 
 @Logged
 /** Hood subsystem for adjusting vertical shooting angle of the fuel */
@@ -193,9 +192,7 @@ public class Hood extends SubsystemBase implements AutoCloseable {
    * @param position Goal angle for hood to reach
    */
   private void update(double position) {
-    double goal =
-        MathUtil.clamp(
-            position, MIN_ANGLE.in(Radians), MAX_ANGLE.in(Radians));
+    double goal = MathUtil.clamp(position, MIN_ANGLE.in(Radians), MAX_ANGLE.in(Radians));
     double feedback = fb.calculate(angle(), goal);
     double feedforward =
         ff.calculate(fb.getSetpoint().position - Math.PI / 2, fb.getSetpoint().velocity);

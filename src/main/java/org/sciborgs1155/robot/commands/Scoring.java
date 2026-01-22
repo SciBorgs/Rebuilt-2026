@@ -1,13 +1,12 @@
 package org.sciborgs1155.robot.commands;
 
+import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.hood.Hood;
 import org.sciborgs1155.robot.shooter.Shooter;
 import org.sciborgs1155.robot.turret.Turret;
-
-import edu.wpi.first.epilogue.Logged;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 
 /** Command factory for scoring Fuel into the Hub. All units are SI. */
 public class Scoring {
@@ -22,10 +21,10 @@ public class Scoring {
 
   /** Controls the pitch component of the Fuel's launch angle. */
   private final Hood hood;
- 
+
   /**
    * Command factory for scoring Fuel into the Hub.
-   * 
+   *
    * @param drive The {@code Drive} subsystem (controls launch position).
    * @param shooter The {@code Shooter} subsystem (controls launch speed).
    * @param turret The {@code Turret} subsystem (controls launch yaw).
@@ -39,9 +38,12 @@ public class Scoring {
   }
 
   /**
-   * Continuously command all scoring mechanisms to the appropriate configuration for scoring Fuel into the Hub.
-   * 
-   * @return A command that continuously updates the {@code Shooter} power, {@code Turret} yaw, and {@code Hood} pitch based on the {@code Drive}'s position such that Fuel will always be scored into the Hub.
+   * Continuously command all scoring mechanisms to the appropriate configuration for scoring Fuel
+   * into the Hub.
+   *
+   * @return A command that continuously updates the {@code Shooter} power, {@code Turret} yaw, and
+   *     {@code Hood} pitch based on the {@code Drive}'s position such that Fuel will always be
+   *     scored into the Hub.
    */
   public Command run() {
     // TODO: Implement.
@@ -61,9 +63,8 @@ public class Scoring {
 
   /**
    * Calculates the speed of the {@code Shooter} roller based on a target launch speed for the Fuel.
-   * 
+   *
    * @param fuelSpeed The launch speed of the Fuel (after leaving the {@code Shooter}).
-   * 
    * @return The speed of the rollers on the {@code Shooter}.
    */
   private double getShooterVelocity(double fuelSpeed) {
@@ -73,9 +74,8 @@ public class Scoring {
 
   /**
    * Calculates the pitch of the {@code Hood} based on a target launch pitch for the Fuel.
-   * 
+   *
    * @param fuelLaunchPitch The launch pitch of the Fuel (after leaving the {@code Shooter}).
-   * 
    * @return The angle of the {@code Hood}.
    */
   private double getHoodAngle(double fuelLaunchPitch) {
@@ -85,9 +85,8 @@ public class Scoring {
 
   /**
    * Calculates the yaw of the {@code Turret} based on a target launch yaw for the Fuel.
-   * 
+   *
    * @param fuelLaunchYaw The launch yaw of the Fuel (after leaving the {@code Shooter}).
-   * 
    * @return The angle of the {@code Turret}.
    */
   private double getTurretAngle(double fuelLaunchYaw) {

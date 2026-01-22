@@ -24,7 +24,7 @@ import org.sciborgs1155.robot.FieldConstants;
 /** Simulates the behavior multiple {@code Fuel} projectiles using {@code FuelSim}. */
 public class FuelVisualizer {
   /** All Fuel currently being simulated on the field. */
-  private final List<FuelSim> fuels = new ArrayList<>();
+  private final List<FuelSim> fuelSimulations = new ArrayList<>();
 
   /** A supplier for the launch velocity of the Fuel. */
   private final Supplier<LinearVelocity> launchVelocitySupplier;
@@ -57,11 +57,48 @@ public class FuelVisualizer {
     this.robotPoseSupplier = robotPoseSupplier;
   }
 
-  /** Adds a {@code FuelSim} to the field. */
-  public void addFuel() {
-    fuels.add(
+  /** Adds a {@code FuelSim} to the visualizer. */
+  public void addFuel(int quantity) {
+    for (int index = 0; index < quantity; index++)
+      fuelSimulations.add(
         new FuelSim(
             launchVelocitySupplier, turretAngleSupplier, hoodAngleSupplier, robotPoseSupplier));
+  }
+
+  /** 
+   * Shoots the first idle {@code FuelSim} in the visualizer. If no idle Fuel are present, the earliest launched Fuel is used.
+   * 
+   * @return A command to launch Fuel.
+   */
+  public Command shoot() {
+    return getIdleFuelSim().shoot();
+  }
+
+  /**
+   * Returns the current poses of the {@code FuelSim}'s.
+   * 
+   * @return The current poses of every Fuel in the visualizer.
+   */
+  @Logged(name = "FUEL POSES")
+  public Pose3d[] fuelPoses() {
+    Pose3d[] poses = new Pose3d[fuelSimulations.size()];
+    for (int index = 0; index < poses.length; index++)
+      poses[index] = fuelSimulations.get(index).getPose();
+    return poses;
+  }
+
+  /**
+   * Indexes and returns the first idle {@code FuelSim} in the visualizer. If no idle Fuel are present, the earliest launched Fuel is used.
+   * 
+   * @return The first idle Fuel in the visualizer.
+   */
+  private FuelSim getIdleFuelSim() {
+    for (int index = 0; index < fuelSimulations.size(); index++) {
+      if (!fuelSimulations.get(index).isIdle()) continue;
+      return fuelSimulations.get(index);
+    }
+
+    return fuelSimulations.get(0);
   }
 
   /**
@@ -367,36 +404,7 @@ public class FuelVisualizer {
    *     utilizing the field coordinate system (X, Y, and Z).
    * @return True if the Fuel will score in the Hub, False if the Fuel will miss the Hub.
    */
-  private static boolean willScore(
-      double[] startingPose, double[] startingVelocity) { // TODO: Implement.
-    double[] pose = startingPose.clone();
-
-    // VELOCITY (METERS / SECOND) --> VELOCITY (METERS / FRAME)
-    double[] velocity = scale(startingVelocity.clone(), FRAME_LENGTH);
-
-    // ACCELERATION (METERS / FRAME^2)
-    double[] acceleration = new double[3];
-
-    // TRAJECTORY GENERATION
-    List<double[][]> trajectory = new ArrayList<>();
-
-    while (inField(pose)) {
-      // ADD STATE TO TRAJECTORY (CONVERT VELOCITY AND ACCELERATION TO METERS / SECOND)
-      trajectory.add(
-          new double[][] {
-            scale(pose, 1), scale(velocity, 1 / FRAME_LENGTH), scale(acceleration, 1 / FRAME_LENGTH)
-          });
-
-      // ACCELERATION = GRAVITY + DRAG (METERS / FRAME^2)
-      acceleration = sum(getGravity(), getDrag(velocity));
-
-      // VELOCITY = ACCELERATION * TIME (METERS / FRAME)
-      addTo(velocity, acceleration);
-
-      // DISPLACEMENT = VELOCITY * TIME (METERS)
-      addTo(pose, velocity);
-    }
-
+  private static boolean willScore(double[] startingPose, double[] startingVelocity) { // TODO: Implement.
     return false;
   }
 

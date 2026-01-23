@@ -334,7 +334,7 @@ public class Shooting {
         shooterPose(Pivot.transform(-prevPitch), robotPose).getTranslation();
     double dist = translationToSpeaker(shooterTranslation.toTranslation2d()).getNorm();
     double h = speaker().getZ() - shooterTranslation.getZ();
-    double denom = (G * pow(dist, 2));
+    double denom = (G * Math.pow(dist, 2));
     double rad =
         pow(dist, 2) * pow(velocity, 4)
             - G * pow(dist, 2) * (G * pow(dist, 2) + 2 * h * pow(velocity, 2));

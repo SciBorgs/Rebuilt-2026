@@ -56,7 +56,7 @@ public final class FuelVisualizer {
   private static final double FUEL_DIAMETER = 0.15;
 
   /** How fast the Fuel spins in the air (RADIANS / FRAME). Purely cosmetic. */
-  private static final double SPIN = 0.1 * FRAME_LENGTH;
+  private static final double SPIN = 1 * FRAME_LENGTH;
 
   /**
    * The ratio between the angular velocity of the shooter (RADIANS / SECOND) and the launch
@@ -130,7 +130,8 @@ public final class FuelVisualizer {
   public static void periodic() {
     Pose3d[] poses = new Pose3d[fuelSims.length];
     for (int index = 0; index < fuelSims.length; index++)
-      poses[index] =
+    if (!fuelSims[index].isIdle)
+       poses[index] =
           new Pose3d(
               new Translation3d(fuelSims[index].translation),
               new Rotation3d(fuelSims[index].rotation));

@@ -16,12 +16,16 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+
+import static edu.wpi.first.units.Units.Seconds;
+
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.drive.DriveConstants;
 import org.sciborgs1155.robot.shooter.Shooter;
+
 
 public class Shooting {
   private final Shooter shooter;
@@ -73,7 +77,7 @@ public class Shooting {
             () ->
                 shooter.atVelocity(desiredVelocity.getAsDouble()) &&
   shootCondition.getAsBoolean())
-        .andThen(feeder.eject())
+        .andThen(feeder.eject()) //change this line for hopper instead TODO
         .deadlineWith(shooter.runShooter(desiredVelocity));
   }
 
@@ -123,13 +127,12 @@ public class Shooting {
   public Command shootWhileDriving(
       InputStream vx, InputStream vy) { // this seems like something that could be mostly kept
     return shoot(
-            () -> rotationalVelocityFromNoteVelocity(calculateNoteVelocity()),
-            () -> atYaw(yawFromNoteVelocity(calculateNoteVelocity())))
+            () -> rotationalVelocityFromNoteVelocity(calculateFuelVelocity()),
+            () -> atYaw(yawFromNoteVelocity(calculateFuelVelocity()))) //atYaw is currently not established as a function --> look into more about how this works
         .deadlineFor(
             drive.drive(
                 vx.scale(
-                    0.5), // see if we could speed this up in the future, this would be quite
-  nice
+                    0.5), // see if we could speed this up in the future, this would be quite nice
                 // :>>
                 vy.scale(0.5),
                 () -> yawFromNoteVelocity(calculateNoteVelocity(Seconds.of(0.2)))));
@@ -143,12 +146,12 @@ public class Shooting {
             .plus(Rotation2d.fromRadians(Math.PI / 2)));
   }
 
-  public Vector<N3> calculateNoteVelocity() {
-    return calculateNoteVelocity(drive.pose());
+  public Vector<N3> calculateFuelVelocity() {
+    return calculateFuelVelocity(drive.pose());
   }
 
   public Vector<N3> calculateNoteVelocity(Time predictionTime) {
-    return calculateNoteVelocity(
+    return calculateFuelVelocity(
         predictedPose(
             drive.pose(),
             drive.fieldRelativeChassisSpeeds(),
@@ -179,7 +182,7 @@ public class Shooting {
     double shotVelo = calculateStationaryVelocity(difference.getNorm());
 
     //TODO make sure to look over this again next commit and get the correct values after
-  understanding how exactly this translates to something different in Rebuilt2026
+   // understanding how exactly this translates to something different in Rebuilt2026
     Rotation3d fuelOrientation =
       new Rotation3d(
           0,
@@ -280,15 +283,15 @@ public class Shooting {
    * @return Flywheel speed (rads / s)
    */
   public static double rotationalVelocityFromNoteVelocity(Vector<N3> velocity) {
-    return velocity.norm() / RADIUS.in(Meters) * siggysConstant.get();
+    return velocity.norm() / RADIUS.in(Meters) * siggysConstant.get(); //make some constants and valuess to reflect, see if we want to still honor siggysConstant? 
   }
 
   public static Translation2d translationToSpeaker(Translation2d robotTranslation) {
-    return speaker().toTranslation2d().minus(robotTranslation);
+    return speaker().toTranslation2d().minus(robotTranslation); //TODO speaker --> make into hub --> ankit did set those things up which is very commendable and i thank him for that
   }
 
   public static double calculateStationaryVelocity(double distance) {
-    return flywheelToNoteSpeed(shotVelocityLookup.get(distance));
+    return flywheelToNoteSpeed(shotVelocityLookup.get(distance)); // this is the lookup table that still needs to be set up for us currently
   }
 
   /**
@@ -307,13 +310,13 @@ public class Shooting {
       Pose2d robotPose, double velocity, double prevPitch, int i) {
     double G = 9.81;
     Translation3d shooterTranslation =
-        shooterPose(Pivot.transform(-prevPitch), robotPose).getTranslation();
+        shooterPose(Pivot.transform(-prevPitch), robotPose).getTranslation(); //TODO pivot needs to be set as Turret instead --> look at the code that people are using there and try to make it work
     double dist = translationToSpeaker(shooterTranslation.toTranslation2d()).getNorm();
-    double h = speaker().getZ() - shooterTranslation.getZ();
+    double h = speaker().getZ() - shooterTranslation.getZ(); //TODO hub
     double denom = (G * Math.pow(dist, 2));
     double rad =
-        pow(dist, 2) * pow(velocity, 4)
-            - G * pow(dist, 2) * (G * pow(dist, 2) + 2 * h * pow(velocity, 2));
+        Math.pow(dist, 2) * Math.pow(velocity, 4)
+            - G * Math.pow(dist, 2) * (G * Math.pow(dist, 2) + 2 * h * Math.pow(velocity, 2)); //TODO try to import pow statically, this is bugging me
     double pitch = Math.atan((1 / (denom)) * (dist * pow(velocity, 2) - Math.sqrt(rad)));
     if (Math.abs(pitch - prevPitch) < 0.005 || i > 50) {
       return pitch;

@@ -155,8 +155,7 @@ public class Shooting {
         predictedPose(
             drive.pose(),
             drive.fieldRelativeChassisSpeeds(),
-            predictionTime)); // add the chassis speeds methods for drive including get field
-    // relative / robot relative etc
+            predictionTime)); 
   }
 
   /**
@@ -167,12 +166,6 @@ public class Shooting {
    * @return A 3d vector representing the desired fuel initial velocity.
    */
   public Vector<N3> calculateFuelVelocity(Pose2d robotPose) {
-  /**
-   * (1) It works
-   * (2) It's correct
-   * (3) It looks good and is readable (can add a bunch of other smaller components to the
-  functions to, just so that it is readable through english)
-   */
 
     ChassisSpeeds speeds = drive.fieldRelativeChassisSpeeds();
 
@@ -317,7 +310,7 @@ public class Shooting {
     double rad =
         Math.pow(dist, 2) * Math.pow(velocity, 4)
             - G * Math.pow(dist, 2) * (G * Math.pow(dist, 2) + 2 * h * Math.pow(velocity, 2)); //TODO try to import pow statically, this is bugging me
-    double pitch = Math.atan((1 / (denom)) * (dist * pow(velocity, 2) - Math.sqrt(rad)));
+    double pitch = Math.atan((1 / (denom)) * (dist * Math.pow(velocity, 2) - Math.sqrt(rad)));
     if (Math.abs(pitch - prevPitch) < 0.005 || i > 50) {
       return pitch;
     }

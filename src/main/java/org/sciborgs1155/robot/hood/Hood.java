@@ -187,6 +187,14 @@ public class Hood extends SubsystemBase implements AutoCloseable {
     return run(() -> update(goal.getAsDouble())).until(this::atGoal).withName("Hood GoTo");
   }
 
+  public Command goToShootingAngle(DoubleSupplier goal) {
+    return run(() -> update(goal.getAsDouble() - Math.PI / 2)).until(this::atGoal).withName("Hood GoTo Angle");
+  }
+
+  public Command goToShootingAngle(Angle goal) {
+    return goToShootingAngle(() -> goal.in(Radians));
+  }
+
   /**
    * method to set the voltage of the motor based of ff and fb calculations
    *
@@ -198,7 +206,7 @@ public class Hood extends SubsystemBase implements AutoCloseable {
             position, MIN_ANGLE.in(Radians), MAX_ANGLE.in(Radians));
     double feedback = fb.calculate(angle(), goal);
     double feedforward =
-        ff.calculate(fb.getSetpoint().position - Math.PI / 2, fb.getSetpoint().velocity);
+        ff.calculate(fb.getSetpoint().position, fb.getSetpoint().velocity);
     hardware.setVoltage(feedback + feedforward);
   }
 

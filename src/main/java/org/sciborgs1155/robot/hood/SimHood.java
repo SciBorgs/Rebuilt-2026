@@ -4,6 +4,8 @@ import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.hood.HoodConstants.*;
 
 import edu.wpi.first.math.system.plant.DCMotor;
+
+import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Seconds;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
@@ -21,7 +23,7 @@ public class SimHood implements HoodIO {
             DCMotor.getKrakenX44(1),
             GEARING,
             MOI,
-            HOOD_RADIUS,
+            HOOD_RADIUS.in(Meters),
             MIN_ANGLE.in(Radians),
             MAX_ANGLE.in(Radians),
             true,

@@ -50,8 +50,4 @@ public final class Ports {
   public static final class LEDs {
     public static final int LED_PORT = 9;
   }
-
-  public static final class Shooter {
-    public static final int SHOOTER_MOTOR = 30; // placeholder
-  }
 }

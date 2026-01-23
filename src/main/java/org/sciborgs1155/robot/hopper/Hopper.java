@@ -50,13 +50,13 @@ public class Hopper extends SubsystemBase implements AutoCloseable {
    * @param hardware represents the motor
    * @param beambreak represents the beambreak
    */
-  public Hopper(SimpleMotor hardware, Beambreak beambreak) {
+  private Hopper(SimpleMotor hardware, Beambreak beambreak) {
     this.hardware = hardware;
     this.beambreak = beambreak;
 
     this.blocked = new Trigger(() -> !beambreak.getState());
 
-    setDefaultCommand(stop());
+    setDefaultCommand(runHopper(INTAKING_POWER));
   }
 
   /**

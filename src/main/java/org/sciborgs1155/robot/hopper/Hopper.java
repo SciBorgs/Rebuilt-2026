@@ -14,7 +14,7 @@ import org.sciborgs1155.lib.Beambreak;
 import org.sciborgs1155.lib.SimpleMotor;
 import org.sciborgs1155.robot.Robot;
 
-public class Hopper extends SubsystemBase implements AutoCloseable {
+public final class Hopper extends SubsystemBase implements AutoCloseable {
   private final SimpleMotor hardware;
   private final Beambreak beambreak;
   public final Trigger blocked;

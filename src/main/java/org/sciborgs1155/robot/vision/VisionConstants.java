@@ -16,6 +16,35 @@ import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.sciborgs1155.robot.vision.Vision.CameraConfig;
 
 public class VisionConstants {
+  /**
+   * @param amt The amount of degrees to rotate.
+   * @return A yaw rotation.
+   */
+  public static Rotation3d yaw(double amt) {
+    return new Rotation3d(Degrees.of(0), Degrees.of(0), Degrees.of(amt));
+  }
+
+  /**
+   * @param amt The amount of degrees to rotate.
+   * @return A pitch rotation.
+   */
+  public static Rotation3d pitch(double amt) {
+    return new Rotation3d(Degrees.of(0), Degrees.of(amt), Degrees.of(0));
+  }
+
+  /**
+   * @param amt The amount of degrees to rotate.
+   * @return A roll rotation.
+   */
+  public static Rotation3d roll(double amt) {
+    return new Rotation3d(Degrees.of(amt), Degrees.of(0), Degrees.of(0));
+  }
+
+  public static Rotation3d yawPitchRoll(
+      double yawDegrees, double pitchDegrees, double rollDegrees) {
+    return yaw(yawDegrees).rotateBy(pitch(pitchDegrees)).rotateBy(roll(rollDegrees));
+  }
+
   public static final AprilTagFieldLayout TAG_LAYOUT =
       AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
 
@@ -27,14 +56,13 @@ public class VisionConstants {
   // TODO: actually add camera positions, figure out if its actually 148 fov
   public static final CameraConfig CAMERA_0 =
       new CameraConfig(
-          "USB_Camera",
+          "cam 0 RENAME",
           78,
           new Transform3d(
               Inches.of(-11.935943),
               Inches.of(-12.493204),
               Inches.of(5.176840 + 4.6),
-              new Rotation3d(Degrees.zero(), Degrees.of(-20), Degrees.zero())
-                  .rotateBy(new Rotation3d(Degrees.zero(), Degrees.zero(), Degrees.of(155)))),
+              yawPitchRoll(115, 20, 180)),
           PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
 
   public static final CameraConfig CAMERA_1 =
@@ -42,11 +70,10 @@ public class VisionConstants {
           "cam 1 RENAME",
           78,
           new Transform3d(
-              Inches.of(1),
-              Inches.of(1),
-              Inches.of(1),
-              new Rotation3d(Degrees.zero(), Degrees.of(-45), Degrees.zero())
-                  .rotateBy(new Rotation3d(Degrees.zero(), Degrees.zero(), Degrees.of(45)))),
+              Inches.of(-11.935943),
+              Inches.of(12.493204),
+              Inches.of(5.176840 + 4.6),
+              yawPitchRoll(-115, 20, 180)),
           PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
 
   public static final CameraConfig CAMERA_2 =
@@ -104,7 +131,7 @@ public class VisionConstants {
   public static final Matrix<N3, N1> SINGLE_TAG_STD_DEVS = VecBuilder.fill(1.5, 1.5, 7);
   public static final Matrix<N3, N1> MULTIPLE_TAG_STD_DEVS = VecBuilder.fill(0.3, 0.3, 4);
 
-  public static final double MAX_HEIGHT = 0.305;
+  public static final double MAX_HEIGHT = .305;
   public static final double MAX_ANGLE = 1;
   public static final double MAX_AMBIGUITY = 0.18;
 

@@ -184,6 +184,7 @@ public class Vision {
           estimate = updateEstimate(estimators[i], change, estimatorStrategies[i]);
 
           log("Robot/vision/ " + name + " estimates present", estimate.isPresent());
+
           estimate
               .filter(
                   f -> {
@@ -195,6 +196,8 @@ public class Vision {
                     if (!valid) {
                       filteredEstimates.add(f.estimatedPose);
                       log("Robot/vision/filtered poses/ " + name, f.estimatedPose, Pose3d.struct);
+                    } else {
+                      log("Robot/vision/valid poses/ " + name, f.estimatedPose, Pose3d.struct);
                     }
                     return valid;
                   })

@@ -3,16 +3,11 @@ package org.sciborgs1155.robot.turret;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
-import static edu.wpi.first.units.Units.Volts;
 import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.turret.TurretConstants.*;
 
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 
 /** Simulated hardware interface for the {@code Turret} subsystem. */
@@ -33,24 +28,24 @@ public class SimTurret implements TurretIO {
   public SimTurret() {}
 
   @Override
-  public void setVoltage(Voltage voltage) {
-    simulation.setInputVoltage(voltage.in(Volts));
+  public void setVoltage(double voltage) {
+    simulation.setInputVoltage(voltage);
     simulation.update(PERIOD.in(Seconds));
   }
 
   @Override
-  public Angle position() {
-    return Radians.of(simulation.getAngleRads() / SENSOR_TO_MECHANISM_RATIO);
+  public double position() {
+    return simulation.getAngleRads() / SENSOR_TO_MECHANISM_RATIO;
   }
 
   @Override
-  public AngularVelocity velocity() {
-    return RadiansPerSecond.of(simulation.getVelocityRadPerSec());
+  public double velocity() {
+    return simulation.getVelocityRadPerSec();
   }
 
   @Override
-  public Voltage voltage() {
-    return Volts.of(simulation.getInput(0));
+  public double voltage() {
+    return simulation.getInput(0);
   }
 
   @Override

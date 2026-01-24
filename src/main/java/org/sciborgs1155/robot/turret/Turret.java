@@ -1,22 +1,24 @@
 package org.sciborgs1155.robot.turret;
 
 import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.turret.TurretConstants.*;
 import static org.sciborgs1155.robot.turret.TurretConstants.ControlConstants.*;
 
+import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import java.util.function.DoubleSupplier;
 import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.robot.Robot;
 
@@ -33,6 +35,11 @@ public class Turret extends SubsystemBase implements AutoCloseable {
    *     interface if the robot is real and a {@code SimTurret} hardware interface is the robot is
    *     simulated.
    */
+  @Logged private double setpoint;
+
+  // * Logs previous velocity. */
+  @Logged private double lastVelocity;
+
   @NotLogged
   public static Turret create() {
     return Robot.isReal() ? new Turret(new RealTurret()) : new Turret(new SimTurret());
@@ -50,17 +57,17 @@ public class Turret extends SubsystemBase implements AutoCloseable {
   }
 
   /** Motor used to rotate the turret. */
-  @NotLogged private final TurretIO motor;
+  @NotLogged private final TurretIO hardware;
 
   /** {@code PIDController} used to orient the turret to a specified angle. */
   @NotLogged
   private final ProfiledPIDController controller =
-      new ProfiledPIDController(PROPORTIONAL_GAIN, INTEGRAL_GAIN, DERIVATIVE_GAIN, CONSTRAINTS);
+      new ProfiledPIDController(kP, kI, kD, CONSTRAINTS);
 
   /** {@code Feedforward} used to aid in orienting the turret to a specified angle. */
   @NotLogged
   private final SimpleMotorFeedforward feedforward =
-      new SimpleMotorFeedforward(STATIC_GAIN, VELOCITY_GAIN, ACCELERATION_GAIN, PERIOD.in(Seconds));
+      new SimpleMotorFeedforward(kS, kV, kA, PERIOD.in(Seconds));
 
   /** Visualization. Green = Position, Red = Setpoint. */
   private final TurretVisualizer visualizer = new TurretVisualizer(6, 7);
@@ -74,7 +81,7 @@ public class Turret extends SubsystemBase implements AutoCloseable {
    * @param pivot The hardware implementation to use.
    */
   public Turret(TurretIO turretIO) {
-    motor = turretIO;
+    hardware = turretIO;
 
     controller.setTolerance(TOLERANCE.in(Radians));
 
@@ -82,11 +89,11 @@ public class Turret extends SubsystemBase implements AutoCloseable {
         new SysIdRoutine(
             new SysIdRoutine.Config(RAMP_RATE, STEP_VOLTAGE, TIME_OUT),
             new SysIdRoutine.Mechanism(
-                v -> motor.setVoltage(v),
+                v -> hardware.setVoltage(v.in(Volts)),
                 log -> {
                   log.motor("turret")
-                      .angularPosition(motor.position())
-                      .angularVelocity(motor.velocity());
+                      .angularPosition(Radians.of(hardware.position()))
+                      .angularVelocity(RadiansPerSecond.of(hardware.velocity()));
                 },
                 this));
 
@@ -99,18 +106,6 @@ public class Turret extends SubsystemBase implements AutoCloseable {
         "Turret dynamic clockwise", sysIdTest(SysIdTestType.DYNAMIC, Direction.kForward));
     SmartDashboard.putData(
         "Turret dynamic counterclockwise", sysIdTest(SysIdTestType.DYNAMIC, Direction.kReverse));
-
-    // setDefaultCommand(run());
-  }
-
-  /**
-   * Updates turret orientation setpoint. This setpoint will be used to determine the voltage that
-   * is fed to the motors periodically.
-   *
-   * @param angle The angle to orient the turret towards (front of robot is 0 DEG).
-   */
-  public void setAngle(Angle angle) {
-    controller.setGoal(angle.in(Radians));
   }
 
   /**
@@ -118,8 +113,8 @@ public class Turret extends SubsystemBase implements AutoCloseable {
    *
    * @return The angular position of the turret.
    */
-  public Angle position() {
-    return motor.position();
+  public double position() {
+    return hardware.position();
   }
 
   /**
@@ -145,10 +140,12 @@ public class Turret extends SubsystemBase implements AutoCloseable {
    *     counterclockwise.
    */
   public Command sysIdTest(SysIdTestType type, Direction direction) {
+    /*
     Angle startAngle = direction == Direction.kForward ? MIN_ANGLE : MAX_ANGLE;
 
     Command goToStart =
         Commands.runOnce(() -> setAngle(startAngle)).andThen(run().until(controller::atGoal));
+    */
 
     Command test =
         switch (type) {
@@ -161,52 +158,65 @@ public class Turret extends SubsystemBase implements AutoCloseable {
 
     double sign = direction == Direction.kForward ? 1.0 : -1.0;
 
+    /*
     return goToStart.andThen(
         test.until(() -> sign * motor.position().in(Radians) >= sign * stopAngle.in(Radians)));
-  }
+    */
 
-  /** For testing purposes. Changes turret setpoint to a random angle. */
-  public void randomAngle() {
-    Angle setpoint = Radians.of(Math.random() * Math.PI * 2).minus(Radians.of(Math.PI));
-    setAngle(setpoint);
+    return test.until(() -> sign * hardware.position() >= sign * stopAngle.in(Radians));
   }
 
   /**
-   * Continuously orients the turret towards the angle setpoint specified in the {@code setAngle}
-   * method.
+   * Applies voltage to the motor based on setpoint.
    *
-   * @return A command to continuously orient the turret towards the angle setpoint.
+   * @param double The position setpoint in radians.
    */
-  public Command run() {
-    return run(
-        () -> {
-          // PID CONTROL (RADIANS)
-          double targetPosition = motor.position().in(Radians);
-          double pidVolts = controller.calculate(targetPosition);
+  public void update(double positionSetpoint) {
+    double currentPosition = hardware.position();
+    double pidVolts = controller.calculate(currentPosition, positionSetpoint);
 
-          // FEEDFORWARD CONTROL (RADIANS/SEC)
-          double targetVelocity = controller.getSetpoint().velocity;
-          double ffdVolts = feedforward.calculate(targetVelocity);
+    double targetVelocity = controller.getSetpoint().velocity;
+    double ffdVolts = feedforward.calculate(lastVelocity, targetVelocity);
 
-          // VOLTAGE SETTING
-          motor.setVoltage(Volts.of(pidVolts + ffdVolts));
-        });
+    hardware.setVoltage(pidVolts + ffdVolts);
+
+    lastVelocity = targetVelocity;
+    setpoint = positionSetpoint;
+  }
+
+  /**
+   * Sets controller setpoint with a supplier and repeatively calls update to orient the turret.
+   *
+   * @param DoubleSupplier The position supplier.
+   */
+  public Command runTurret(DoubleSupplier position) {
+    return runOnce(() -> controller.setGoal(position.getAsDouble()))
+        .andThen(run(() -> update(position.getAsDouble())));
+  }
+
+  /**
+   * Sets controller setpoint and repeatively calls update to orient the turret.
+   *
+   * @param Double The position.
+   */
+  public Command runTurret(Double position) {
+    return runTurret(() -> position);
   }
 
   @Override
   public void periodic() {
     // LOGGING
-    LoggingUtils.log("Robot/Turret/POSITION", motor.position());
-    LoggingUtils.log("Robot/Turret/VELOCITY", motor.velocity());
-    LoggingUtils.log("Robot/Turret/VOLTAGE", motor.voltage());
+    LoggingUtils.log("Robot/Turret/POSITION", hardware.position());
+    LoggingUtils.log("Robot/Turret/VELOCITY", hardware.velocity());
+    LoggingUtils.log("Robot/Turret/VOLTAGE", hardware.voltage());
     LoggingUtils.log("Robot/Turret/SETPOINT", controller.getSetpoint().position);
 
     // VISUALIZATION
-    visualizer.update(motor.position().in(Radians), controller.getSetpoint().position);
+    visualizer.update(hardware.position(), controller.getSetpoint().position);
   }
 
   @Override
   public void close() throws Exception {
-    motor.close();
+    hardware.close();
   }
 }

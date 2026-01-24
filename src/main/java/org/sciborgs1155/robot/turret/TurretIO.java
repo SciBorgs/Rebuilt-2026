@@ -1,36 +1,32 @@
 package org.sciborgs1155.robot.turret;
 
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Voltage;
-
 /** A hardware interface for the {@code Turret} subsystem. */
 public interface TurretIO extends AutoCloseable {
   /**
    * Applies a voltage to the motor.
    *
-   * @param voltage The voltage to apply to the motor.
+   * @param double The voltage to apply to the motor in volts.
    */
-  void setVoltage(Voltage voltage);
+  void setVoltage(double voltage);
 
   /**
    * Returns the angular position of the motor.
    *
    * @return The angular position of the motor.
    */
-  Angle position();
+  double position();
 
   /**
    * Returns the angular velocity of the motor.
    *
    * @return The angular velocity of the motor.
    */
-  AngularVelocity velocity();
+  double velocity();
 
   /**
    * Returns the voltage of the motor.
    *
    * @return The voltage of the motor.
    */
-  Voltage voltage();
+  double voltage();
 }

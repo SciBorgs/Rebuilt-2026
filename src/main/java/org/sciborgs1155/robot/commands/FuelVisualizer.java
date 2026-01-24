@@ -21,6 +21,21 @@ import org.sciborgs1155.robot.FieldConstants;
 
 /** Simulates the behavior of multiple Fuel projectiles using {@code FuelSim}. */
 public final class FuelVisualizer {
+  /** The mass of the Fuel (KILOGRAMS). */
+  private static final double FUEL_MASS = 0.225;
+
+  /** Force due to gravity (NEWTONS). */
+  private static final double GRAVITY = -9.81 * FUEL_MASS;
+
+  /** The dimensionless constant multiplied by velocity to attain the drag force. */
+  private static final double DRAG_CONSTANT = -0.47;
+
+  /** The diameter of the Fuel (METERS). */
+  private static final double FUEL_DIAMETER = 0.15;
+
+  /** How fast the Fuel spins in the air (RADIANS / SECOND). Purely cosmetic. */
+  private static final double SPIN = 1.0;
+
   /** This constructor is not meant to be used. */
   private FuelVisualizer() {}
 
@@ -50,21 +65,6 @@ public final class FuelVisualizer {
 
   /** The length of each frame in the Fuel launch animation (SECONDS / FRAME). */
   private static final double FRAME_LENGTH = 0.02;
-
-  /** Acceleration due to gravity (METERS / FRAME^2). */
-  private static final Vector<N3> GRAVITY = VecBuilder.fill(0, 0, -9.81 * FRAME_LENGTH);
-
-  /** The dimensionless constant multiplied by velocity to attain the drag force. */
-  private static final double DRAG_CONSTANT = 0.1;
-
-  /** The mass of the Fuel (KILOGRAMS). */
-  private static final double FUEL_MASS = 0.225;
-
-  /** The diameter of the Fuel (METERS). */
-  private static final double FUEL_DIAMETER = 0.15;
-
-  /** How fast the Fuel spins in the air (RADIANS / FRAME). Purely cosmetic. */
-  private static final double SPIN = 1 * FRAME_LENGTH;
 
   /**
    * The ratio between the angular velocity of the shooter (RADIANS / SECOND) and the launch
@@ -208,7 +208,7 @@ public final class FuelVisualizer {
     return FieldConstants.fromSphericalCoords(
         shooterVelocity.get().in(RadiansPerSecond) * SHOOTER_TO_LAUNCH_VELOCITY,
         turretAngle.get().in(Radians),
-        hoodAngle.get().in(Radians));
+        hoodAngle.get().in(Radians)).times(FRAME_LENGTH);
   }
 
   /**
@@ -247,12 +247,18 @@ public final class FuelVisualizer {
      */
     protected Vector<N3> velocity = VecBuilder.fill(0, 0, 0);
 
+    /**
+     * A vector whose elements represent the current X, Y, and Z components of the Fuel's acceleration (METERS / FRAME^2).
+     */
+    protected Vector<N3> acceleration = VecBuilder.fill(0,0,0);
+
     /** Starts frame generation. */
     private void init() {
       if (isBeingLaunched) return;
 
       translation = getFuelStartingTranslation();
-      velocity = getFuelStartingVelocity().times(FRAME_LENGTH);
+      velocity = getFuelStartingVelocity();
+      acceleration = VecBuilder.fill(0,0,0);
       rotation = VecBuilder.fill(0, 0, 0);
 
       // ALLOWS FRAMES TO BE RENDERED
@@ -263,17 +269,20 @@ public final class FuelVisualizer {
     private void nextFrame() {
       if (!isBeingLaunched) return;
 
-      // GRAVITATIONAL ACCELERATION
-      velocity.setColumn(0, velocity.plus(GRAVITY));
+      // SUM OF FORCES IS GRAVITY + DRAG
+      acceleration.setColumn(0, VecBuilder.fill(0, 0, GRAVITY).plus(velocity.times(DRAG_CONSTANT)));
 
-      // DRAG ACCELERATION
-      velocity.setColumn(0, velocity.plus(velocity.times(-DRAG_CONSTANT / FUEL_MASS)));
+      // CONVERT FORCE (IN SECONDS) TO ACCELERATION (IN FRAMES)
+      acceleration.setColumn(0, acceleration.times(FRAME_LENGTH / FUEL_MASS));
 
-      // SPIN IS PURELY COSMETIC (FOR NOW)
-      rotation.setColumn(0, rotation.plus(SPIN));
+      // ADD ACCELERATION TO VELOCITY
+      velocity.setColumn(0, velocity.plus(acceleration));
 
       // ADD VELOCITY TO TRANSLATION
       translation.setColumn(0, translation.plus(velocity));
+
+      // SPIN IS PURELY COSMETIC (FOR NOW)
+      rotation.setColumn(0, rotation.plus(SPIN).times(FRAME_LENGTH));
 
       // IF THE FUEL TOUCHES THE GROUND, FRAME GENERATION ENDS
       if (translation.get(2) < FUEL_DIAMETER / 2) end();
@@ -283,10 +292,11 @@ public final class FuelVisualizer {
     private void end() {
       // PREVENT CLIPPING INTO THE GROUND
       translation.set(2, 0, FUEL_DIAMETER / 2);
+      rotation = VecBuilder.fill(0, 0, 0);
 
       // RESET STATE
       velocity = VecBuilder.fill(0, 0, 0);
-      rotation = VecBuilder.fill(0, 0, 0);
+      acceleration = VecBuilder.fill(0,0,0);
 
       // PREVENTS FRAMES FROM BEING RENDERED
       isBeingLaunched = false;

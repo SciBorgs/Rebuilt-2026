@@ -10,11 +10,16 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import edu.wpi.first.epilogue.Logged;
+
+@Logged
 public class RealClimb implements ClimbIO {
   private final TalonFX leftMotor;
   private final TalonFX rightMotor;
 
-  /** A constuctor for a real climb object. */
+  /** 
+   * A constuctor for a real climb object. 
+  */
   public RealClimb() {
     TalonFXConfiguration leftConfig = new TalonFXConfiguration();
     TalonFXConfiguration rightConfig = new TalonFXConfiguration();
@@ -26,13 +31,13 @@ public class RealClimb implements ClimbIO {
     leftConfig.CurrentLimits.StatorCurrentLimit = STATOR_LIMIT.in(Amps);
     leftConfig.CurrentLimits.SupplyCurrentLimit = SUPPLY_LIMIT.in(Amps);
     leftConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    leftConfig.Feedback.SensorToMechanismRatio = SENSOR_TO_MECHANISM_RATIO;
+    leftConfig.Feedback.SensorToMechanismRatio = GEARING;
     leftConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
     rightConfig.CurrentLimits.StatorCurrentLimit = STATOR_LIMIT.in(Amps);
     rightConfig.CurrentLimits.SupplyCurrentLimit = SUPPLY_LIMIT.in(Amps);
     rightConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    rightConfig.Feedback.SensorToMechanismRatio = SENSOR_TO_MECHANISM_RATIO;
+    rightConfig.Feedback.SensorToMechanismRatio = GEARING;
     rightConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
     leftMotor.getConfigurator().apply(leftConfig);

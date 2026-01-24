@@ -30,8 +30,7 @@ public class ClimbConstants {
 
   public static final int LEFT_MOTOR_ID = 0;
   public static final int RIGHT_MOTOR_ID = 0;
-  public static final double GEARING = 50.0;
-  public static final double SENSOR_TO_MECHANISM_RATIO = 2.0;
+  public static final double GEARING = 180.0;
   public static final Current STATOR_LIMIT = Amps.of(60);
   public static final Current SUPPLY_LIMIT = Amps.of(100);
   public static final Distance POSITION_TOLERANCE = Centimeters.of(3.5);

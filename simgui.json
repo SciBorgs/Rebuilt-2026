@@ -23,6 +23,8 @@
       "/Robot/drive/rearRight/turnFeedback": "PIDController",
       "/Robot/drive/rotationController": "PIDController",
       "/Robot/drive/translationController": "ProfiledPIDController",
+      "/SmartDashboard//Robot/hood/measurement": "Mechanism2d",
+      "/SmartDashboard//Robot/hood/setpoint": "Mechanism2d",
       "/SmartDashboard/Auto Chooser": "String Chooser",
       "/SmartDashboard/Drive Field": "Field2d",
       "/SmartDashboard/PathPlanner": "Alerts",
@@ -74,6 +76,16 @@
         "right": 3942,
         "top": 118,
         "width": 16.54119300842285,
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard//Robot/hood/measurement": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard//Robot/hood/setpoint": {
         "window": {
           "visible": true
         }
@@ -179,13 +191,13 @@
             "open": true
           }
         },
-        "hood": {
+        "open": true,
+        "tuning": {
+          "hood": {
+            "open": true
+          },
           "open": true
-        },
-        "open": true
-      },
-      "SmartDashboard": {
-        "open": true
+        }
       }
     }
   },

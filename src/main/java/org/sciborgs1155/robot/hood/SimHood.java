@@ -1,13 +1,12 @@
 package org.sciborgs1155.robot.hood;
 
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.Seconds;
 import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.hood.HoodConstants.*;
 
 import edu.wpi.first.math.system.plant.DCMotor;
-
-import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.Seconds;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 
 // *hood simulated hardware interface */
@@ -38,7 +37,6 @@ public class SimHood implements HoodIO {
   @Override
   public void setVoltage(double volts) {
     sim.setInputVoltage(volts);
-    System.out.println("Hood Voltage: " + volts);
     sim.update(PERIOD.in(Seconds));
   }
 

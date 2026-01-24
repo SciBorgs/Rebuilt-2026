@@ -60,7 +60,6 @@ public class Robot extends CommandRobot {
   // SUBSYSTEMS
   private final Drive drive = Drive.create();
   private final Hood hood = Hood.create();
-  ;
   private final Vision vision = Vision.create();
 
   // COMMANDS
@@ -197,13 +196,17 @@ public class Robot extends CommandRobot {
 
     operator
         .a()
-        .onTrue(
-            hood.goTo(
-                Radians.of(
-                        Math.random()
-                            * (HoodConstants.MAX_ANGLE.minus(HoodConstants.MIN_ANGLE).in(Radians)))
-                    .plus(HoodConstants.MIN_ANGLE)
-                    .plus(Radians.of(Math.PI / 2))));
+        .whileTrue(
+            Commands.defer(
+                () ->
+                    hood.goTo(
+                        Radians.of(
+                                Math.random()
+                                    * HoodConstants.MAX_ANGLE
+                                        .minus(HoodConstants.MIN_ANGLE)
+                                        .in(Radians))
+                            .plus(HoodConstants.MIN_ANGLE)),
+                Set.of(hood)));
 
     // TODO: Add any additional bindings.
   }

@@ -1,34 +1,37 @@
 package org.sciborgs1155.robot.hood;
 
-import java.util.Set;
-import java.util.function.DoubleSupplier;
-
-import org.sciborgs1155.lib.Assertion.EqualityAssertion;
+import static edu.wpi.first.units.Units.*;
 import static org.sciborgs1155.lib.Assertion.eAssert;
-import org.sciborgs1155.lib.Test;
-import org.sciborgs1155.robot.Robot;
 import static org.sciborgs1155.robot.hood.HoodConstants.*;
 
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
-import static edu.wpi.first.units.Units.Volts;
+import edu.wpi.first.networktables.DoubleEntry;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.DoubleSupplier;
+import org.sciborgs1155.lib.Assertion;
+import org.sciborgs1155.lib.LoggingUtils;
+import org.sciborgs1155.lib.Test;
+import org.sciborgs1155.lib.Tuning;
+import org.sciborgs1155.robot.Robot;
 
-@Logged
 /** Hood subsystem for adjusting vertical shooting angle of the fuel */
+@Logged
 public class Hood extends SubsystemBase implements AutoCloseable {
 
   private final HoodIO hardware;
@@ -44,6 +47,19 @@ public class Hood extends SubsystemBase implements AutoCloseable {
 
   /** Arm feed forward controller. */
   private final ArmFeedforward ff = new ArmFeedforward(K_S, K_G, K_V, K_A);
+
+  private final HoodVisualizer measurement =
+      new HoodVisualizer("measurement", new Color8Bit(Color.kBlue), new Color8Bit(Color.kDarkBlue));
+  private final HoodVisualizer setpoint =
+      new HoodVisualizer("setpoint", new Color8Bit(Color.kOrange), new Color8Bit(Color.kOrangeRed));
+
+  @NotLogged private final DoubleEntry tuningP = Tuning.entry("Robot/tuning/hood/K_P", K_P);
+  @NotLogged private final DoubleEntry tuningI = Tuning.entry("Robot/tuning/hood/K_I", K_I);
+  @NotLogged private final DoubleEntry tuningD = Tuning.entry("Robot/tuning/hood/K_D", K_D);
+  @NotLogged private final DoubleEntry tuningS = Tuning.entry("Robot/tuning/hood/K_S", K_S);
+  @NotLogged private final DoubleEntry tuningG = Tuning.entry("Robot/tuning/hood/K_G", K_G);
+  @NotLogged private final DoubleEntry tuningV = Tuning.entry("Robot/tuning/hood/K_V", K_V);
+  @NotLogged private final DoubleEntry tuningA = Tuning.entry("Robot/tuning/hood/K_A", K_A);
 
   /** Routine for recording and analyzing motor data. */
   private final SysIdRoutine sysIdRoutine;
@@ -184,13 +200,27 @@ public class Hood extends SubsystemBase implements AutoCloseable {
 
   /** makes hood go to a set goal position */
   public Command goTo(DoubleSupplier goal) {
-    return run(() -> update(goal.getAsDouble())).until(this::atGoal).withName("Hood GoTo");
+    return run(() -> update(goal.getAsDouble())).withName("Hood GoTo");
   }
 
+  /**
+   * goes to an angle so that the fuel is launch out at said angle
+   *
+   * @param angle angle to shoot at
+   * @return a command to go to the shooting angle
+   */
   public Command goToShootingAngle(DoubleSupplier goal) {
-    return run(() -> update(goal.getAsDouble() - Math.PI / 2)).until(this::atGoal).withName("Hood GoTo Angle");
+    return run(() -> update(goal.getAsDouble() - Math.PI / 2))
+        .until(this::atGoal)
+        .withName("Hood GoTo Angle");
   }
 
+  /**
+   * goes to an angle so that the fuel is launch out at said angle
+   *
+   * @param angle angle to shoot at
+   * @return a command to go to the shooting angle
+   */
   public Command goToShootingAngle(Angle goal) {
     return goToShootingAngle(() -> goal.in(Radians));
   }
@@ -201,31 +231,44 @@ public class Hood extends SubsystemBase implements AutoCloseable {
    * @param position Goal angle for hood to reach
    */
   private void update(double position) {
-    double goal =
-        MathUtil.clamp(
-            position, MIN_ANGLE.in(Radians), MAX_ANGLE.in(Radians));
+    double goal = MathUtil.clamp(position, MIN_ANGLE.in(Radians), MAX_ANGLE.in(Radians));
     double feedback = fb.calculate(angle(), goal);
-    double feedforward =
-        ff.calculate(fb.getSetpoint().position, fb.getSetpoint().velocity);
+    double feedforward = ff.calculate(fb.getSetpoint().position, fb.getSetpoint().velocity);
     hardware.setVoltage(feedback + feedforward);
   }
 
   /** test for hood to go to a set goal angle */
   public Test goToTest(Angle goal) {
     Command testCommand = goTo(goal).until(this::atGoal).withTimeout(5);
-    EqualityAssertion assertions =
-        eAssert(
-            "hood system check (angle)",
-            () -> goal.in(Radians),
-            this::angle,
-            POS_TOLERANCE.in(Radians));
-
-    return new Test(testCommand, Set.of(assertions));
+    Set<Assertion> assertions =
+        Set.of(
+            eAssert(
+                "Hood system check",
+                () -> goal.in(Radians),
+                this::angle,
+                POS_TOLERANCE.in(Radians)));
+    return new Test(testCommand, assertions);
   }
 
   /** closes the hood */
   @Override
   public void close() throws Exception {
     hardware.close();
+  }
+
+  @Override
+  public void periodic() {
+    measurement.setAngle(Radians.of(angle()).in(Degrees));
+    setpoint.setAngle(Radians.of(angleSetpoint()).in(Degrees));
+    fb.setP(tuningP.get());
+    fb.setI(tuningI.get());
+    fb.setD(tuningD.get());
+    ff.setKs(tuningS.get());
+    ff.setKg(tuningG.get());
+    ff.setKv(tuningV.get());
+    ff.setKa(tuningA.get());
+    LoggingUtils.log(
+        "/Robot/hood/command",
+        Optional.ofNullable(getCurrentCommand()).map(Command::getName).orElse("none"));
   }
 }

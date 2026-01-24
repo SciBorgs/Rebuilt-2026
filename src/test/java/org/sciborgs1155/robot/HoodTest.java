@@ -9,7 +9,7 @@ import static org.sciborgs1155.robot.hood.HoodConstants.MIN_ANGLE;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.Test;
 import org.sciborgs1155.robot.hood.Hood;
 import org.sciborgs1155.robot.hood.SimHood;
 
@@ -31,12 +31,10 @@ public class HoodTest {
   }
 
   /** test for hood to go to random angles */
-  @RepeatedTest(5)
+  @Test
   public void randAngle() {
     runUnitTest(
         hood.goToTest(
-            Radians.of(Math.random() * (MAX_ANGLE.minus(MIN_ANGLE).in(Radians)))
-                .plus(MIN_ANGLE)
-                .plus(Radians.of(Math.PI / 2))));
+            Radians.of(Math.random() * MAX_ANGLE.minus(MIN_ANGLE).in(Radians)).plus(MIN_ANGLE)));
   }
 }

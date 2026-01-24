@@ -56,7 +56,7 @@ public final class Hopper extends SubsystemBase implements AutoCloseable {
 
     this.blocked = new Trigger(() -> !beambreak.getState());
 
-    setDefaultCommand(runHopper(INTAKING_POWER));
+    setDefaultCommand(stop());
   }
 
   /**

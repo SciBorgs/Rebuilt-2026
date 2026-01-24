@@ -25,7 +25,7 @@ public final class FuelVisualizer {
   private static final double FUEL_MASS = 0.225;
 
   /** Force due to gravity (NEWTONS). */
-  private static final double GRAVITY = -9.81 * FUEL_MASS;
+  private static final double GRAVITY = -2.5 * FUEL_MASS;
 
   /** The dimensionless constant multiplied by velocity to attain the drag force. */
   private static final double DRAG_CONSTANT = -0.47;
@@ -193,7 +193,7 @@ public final class FuelVisualizer {
     Vector<N3> shooterToFuel =
         FieldConstants.fromSphericalCoords(
             SHOOTER_TO_FUEL + FUEL_DIAMETER,
-            turretAngle.get().in(Radians),
+            turretAngle.get().plus(robotPose.get().getRotation().getMeasureZ()).in(Radians),
             hoodAngle.get().in(Radians));
 
     return shooterOrigin.plus(shooterToFuel);
@@ -207,7 +207,7 @@ public final class FuelVisualizer {
   private static Vector<N3> getFuelStartingVelocity() {
     return FieldConstants.fromSphericalCoords(
             shooterVelocity.get().in(RadiansPerSecond) * SHOOTER_TO_LAUNCH_VELOCITY,
-            turretAngle.get().in(Radians),
+            turretAngle.get().plus(robotPose.get().getRotation().getMeasureZ()).in(Radians),
             hoodAngle.get().in(Radians))
         .times(FRAME_LENGTH);
   }

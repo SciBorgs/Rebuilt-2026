@@ -30,6 +30,11 @@ public class TurretTest {
     reset(turret);
   }
 
+  /**
+   * Runs the simulated turret during testing.
+   *
+   * @param Angle The setpoint.
+   */
   public void goToTest(Angle setpoint) {
     turret.runTurret(setpoint.in(Radians)).schedule();
     fastForward(10000);

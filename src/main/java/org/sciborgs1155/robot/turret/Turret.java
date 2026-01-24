@@ -40,6 +40,7 @@ public class Turret extends SubsystemBase implements AutoCloseable {
   // * Logs previous velocity. */
   @Logged private double lastVelocity;
 
+  /** Creates real or simulated turret based on {@link Robot#isReal()}. */
   @NotLogged
   public static Turret create() {
     return Robot.isReal() ? new Turret(new RealTurret()) : new Turret(new SimTurret());

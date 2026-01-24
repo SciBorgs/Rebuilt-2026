@@ -25,7 +25,7 @@ public final class FuelVisualizer {
   private static final double FUEL_MASS = 0.225;
 
   /** Force due to gravity (NEWTONS). */
-  private static final double GRAVITY = -2.5 * FUEL_MASS;
+  private static final double GRAVITY = -9.81 * FUEL_MASS;
 
   /** The dimensionless constant multiplied by velocity to attain the drag force. */
   private static final double DRAG_CONSTANT = -0.47;
@@ -70,16 +70,17 @@ public final class FuelVisualizer {
    * The ratio between the angular velocity of the shooter (RADIANS / SECOND) and the launch
    * velocity of the Fuel (METERS / SECOND).
    */
-  private static final double SHOOTER_TO_LAUNCH_VELOCITY = 1;
+  private static final double SHOOTER_TO_LAUNCH_VELOCITY = 10; // TODO: Update.
 
   /**
    * The distance between the origin of the shooter and the actual launch position of the Fuel
    * (METERS).
    */
-  private static final double SHOOTER_TO_FUEL = 0;
+  private static final double SHOOTER_TO_LAUNCH_DISTANCE = 0.1; // TODO: Update.
 
+  // TODO: Update.
   /** Once added to the pose of the robot, returns the pose of the shooter (METERS). */
-  private static final Vector<N3> ROBOT_TO_SHOOTER = VecBuilder.fill(0, 0, 1);
+  private static final Vector<N3> ROBOT_TO_SHOOTER = VecBuilder.fill(0, 0, 0.5);
 
   /**
    * A publisher for the positions of the {@code FuelSim}'s. Used to track Fuel in logging
@@ -192,7 +193,7 @@ public final class FuelVisualizer {
     Vector<N3> shooterOrigin = robotPose.get().getTranslation().toVector().plus(ROBOT_TO_SHOOTER);
     Vector<N3> shooterToFuel =
         FieldConstants.fromSphericalCoords(
-            SHOOTER_TO_FUEL + FUEL_DIAMETER,
+            SHOOTER_TO_LAUNCH_DISTANCE + FUEL_DIAMETER,
             turretAngle.get().plus(robotPose.get().getRotation().getMeasureZ()).in(Radians),
             hoodAngle.get().in(Radians));
 

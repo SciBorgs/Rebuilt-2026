@@ -24,6 +24,9 @@ public final class FuelVisualizer {
   /** This constructor is not meant to be used. */
   private FuelVisualizer() {}
 
+  /** The index of the latest Fuel to be launched. */
+  private static int fuelIndex;
+
   /** All Fuel currently being simulated. */
   private static FuelSim[] fuelSims;
 
@@ -67,7 +70,7 @@ public final class FuelVisualizer {
    * The ratio between the angular velocity of the shooter (RADIANS / SECOND) and the launch
    * velocity of the Fuel (METERS / SECOND).
    */
-  private static final double SHOOTER_TO_LAUNCH = 1;
+  private static final double SHOOTER_TO_LAUNCH_VELOCITY = 1;
 
   /**
    * The distance between the origin of the shooter and the actual launch position of the Fuel
@@ -76,7 +79,7 @@ public final class FuelVisualizer {
   private static final double SHOOTER_TO_FUEL = 0;
 
   /** Once added to the pose of the robot, returns the pose of the shooter (METERS). */
-  private static final Vector<N3> ROBOT_TO_SHOOTER = VecBuilder.fill(0, 0, 10);
+  private static final Vector<N3> ROBOT_TO_SHOOTER = VecBuilder.fill(0, 0, 1);
 
   /**
    * A publisher for the positions of the {@code FuelSim}'s. Used to track Fuel in logging
@@ -125,7 +128,7 @@ public final class FuelVisualizer {
     for (int index = 0; index < fuelSims.length; index++) {
       fuelSims[index] = new FuelSim();
       fuelPoses[index] = new Pose3d();
-      fuelStates[index] = true;
+      fuelStates[index] = false;
     }
   }
 
@@ -136,18 +139,18 @@ public final class FuelVisualizer {
    * @return A command to launch Fuel.
    */
   public static Command launchFuel() {
-    return Commands.runOnce(getNextIdleFuel()::init).withName("LAUNCH FUEL");
+    return Commands.deferredProxy(() -> Commands.runOnce(getLaunchableFuel()::init));
   }
 
   /** Publishes the Fuel display data to {@code NetworkTables}. */
   public static void periodic() {
     int index = 0;
 
+    // UPDATING SIMULATIONS
     for (FuelSim fuelSim : fuelSims) {
-      // UPDATING SIMULATIONS
       fuelSim.nextFrame();
       fuelPoses[index] = getFuelPose3d(fuelSim.translation, fuelSim.rotation);
-      fuelStates[index] = fuelSim.isGrounded;
+      fuelStates[index] = fuelSim.isBeingLaunched;
       index++;
     }
 
@@ -157,14 +160,26 @@ public final class FuelVisualizer {
   }
 
   /**
-   * Returns the first idle {@code FuelSim}. If no idle Fuel are present, the earliest launched Fuel
-   * is used.
+   * Returns the first un-launched Fuel. If all Fuel has been launched, return the first idle Fuel. If no Fuel meets this criteria, return the first Fuel in the visualizer.
    *
-   * @return The first idle Fuel.
+   * @return The first launchable Fuel.
    */
-  private static FuelSim getNextIdleFuel() {
-    for (FuelSim fuelSim : fuelSims) if (fuelSim.isGrounded) return fuelSim;
-    return fuelSims[0];
+  private static FuelSim getLaunchableFuel() {
+    if (fuelIndex >= fuelSims.length) fuelIndex = 0;
+    boolean fullCycle = fuelIndex == 0;
+
+    // ITERATE THROUGH NON-CYCLED FUEL
+    for (int index = fuelIndex + 1; index < fuelSims.length; index++) 
+    if (!fuelSims[index].isBeingLaunched) {
+      fuelIndex = index;
+      return fuelSims[index];
+    }
+
+    if (fullCycle) return fuelSims[0];
+
+    // RECYCLE
+    fuelIndex = 0;
+    return getLaunchableFuel();
   }
 
   /**
@@ -191,7 +206,7 @@ public final class FuelVisualizer {
    */
   private static Vector<N3> getFuelStartingVelocity() {
     return FieldConstants.fromSphericalCoords(
-        shooterVelocity.get().in(RadiansPerSecond) * SHOOTER_TO_LAUNCH,
+        shooterVelocity.get().in(RadiansPerSecond) * SHOOTER_TO_LAUNCH_VELOCITY,
         turretAngleSupplier.get().in(Radians),
         hoodAngleSupplier.get().in(Radians));
   }
@@ -211,9 +226,8 @@ public final class FuelVisualizer {
    * command. All units are SI unless specified otherwise.
    */
   public static class FuelSim {
-    /** If the Fuel is suspended in air, it is not grounded. */
-    protected boolean isGrounded = true;
-
+    /** If the Fuel is suspended in the air, it is being launched. */
+    protected boolean isBeingLaunched = false;
     /**
      * A vector whose elements represent the current X, Y, and Z components of the Fuel's
      * translation (METERS).
@@ -232,30 +246,49 @@ public final class FuelVisualizer {
      */
     protected Vector<N3> velocity = VecBuilder.fill(0, 0, 0);
 
-    /** Resets Fuel properties in preparation for launch. */
+    /** Starts frame generation. */
     private void init() {
+      if (isBeingLaunched) return;
+
       translation = getFuelStartingTranslation();
       velocity = getFuelStartingVelocity().times(FRAME_LENGTH);
       rotation = VecBuilder.fill(0, 0, 0);
-      isGrounded = false;
+
+      // ALLOWS FRAMES TO BE RENDERED
+      isBeingLaunched = true;
     }
 
-    /** Displays the next {@code state} in the {@code trajectory}. To be called periodically. */
+    /** Generates a new frame. To be called periodically. */
     private void nextFrame() {
-      if (isGrounded) return;
+      if (!isBeingLaunched) return;
+
+      // GRAVITATIONAL ACCELERATION
       velocity.setColumn(0, velocity.plus(GRAVITY));
+
+      // DRAG ACCELERATION
       velocity.setColumn(0, velocity.plus(velocity.times(-DRAG_CONSTANT / FUEL_MASS)));
-      translation.setColumn(0, translation.plus(velocity));
+
+      // SPIN IS PURELY COSMETIC (FOR NOW)
       rotation.setColumn(0, rotation.plus(SPIN));
+
+      // ADD VELOCITY TO TRANSLATION
+      translation.setColumn(0, translation.plus(velocity));
+
+      // IF THE FUEL TOUCHES THE GROUND, FRAME GENERATION ENDS
       if (translation.get(2) < FUEL_DIAMETER / 2) end();
     }
 
-    /** Ends trajectory generation. */
+    /** Ends frame generation. */
     private void end() {
+      // PREVENT CLIPPING INTO THE GROUND
       translation.set(2, 0, FUEL_DIAMETER / 2);
-      velocity = velocity.times(0);
+
+      // RESET STATE
+      velocity = VecBuilder.fill(0, 0, 0);
       rotation = VecBuilder.fill(0, 0, 0);
-      isGrounded = true;
+
+      // PREVENTS FRAMES FROM BEING RENDERED
+      isBeingLaunched = false;
     }
   }
 }

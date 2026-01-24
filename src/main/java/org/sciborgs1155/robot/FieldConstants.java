@@ -52,9 +52,9 @@ public final class FieldConstants {
    */
   public static Vector<N3> fromSphericalCoords(double magnitude, double theta, double alpha) {
     return VecBuilder.fill(
-        magnitude * Math.cos(theta) * Math.cos(alpha),
-        magnitude * Math.sin(theta) * Math.cos(alpha),
-        -magnitude * Math.sin(alpha));
+        magnitude * Math.cos(theta) * Math.cos(-alpha),
+        magnitude * Math.sin(theta) * Math.cos(-alpha),
+        -magnitude * Math.sin(-alpha));
   }
 
   /**

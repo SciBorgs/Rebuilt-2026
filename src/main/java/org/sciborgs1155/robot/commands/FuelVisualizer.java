@@ -1,6 +1,5 @@
 package org.sciborgs1155.robot.commands;
 
-import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
@@ -15,7 +14,6 @@ import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import java.util.function.Supplier;
 import org.sciborgs1155.robot.FieldConstants;
@@ -74,14 +72,6 @@ public final class FuelVisualizer {
   private static final Vector<N3> ROBOT_TO_SHOOTER = VecBuilder.fill(0, 0, 0.5);
 
   /**
-   * The first, second, and third components of a 3D vector represent the X, Y, and Z coordinates
-   * respectively. The positive Z axis faces to the ceiling. The positive X axis faces towards the
-   * red alliance. The positive Y axis faces towards the left side of the blue alliance.
-   */
-  @SuppressWarnings("PMD.OneDeclarationPerLine")
-  private static final int X = 0, Y = 1, Z = 2;
-
-  /**
    * A publisher for the positions of the {@code FuelSim}'s. Used to view Fuel in logging framework.
    */
   private static final StructArrayPublisher<Pose3d> publisher =
@@ -121,20 +111,21 @@ public final class FuelVisualizer {
    * @return A command to launch Fuel.
    */
   public static Command launchFuel() {
-    return Commands.runOnce(
-            () -> CommandScheduler.getInstance().schedule(getNextIdleFuel().launch()))
-        .withName("LAUNCH FUEL");
+    return Commands.runOnce(getNextIdleFuel()::init);
   }
 
   /** Publishes the Fuel display data to {@code NetworkTables}. */
   public static void periodic() {
+    // UPDATING SIMULATIONS
+    for (FuelSim fuelSim : fuelSims) {
+      if (!fuelSim.isIdle) fuelSim.nextFrame();
+      if (fuelSim.hasLanded()) fuelSim.end();
+    }
+
+    // LOGGING
     Pose3d[] poses = new Pose3d[fuelSims.length];
     for (int index = 0; index < fuelSims.length; index++)
-    if (!fuelSims[index].isIdle)
-       poses[index] =
-          new Pose3d(
-              new Translation3d(fuelSims[index].translation),
-              new Rotation3d(fuelSims[index].rotation));
+      if (!fuelSims[index].isIdle) poses[index] = fuelSims[index].pose();
     publisher.accept(poses);
   }
 
@@ -154,7 +145,7 @@ public final class FuelVisualizer {
     Vector<N3> shooterOrigin =
         robotPoseSupplier.get().getTranslation().toVector().plus(ROBOT_TO_SHOOTER);
     Vector<N3> shooterToFuel =
-        toCartesian(
+        FieldConstants.fromSphericalCoords(
             SHOOTER_TO_FUEL + FUEL_DIAMETER,
             turretAngleSupplier.get().in(Radians),
             hoodAngleSupplier.get().in(Radians));
@@ -166,7 +157,7 @@ public final class FuelVisualizer {
    * Generates the launch velocity vector for the Fuel based on robot properties (METERS / SECOND).
    */
   private static Vector<N3> getFuelStartingVelocity() {
-    return toCartesian(
+    return FieldConstants.fromSphericalCoords(
         shooterVelocity.get().in(RadiansPerSecond) * SHOOTER_TO_LAUNCH,
         turretAngleSupplier.get().in(Radians),
         hoodAngleSupplier.get().in(Radians));
@@ -202,28 +193,23 @@ public final class FuelVisualizer {
     protected Vector<N3> velocity = VecBuilder.fill(0, 0, 0);
 
     /**
-     * Launches the Fuel from the robot's current position.
+     * Returns a pose object that contains information about the {@code translation} and {@code
+     * rotation} of the Fuel.
      *
-     * @return A command to launch the Fuel from the robot.
+     * @return The pose of the Fuel (METERS).
      */
-    public Command launch() {
-      return Commands.runOnce(this::init)
-          .andThen(
-              Commands.repeatingSequence(
-                  Commands.runOnce(this::nextFrame), Commands.waitSeconds(FRAME_LENGTH)))
-          .onlyWhile(this::inBounds)
-          .finallyDo(this::end)
-          .withName("SHOOT FUEL");
+    protected Pose3d pose() {
+      return new Pose3d(new Translation3d(translation), new Rotation3d(rotation));
     }
 
     /**
-     * Whether or not the Fuel is within the bounds of the field.
+     * Determines if the Fuel has landed.
      *
-     * @return True if the Fuel is within the field's bounds. False if the Fuel is not within the
-     *     field's bounds.
+     * @param translation The translation of the Fuel.
+     * @return True if the translation is above the field. False if it is clipping into the field.
      */
-    private boolean inBounds() {
-      return isTranslationInBounds(translation);
+    private boolean hasLanded() {
+      return translation.get(2) < FUEL_DIAMETER / 2;
     }
 
     /** Resets Fuel properties in preparation for launch. */
@@ -238,50 +224,23 @@ public final class FuelVisualizer {
     /** Displays the next {@code state} in the {@code trajectory}. To be called periodically. */
     private void nextFrame() {
       velocity.setColumn(0, velocity.plus(GRAVITY));
+
+      // DRAG FORCE IS EQUAL TO NEGATION OF VELOCITY TIMES CONSTANT
       velocity.setColumn(0, velocity.plus(velocity.times(-DRAG_CONSTANT / FUEL_MASS)));
 
       translation.setColumn(0, translation.plus(velocity));
+
+      // SPIN IS PURELY COSMETIC
       rotation.setColumn(0, rotation.plus(SPIN));
     }
 
     /** Ends trajectory generation. */
     private void end() {
-      translation = null;
-      velocity = null;
-      rotation = null;
+      // PREVENT CLIPPING INTO FLOOR
+      translation.set(2, 0, FUEL_DIAMETER / 2);
+      velocity = velocity.times(0);
 
       isIdle = true;
     }
-  }
-
-  /**
-   * Converts spherical coordinates to cartesian coordinates.
-   *
-   * @param magnitude The magnitude of the polar coordinate.
-   * @param theta The angle in the xy-plane (polar angle).
-   * @param alpha The angle up from the xy-plane (towards positive z).
-   * @return A vector representing the cartesian coordinates.
-   */
-  private static Vector<N3> toCartesian(double magnitude, double theta, double alpha) {
-    return VecBuilder.fill(
-        magnitude * Math.cos(theta) * Math.cos(alpha),
-        magnitude * Math.sin(theta) * Math.cos(alpha),
-        -magnitude * Math.sin(alpha));
-  }
-
-  /**
-   * Determines if the specified object is within the bounds of the field.
-   *
-   * @param translation The translation of the object to evaluate.
-   * @return True if the translation is within the field's bounds. False if the translation is not
-   *     within the field's bounds.
-   */
-  @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
-  private static boolean isTranslationInBounds(Vector<N3> translation) {
-    return translation.get(X) > 0
-        && translation.get(Y) > 0
-        && translation.get(X) < FieldConstants.LENGTH.in(Meters)
-        && translation.get(Y) < FieldConstants.WIDTH.in(Meters)
-        && translation.get(Z) > 0;
   }
 }

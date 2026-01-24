@@ -11,6 +11,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.numbers.N2;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
@@ -39,6 +40,21 @@ public final class FieldConstants {
    */
   public static Vector<N2> fromPolarCoords(double magnitude, Rotation2d direction) {
     return VecBuilder.fill(magnitude * direction.getCos(), magnitude * direction.getSin());
+  }
+
+  /**
+   * Converts spherical coordinates to cartesian coordinates.
+   *
+   * @param magnitude The magnitude of the polar coordinate.
+   * @param theta The angle in the xy-plane (polar angle).
+   * @param alpha The angle up from the xy-plane (towards positive z).
+   * @return A vector representing the cartesian coordinates.
+   */
+  public static Vector<N3> fromSphericalCoords(double magnitude, double theta, double alpha) {
+    return VecBuilder.fill(
+        magnitude * Math.cos(theta) * Math.cos(alpha),
+        magnitude * Math.sin(theta) * Math.cos(alpha),
+        -magnitude * Math.sin(alpha));
   }
 
   /**

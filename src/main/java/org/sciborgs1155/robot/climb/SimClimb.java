@@ -49,4 +49,16 @@ public class SimClimb implements ClimbIO {
 
   @Override
   public void close() throws Exception {}
+
+  @Override
+  public void brake() {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'brake'");
+  }
+
+  @Override
+  public void coast() {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'coast'");
+  }
 }

@@ -16,6 +16,7 @@ import edu.wpi.first.networktables.DoubleEntry;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
@@ -203,7 +204,7 @@ public class Climb extends SubsystemBase implements AutoCloseable {
    * @return A retracting command.
    */
   public Command retract() {
-    return goTo(MIN_HEIGHT.in(Meters)).withName("retracting");
+    return run(() -> hardware.brake()).andThen(goTo(MIN_HEIGHT.in(Meters))).withName("retracting");
   }
 
   /**
@@ -212,6 +213,6 @@ public class Climb extends SubsystemBase implements AutoCloseable {
    * @return An extending command.
    */
   public Command extend() {
-    return goTo(MAX_HEIGHT.in(Meters)).withName("extending");
+    return run(() -> hardware.coast()).andThen(goTo(MAX_HEIGHT.in(Meters))).withName("extending");
   }
 }

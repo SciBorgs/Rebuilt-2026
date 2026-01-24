@@ -28,7 +28,8 @@ public class ClimbConstants {
   public static final LinearVelocity MAX_VELOCITY = MetersPerSecond.of(.5);
   public static final LinearAcceleration MAX_ACCEL = MetersPerSecondPerSecond.of(.2);
 
-  public static final int MOTOR_ID = 0;
+  public static final int LEFT_MOTOR_ID = 0;
+  public static final int RIGHT_MOTOR_ID = 0;
   public static final double GEARING = 50.0;
   public static final double SENSOR_TO_MECHANISM_RATIO = 2.0;
   public static final Current STATOR_LIMIT = Amps.of(60);

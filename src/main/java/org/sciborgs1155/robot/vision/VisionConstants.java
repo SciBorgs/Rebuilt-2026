@@ -27,7 +27,7 @@ public class VisionConstants {
   // TODO: actually add camera positions, figure out if its actually 148 fov
   public static final CameraConfig CAMERA_0 =
       new CameraConfig(
-          "cam 0 RENAME",
+          "USB_Camera",
           78,
           new Transform3d(
               Inches.of(-11.935943),

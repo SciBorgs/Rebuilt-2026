@@ -213,6 +213,6 @@ public class Climb extends SubsystemBase implements AutoCloseable {
    * @return An extending command.
    */
   public Command extend() {
-    return run(() -> hardware.coast()).andThen(goTo(MAX_HEIGHT.in(Meters))).withName("extending");
+    return run(() -> hardware.coast()).andThen(run(() -> hardware.setVoltage(0))).withName("extending");
   }
 }

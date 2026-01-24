@@ -70,8 +70,6 @@ public class Robot extends CommandRobot {
 
     // Warms up pathfinding commands, as the first run could have significant delays.
     CommandScheduler.getInstance().schedule(align.warmupCommand());
-    FuelVisualizer.init(
-        () -> RadiansPerSecond.of(50), Radians::zero, () -> Radians.of(1), drive::pose3d, 10);
   }
 
   @Override
@@ -94,6 +92,8 @@ public class Robot extends CommandRobot {
     SmartDashboard.putData("Auto Chooser", autos);
 
     // Configure pose estimation updates every tick
+    FuelVisualizer.init(
+        () -> RadiansPerSecond.of(50), Radians::zero, () -> Radians.of(1), drive::pose3d, 2);
     addPeriodic(FuelVisualizer::periodic, PERIOD);
 
     RobotController.setBrownoutVoltage(6.0);

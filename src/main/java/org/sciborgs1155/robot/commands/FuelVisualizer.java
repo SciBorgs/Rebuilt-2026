@@ -9,6 +9,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.networktables.BooleanArrayPublisher;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.units.measure.Angle;
@@ -26,6 +27,12 @@ public final class FuelVisualizer {
   /** All Fuel currently being simulated. */
   private static FuelSim[] fuelSims;
 
+  /** The poses of every Fuel currently being simulated. */
+  private static Pose3d[] fuelPoses;
+
+  /** The idle states of every Fuel currently being simulated. */
+  private static boolean[] fuelStates;
+
   /** A supplier for the launch velocity of the Fuel. */
   private static Supplier<AngularVelocity> shooterVelocity;
 
@@ -39,7 +46,7 @@ public final class FuelVisualizer {
   private static Supplier<Pose3d> robotPoseSupplier;
 
   /** The length of each frame in the Fuel launch animation (SECONDS / FRAME). */
-  private static final double FRAME_LENGTH = 0.016;
+  private static final double FRAME_LENGTH = 0.02;
 
   /** Acceleration due to gravity (METERS / FRAME^2). */
   private static final Vector<N3> GRAVITY = VecBuilder.fill(0, 0, -9.81 * FRAME_LENGTH);
@@ -69,14 +76,24 @@ public final class FuelVisualizer {
   private static final double SHOOTER_TO_FUEL = 0;
 
   /** Once added to the pose of the robot, returns the pose of the shooter (METERS). */
-  private static final Vector<N3> ROBOT_TO_SHOOTER = VecBuilder.fill(0, 0, 0.5);
+  private static final Vector<N3> ROBOT_TO_SHOOTER = VecBuilder.fill(0, 0, 10);
 
   /**
-   * A publisher for the positions of the {@code FuelSim}'s. Used to view Fuel in logging framework.
+   * A publisher for the positions of the {@code FuelSim}'s. Used to track Fuel in logging
+   * framework.
    */
-  private static final StructArrayPublisher<Pose3d> publisher =
+  private static final StructArrayPublisher<Pose3d> fuelPosePublisher =
       NetworkTableInstance.getDefault()
-          .getStructArrayTopic("Fuel Visualizer", Pose3d.struct)
+          .getStructArrayTopic("Fuel Visualizer/Fuel Poses", Pose3d.struct)
+          .publish();
+
+  /**
+   * A publisher for the idle states of the {@code FuelSim}'s. Used to track Fuel in logging
+   * framework.
+   */
+  private static final BooleanArrayPublisher fuelStatePublisher =
+      NetworkTableInstance.getDefault()
+          .getBooleanArrayTopic("Fuel Visualizer/Fuel States")
           .publish();
 
   /**
@@ -100,8 +117,16 @@ public final class FuelVisualizer {
     FuelVisualizer.robotPoseSupplier = robotPoseSupplier;
 
     // FUEL INSTANTIATION
-    FuelVisualizer.fuelSims = new FuelSim[fuelCapacity];
-    for (int index = 0; index < fuelSims.length; index++) fuelSims[index] = new FuelSim();
+    fuelSims = new FuelSim[fuelCapacity];
+    fuelPoses = new Pose3d[fuelCapacity];
+    fuelStates = new boolean[fuelCapacity];
+
+    // INSTANTIATION
+    for (int index = 0; index < fuelSims.length; index++) {
+      fuelSims[index] = new FuelSim();
+      fuelPoses[index] = new Pose3d();
+      fuelStates[index] = true;
+    }
   }
 
   /**
@@ -111,22 +136,24 @@ public final class FuelVisualizer {
    * @return A command to launch Fuel.
    */
   public static Command launchFuel() {
-    return Commands.runOnce(getNextIdleFuel()::init);
+    return Commands.runOnce(getNextIdleFuel()::init).withName("LAUNCH FUEL");
   }
 
   /** Publishes the Fuel display data to {@code NetworkTables}. */
   public static void periodic() {
-    // UPDATING SIMULATIONS
+    int index = 0;
+
     for (FuelSim fuelSim : fuelSims) {
-      if (!fuelSim.isIdle) fuelSim.nextFrame();
-      if (fuelSim.hasLanded()) fuelSim.end();
+      // UPDATING SIMULATIONS
+      fuelSim.nextFrame();
+      fuelPoses[index] = getFuelPose3d(fuelSim.translation, fuelSim.rotation);
+      fuelStates[index] = fuelSim.isGrounded;
+      index++;
     }
 
-    // LOGGING
-    Pose3d[] poses = new Pose3d[fuelSims.length];
-    for (int index = 0; index < fuelSims.length; index++)
-      if (!fuelSims[index].isIdle) poses[index] = fuelSims[index].pose();
-    publisher.accept(poses);
+    // PUBLISHING DATA
+    fuelPosePublisher.accept(fuelPoses);
+    fuelStatePublisher.accept(fuelStates);
   }
 
   /**
@@ -136,11 +163,15 @@ public final class FuelVisualizer {
    * @return The first idle Fuel.
    */
   private static FuelSim getNextIdleFuel() {
-    for (FuelSim fuelSim : fuelSims) if (fuelSim.isIdle) return fuelSim;
+    for (FuelSim fuelSim : fuelSims) if (fuelSim.isGrounded) return fuelSim;
     return fuelSims[0];
   }
 
-  /** Generates the launch translation vector for the Fuel based on robot properties (METERS). */
+  /**
+   * Generates the launch translation vector for the Fuel based on robot properties.
+   *
+   * @return A vector representing the translation of the Fuel at launch (METERS).
+   */
   private static Vector<N3> getFuelStartingTranslation() {
     Vector<N3> shooterOrigin =
         robotPoseSupplier.get().getTranslation().toVector().plus(ROBOT_TO_SHOOTER);
@@ -154,7 +185,9 @@ public final class FuelVisualizer {
   }
 
   /**
-   * Generates the launch velocity vector for the Fuel based on robot properties (METERS / SECOND).
+   * Generates the launch velocity vector for the Fuel based on robot properties.
+   *
+   * @return A vector representing the translation of the Fuel at launch (METERS / SECOND).
    */
   private static Vector<N3> getFuelStartingVelocity() {
     return FieldConstants.fromSphericalCoords(
@@ -164,15 +197,22 @@ public final class FuelVisualizer {
   }
 
   /**
+   * Converts translation and rotation vectors of the Fuel into a pose object.
+   *
+   * @return The pose of the Fuel (METERS).
+   */
+  private static Pose3d getFuelPose3d(Vector<N3> translation, Vector<N3> rotation) {
+    return new Pose3d(new Translation3d(translation), new Rotation3d(rotation));
+  }
+
+  /**
    * Simulates a singular {@code Fuel} projectile as it is being launched. The Fuel is launched from
    * the robot using the {@code shoot} command. This Fuel is reused upon the next calling of the
    * command. All units are SI unless specified otherwise.
    */
   public static class FuelSim {
-    /**
-     * If the Fuel is currently being launched, it is not idle. If the Fuel is at rest, it is idle.
-     */
-    protected boolean isIdle = true;
+    /** If the Fuel is suspended in air, it is not grounded. */
+    protected boolean isGrounded = true;
 
     /**
      * A vector whose elements represent the current X, Y, and Z components of the Fuel's
@@ -192,55 +232,30 @@ public final class FuelVisualizer {
      */
     protected Vector<N3> velocity = VecBuilder.fill(0, 0, 0);
 
-    /**
-     * Returns a pose object that contains information about the {@code translation} and {@code
-     * rotation} of the Fuel.
-     *
-     * @return The pose of the Fuel (METERS).
-     */
-    protected Pose3d pose() {
-      return new Pose3d(new Translation3d(translation), new Rotation3d(rotation));
-    }
-
-    /**
-     * Determines if the Fuel has landed.
-     *
-     * @param translation The translation of the Fuel.
-     * @return True if the translation is above the field. False if it is clipping into the field.
-     */
-    private boolean hasLanded() {
-      return translation.get(2) < FUEL_DIAMETER / 2;
-    }
-
     /** Resets Fuel properties in preparation for launch. */
     private void init() {
       translation = getFuelStartingTranslation();
       velocity = getFuelStartingVelocity().times(FRAME_LENGTH);
       rotation = VecBuilder.fill(0, 0, 0);
-
-      isIdle = false;
+      isGrounded = false;
     }
 
     /** Displays the next {@code state} in the {@code trajectory}. To be called periodically. */
     private void nextFrame() {
+      if (isGrounded) return;
       velocity.setColumn(0, velocity.plus(GRAVITY));
-
-      // DRAG FORCE IS EQUAL TO NEGATION OF VELOCITY TIMES CONSTANT
       velocity.setColumn(0, velocity.plus(velocity.times(-DRAG_CONSTANT / FUEL_MASS)));
-
       translation.setColumn(0, translation.plus(velocity));
-
-      // SPIN IS PURELY COSMETIC
       rotation.setColumn(0, rotation.plus(SPIN));
+      if (translation.get(2) < FUEL_DIAMETER / 2) end();
     }
 
     /** Ends trajectory generation. */
     private void end() {
-      // PREVENT CLIPPING INTO FLOOR
       translation.set(2, 0, FUEL_DIAMETER / 2);
       velocity = velocity.times(0);
-
-      isIdle = true;
+      rotation = VecBuilder.fill(0, 0, 0);
+      isGrounded = true;
     }
   }
 }

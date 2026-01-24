@@ -32,7 +32,7 @@ public class VisionConstants {
           new Transform3d(
               Inches.of(-11.935943),
               Inches.of(-12.493204),
-              Inches.of(    5.176840 + 4.6),
+              Inches.of(5.176840 + 4.6),
               new Rotation3d(Degrees.zero(), Degrees.of(-20), Degrees.zero())
                   .rotateBy(new Rotation3d(Degrees.zero(), Degrees.zero(), Degrees.of(155)))),
           PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);

@@ -206,9 +206,10 @@ public final class FuelVisualizer {
    */
   private static Vector<N3> getFuelStartingVelocity() {
     return FieldConstants.fromSphericalCoords(
-        shooterVelocity.get().in(RadiansPerSecond) * SHOOTER_TO_LAUNCH_VELOCITY,
-        turretAngle.get().in(Radians),
-        hoodAngle.get().in(Radians)).times(FRAME_LENGTH);
+            shooterVelocity.get().in(RadiansPerSecond) * SHOOTER_TO_LAUNCH_VELOCITY,
+            turretAngle.get().in(Radians),
+            hoodAngle.get().in(Radians))
+        .times(FRAME_LENGTH);
   }
 
   /**
@@ -248,9 +249,10 @@ public final class FuelVisualizer {
     protected Vector<N3> velocity = VecBuilder.fill(0, 0, 0);
 
     /**
-     * A vector whose elements represent the current X, Y, and Z components of the Fuel's acceleration (METERS / FRAME^2).
+     * A vector whose elements represent the current X, Y, and Z components of the Fuel's
+     * acceleration (METERS / FRAME^2).
      */
-    protected Vector<N3> acceleration = VecBuilder.fill(0,0,0);
+    protected Vector<N3> acceleration = VecBuilder.fill(0, 0, 0);
 
     /** Starts frame generation. */
     private void init() {
@@ -258,7 +260,7 @@ public final class FuelVisualizer {
 
       translation = getFuelStartingTranslation();
       velocity = getFuelStartingVelocity();
-      acceleration = VecBuilder.fill(0,0,0);
+      acceleration = VecBuilder.fill(0, 0, 0);
       rotation = VecBuilder.fill(0, 0, 0);
 
       // ALLOWS FRAMES TO BE RENDERED
@@ -296,7 +298,7 @@ public final class FuelVisualizer {
 
       // RESET STATE
       velocity = VecBuilder.fill(0, 0, 0);
-      acceleration = VecBuilder.fill(0,0,0);
+      acceleration = VecBuilder.fill(0, 0, 0);
 
       // PREVENTS FRAMES FROM BEING RENDERED
       isBeingLaunched = false;

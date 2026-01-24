@@ -35,7 +35,6 @@ public class RealClimb implements ClimbIO {
     rightConfig.Feedback.SensorToMechanismRatio = SENSOR_TO_MECHANISM_RATIO;
     rightConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
-
     leftMotor.getConfigurator().apply(leftConfig);
     rightMotor.getConfigurator().apply(rightConfig);
   }

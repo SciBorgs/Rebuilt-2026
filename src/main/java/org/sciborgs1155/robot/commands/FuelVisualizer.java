@@ -40,13 +40,13 @@ public final class FuelVisualizer {
   private static Supplier<AngularVelocity> shooterVelocity;
 
   /** A supplier for the angle of the turret. */
-  private static Supplier<Angle> turretAngleSupplier;
+  private static Supplier<Angle> turretAngle;
 
   /** A supplier for the angle of the hood. */
-  private static Supplier<Angle> hoodAngleSupplier;
+  private static Supplier<Angle> hoodAngle;
 
   /** A supplier for the current pose of the robot. */
-  private static Supplier<Pose3d> robotPoseSupplier;
+  private static Supplier<Pose3d> robotPose;
 
   /** The length of each frame in the Fuel launch animation (SECONDS / FRAME). */
   private static final double FRAME_LENGTH = 0.02;
@@ -85,7 +85,7 @@ public final class FuelVisualizer {
    * A publisher for the positions of the {@code FuelSim}'s. Used to track Fuel in logging
    * framework.
    */
-  private static final StructArrayPublisher<Pose3d> fuelPosePublisher =
+  private static StructArrayPublisher<Pose3d> fuelPosePublisher =
       NetworkTableInstance.getDefault()
           .getStructArrayTopic("Fuel Visualizer/Fuel Poses", Pose3d.struct)
           .publish();
@@ -94,7 +94,7 @@ public final class FuelVisualizer {
    * A publisher for the idle states of the {@code FuelSim}'s. Used to track Fuel in logging
    * framework.
    */
-  private static final BooleanArrayPublisher fuelStatePublisher =
+  private static BooleanArrayPublisher fuelStatePublisher =
       NetworkTableInstance.getDefault()
           .getBooleanArrayTopic("Fuel Visualizer/Fuel States")
           .publish();
@@ -114,10 +114,10 @@ public final class FuelVisualizer {
       Supplier<Angle> hoodAngleSupplier,
       Supplier<Pose3d> robotPoseSupplier,
       int fuelCapacity) {
-    FuelVisualizer.shooterVelocity = shooterVelocitySupplier;
-    FuelVisualizer.turretAngleSupplier = turretAngleSupplier;
-    FuelVisualizer.hoodAngleSupplier = hoodAngleSupplier;
-    FuelVisualizer.robotPoseSupplier = robotPoseSupplier;
+    shooterVelocity = shooterVelocitySupplier;
+    turretAngle = turretAngleSupplier;
+    hoodAngle = hoodAngleSupplier;
+    robotPose = robotPoseSupplier;
 
     // FUEL INSTANTIATION
     fuelSims = new FuelSim[fuelCapacity];
@@ -160,7 +160,8 @@ public final class FuelVisualizer {
   }
 
   /**
-   * Returns the first un-launched Fuel. If all Fuel has been launched, return the first idle Fuel. If no Fuel meets this criteria, return the first Fuel in the visualizer.
+   * Returns the first un-launched Fuel. If all Fuel has been launched, return the first idle Fuel.
+   * If no Fuel meets this criteria, return the first Fuel in the visualizer.
    *
    * @return The first launchable Fuel.
    */
@@ -169,11 +170,11 @@ public final class FuelVisualizer {
     boolean fullCycle = fuelIndex == 0;
 
     // ITERATE THROUGH NON-CYCLED FUEL
-    for (int index = fuelIndex + 1; index < fuelSims.length; index++) 
-    if (!fuelSims[index].isBeingLaunched) {
-      fuelIndex = index;
-      return fuelSims[index];
-    }
+    for (int index = fuelIndex + 1; index < fuelSims.length; index++)
+      if (!fuelSims[index].isBeingLaunched) {
+        fuelIndex = index;
+        return fuelSims[index];
+      }
 
     if (fullCycle) return fuelSims[0];
 
@@ -188,13 +189,12 @@ public final class FuelVisualizer {
    * @return A vector representing the translation of the Fuel at launch (METERS).
    */
   private static Vector<N3> getFuelStartingTranslation() {
-    Vector<N3> shooterOrigin =
-        robotPoseSupplier.get().getTranslation().toVector().plus(ROBOT_TO_SHOOTER);
+    Vector<N3> shooterOrigin = robotPose.get().getTranslation().toVector().plus(ROBOT_TO_SHOOTER);
     Vector<N3> shooterToFuel =
         FieldConstants.fromSphericalCoords(
             SHOOTER_TO_FUEL + FUEL_DIAMETER,
-            turretAngleSupplier.get().in(Radians),
-            hoodAngleSupplier.get().in(Radians));
+            turretAngle.get().in(Radians),
+            hoodAngle.get().in(Radians));
 
     return shooterOrigin.plus(shooterToFuel);
   }
@@ -207,8 +207,8 @@ public final class FuelVisualizer {
   private static Vector<N3> getFuelStartingVelocity() {
     return FieldConstants.fromSphericalCoords(
         shooterVelocity.get().in(RadiansPerSecond) * SHOOTER_TO_LAUNCH_VELOCITY,
-        turretAngleSupplier.get().in(Radians),
-        hoodAngleSupplier.get().in(Radians));
+        turretAngle.get().in(Radians),
+        hoodAngle.get().in(Radians));
   }
 
   /**
@@ -227,7 +227,8 @@ public final class FuelVisualizer {
    */
   public static class FuelSim {
     /** If the Fuel is suspended in the air, it is being launched. */
-    protected boolean isBeingLaunched = false;
+    protected boolean isBeingLaunched;
+
     /**
      * A vector whose elements represent the current X, Y, and Z components of the Fuel's
      * translation (METERS).

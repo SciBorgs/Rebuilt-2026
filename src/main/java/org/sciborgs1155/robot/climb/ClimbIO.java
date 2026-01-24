@@ -9,14 +9,14 @@ public interface ClimbIO extends AutoCloseable {
   void setVoltage(double volt);
 
   /**
-   * Returns the position of the elevator.
+   * Returns the position of the climb.
    *
    * @return The position in meters.
    */
   double position();
 
   /**
-   * Returns velocity of elevator in m/s.
+   * Returns velocity of climb in m/s.
    *
    * @return Velocity in m/s.
    */

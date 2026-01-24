@@ -9,17 +9,14 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import org.sciborgs1155.lib.FaultLogger;
+import org.sciborgs1155.lib.TalonUtils;
 
-import edu.wpi.first.epilogue.Logged;
-
-@Logged
 public class RealClimb implements ClimbIO {
   private final TalonFX leftMotor;
   private final TalonFX rightMotor;
 
-  /** 
-   * A constuctor for a real climb object. 
-  */
+  /** A constuctor for a real climb object. */
   public RealClimb() {
     TalonFXConfiguration leftConfig = new TalonFXConfiguration();
     TalonFXConfiguration rightConfig = new TalonFXConfiguration();
@@ -42,6 +39,11 @@ public class RealClimb implements ClimbIO {
 
     leftMotor.getConfigurator().apply(leftConfig);
     rightMotor.getConfigurator().apply(rightConfig);
+
+    FaultLogger.register(leftMotor);
+    FaultLogger.register(rightMotor);
+    TalonUtils.addMotor(leftMotor);
+    TalonUtils.addMotor(rightMotor);
   }
 
   @Override

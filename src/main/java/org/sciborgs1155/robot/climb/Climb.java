@@ -50,6 +50,21 @@ public class Climb extends SubsystemBase implements AutoCloseable {
   private final DoubleEntry kA = Tuning.entry("/Robot/tuning/elevator/kA", A);
 
   /**
+   * @return A climb object that either returns a climb with hardware or a simulated climb depending
+   *     on if the robot exists or not.
+   */
+  public static Climb create() {
+    return new Climb(Robot.isReal() ? new RealClimb() : new SimClimb());
+  }
+
+  /**
+   * @return A climb object without hardware.
+   */
+  public static Climb none() {
+    return new Climb(new NoClimb());
+  }
+
+  /**
    * The constructor of the climb subsystem.
    *
    * @param hardware our IO interface that represents the mechanism
@@ -116,23 +131,9 @@ public class Climb extends SubsystemBase implements AutoCloseable {
   /**
    * @return The position of the climb mechanism in meters.
    */
+  @Logged
   public double position() {
     return hardware.position();
-  }
-
-  /**
-   * @return A climb object that either returns a climb with hardware or a simulated climb depending
-   *     on if the robot exists or not.
-   */
-  public static Climb create() {
-    return new Climb(Robot.isReal() ? new RealClimb() : new SimClimb());
-  }
-
-  /**
-   * @return A climb object without hardware.
-   */
-  public static Climb none() {
-    return new Climb(new NoClimb());
   }
 
   @Override

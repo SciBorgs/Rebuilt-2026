@@ -1,17 +1,17 @@
 package org.sciborgs1155.robot;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import static edu.wpi.first.units.Units.Radians;
 import static org.sciborgs1155.lib.Test.runUnitTest;
 import static org.sciborgs1155.lib.UnitTestingUtil.reset;
 import static org.sciborgs1155.lib.UnitTestingUtil.setupTests;
-import org.sciborgs1155.robot.hood.Hood;
 import static org.sciborgs1155.robot.hood.HoodConstants.MAX_ANGLE;
 import static org.sciborgs1155.robot.hood.HoodConstants.MIN_ANGLE;
-import org.sciborgs1155.robot.hood.SimHood;
 
-import static edu.wpi.first.units.Units.Radians;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.sciborgs1155.robot.hood.Hood;
+import org.sciborgs1155.robot.hood.SimHood;
 
 public class HoodTest {
 
@@ -32,7 +32,7 @@ public class HoodTest {
 
   /** test for hood to go to random angles */
   @Test
-  @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert") // assertion is too buried in goToTest
+  @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
   public void randAngle() {
     runUnitTest(
         hood.goToTest(

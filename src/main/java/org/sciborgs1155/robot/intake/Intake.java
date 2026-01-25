@@ -1,6 +1,7 @@
 package org.sciborgs1155.robot.intake;
 
 import static edu.wpi.first.units.Units.Amps;
+import static org.sciborgs1155.robot.Ports.Intake.*;
 import static org.sciborgs1155.robot.intake.IntakeConstants.*;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -9,7 +10,6 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.sciborgs1155.lib.SimpleMotor;
-import org.sciborgs1155.robot.Ports;
 import org.sciborgs1155.robot.Robot;
 
 public class Intake extends SubsystemBase implements AutoCloseable {
@@ -36,7 +36,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
    * @return a simple motor that will run the rollers
    */
   public static SimpleMotor realMotor() {
-    final TalonFX motor = new TalonFX(Ports.Intake.ROLLER);
+    final TalonFX motor = new TalonFX(ROLLER);
     TalonFXConfiguration config = new TalonFXConfiguration();
     config.CurrentLimits.SupplyCurrentLimit = CURRENT_LIMIT.in(Amps);
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
@@ -53,15 +53,19 @@ public class Intake extends SubsystemBase implements AutoCloseable {
   /**
    * @return start the rollers in order to intake fuel
    */
-  public Command startRollers() {
-    return run(() -> hardware.set(INTAKE_POWER.in(Amps)));
+  public Command runRollers(double power) {
+    return run(() -> hardware.set(power));
+  }
+
+  public Command intake() {
+    return run(() -> runRollers(INTAKE_POWER));
   }
 
   /**
    * @return stop the motors
    */
   public Command stop() {
-    return run(() -> hardware.set(0));
+    return run(() -> runRollers(0));
   }
 
   /** close the hardware */

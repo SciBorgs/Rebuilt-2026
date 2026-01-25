@@ -13,5 +13,5 @@ public class IntakeConstants {
    */
   public static final Current CURRENT_LIMIT = Amps.of(5);
 
-  public static final Current INTAKE_POWER = Amps.of(0.3);
+  public static final double INTAKE_POWER = 0.5;
 }

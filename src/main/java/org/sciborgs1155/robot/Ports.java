@@ -50,4 +50,9 @@ public final class Ports {
   public static final class LEDs {
     public static final int LED_PORT = 9;
   }
+
+  public static final class Hood {
+    public static final int MOTOR_PORT = 18;
+    public static final int CANCODER = 19;
+  }
 }

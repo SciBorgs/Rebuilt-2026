@@ -63,12 +63,12 @@ public class Turret extends SubsystemBase implements AutoCloseable {
   /** {@code PIDController} used to orient the turret to a specified angle. */
   @NotLogged
   private final ProfiledPIDController controller =
-      new ProfiledPIDController(kP, kI, kD, CONSTRAINTS);
+      new ProfiledPIDController(P, I, D, CONSTRAINTS);
 
   /** {@code Feedforward} used to aid in orienting the turret to a specified angle. */
   @NotLogged
   private final SimpleMotorFeedforward feedforward =
-      new SimpleMotorFeedforward(kS, kV, kA, PERIOD.in(Seconds));
+      new SimpleMotorFeedforward(S, V, A, PERIOD.in(Seconds));
 
   /** Visualization. Green = Position, Red = Setpoint. */
   private final TurretVisualizer visualizer = new TurretVisualizer(6, 7);

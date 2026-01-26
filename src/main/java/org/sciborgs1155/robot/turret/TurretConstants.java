@@ -22,7 +22,6 @@ import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.units.measure.Voltage;
 
 /** Constants used in the {@code Turret} subsystem. */
-@SuppressWarnings("PMD")
 public class TurretConstants {
   public static final CANBus CAN_BUS = new CANBus();
   public static final Current CURRENT_LIMIT = Amps.of(60);
@@ -42,14 +41,14 @@ public class TurretConstants {
 
   public static final class ControlConstants {
     // PID CONSTANTS
-    public static final double kP = 1;
-    public static final double kI = 0;
-    public static final double kD = 0;
+    public static final double P = 1;
+    public static final double I = 0;
+    public static final double D = 0;
 
     // FEEDFORWARD CONSTANTS (VELOCITY IN RAD/SEC)
-    public static final double kS = 0; // TODO: Update.
-    public static final double kV = 0; // TODO: Update.
-    public static final double kA = 0; // TODO: Update.
+    public static final double S = 0; // TODO: Update.
+    public static final double V = 0; // TODO: Update.
+    public static final double A = 0; // TODO: Update.
 
     // TOLERANCES
     public static final Angle TOLERANCE = Degree.of(20);

@@ -8,6 +8,7 @@ import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
@@ -33,6 +34,9 @@ public final class FuelVisualizer {
   /** The diameter of the Fuel (METERS). */
   private static final double FUEL_DIAMETER = 0.15;
 
+  /** How long each frame of the animation is (SECONDS / FRAME). */
+  private static final double FRAME_LENGTH = 0.02;
+
   /** This constructor is not meant to be used. */
   private FuelVisualizer() {}
 
@@ -57,8 +61,8 @@ public final class FuelVisualizer {
   /** A supplier for the current pose of the robot. */
   private static Supplier<Pose3d> robotPose;
 
-  /** The length of each frame in the Fuel launch animation (SECONDS / FRAME). */
-  private static final double FRAME_LENGTH = 0.02;
+  /** A supplier for the current velocity of the robot. */
+  private static Supplier<ChassisSpeeds> robotVelocity;
 
   /**
    * A publisher for the positions of the {@code FuelSim}'s. Used to track Fuel in logging
@@ -76,6 +80,7 @@ public final class FuelVisualizer {
    * @param turretAngleSupplier A supplier for the angle of the {@code Turret}.
    * @param hoodAngleSupplier A supplier for the angle of the {@code Hood}.
    * @param robotPoseSupplier A supplier for the pose of the {@code Drive}.
+   * @param robotVelocitySupplier A supplier for the velocity of the {@code Drive}.
    * @param fuelCapacity The number of Fuel's to simulate.
    */
   public static void init(
@@ -83,11 +88,13 @@ public final class FuelVisualizer {
       Supplier<Angle> turretAngleSupplier,
       Supplier<Angle> hoodAngleSupplier,
       Supplier<Pose3d> robotPoseSupplier,
+      Supplier<ChassisSpeeds> robotVelocitySupplier,
       int fuelCapacity) {
     shooterVelocity = shooterVelocitySupplier;
     turretAngle = turretAngleSupplier;
     hoodAngle = hoodAngleSupplier;
     robotPose = robotPoseSupplier;
+    robotVelocity = robotVelocitySupplier;
 
     // FUEL INSTANTIATION
     fuelSims = new FuelSim[fuelCapacity];
@@ -179,6 +186,9 @@ public final class FuelVisualizer {
             shooterVelocity.get().in(RadiansPerSecond),
             turretAngle.get().plus(robotPose.get().getRotation().getMeasureZ()).in(Radians),
             hoodAngle.get().in(Radians))
+        .plus(
+            VecBuilder.fill(
+                robotVelocity.get().vxMetersPerSecond, robotVelocity.get().vyMetersPerSecond, 0))
         .times(FRAME_LENGTH);
   }
 

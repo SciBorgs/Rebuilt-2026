@@ -93,7 +93,12 @@ public class Robot extends CommandRobot {
 
     // Configure pose estimation updates every tick
     FuelVisualizer.init(
-        () -> RadiansPerSecond.of(5), Radians::zero, Radians::one, drive::pose3d, 10);
+        () -> RadiansPerSecond.of(5),
+        Radians::zero,
+        Radians::one,
+        drive::pose3d,
+        drive::fieldRelativeChassisSpeeds,
+        10);
     addPeriodic(FuelVisualizer::periodic, PERIOD);
 
     RobotController.setBrownoutVoltage(6.0);

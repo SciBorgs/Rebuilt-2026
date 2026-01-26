@@ -1,5 +1,6 @@
 package org.sciborgs1155.robot.commands;
 
+import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
@@ -7,6 +8,7 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N3;
@@ -18,6 +20,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import java.util.function.Supplier;
 import org.sciborgs1155.lib.Tracer;
+import org.sciborgs1155.robot.Constants.Robot;
 import org.sciborgs1155.robot.FieldConstants;
 
 /** Simulates the behavior of multiple Fuel projectiles using {@code FuelSim}. */
@@ -28,7 +31,7 @@ public final class FuelVisualizer {
   /** Force due to gravity (METERS / SECOND^2). */
   private static final double GRAVITY = -9.81;
 
-  /** The mass density of the air (KILOGRAMS / LITER). */
+  /** The mass density of the air (KILOGRAMS / METER^3). */
   private static final double AIR_DENSITY = 1.225;
 
   /** The diameter of the Fuel (METERS). */
@@ -158,21 +161,31 @@ public final class FuelVisualizer {
   }
 
   /**
+   * Returns the current pose of the shooter.
+   *
+   * @return The pose of the shooter (FIELD RELATIVE METERS).
+   */
+  private static Pose3d shooterPose() {
+    return robotPose
+        .get()
+        .transformBy(
+            new Transform3d(
+                Robot.ROBOT_TO_TURRET,
+                new Rotation3d(Radians.zero(), hoodAngle.get(), turretAngle.get())));
+  }
+
+  /**
    * Generates the launch translation vector for the Fuel based on robot properties.
    *
    * @return A vector representing the translation of the Fuel at launch (METERS).
    */
-  // TODO: ACCOUNT FOR LENGTH OF SHOOTER
-  private static Vector<N3> getFuelLaunchTranslation() {
-    Vector<N3> shooterOrigin =
-        robotPose.get().getTranslation().toVector().plus(VecBuilder.fill(0, 0, 0.5));
-    Vector<N3> shooterToFuel =
-        FieldConstants.fromSphericalCoords(
-            0.1 + FUEL_DIAMETER,
-            turretAngle.get().plus(robotPose.get().getRotation().getMeasureZ()).in(Radians),
-            hoodAngle.get().in(Radians));
-
-    return shooterOrigin.plus(shooterToFuel);
+  private static Vector<N3> calculateFuelLaunchTranslation() {
+    return shooterPose()
+        .getTranslation()
+        .toVector()
+        .plus(
+            FieldConstants.fromSphericalCoords(
+                Robot.SHOOTER_LENGTH.in(Meters) + FUEL_DIAMETER / 2, shooterPose().getRotation()));
   }
 
   /**
@@ -181,14 +194,21 @@ public final class FuelVisualizer {
    * @return A vector representing the velocity of the Fuel at launch (METERS / FRAME).
    */
   // TODO: ACCOUNT FOR CONVERSION BETWEEN SHOOTER VELOCITY AND LAUNCH VELOCITY
-  private static Vector<N3> getFuelLaunchVelocity() {
-    return FieldConstants.fromSphericalCoords(
-            shooterVelocity.get().in(RadiansPerSecond),
-            turretAngle.get().plus(robotPose.get().getRotation().getMeasureZ()).in(Radians),
-            hoodAngle.get().in(Radians))
-        .plus(
-            VecBuilder.fill(
-                robotVelocity.get().vxMetersPerSecond, robotVelocity.get().vyMetersPerSecond, 0))
+  private static Vector<N3> calculateFuelLaunchVelocity() {
+    Vector<N3> stationaryVelocity =
+        FieldConstants.fromSphericalCoords(
+            shooterVelocity.get().in(RadiansPerSecond), shooterPose().getRotation());
+    Vector<N3> rotationalVelocity =
+        FieldConstants.fromSphericalCoords(
+            robotVelocity.get().omegaRadiansPerSecond * Robot.ROBOT_TO_TURRET.getNorm(),
+            robotPose.get().getRotation().plus(new Rotation3d(0, 0, Math.PI / 2)));
+    Vector<N3> translationalVelocity =
+        VecBuilder.fill(
+            robotVelocity.get().vxMetersPerSecond, robotVelocity.get().vyMetersPerSecond, 0);
+
+    return stationaryVelocity
+        .plus(translationalVelocity)
+        .plus(rotationalVelocity)
         .times(FRAME_LENGTH);
   }
 
@@ -224,17 +244,16 @@ public final class FuelVisualizer {
      *
      * @return A vector representing the acceleration of the Fuel (METERS / FRAME^2).
      */
-    // TODO: ACCOUNT FOR MAGNUS LIFT.
     private Vector<N3> acceleration() {
-      // GRAVITY CALCULATIONS
+      // GRAVITY CALCULATIONS (METERS / FRAME^2)
       Vector<N3> gravity = VecBuilder.fill(0, 0, GRAVITY).times(Math.pow(FRAME_LENGTH, 2));
 
-      // DRAG CALCULATIONS
-      double speedSquared = Math.pow(velocity.norm(), 2); // MAGNITUDE OF VELOCITY
-      double referenceArea = Math.pow(FUEL_DIAMETER, 2) / 2; // AREA OF SPHERE
+      // DRAG CALCULATIONS (METERS / FRAME^2)
+      double speedSquared = Math.pow(velocity.norm(), 2); // MAGNITUDE OF VELOCITY^2
       double dragCoefficient = 0.47; // SPECIFIC TO SPHERICAL OBJECTS
+      double referenceArea = Math.PI * Math.pow(FUEL_DIAMETER / 2, 2); // CROSS SECTION
       double dragFactor = 0.5 * AIR_DENSITY * speedSquared * dragCoefficient * referenceArea;
-      Vector<N3> drag = velocity.unit().times(dragFactor).div(FUEL_MASS);
+      Vector<N3> drag = velocity.unit().times(dragFactor).div(FUEL_MASS).times(-1);
 
       return gravity.plus(drag);
     }
@@ -252,8 +271,8 @@ public final class FuelVisualizer {
     private void init() {
       if (isBeingLaunched) return;
 
-      translation = getFuelLaunchTranslation();
-      velocity = getFuelLaunchVelocity();
+      translation = calculateFuelLaunchTranslation();
+      velocity = calculateFuelLaunchVelocity();
       acceleration = acceleration();
 
       // ALLOWS FRAMES TO BE RENDERED

@@ -8,6 +8,7 @@ import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.numbers.N2;
@@ -43,14 +44,16 @@ public final class FieldConstants {
   }
 
   /**
-   * Converts spherical coordinates to cartesian coordinates.
+   * Creates a Vector from spherical coordinates.
    *
-   * @param magnitude The magnitude of the polar coordinate.
-   * @param theta The angle in the xy-plane (polar angle).
-   * @param alpha The angle up from the xy-plane (towards positive z).
-   * @return A vector representing the cartesian coordinates.
+   * @param magnitude The magnitude of the vector.
+   * @param direction The direction of the vector.
+   * @return A Vector from the given spherical coordinates.
    */
-  public static Vector<N3> fromSphericalCoords(double magnitude, double theta, double alpha) {
+  public static Vector<N3> fromSphericalCoords(double magnitude, Rotation3d direction) {
+    double theta = direction.toRotation2d().getRadians();
+    double alpha = direction.getY();
+
     return VecBuilder.fill(
         magnitude * Math.cos(theta) * Math.cos(-alpha),
         magnitude * Math.sin(theta) * Math.cos(-alpha),

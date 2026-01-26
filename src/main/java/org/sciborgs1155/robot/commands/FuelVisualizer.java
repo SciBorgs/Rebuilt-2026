@@ -205,13 +205,13 @@ public final class FuelVisualizer {
   /**
    * Generates the acceleration vector for the Fuel based on gravity and drag.
    *
-   * @param velocity A vector representing the velocity of the Fuel.
+   * @param velocity A vector representing the velocity of the Fuel (METERS / FRAME).
    * @return A vector representing the acceleration of the Fuel (METERS / FRAME^2).
    */
   // TODO: Account for magnus lift / spin.
   private static Vector<N3> getFuelAcceleration(Vector<N3> velocity) {
     // GRAVITY CALCULATIONS
-    Vector<N3> gravity = VecBuilder.fill(0, 0, GRAVITY).times(FRAME_LENGTH);
+    Vector<N3> gravity = VecBuilder.fill(0, 0, GRAVITY).times(Math.pow(FRAME_LENGTH, 2));
 
     // DRAG CALCULATIONS
     double speedSquared = Math.pow(velocity.norm(), 2); // MAGNITUDE OF VELOCITY
@@ -275,7 +275,7 @@ public final class FuelVisualizer {
     private void nextFrame() {
       if (!isBeingLaunched) return;
 
-      // ACCELERATION IS FROM GRAVITY, DRAG, AND MAGNUS LIFT
+      // ACCELERATION IS FROM GRAVITY AND DRAG
       acceleration.setColumn(0, getFuelAcceleration(velocity));
 
       // ADD ACCELERATION TO VELOCITY

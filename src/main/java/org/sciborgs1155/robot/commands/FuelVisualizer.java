@@ -24,22 +24,19 @@ public final class FuelVisualizer {
   /** The mass of the Fuel (KILOGRAMS). */
   private static final double FUEL_MASS = 0.225;
 
-  /** Force due to gravity (NEWTONS). */
-  private static final double GRAVITY = -9.81 * FUEL_MASS;
+  /** Force due to gravity (METERS / SECOND^2). */
+  private static final double GRAVITY = -9.81;
 
-  /** The dimensionless constant multiplied by velocity to attain the drag force. */
-  private static final double DRAG_CONSTANT = -0.47;
+  /** The mass density of the air (KILOGRAMS / LITER). */
+  private static final double AIR_DENSITY = 1.225;
 
   /** The diameter of the Fuel (METERS). */
   private static final double FUEL_DIAMETER = 0.15;
 
-  /** How fast the Fuel spins in the air (RADIANS / SECOND). Purely cosmetic. */
-  private static final double SPIN = 1.0;
-
   /** This constructor is not meant to be used. */
   private FuelVisualizer() {}
 
-  /** The index of the latest Fuel to be launched. */
+  /** The index of the latest Fuel to have been launched. */
   private static int fuelIndex;
 
   /** All Fuel currently being simulated. */
@@ -48,10 +45,13 @@ public final class FuelVisualizer {
   /** The poses of every Fuel currently being simulated. */
   private static Pose3d[] fuelPoses;
 
-  /** The idle states of every Fuel currently being simulated. */
+  /**
+   * The states of every Fuel currently being simulated (whether or not they are being launched at
+   * the moment).
+   */
   private static boolean[] fuelStates;
 
-  /** A supplier for the launch velocity of the Fuel. */
+  /** A supplier for the angular velocity of the shooter. */
   private static Supplier<AngularVelocity> shooterVelocity;
 
   /** A supplier for the angle of the turret. */
@@ -65,22 +65,6 @@ public final class FuelVisualizer {
 
   /** The length of each frame in the Fuel launch animation (SECONDS / FRAME). */
   private static final double FRAME_LENGTH = 0.02;
-
-  /**
-   * The ratio between the angular velocity of the shooter (RADIANS / SECOND) and the launch
-   * velocity of the Fuel (METERS / SECOND).
-   */
-  private static final double SHOOTER_TO_LAUNCH_VELOCITY = 10; // TODO: Update.
-
-  /**
-   * The distance between the origin of the shooter and the actual launch position of the Fuel
-   * (METERS).
-   */
-  private static final double SHOOTER_TO_LAUNCH_DISTANCE = 0.1; // TODO: Update.
-
-  // TODO: Update.
-  /** Once added to the pose of the robot, returns the pose of the shooter (METERS). */
-  private static final Vector<N3> ROBOT_TO_SHOOTER = VecBuilder.fill(0, 0, 0.5);
 
   /**
    * A publisher for the positions of the {@code FuelSim}'s. Used to track Fuel in logging
@@ -125,7 +109,6 @@ public final class FuelVisualizer {
     fuelPoses = new Pose3d[fuelCapacity];
     fuelStates = new boolean[fuelCapacity];
 
-    // INSTANTIATION
     for (int index = 0; index < fuelSims.length; index++) {
       fuelSims[index] = new FuelSim();
       fuelPoses[index] = new Pose3d();
@@ -133,26 +116,18 @@ public final class FuelVisualizer {
     }
   }
 
-  /**
-   * Launches the first idle Fuel in the visualizer. If no idle Fuel are present, the earliest
-   * launched Fuel is used.
-   *
-   * @return A command to launch Fuel.
-   */
-  public static Command launchFuel() {
-    return Commands.deferredProxy(() -> Commands.runOnce(getLaunchableFuel()::init));
-  }
-
   /** Publishes the Fuel display data to {@code NetworkTables}. */
   public static void periodic() {
-    int index = 0;
-
     // UPDATING SIMULATIONS
-    for (FuelSim fuelSim : fuelSims) {
-      fuelSim.nextFrame();
-      fuelPoses[index] = getFuelPose3d(fuelSim.translation, fuelSim.rotation);
+    for (FuelSim fuelSim : fuelSims) fuelSim.nextFrame();
+
+    // RECORDING DATA
+    for (int index = 0; index < fuelPoses.length; index++) {
+      FuelSim fuelSim = fuelSims[index];
+
+      // TODO: Log spin.
+      fuelPoses[index] = getFuelPose3d(fuelSim.translation, VecBuilder.fill(0, 0, 0));
       fuelStates[index] = fuelSim.isBeingLaunched;
-      index++;
     }
 
     // PUBLISHING DATA
@@ -161,25 +136,36 @@ public final class FuelVisualizer {
   }
 
   /**
-   * Returns the first un-launched Fuel. If all Fuel has been launched, return the first idle Fuel.
+   * Launches a single Fuel from the robot.
+   *
+   * @return A command to launch Fuel.
+   */
+  public static Command launchFuel() {
+    return Commands.deferredProxy(() -> Commands.runOnce(getLaunchableFuel()::init))
+        .withName("LAUNCH FUEL");
+  }
+
+  /**
+   * Returns the first unlaunched Fuel. If all Fuel has been launched, return the first idle Fuel.
    * If no Fuel meets this criteria, return the first Fuel in the visualizer.
    *
    * @return The first launchable Fuel.
    */
   private static FuelSim getLaunchableFuel() {
-    if (fuelIndex >= fuelSims.length) fuelIndex = 0;
+    // RESET INDEX IF OUT OF BOUNDS
+    if (fuelIndex >= fuelSims.length - 1) fuelIndex = 0;
+
+    // WHETHER OR NOT THE ENTIRE ARRAY IS GOING TO BE ITERATED THROUGH
     boolean fullCycle = fuelIndex == 0;
 
     // ITERATE THROUGH NON-CYCLED FUEL
-    for (int index = fuelIndex + 1; index < fuelSims.length; index++)
-      if (!fuelSims[index].isBeingLaunched) {
-        fuelIndex = index;
-        return fuelSims[index];
-      }
+    for (fuelIndex++; fuelIndex < fuelSims.length; fuelIndex++)
+      if (!fuelSims[fuelIndex].isBeingLaunched) return fuelSims[fuelIndex];
 
+    // IF ITERATED THROUGH WHOLE ARRAY, RETURN FIRST FUEL
     if (fullCycle) return fuelSims[0];
 
-    // RECYCLE
+    // ITERATE THROUGH REST OF THE ELEMENTS
     fuelIndex = 0;
     return getLaunchableFuel();
   }
@@ -189,11 +175,13 @@ public final class FuelVisualizer {
    *
    * @return A vector representing the translation of the Fuel at launch (METERS).
    */
-  private static Vector<N3> getFuelStartingTranslation() {
-    Vector<N3> shooterOrigin = robotPose.get().getTranslation().toVector().plus(ROBOT_TO_SHOOTER);
+  // TODO: Account for turret length and robot-to-shooter translation.
+  private static Vector<N3> getFuelLaunchTranslation() {
+    Vector<N3> shooterOrigin =
+        robotPose.get().getTranslation().toVector().plus(VecBuilder.fill(0, 0, 0.5));
     Vector<N3> shooterToFuel =
         FieldConstants.fromSphericalCoords(
-            SHOOTER_TO_LAUNCH_DISTANCE + FUEL_DIAMETER,
+            0.1 + FUEL_DIAMETER,
             turretAngle.get().plus(robotPose.get().getRotation().getMeasureZ()).in(Radians),
             hoodAngle.get().in(Radians));
 
@@ -203,14 +191,36 @@ public final class FuelVisualizer {
   /**
    * Generates the launch velocity vector for the Fuel based on robot properties.
    *
-   * @return A vector representing the translation of the Fuel at launch (METERS / SECOND).
+   * @return A vector representing the velocity of the Fuel at launch (METERS / FRAME).
    */
-  private static Vector<N3> getFuelStartingVelocity() {
+  // TODO: Account for ratio between shooter angular velocity and Fuel launch velocity.
+  private static Vector<N3> getFuelLaunchVelocity() {
     return FieldConstants.fromSphericalCoords(
-            shooterVelocity.get().in(RadiansPerSecond) * SHOOTER_TO_LAUNCH_VELOCITY,
+            shooterVelocity.get().in(RadiansPerSecond),
             turretAngle.get().plus(robotPose.get().getRotation().getMeasureZ()).in(Radians),
             hoodAngle.get().in(Radians))
         .times(FRAME_LENGTH);
+  }
+
+  /**
+   * Generates the acceleration vector for the Fuel based on gravity and drag.
+   *
+   * @param velocity A vector representing the velocity of the Fuel.
+   * @return A vector representing the acceleration of the Fuel (METERS / FRAME^2).
+   */
+  // TODO: Account for magnus lift / spin.
+  private static Vector<N3> getFuelAcceleration(Vector<N3> velocity) {
+    // GRAVITY CALCULATIONS
+    Vector<N3> gravity = VecBuilder.fill(0, 0, GRAVITY).times(FRAME_LENGTH);
+
+    // DRAG CALCULATIONS
+    double speedSquared = Math.pow(velocity.norm(), 2); // MAGNITUDE OF VELOCITY
+    double referenceArea = Math.pow(FUEL_DIAMETER, 2) / 2; // AREA OF SPHERE
+    double dragCoefficient = 0.47; // SPECIFIC TO SPHERICAL OBJECTS
+    double dragFactor = 0.5 * AIR_DENSITY * speedSquared * dragCoefficient * referenceArea;
+    Vector<N3> drag = velocity.unit().times(dragFactor).div(FUEL_MASS);
+
+    return gravity.plus(drag);
   }
 
   /**
@@ -238,12 +248,6 @@ public final class FuelVisualizer {
     protected Vector<N3> translation = VecBuilder.fill(0, 0, 0);
 
     /**
-     * A vector whose elements represent the current X, Y, and Z components of the Fuel's rotation
-     * (RADIANS).
-     */
-    protected Vector<N3> rotation = VecBuilder.fill(0, 0, 0);
-
-    /**
      * A vector whose elements represent the current X, Y, and Z components of the Fuel's velocity
      * (METERS / FRAME).
      */
@@ -255,28 +259,24 @@ public final class FuelVisualizer {
      */
     protected Vector<N3> acceleration = VecBuilder.fill(0, 0, 0);
 
-    /** Starts frame generation. */
+    /** Starts frame generation. Resets Fuel state. */
     private void init() {
       if (isBeingLaunched) return;
 
-      translation = getFuelStartingTranslation();
-      velocity = getFuelStartingVelocity();
-      acceleration = VecBuilder.fill(0, 0, 0);
-      rotation = VecBuilder.fill(0, 0, 0);
+      translation = getFuelLaunchTranslation();
+      velocity = getFuelLaunchVelocity();
+      acceleration = getFuelAcceleration(velocity);
 
       // ALLOWS FRAMES TO BE RENDERED
       isBeingLaunched = true;
     }
 
-    /** Generates a new frame. To be called periodically. */
+    /** Generates a new frame based on Fuel's trajectory. To be called periodically. */
     private void nextFrame() {
       if (!isBeingLaunched) return;
 
-      // SUM OF FORCES IS GRAVITY + DRAG
-      acceleration.setColumn(0, VecBuilder.fill(0, 0, GRAVITY).plus(velocity.times(DRAG_CONSTANT)));
-
-      // CONVERT FORCE (IN SECONDS) TO ACCELERATION (IN FRAMES)
-      acceleration.setColumn(0, acceleration.times(FRAME_LENGTH / FUEL_MASS));
+      // ACCELERATION IS FROM GRAVITY, DRAG, AND MAGNUS LIFT
+      acceleration.setColumn(0, getFuelAcceleration(velocity));
 
       // ADD ACCELERATION TO VELOCITY
       velocity.setColumn(0, velocity.plus(acceleration));
@@ -284,20 +284,14 @@ public final class FuelVisualizer {
       // ADD VELOCITY TO TRANSLATION
       translation.setColumn(0, translation.plus(velocity));
 
-      // SPIN IS PURELY COSMETIC (FOR NOW)
-      rotation.setColumn(0, rotation.plus(SPIN).times(FRAME_LENGTH));
-
       // IF THE FUEL TOUCHES THE GROUND, FRAME GENERATION ENDS
       if (translation.get(2) < FUEL_DIAMETER / 2) end();
     }
 
-    /** Ends frame generation. */
+    /** Ends frame generation. Freezes Fuel in place. */
     private void end() {
       // PREVENT CLIPPING INTO THE GROUND
       translation.set(2, 0, FUEL_DIAMETER / 2);
-      rotation = VecBuilder.fill(0, 0, 0);
-
-      // RESET STATE
       velocity = VecBuilder.fill(0, 0, 0);
       acceleration = VecBuilder.fill(0, 0, 0);
 

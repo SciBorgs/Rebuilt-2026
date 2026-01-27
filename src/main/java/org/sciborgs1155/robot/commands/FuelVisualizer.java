@@ -14,6 +14,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
+import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -76,6 +77,12 @@ public final class FuelVisualizer {
           .getStructArrayTopic("Fuel Visualizer/Fuel Poses", Pose3d.struct)
           .publish();
 
+  /** A publisher for the orientation of the shooter. */
+  private static StructPublisher<Pose3d> shooterPose =
+      NetworkTableInstance.getDefault()
+          .getStructTopic("Fuel Visualizer/Shooter Pose", Pose3d.struct)
+          .publish();
+
   /**
    * To be called on robot startup. Parameters used to calculate Fuel trajectory after launch.
    *
@@ -123,6 +130,7 @@ public final class FuelVisualizer {
 
     // PUBLISHING DATA
     fuelPosePublisher.accept(fuelPoses);
+    shooterPose.accept(shooterPose());
   }
 
   /**

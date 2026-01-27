@@ -10,6 +10,7 @@ import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import org.sciborgs1155.robot.drive.DriveConstants;
 
@@ -49,7 +50,7 @@ public final class Constants {
   public static final AtomicReference<RobotType> ROBOT_TYPE = new AtomicReference<>(RobotType.FULL);
 
   /** States if we are in tuning mode. Ideally, keep it at false when not used. */
-  public static final AtomicReference<Boolean> TUNING = new AtomicReference<>(false);
+  public static final AtomicBoolean TUNING = new AtomicBoolean(false);
 
   // TODO: UPDATE ALL OF THESE VALUES.
   /** Describes physical properites of the robot. */

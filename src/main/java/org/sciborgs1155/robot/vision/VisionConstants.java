@@ -16,34 +16,12 @@ import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.sciborgs1155.robot.vision.Vision.CameraConfig;
 
 public class VisionConstants {
-  /**
-   * @param amt The amount of degrees to rotate.
-   * @return A yaw rotation.
-   */
-  public static Rotation3d yaw(double amt) {
-    return new Rotation3d(Degrees.of(0), Degrees.of(0), Degrees.of(amt));
-  }
-
-  /**
-   * @param amt The amount of degrees to rotate.
-   * @return A pitch rotation.
-   */
-  public static Rotation3d pitch(double amt) {
-    return new Rotation3d(Degrees.of(0), Degrees.of(amt), Degrees.of(0));
-  }
-
-  /**
-   * @param amt The amount of degrees to rotate.
-   * @return A roll rotation.
-   */
-  public static Rotation3d roll(double amt) {
-    return new Rotation3d(Degrees.of(amt), Degrees.of(0), Degrees.of(0));
-  }
-
   public static Rotation3d yawPitchRoll(
       double yawDegrees, double pitchDegrees, double rollDegrees) {
     return new Rotation3d(
-        Degrees.of(rollDegrees), Degrees.of(pitchDegrees), Degrees.of(yawDegrees));
+        Degrees.of(rollDegrees), Degrees.of(0), Degrees.of(0))
+        .rotateBy(new Rotation3d(Degrees.of(0), Degrees.of(pitchDegrees), Degrees.of(0))
+        .rotateBy(new Rotation3d(Degrees.of(0), Degrees.of(0), Degrees.of(yawDegrees))));
   }
 
   public static final AprilTagFieldLayout TAG_LAYOUT =
@@ -63,7 +41,7 @@ public class VisionConstants {
               Inches.of(-11.935943),
               Inches.of(-12.493204),
               Inches.of(5.176840 + 4.6),
-              yawPitchRoll(115, 20, 180)),
+              yawPitchRoll(65+180, -20, 180)),
           PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
 
   public static final CameraConfig CAMERA_1 =
@@ -74,7 +52,7 @@ public class VisionConstants {
               Inches.of(-11.935943),
               Inches.of(12.493204),
               Inches.of(5.176840 + 4.6),
-              yawPitchRoll(-115, 20, 180)),
+              yawPitchRoll(-65+180, -20, 180)),
           PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
 
   public static final CameraConfig CAMERA_2 =

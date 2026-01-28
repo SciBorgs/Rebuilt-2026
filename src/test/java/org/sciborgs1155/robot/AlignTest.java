@@ -1,5 +1,6 @@
 package org.sciborgs1155.robot;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Seconds;
@@ -7,13 +8,17 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.sciborgs1155.lib.UnitTestingUtil.reset;
 import static org.sciborgs1155.lib.UnitTestingUtil.runToCompletion;
 import static org.sciborgs1155.lib.UnitTestingUtil.setupTests;
+import static org.sciborgs1155.robot.vision.VisionConstants.yawPitchRoll;
 
 import edu.wpi.first.hal.AllianceStationID;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.drive.Drive;
@@ -56,5 +61,19 @@ public class AlignTest {
         0,
         pose.getRotation().minus(drive.pose().getRotation()).getRadians(),
         Rotation.TOLERANCE.in(Radians));
+  }
+
+  /** Tests whether yawpitchroll works. Honestly this is completely redundant but it gives me joy */
+  @RepeatedTest(10)
+  public void yawPitchRollTest() throws Exception {
+    Angle yaw = Degrees.of(360 * Math.random());
+    Angle pitch = Degrees.of(360 * Math.random());
+    Angle roll = Degrees.of(360 * Math.random());
+
+    Rotation3d ypr = yawPitchRoll(yaw.in(Degrees), pitch.in(Degrees), roll.in(Degrees));
+
+    Rotation3d def = new Rotation3d(roll, pitch, yaw);
+
+    assertEquals(ypr, def);
   }
 }

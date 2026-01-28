@@ -42,7 +42,8 @@ public class VisionConstants {
 
   public static Rotation3d yawPitchRoll(
       double yawDegrees, double pitchDegrees, double rollDegrees) {
-    return yaw(yawDegrees).rotateBy(pitch(pitchDegrees)).rotateBy(roll(rollDegrees));
+    return new Rotation3d(
+        Degrees.of(rollDegrees), Degrees.of(pitchDegrees), Degrees.of(yawDegrees));
   }
 
   public static final AprilTagFieldLayout TAG_LAYOUT =

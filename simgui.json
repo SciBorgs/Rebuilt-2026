@@ -28,6 +28,10 @@
       "/SmartDashboard/Drive Field": "Field2d",
       "/SmartDashboard/PathPlanner": "Alerts",
       "/SmartDashboard/PhotonAlerts": "Alerts",
+      "/SmartDashboard/Robot/hood/dynamic backward": "Command",
+      "/SmartDashboard/Robot/hood/dynamic forward": "Command",
+      "/SmartDashboard/Robot/hood/quasistatic backward": "Command",
+      "/SmartDashboard/Robot/hood/quasistatic forward": "Command",
       "/SmartDashboard/Scheduler": "Scheduler",
       "/SmartDashboard/Turret dynamic clockwise": "Command",
       "/SmartDashboard/Turret dynamic counterclockwise": "Command",
@@ -53,13 +57,14 @@
       "/SmartDashboard/turn quasistatic forward": "Command",
       "Robot/autos": "String Chooser",
       "Robot/drive/rotationController": "PIDController",
-      "Robot/drive/translationController": "ProfiledPIDController"
+      "Robot/drive/translationController": "ProfiledPIDController",
+      "Robot/hood/fb": "ProfiledPIDController"
     },
     "windows": {
       "/Robot/drive/field2d": {
-        "bottom": 1638,
-        "height": 8.051901817321777,
-        "left": 534,
+        "bottom": 1914,
+        "height": 8.069275856018066,
+        "left": 245,
         "module- FL": {
           "style": "Line"
         },
@@ -72,9 +77,19 @@
         "module-RL": {
           "style": "Line"
         },
-        "right": 3466,
-        "top": 291,
-        "width": 17.54825210571289,
+        "right": 3942,
+        "top": 118,
+        "width": 16.54119300842285,
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard//Robot/hood/measurement": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard//Robot/hood/setpoint": {
         "window": {
           "visible": true
         }
@@ -85,17 +100,18 @@
         }
       },
       "/SmartDashboard/Auto Chooser": {
+        "width": 17.54825210571289,
         "window": {
           "visible": true
         }
       },
       "/SmartDashboard/Drive Field": {
-        "bottom": 1638,
-        "height": 8.051901817321777,
-        "left": 534,
-        "right": 3466,
-        "top": 291,
-        "width": 17.54825210571289,
+        "bottom": 1914,
+        "height": 8.069275856018066,
+        "left": 245,
+        "right": 3942,
+        "top": 118,
+        "width": 16.54119300842285,
         "window": {
           "visible": true
         }

@@ -11,6 +11,12 @@ public class Shooting {
   private final Shooter shooter;
   private final Drive drive;
 
+  /**
+   * Sets the subsystems to be used for shooting commands.
+   *
+   * @param shooter The shooter subsystem.
+   * @param drive The drive subsystem.
+   */
   public Shooting(Shooter shooter, Drive drive) {
     this.shooter = shooter;
     this.drive = drive;

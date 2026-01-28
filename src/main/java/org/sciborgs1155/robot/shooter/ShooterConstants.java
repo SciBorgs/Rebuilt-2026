@@ -2,6 +2,8 @@ package org.sciborgs1155.robot.shooter;
 
 import static edu.wpi.first.units.Units.*;
 
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
@@ -23,6 +25,9 @@ public class ShooterConstants {
 
   public static final Current STATOR_CURRENT_LIMIT = Amps.of(0);
   public static final Current SUPPLY_CURRENT_LIMIT = Amps.of(0);
+
+  public static final Transform3d CENTER_TO_SHOOTER =
+      new Transform3d(5.975, -5.975, -13.375, new Rotation3d());
 
   public static final double kP = 0.0;
   public static final double kI = 0.0;

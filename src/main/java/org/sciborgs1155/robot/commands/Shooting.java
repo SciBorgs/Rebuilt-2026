@@ -17,7 +17,7 @@ public class Shooting {
   }
 
   /**
-   * Runs the shooter before feeding it the note.
+   * Runs the shooter before feeding it fuel.
    *
    * @param desiredVelocity The velocity in radians per second to shoot at.
    * @return The command to shoot at the desired velocity.

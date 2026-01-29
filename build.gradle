@@ -137,6 +137,19 @@ deployArtifact.jarTask = jar
 wpi.java.configureExecutableTasks(jar)
 wpi.java.configureTestTasks(test)
 
+// Task for installing the git pre-commit hook for automatically running Spotless
+tasks.register('installGitHooks', Copy) {
+    from('scripts/pre-commit.sh')
+    into('.git/hooks')
+    rename('pre-commit.sh', 'pre-commit')
+    fileMode = 0755 // Executable file
+    group = "git"
+    description = "Installs the git pre-commit hook."
+}
+
+// Install git hooks before build
+tasks.build.dependsOn installGitHooks
+
 // Configure string concat to always inline compile
 tasks.withType(JavaCompile) {
     options.compilerArgs.add '-XDstringConcat=inline'

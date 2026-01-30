@@ -1,6 +1,7 @@
 package org.sciborgs1155.robot.shooter;
 
 import static edu.wpi.first.units.Units.*;
+import static org.sciborgs1155.lib.Assertion.eAssert;
 import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.*;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.ControlConstants.*;
@@ -9,9 +10,13 @@ import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import java.util.Set;
 import java.util.function.DoubleSupplier;
+import org.sciborgs1155.lib.Assertion.EqualityAssertion;
+import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.robot.Robot;
 
 public final class Shooter extends SubsystemBase implements AutoCloseable {
@@ -121,6 +126,17 @@ public final class Shooter extends SubsystemBase implements AutoCloseable {
    */
   public Command runShooter(double velocity) {
     return runShooter(() -> velocity);
+  }
+
+  public Test goToTest(AngularVelocity goal) {
+    Command testCommand = runShooter(goal.in(RadiansPerSecond)).withTimeout(3);
+    EqualityAssertion atGoal =
+        eAssert(
+            "Shooter Syst Check Speed",
+            () -> goal.in(RadiansPerSecond),
+            this::getVelocity,
+            VELOCITY_TOLERANCE.in(RadiansPerSecond));
+    return new Test(testCommand, Set.of(atGoal));
   }
 
   /** Closes the shooter motor. */

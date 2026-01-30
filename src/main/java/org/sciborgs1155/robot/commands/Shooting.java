@@ -10,6 +10,7 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -17,6 +18,7 @@ import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 
+import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Seconds;
 
 import java.util.function.BooleanSupplier;
@@ -26,35 +28,30 @@ import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.drive.DriveConstants;
 import org.sciborgs1155.robot.shooter.Shooter;
 
+import static java.lang.Math.atan;
+
 
 public class Shooting {
   private final Shooter shooter;
   private final Drive drive;
+  // private final Hood hood;
+  // private final Turret turret;
+  // private final Hopper hopper; // all of this stuff is still waiting to be merged in
+
+  /* Create Lookup Table */
+  private static final InterpolatingDoubleTreeMap shotVelocityLookup = new InterpolatingDoubleTreeMap(); //I still don't really know how to use or construct this...
+
 
   public Shooting(Shooter shooter, Drive drive) {
     this.shooter = shooter;
     this.drive = drive;
+    // this.hood = hood;
+    // this.turret = turret;
+    // this.hopper = hopper;
   }
 
   /**
-   *  More general TODOs
-   *  - Replace feeder with / spindexer / hopper / something else
-   *  - Make sure the chain of logic still makes sense and that the information applies to 2026 robot
-   *  - Make mini-wrappers that are just the names of the functions of each component 
-   * --> just to make it more readable --> potentially have a more drafty version of each for looking at issues just at a glance 
-   * 
-   * Next Steps: 
-   *  - Look more into MoSim, AdvantageScope, Visualization, and just talking to Ankit more about those things generally
-   *  - look into how to modify or use the lookup table more
-   *  - try to make a virtual lookup table to be determeinded or replaced with the more real life one later
-   *  - try to work with more air resistance and elasticity stuff // , variablity of speed vs other stuff, boundary and range of shot 
-   * (where within the hopper should the fuel be aimed in which types of sitations --> something which has yet to be fully defined)
-   * 
-   * 
-   */
-
-
-  /**
+   * TODO
    * Runs the shooter before feeding it the note.
    *
    * @param desiredVelocity The velocity in radians per second to shoot at.
@@ -65,6 +62,7 @@ public class Shooting {
   }
 
   /**
+   * TODO
    * Runs shooter to desired velocity, runs feeder once it reaches its velocity and
   shootCondition
    * is true.
@@ -77,45 +75,10 @@ public class Shooting {
             () ->
                 shooter.atVelocity(desiredVelocity.getAsDouble()) &&
   shootCondition.getAsBoolean())
-        .andThen(feeder.eject()) //change this line for hopper instead TODO
+        .andThen(hopper.eject()) //change this line for hopper instead TODO
         .deadlineWith(shooter.runShooter(desiredVelocity));
   }
 
-  /**
-   * I just want to write down some Pseudocode for now, since it seems like this is probably
-   * something that would not get done until a lot later. I will be mostly repurposing and
-  reusing
-   * most of these commands
-   *
-   * <p>--> it would be best if I can softcode this into a sort of utility class --> it would be
-   * pretty cool if we could give something like this its own repository, too!
-   *
-   * <p>shootWhileDriving (InputStream vx, vy) { return shoot( () ->
-   * rotationalVelocityFromNoteVelocity(CalculateFuelVelocity()); //I wonder if this is a new
-   * calation because the shooters's angular velocity doesn't translate perfectly into
-  note-velocity
-   * (translational and rotational) () ->
-   * turret.atPosition(yawFromFuelVelocity(calculateFuelVelocity()));
-   *
-   * <p>) }
-   *
-   * <p>I think that this structure is one of the most important to implement:
-   *
-   * <p>public Vector<N3> calculateNoteVelocity(Pose2d robotPose) { ChassisSpeeds speeds =
-   * drive.getFieldRelativeChassisSpeeds(); Vector<N3> robotVelocity =
-   * VecBuilder.fill(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond, 0); Translation2d
-   * difference = translationToSpeaker(robotPose.getTranslation()); double shotVelocity =
-   * calculateStationaryVelocity(difference.getNorm()); Rotation3d noteOrientation = new
-  Rotation3d(
-   * 0, -calculateStationaryPitch( robotPoseFacingSpeaker(robotPose.getTranslation()),
-  shotVelocity,
-   * pivot.position()), difference.getAngle().getRadians()); // rotate unit forward vector by
-  note
-   * orientation and scale by our shot velocity Vector<N3> noteVelocity = new Translation3d(1, 0,
-   * 0).rotateBy(noteOrientation).toVector().unit().times(shotVelocity);
-   *
-   * <p>return noteVelocity.minus(robotVelocity); }
-   */
 
   /**
    * Shoots while driving at a manually inputted translational velocity.
@@ -127,30 +90,39 @@ public class Shooting {
   public Command shootWhileDriving(
       InputStream vx, InputStream vy) { // this seems like something that could be mostly kept
     return shoot(
-            () -> rotationalVelocityFromNoteVelocity(calculateFuelVelocity()),
-            () -> atYaw(yawFromNoteVelocity(calculateFuelVelocity()))) //atYaw is currently not established as a function --> look into more about how this works
+            () -> rotationalVelocityFromFuelVelocity(calculateFuelVelocity()),
+            () -> atYaw(yawFromNoteVelocity(calculateFuelVelocity()))) //atYaw --> this will be a turret function w/ a tolerance. might need to have separate functions for when the robot moves horizontally relative to hub
         .deadlineFor(
             drive.drive(
                 vx.scale(
                     0.5), // see if we could speed this up in the future, this would be quite nice
                 // :>>
                 vy.scale(0.5),
-                () -> yawFromNoteVelocity(calculateNoteVelocity(Seconds.of(0.2)))));
+                () -> yawFromNoteVelocity(calculateFuelVelocity(Seconds.of(0.2)))));
   }
 
-  public static Pose2d robotPoseFacingSpeaker(Translation2d robotTranslation) {
+  public static Pose2d robotPoseFacingHub(Translation2d robotTranslation) { //TODO speaker --> hub 
     return new Pose2d(
         robotTranslation,
-        translationToSpeaker(robotTranslation)
+        translationToHub(robotTranslation)
             .getAngle()
-            .plus(Rotation2d.fromRadians(Math.PI / 2)));
+            .plus(Rotation2d.fromRadians(Math.PI / 2))); //why is this angle being added here?
   }
+
+  public boolean atYaw(Rotation2d yaw) { //turret command instead of robot positioning
+
+    double tolerance = DriveConstants.Rotation.TOLERANCE.in(Radians) * (1 - yaw.getSin()); // figure out the math over here and replace with a smaller prive funciton
+    Rotation2d error = drive.heading().minus(yaw);
+
+    return Math.abs(atan(error.getTan())) < tolerance;
+  }
+
 
   public Vector<N3> calculateFuelVelocity() {
     return calculateFuelVelocity(drive.pose());
   }
 
-  public Vector<N3> calculateNoteVelocity(Time predictionTime) {
+  public Vector<N3> calculateFuelVelocity(Time predictionTime) { //this code structure seems to account for the extra yaw / pitch that I was looking for before 
     return calculateFuelVelocity(
         predictedPose(
             drive.pose(),
@@ -165,25 +137,30 @@ public class Shooting {
    *
    * @return A 3d vector representing the desired fuel initial velocity.
    */
-  public Vector<N3> calculateFuelVelocity(Pose2d robotPose) {
+  public Vector<N3> calculateFuelVelocity(Pose2d robotPose) { //is it necessary at all to have the orientation of the fuel on hand? I don't understand this part as much
 
+    /* Field Relative Speeds */
     ChassisSpeeds speeds = drive.fieldRelativeChassisSpeeds();
 
+    /* Robot Velocity Vector */
     Vector<N3> robotVelocity = VecBuilder.fill(speeds.vxMetersPerSecond,
   speeds.vyMetersPerSecond, 0);
-    Translation2d difference = translationToSpeaker(robotPose.getTranslation());
-    double shotVelo = calculateStationaryVelocity(difference.getNorm());
+    
+  /* The error to be filled */
+  Translation2d difference = translationToHub(robotPose.getTranslation());
+  
+  /*  */
+  double shotVelo = calculateStationaryVelocity(difference.getNorm()); //can we not just get the norm in all cases ? Is this ever useful for any type of orientation thingy
 
-    //TODO make sure to look over this again next commit and get the correct values after
-   // understanding how exactly this translates to something different in Rebuilt2026
+    //TODO make sure to look over this again next commit and get the correct values 
     Rotation3d fuelOrientation =
       new Rotation3d(
           0,
           -calculateStationaryPitch(
-            robotPoseFacingSpeaker(robotPose.getTranslation()),
+            robotPoseFacingHub(robotPose.getTranslation()), //why is this negative again?
             shotVelo,
-            0.0),
-          difference.getAngle().getRadians());
+            0.0), /* pitch */
+          difference.getAngle().getRadians()); /* yaw */ 
 
     //rotate unit forwar vector by fuel orientation and scale by our shot velocity
     Vector<N3> fuelVelocity = new Translation3d(1, 0,
@@ -192,67 +169,32 @@ public class Shooting {
     return fuelVelocity.minus(robotVelocity);
   }
 
-  /**
-   *
-   * Okay so ngl idk what happened here... I should probably organize it into something that I
-  can actually physically read LMAO
-   *
-   * ChassisSpeeds speeds = drive.getFieldRelativeChassisSpeeds();
-   *
-   * Vector<N3> robotVelocity = VecBuilder.fill(speeds.vxMetersPerSecond,
-  speeds.vyMetersPerSecond, 0);
-   * Translation2d difference = translationToSpeaker(robotPose.getTranslation());
-   * double shotVelocity = calculateStationaryVelocity(difference.getNorm());
-   * Rotation3d noteOrientation = new Rotation3d(0, -calculateStationaryPitch(
-  robotPoseFacingSpeaker(robotPose.getTranslation()), shotVelocity, pivot.position()), //TODO,
-  substitute with own function // change this block (eventually)
-   *
-   * package this entire thing into a utility if possible)
-   *
-   * difference.getAngle().getRadians());
-   * //rotate unit forward vector by note orientation and scale by our shot velocity
-   * Vector<N3> noteVelocity = new Translation3d(1, 0,
-   * 0).rotateBy(noteOrientation).toVector().unit().times(shotVelocity);
-   *
-   * <p>return noteVelocity.minus(robotVelocity);
-   */
-
-   /**
-    * TODO Please write a JavaDoc for this.
-    */
 
    public static Pose2d predictedPose(Pose2d robotPose, ChassisSpeeds speeds, Time
   predictionTime) {
-    // TODO
+    // TODO (look at from crescendo again)
+
+    Vector<N3> position = //is there a better name that could be used here?
+      VecBuilder.fill(robotPose.getX(), robotPose.getY(), robotPose.getRotation().getRadians());
+
+    Vector<N3> velocity =
+      VecBuilder.fill(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond, speeds.omegaRadiansPerSecond);
+
+    Vector<N3> predicted = position.plus(velocity.times())
+    
   }
-
-  /**
-   * Vector<N3> current = VecBuilder.fill(robotPose.getX(), robotPose.getY(),
-   * robotPose.getRotation().getRadians()); Vector<N3> velocity = VecBuilder.fill(
-   * speeds.vxMetersPerSecond, speeds.vyMetersPerSecond, speeds.omegaRadiansPerSecond);
-  Vector<N3>
-   * predicted = current.plus(velocity.times(predictionTime.in(Seconds))); return new
-   * Pose2d(predicted.get(0), predicted.get(1), Rotation2d.fromRadians(predicted.get(2)));
-   */
-
-  /**
-   * Vector<N3> shot = calculateNoteVelocity(); double pitch = pitchFromNoteVelocity(shot);
-  return
-   * MIN_ANGLE.in(Radians) < pitch && pitch < MAX_ANGLE.in(Radians) &&
-   * Math.abs(rotationalVelocityFromNoteVelocity(shot)) < MAX_VELOCITY.in(RadiansPerSecond) &&
-   * translationToSpeaker(drive.pose().getTranslation()).getNorm() < MAX_DISTANCE.in(Meters);
-   */
 
   /**
    * Calculates pitch from note initial velocity vector. If given a robot relative initial
   velocity
-   * vector, the return value will also be the pivot angle.
+   * vector, the return value will also be the hood angle.
    *
    * @param velocity Note initial velocity vector
-   * @return Pitch/pivot angle
+   * @return Hood angle
    */
   public static double pitchFromNoteVelocity(Vector<N3> velocity) {
     return Math.atan(velocity.get(2) / VecBuilder.fill(velocity.get(0), velocity.get(1)).norm());
+    /* (z / x) /  y  */ // this is the formula for angle between rho and the base vector 
   }
 
   /**
@@ -275,16 +217,16 @@ public class Shooting {
    * @param velocity Note initial velocity vector relative to the robot
    * @return Flywheel speed (rads / s)
    */
-  public static double rotationalVelocityFromNoteVelocity(Vector<N3> velocity) {
+  public static double rotationalVelocityFromFuelVelocity(Vector<N3> velocity) {
     return velocity.norm() / RADIUS.in(Meters) * siggysConstant.get(); //make some constants and valuess to reflect, see if we want to still honor siggysConstant? 
   }
 
-  public static Translation2d translationToSpeaker(Translation2d robotTranslation) {
-    return speaker().toTranslation2d().minus(robotTranslation); //TODO speaker --> make into hub --> ankit did set those things up which is very commendable and i thank him for that
+  public static Translation2d translationToHub(Translation2d robotTranslation) {
+    return hub().toTranslation2d().minus(robotTranslation); //TODO speaker --> make into hub --> ankit did set those things up which is very commendable and i thank him for that
   }
 
-  public static double calculateStationaryVelocity(double distance) {
-    return flywheelToNoteSpeed(shotVelocityLookup.get(distance)); // this is the lookup table that still needs to be set up for us currently
+  public static double calculateStationaryVelocity(double distance) { //TODO HOOD Angle is flexible as well
+    return flywheelToNoteSpeed(shotVelocityLookup.get(distance)); 
   }
 
   /**

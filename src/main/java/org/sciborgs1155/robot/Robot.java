@@ -39,6 +39,7 @@ import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
 import org.sciborgs1155.robot.drive.Drive;
+import org.sciborgs1155.robot.slapdown.Slapdown;
 import org.sciborgs1155.robot.vision.Vision;
 
 /**
@@ -65,6 +66,13 @@ public class Robot extends CommandRobot {
   @NotLogged private final SendableChooser<Command> autos = Autos.configureAutos(drive);
 
   @Logged private double speedMultiplier = Constants.FULL_SPEED_MULTIPLIER;
+
+  @Logged
+  private final Slapdown slapdown =
+      switch (Constants.ROBOT_TYPE) {
+        case FULL, CHASSIS -> Slapdown.create();
+        default -> Slapdown.none();
+      };
 
   /** The robot contains subsystems, OI devices, and commands. */
   public Robot() {
@@ -191,6 +199,7 @@ public class Robot extends CommandRobot {
         .onTrue(Commands.runOnce(() -> speedMultiplier = Constants.SLOW_SPEED_MULTIPLIER))
         .onFalse(Commands.runOnce(() -> speedMultiplier = Constants.FULL_SPEED_MULTIPLIER));
 
+    operator.a().whileTrue(slapdown.extend());
     // TODO: Add any additional bindings.
   }
 

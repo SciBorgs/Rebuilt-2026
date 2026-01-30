@@ -1,7 +1,11 @@
 package org.sciborgs1155.robot;
 
+import static edu.wpi.first.units.Units.Meters;
+import static org.sciborgs1155.lib.Test.runUnitTest;
 import static org.sciborgs1155.lib.UnitTestingUtil.reset;
+import static org.sciborgs1155.robot.climb.ClimbConstants.MAX_HEIGHT; 
 import static org.sciborgs1155.lib.UnitTestingUtil.setupTests;
+import static org.sciborgs1155.robot.climb.ClimbConstants.MIN_HEIGHT;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,6 +36,6 @@ public class ClimbTest {
     public void randAngle() {
         runUnitTest(
             climb.goToTest(
-                Radians.of(Math.random() * MAX_ANGLE.minus(MIN_ANGLE).in(Radians)).plus(MIN_ANGLE)));
+                Meters.of(Math.random() * MAX_HEIGHT.minus(MIN_HEIGHT).in(Meters)).plus(MIN_HEIGHT)));
     }
 }

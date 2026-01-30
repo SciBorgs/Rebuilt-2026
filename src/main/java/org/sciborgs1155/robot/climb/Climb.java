@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Volts;
+import static org.sciborgs1155.lib.Assertion.eAssert;
 import static org.sciborgs1155.robot.climb.ClimbConstants.*;
 
 import com.ctre.phoenix6.SignalLogger;
@@ -184,13 +185,16 @@ public class Climb extends SubsystemBase implements AutoCloseable {
     }
   }
 
-   /** test for hood to go to a set goal angle */
+   /** 
+    * test for climb to go to a set goal position
+    * @param goal The goal height of the climb.
+    */
   public Test goToTest(Distance goal) {
     Command testCommand = goTo(goal.in(Meters)).until(() -> atPosition(goal.in(Meters))).withTimeout(5);
     Set<Assertion> assertions =
         Set.of(
             eAssert(
-                "Hood system check",
+                "Climb system check",
                 () -> goal.in(Meters),
                 this::position,
                 POSITION_TOLERANCE.in(Meters)));

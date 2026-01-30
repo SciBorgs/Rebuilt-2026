@@ -63,6 +63,16 @@ public class SparkModule implements ModuleIO {
 
   private final String name;
 
+  /**
+   * Creates a new SparkModule with the specified configuration.
+   *
+   * @param drivePort The CAN ID of the drive motor.
+   * @param turnPort The CAN ID of the turn motor.
+   * @param angularOffset The angular offset of the module's encoder.
+   * @param ff The feedforward constants for the drive motor.
+   * @param name The name of the module.
+   * @param invert Whether to invert the encoder direction.
+   */
   public SparkModule(
       int drivePort,
       int turnPort,
@@ -274,22 +284,22 @@ public class SparkModule implements ModuleIO {
 
   @Override
   public double[][] moduleOdometryData() {
-    Drive.lock.lock();
+    Drive.LOCK.lock();
     try {
-      double[][] data = {
+      return new double[][] {
         position.stream().mapToDouble((Double d) -> d).toArray(),
         rotation.stream().mapToDouble((Double d) -> d).toArray(),
         timestamp.stream().mapToDouble((Double d) -> d).toArray()
       };
-      return data;
     } finally {
-      Drive.lock.unlock();
+      Drive.LOCK.unlock();
     }
   }
 
+  @Override
   public SwerveModulePosition[] odometryData() {
     SwerveModulePosition[] positions = new SwerveModulePosition[20];
-    Drive.lock.lock();
+    Drive.LOCK.lock();
 
     var data = moduleOdometryData();
 
@@ -301,10 +311,11 @@ public class SparkModule implements ModuleIO {
     rotation.clear();
     timestamp.clear();
 
-    Drive.lock.unlock();
+    Drive.LOCK.unlock();
     return positions;
   }
 
+  @Override
   public double[] timestamps() {
     return moduleOdometryData()[2];
   }

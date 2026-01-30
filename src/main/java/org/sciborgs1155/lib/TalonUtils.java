@@ -7,13 +7,17 @@ import com.ctre.phoenix6.configs.AudioConfigs;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.wpilibj.DriverStation;
 import java.util.ArrayList;
+import java.util.List;
 
-public class TalonUtils {
-  private static final Orchestra orchestra = new Orchestra();
-  private static final ArrayList<TalonFX> talons = new ArrayList<>(4);
+public final class TalonUtils {
+  private static final Orchestra ORCHESTRA = new Orchestra();
+  private static final List<TalonFX> TALONS = new ArrayList<>(4);
   private static BaseStatusSignal[] talonSignals = new BaseStatusSignal[0];
 
-  private static boolean fileLoaded = false;
+  private static boolean fileLoaded;
+
+  // Prevents instantiation
+  private TalonUtils() {}
 
   /**
    * Adds motor to the processing list.
@@ -21,16 +25,22 @@ public class TalonUtils {
    * @param talon The motor to add.
    */
   public static void addMotor(TalonFX talon) {
-    talons.add(talon);
+    TALONS.add(talon);
   }
 
-  public static void addSignal(StatusSignal signal) {
+  /**
+   * Adds a status signal to the refresh list.
+   *
+   * @param signal The status signal to add.
+   */
+  public static void addSignal(StatusSignal<?> signal) {
     BaseStatusSignal[] newSignals = new BaseStatusSignal[talonSignals.length + 1];
     System.arraycopy(talonSignals, 0, newSignals, 0, talonSignals.length);
     newSignals[talonSignals.length] = signal;
     talonSignals = newSignals;
   }
 
+  /** Refreshes all registered status signals. */
   public static void refreshAll() {
     BaseStatusSignal.refreshAll(talonSignals);
   }
@@ -46,9 +56,9 @@ public class TalonUtils {
    */
   public static boolean configureOrchestra(String fileName) {
     AudioConfigs audioCfg = new AudioConfigs().withAllowMusicDurDisable(true);
-    for (TalonFX talon : talons) {
+    for (TalonFX talon : TALONS) {
       talon.getConfigurator().apply(audioCfg);
-      orchestra.addInstrument(talon);
+      ORCHESTRA.addInstrument(talon);
     }
     return loadOrchestraFile(fileName);
   }
@@ -60,7 +70,7 @@ public class TalonUtils {
    * @return Whether loading the file was successful.
    */
   public static boolean loadOrchestraFile(String fileName) {
-    fileLoaded = orchestra.loadMusic(fileName).isOK();
+    fileLoaded = ORCHESTRA.loadMusic(fileName).isOK();
     if (!fileLoaded) {
       fileNotFound();
     }
@@ -75,7 +85,7 @@ public class TalonUtils {
    */
   public static boolean play() {
     if (fileLoaded) {
-      return orchestra.play().isOK();
+      return ORCHESTRA.play().isOK();
     }
     fileNotFound();
     return false;
@@ -88,7 +98,7 @@ public class TalonUtils {
    */
   public static boolean stop() {
     if (fileLoaded) {
-      return orchestra.stop().isOK();
+      return ORCHESTRA.stop().isOK();
     }
     fileNotFound();
     return false;
@@ -101,7 +111,7 @@ public class TalonUtils {
    */
   public static boolean pause() {
     if (fileLoaded) {
-      return orchestra.pause().isOK();
+      return ORCHESTRA.pause().isOK();
     }
     fileNotFound();
     return false;

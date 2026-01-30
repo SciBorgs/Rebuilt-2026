@@ -72,7 +72,6 @@ import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.lib.Tracer;
 import org.sciborgs1155.lib.Tuning;
-import org.sciborgs1155.robot.Constants;
 import org.sciborgs1155.robot.FieldConstants;
 import org.sciborgs1155.robot.Robot;
 import org.sciborgs1155.robot.drive.DriveConstants.Assisted;
@@ -83,6 +82,7 @@ import org.sciborgs1155.robot.drive.DriveConstants.Skid;
 import org.sciborgs1155.robot.drive.DriveConstants.Translation;
 import org.sciborgs1155.robot.vision.Vision.PoseEstimate;
 
+@SuppressWarnings("PMD.GodClass")
 public class Drive extends SubsystemBase implements AutoCloseable {
   // Modules
   private final ModuleIO frontLeft;
@@ -141,7 +141,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
   // Faster Odometry
   private SwerveModulePosition[] lastPositions;
   private Rotation2d lastHeading;
-  public static final ReentrantLock lock = new ReentrantLock();
+  public static final ReentrantLock LOCK = new ReentrantLock();
 
   @Logged private final Field2d field2d = new Field2d();
   private final FieldObject2d[] modules2d;
@@ -339,7 +339,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
 
     OdometryThread.getInstance().start();
 
-    if (TUNING) {
+    if (TUNING.get()) {
       SmartDashboard.putData(
           "Robot/translation/quasistatic forward",
           translationCharacterization
@@ -554,6 +554,11 @@ public class Drive extends SubsystemBase implements AutoCloseable {
     return drive(vx, vy, () -> translation.get().minus(pose().getTranslation()).getAngle());
   }
 
+  /**
+   * Checks whether the robot is at its rotational setpoint.
+   *
+   * @return Whether the rotation controller is at its setpoint.
+   */
   @Logged
   public boolean atRotationalSetpoint() {
     return rotationController.atSetpoint();
@@ -640,7 +645,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
     // currentVelocity.plus(currentVelocity.norm() > 1e-6 ?
     // skidAccelerationLimit(desiredAcceleration) : desiredAcceleration);
 
-    log("/Robot/drive/forward accel limit", (skidAccelerationLimit(deltaV).norm()));
+    log("/Robot/drive/forward accel limit", skidAccelerationLimit(deltaV).norm());
 
     ChassisSpeeds newSpeeds =
         new ChassisSpeeds(
@@ -650,8 +655,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
     SwerveDriveKinematics.desaturateWheelSpeeds(states, MAX_SPEED.in(MetersPerSecond));
     setModuleStates(
         kinematics.toSwerveModuleStates(
-            ChassisSpeeds.discretize(
-                kinematics.toChassisSpeeds(states), Constants.PERIOD.in(Seconds))),
+            ChassisSpeeds.discretize(kinematics.toChassisSpeeds(states), PERIOD.in(Seconds))),
         mode);
   }
 
@@ -671,7 +675,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
     double limit =
         maxAccel.get()
             * PERIOD.in(Seconds)
-            * (1 - Math.min(1, (currVel.norm() / MAX_SPEED.in(MetersPerSecond))));
+            * (1 - Math.min(1, currVel.norm() / MAX_SPEED.in(MetersPerSecond)));
     log("/Robot/drive/accel limit", limit);
     Vector<N2> proj = deltaV.projection(currVel);
     if (proj.norm() > limit && proj.dot(currVel) > 0) {
@@ -745,6 +749,13 @@ public class Drive extends SubsystemBase implements AutoCloseable {
         .withName("drive to pose");
   }
 
+  /**
+   * Command factory that automatically path-follows, in a straight line, to a position on the
+   * field.
+   *
+   * @param goal The pose to reach.
+   * @return The command to run the control loop until the pose is reached.
+   */
   public Command driveTo(Pose2d goal) {
     return driveTo(() -> goal);
   }
@@ -785,6 +796,11 @@ public class Drive extends SubsystemBase implements AutoCloseable {
     return gyro.acceleration().norm() > MAX_ACCEL.in(MetersPerSecondPerSecond) * 2;
   }
 
+  /**
+   * Checks whether any module is stalling.
+   *
+   * @return If any module is stalling.
+   */
   @Logged
   public boolean isStalling() {
     return Arrays.stream(modulesStalling)
@@ -896,23 +912,22 @@ public class Drive extends SubsystemBase implements AutoCloseable {
     // update our heading in reality / sim
     Tracer.startTrace("drive periodic");
     if (Robot.isReal()) {
-      lock.lock();
+      LOCK.lock();
       try {
         double[] timestamps = modules.get(2).timestamps();
 
         // get the positions of all modules at a given timestamp [[module0 odometry], [module1
         // odometry], ...]
-        SwerveModulePosition[][] allPositions =
-            new SwerveModulePosition[][] {
-              modules.get(0).odometryData(),
-              modules.get(1).odometryData(),
-              modules.get(2).odometryData(),
-              modules.get(3).odometryData(),
-            };
+        SwerveModulePosition[][] allPositions = {
+          modules.get(0).odometryData(),
+          modules.get(1).odometryData(),
+          modules.get(2).odometryData(),
+          modules.get(3).odometryData(),
+        };
         double[][] allGyro = gyro.odometryData();
 
         SwerveModulePosition[] modulePositions = new SwerveModulePosition[4];
-        Rotation2d angle = Rotation2d.kZero;
+        Rotation2d angle;
         for (int i = 0; i < timestamps.length; i++) {
           for (int m = 0; m < modules.size(); m++) {
             modulePositions[m] = allPositions[m][i];
@@ -923,10 +938,10 @@ public class Drive extends SubsystemBase implements AutoCloseable {
           lastPositions = modulePositions;
           lastHeading = angle;
         }
-      } catch (Exception e) {
+      } catch (RuntimeException e) {
         e.printStackTrace();
       } finally {
-        lock.unlock();
+        LOCK.unlock();
       }
     } else {
       odometry.update(simRotation, modulePositions());
@@ -944,7 +959,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
       modules2d[i].setPose(pose().transformBy(transform));
     }
 
-    if (TUNING) {
+    if (TUNING.get()) {
       translationController.setPID(translationP.get(), translationI.get(), translationD.get());
       rotationController.setPID(rotationP.get(), rotationI.get(), rotationD.get());
     }
@@ -956,14 +971,14 @@ public class Drive extends SubsystemBase implements AutoCloseable {
     Tracer.endTrace();
   }
 
+  @SuppressWarnings("PMD.ConfusingTernary")
   @Override
   public void simulationPeriodic() {
     simRotation =
         simRotation.rotateBy(
             Rotation2d.fromRadians(
                 !Double.isNaN(robotRelativeChassisSpeeds().omegaRadiansPerSecond)
-                    ? robotRelativeChassisSpeeds().omegaRadiansPerSecond
-                        * Constants.PERIOD.in(Seconds)
+                    ? robotRelativeChassisSpeeds().omegaRadiansPerSecond * PERIOD.in(Seconds)
                     : 0));
   }
 
@@ -1014,6 +1029,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
     return new Test(testCommand, assertions);
   }
 
+  @Override
   public void close() throws Exception {
     frontLeft.close();
     frontRight.close();

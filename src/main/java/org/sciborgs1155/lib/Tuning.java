@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.sciborgs1155.robot.Constants;
 
 /**
@@ -39,22 +40,35 @@ import org.sciborgs1155.robot.Constants;
  *   // This is called periodically in order to check for changes made on Network Tables.
  * </pre>
  */
+@SuppressWarnings({
+  "PMD.GodClass",
+  "PMD.UseConcurrentHashMap"
+}) // Not sure if there are concurrent accesses
 public final class Tuning {
   /* HashMap of values of each topic path */
-  private static HashMap<String, ArrayList<Double>> doubleHash = new HashMap<>();
-  private static HashMap<String, ArrayList<Long>> intHash = new HashMap<>();
-  private static HashMap<String, ArrayList<String>> stringHash = new HashMap<>();
-  private static HashMap<String, ArrayList<Boolean>> booleanHash = new HashMap<>();
+  private static final Map<String, List<Double>> DOUBLE_HASH = new HashMap<>();
+  private static final Map<String, List<Long>> INT_HASH = new HashMap<>();
+  private static final Map<String, List<String>> STRING_HASH = new HashMap<>();
+  private static final Map<String, List<Boolean>> BOOLEAN_HASH = new HashMap<>();
 
   /* Previous values of each topic path */
-  private static HashMap<String, Double> prevDouble = new HashMap<>();
-  private static HashMap<String, Long> prevInt = new HashMap<>();
-  private static HashMap<String, String> prevString = new HashMap<>();
-  private static HashMap<String, Boolean> prevBoolean = new HashMap<>();
+  private static final Map<String, Double> PREV_DOUBLE = new HashMap<>();
+  private static final Map<String, Long> PREV_INT = new HashMap<>();
+  private static final Map<String, String> PREV_STRING = new HashMap<>();
+  private static final Map<String, Boolean> PREV_BOOLEAN = new HashMap<>();
 
+  // Prevents instantiation
+  private Tuning() {}
+
+  /**
+   * Creates a trigger that activates when a DoubleEntry has been changed recently.
+   *
+   * @param entry The DoubleEntry to monitor for changes.
+   * @return A Trigger that activates when the entry changes.
+   */
   public static Trigger changes(DoubleEntry entry) {
     return new Trigger(
-        Constants.TUNING
+        Constants.TUNING.get()
             ? () -> System.currentTimeMillis() - entry.getLastChange() <= PERIOD.in(Milliseconds)
             : () -> false);
   }
@@ -71,15 +85,15 @@ public final class Tuning {
     DoubleEntry entry = NetworkTableInstance.getDefault().getDoubleTopic(path).getEntry(value);
     entry.set(value);
 
-    ArrayList<Double> doubleList = new ArrayList<>();
+    List<Double> doubleList = new ArrayList<>();
     doubleList.add(value);
 
-    ArrayList<Double> previousDble = doubleHash.put(path, doubleList);
+    List<Double> previousDble = DOUBLE_HASH.put(path, doubleList);
     if (previousDble == null) {
       previousDble = new ArrayList<>();
       previousDble.add(0.0);
     }
-    prevDouble.put(path, previousDble.get(previousDble.size() - 1));
+    PREV_DOUBLE.put(path, previousDble.get(previousDble.size() - 1));
 
     return entry;
   }
@@ -96,15 +110,15 @@ public final class Tuning {
     IntegerEntry entry = NetworkTableInstance.getDefault().getIntegerTopic(path).getEntry(value);
     entry.set(value);
 
-    ArrayList<Long> intList = new ArrayList<>();
+    List<Long> intList = new ArrayList<>();
     intList.add(value);
 
-    ArrayList<Long> previousInt = intHash.put(path, intList);
+    List<Long> previousInt = INT_HASH.put(path, intList);
     if (previousInt == null) {
       previousInt = new ArrayList<>();
       previousInt.add((long) 0);
     }
-    prevInt.put(path, previousInt.get(previousInt.size() - 1));
+    PREV_INT.put(path, previousInt.get(previousInt.size() - 1));
 
     return entry;
   }
@@ -120,16 +134,16 @@ public final class Tuning {
     StringEntry entry = NetworkTableInstance.getDefault().getStringTopic(path).getEntry(value);
     entry.set(value);
 
-    ArrayList<String> strList = new ArrayList<>();
+    List<String> strList = new ArrayList<>();
 
     strList.add(value);
 
-    ArrayList<String> previousStr = stringHash.put(path, strList);
+    List<String> previousStr = STRING_HASH.put(path, strList);
     if (previousStr == null) {
       previousStr = new ArrayList<>();
       previousStr.add("");
     }
-    prevString.put(path, previousStr.get(previousStr.size() - 1));
+    PREV_STRING.put(path, previousStr.get(previousStr.size() - 1));
 
     return entry;
   }
@@ -145,16 +159,16 @@ public final class Tuning {
     BooleanEntry entry = NetworkTableInstance.getDefault().getBooleanTopic(path).getEntry(value);
     entry.set(value);
 
-    ArrayList<Boolean> boolList = new ArrayList<>();
+    List<Boolean> boolList = new ArrayList<>();
 
     boolList.add(value);
 
-    ArrayList<Boolean> previousBool = booleanHash.put(path, boolList);
+    List<Boolean> previousBool = BOOLEAN_HASH.put(path, boolList);
     if (previousBool == null) {
       previousBool = new ArrayList<>();
       previousBool.add(true);
     }
-    prevBoolean.put(path, previousBool.get(previousBool.size() - 1));
+    PREV_BOOLEAN.put(path, previousBool.get(previousBool.size() - 1));
 
     return entry;
   }
@@ -169,17 +183,17 @@ public final class Tuning {
     DoublePublisher dblePub = subtopic.publish();
     dblePub.accept(value);
 
-    ArrayList<Double> arrayList = new ArrayList<>();
-    if (doubleHash.get(subtopic.getName()) != null) {
-      arrayList = doubleHash.get(subtopic.getName());
+    List<Double> arrayList = new ArrayList<>();
+    if (DOUBLE_HASH.get(subtopic.getName()) != null) {
+      arrayList = DOUBLE_HASH.get(subtopic.getName());
     }
     arrayList.add(value);
-    ArrayList<Double> previousDble = doubleHash.put(subtopic.getName(), arrayList);
+    List<Double> previousDble = DOUBLE_HASH.put(subtopic.getName(), arrayList);
     if (previousDble == null) {
       previousDble = new ArrayList<>();
       previousDble.add(0.0);
     }
-    prevDouble.put(subtopic.getName(), previousDble.get(previousDble.size() - 1));
+    PREV_DOUBLE.put(subtopic.getName(), previousDble.get(previousDble.size() - 1));
   }
 
   /**
@@ -192,17 +206,17 @@ public final class Tuning {
     IntegerPublisher intPub = subtopic.publish();
     intPub.accept(value);
 
-    ArrayList<Long> arrayList = new ArrayList<>();
-    if (intHash.get(subtopic.getName()) != null) {
-      arrayList = intHash.get(subtopic.getName());
+    List<Long> arrayList = new ArrayList<>();
+    if (INT_HASH.get(subtopic.getName()) != null) {
+      arrayList = INT_HASH.get(subtopic.getName());
     }
     arrayList.add(value);
-    ArrayList<Long> previousInt = intHash.put(subtopic.getName(), arrayList);
+    List<Long> previousInt = INT_HASH.put(subtopic.getName(), arrayList);
     if (previousInt == null) {
       previousInt = new ArrayList<>();
       previousInt.add((long) 0);
     }
-    prevInt.put(subtopic.getName(), previousInt.get(previousInt.size() - 1));
+    PREV_INT.put(subtopic.getName(), previousInt.get(previousInt.size() - 1));
   }
 
   /**
@@ -215,17 +229,17 @@ public final class Tuning {
     StringPublisher strPub = subtopic.publish();
     strPub.accept(value);
 
-    ArrayList<String> arrayList = new ArrayList<>();
-    if (stringHash.get(subtopic.getName()) != null) {
-      arrayList = stringHash.get(subtopic.getName());
+    List<String> arrayList = new ArrayList<>();
+    if (STRING_HASH.get(subtopic.getName()) != null) {
+      arrayList = STRING_HASH.get(subtopic.getName());
     }
     arrayList.add(value);
-    ArrayList<String> previousStr = stringHash.put(subtopic.getName(), arrayList);
+    List<String> previousStr = STRING_HASH.put(subtopic.getName(), arrayList);
     if (previousStr == null) {
       previousStr = new ArrayList<>();
       previousStr.add("");
     }
-    prevString.put(subtopic.getName(), previousStr.get(previousStr.size() - 1));
+    PREV_STRING.put(subtopic.getName(), previousStr.get(previousStr.size() - 1));
   }
 
   /**
@@ -238,44 +252,50 @@ public final class Tuning {
     BooleanPublisher boolPub = subtopic.publish();
     boolPub.accept(value);
 
-    ArrayList<Boolean> arrayList = new ArrayList<>();
-    if (booleanHash.get(subtopic.getName()) != null) {
-      arrayList = booleanHash.get(subtopic.getName());
+    List<Boolean> arrayList = new ArrayList<>();
+    if (BOOLEAN_HASH.get(subtopic.getName()) != null) {
+      arrayList = BOOLEAN_HASH.get(subtopic.getName());
     }
     arrayList.add(value);
-    ArrayList<Boolean> previousBool = booleanHash.put(subtopic.getName(), arrayList);
+    List<Boolean> previousBool = BOOLEAN_HASH.put(subtopic.getName(), arrayList);
     if (previousBool == null) {
       previousBool = new ArrayList<>();
       previousBool.add(true);
     }
-    prevBoolean.put(subtopic.getName(), previousBool.get(previousBool.size() - 1));
+    PREV_BOOLEAN.put(subtopic.getName(), previousBool.get(previousBool.size() - 1));
   }
 
   /**
    * @param topic The topic that you want to get changes from.
    * @return An ArrayList containing all of the changes of the given topic
    */
-  public static ArrayList<Double> recentChanges(DoubleTopic topic) {
-    if (doubleHash.containsKey(topic.getName())) {
-      ArrayList<Double> changes = doubleHash.get(topic.getName());
-      return changes;
+  public static List<Double> recentChanges(DoubleTopic topic) {
+    if (DOUBLE_HASH.containsKey(topic.getName())) {
+      return DOUBLE_HASH.get(topic.getName());
     }
     return new ArrayList<>();
   }
 
-  public static ArrayList<Double> recentChanges(DoubleTopic topic, int pastNIndexes) {
-    ArrayList<Double> arrayList = Tuning.recentChanges(topic);
+  /**
+   * Returns a list of the most recent changes of the given topic.
+   *
+   * @param topic The topic that you want to get changes from.
+   * @param pastNIndexes The number of recent changes to retrieve.
+   * @return An ArrayList containing the most recent changes of the given topic.
+   */
+  public static List<Double> recentChanges(DoubleTopic topic, int pastNIndexes) {
+    List<Double> arrayList = recentChanges(topic);
 
     if (pastNIndexes >= arrayList.size()) {
       return arrayList;
     }
     if (pastNIndexes < 0) {
-      ArrayList<Double> list = new ArrayList<>();
+      List<Double> list = new ArrayList<>();
       list.add(arrayList.get(arrayList.size() - 1));
       return list;
     }
 
-    ArrayList<Double> croppedList = new ArrayList<>();
+    List<Double> croppedList = new ArrayList<>();
     for (int i = arrayList.size() - 1; i > arrayList.size() - 1 - pastNIndexes; i--) {
       croppedList.add(arrayList.get(i));
     }
@@ -286,17 +306,24 @@ public final class Tuning {
    * @param topic The topic that you want to get changes from.
    * @return An ArrayList containing all of the changes of the given topic
    */
-  public static ArrayList<Long> recentChanges(IntegerTopic topic) {
-    if (intHash.containsKey(topic.getName())) {
-      ArrayList<Long> changes = intHash.get(topic.getName());
-      return changes;
+  public static List<Long> recentChanges(IntegerTopic topic) {
+    if (INT_HASH.containsKey(topic.getName())) {
+      return INT_HASH.get(topic.getName());
     }
     return new ArrayList<>();
   }
 
-  public static ArrayList<Long> recentChanges(IntegerTopic topic, int pastNIndexes) {
-    ArrayList<Long> arrayList = Tuning.recentChanges(topic);
-    ArrayList<Long> croppedList = new ArrayList<>();
+  /**
+   * Returns a list of the most recent changes of the given topic.
+   *
+   * @param topic The topic that you want to get changes from.
+   * @param pastNIndexes The number of recent changes to retrieve.
+   * @return An ArrayList containing the most recent changes of the given topic.
+   */
+  @SuppressWarnings("PMD.AvoidReassigningParameters")
+  public static List<Long> recentChanges(IntegerTopic topic, int pastNIndexes) {
+    List<Long> arrayList = recentChanges(topic);
+    List<Long> croppedList = new ArrayList<>();
     if (pastNIndexes >= arrayList.size() || pastNIndexes < 0) {
       pastNIndexes = arrayList.size() - 1;
     }
@@ -310,17 +337,24 @@ public final class Tuning {
    * @param topic The topic that you want to get changes from.
    * @return An ArrayList containing all of the changes of the given topic
    */
-  public static ArrayList<String> recentChanges(StringTopic topic) {
-    if (stringHash.containsKey(topic.getName())) {
-      ArrayList<String> changes = stringHash.get(topic.getName());
-      return changes;
+  public static List<String> recentChanges(StringTopic topic) {
+    if (STRING_HASH.containsKey(topic.getName())) {
+      return STRING_HASH.get(topic.getName());
     }
     return new ArrayList<>();
   }
 
-  public static ArrayList<String> recentChanges(StringTopic topic, int pastNIndexes) {
-    ArrayList<String> arrayList = Tuning.recentChanges(topic);
-    ArrayList<String> croppedList = new ArrayList<>();
+  /**
+   * Returns a list of the most recent changes of the given topic.
+   *
+   * @param topic The topic that you want to get changes from.
+   * @param pastNIndexes The number of recent changes to retrieve.
+   * @return An ArrayList containing the most recent changes of the given topic.
+   */
+  @SuppressWarnings("PMD.AvoidReassigningParameters")
+  public static List<String> recentChanges(StringTopic topic, int pastNIndexes) {
+    List<String> arrayList = recentChanges(topic);
+    List<String> croppedList = new ArrayList<>();
     if (pastNIndexes >= arrayList.size() || pastNIndexes < 0) {
       pastNIndexes = arrayList.size() - 1;
     }
@@ -334,17 +368,24 @@ public final class Tuning {
    * @param topic The topic that you want to get changes from.
    * @return An ArrayList containing all of the changes of the given topic
    */
-  public static ArrayList<Boolean> recentChanges(BooleanTopic topic) {
-    if (booleanHash.containsKey(topic.getName())) {
-      ArrayList<Boolean> changes = booleanHash.get(topic.getName());
-      return changes;
+  public static List<Boolean> recentChanges(BooleanTopic topic) {
+    if (BOOLEAN_HASH.containsKey(topic.getName())) {
+      return BOOLEAN_HASH.get(topic.getName());
     }
     return new ArrayList<>();
   }
 
-  public static ArrayList<Boolean> recentChanges(BooleanTopic topic, int pastNIndexes) {
-    ArrayList<Boolean> arrayList = Tuning.recentChanges(topic);
-    ArrayList<Boolean> croppedList = new ArrayList<>();
+  /**
+   * Returns a list of the most recent changes of the given topic.
+   *
+   * @param topic The topic that you want to get changes from.
+   * @param pastNIndexes The number of recent changes to retrieve.
+   * @return An ArrayList containing the most recent changes of the given topic.
+   */
+  @SuppressWarnings("PMD.AvoidReassigningParameters")
+  public static List<Boolean> recentChanges(BooleanTopic topic, int pastNIndexes) {
+    List<Boolean> arrayList = recentChanges(topic);
+    List<Boolean> croppedList = new ArrayList<>();
     if (pastNIndexes >= arrayList.size() || pastNIndexes < 0) {
       pastNIndexes = arrayList.size() - 1;
     }
@@ -361,27 +402,27 @@ public final class Tuning {
    * @param entryList A list of DoubleEntries
    */
   public static void updateDoubles(List<DoubleEntry> entryList) {
-    for (int i = 0; i < entryList.size(); i++) {
-      String topicName = entryList.get(i).getTopic().getName();
+    for (DoubleEntry doubleEntry : entryList) {
+      String topicName = doubleEntry.getTopic().getName();
 
       /* For the circumstance that the given key doesn't exist */
-      if (!doubleHash.containsKey(topicName)) {
+      if (!DOUBLE_HASH.containsKey(topicName)) {
 
-        ArrayList<Double> arrayList = new ArrayList<>();
+        List<Double> arrayList = new ArrayList<>();
         // arrayList.add(entryList.get(i).get());
 
-        doubleHash.put(topicName, arrayList);
+        DOUBLE_HASH.put(topicName, arrayList);
         // prevDouble.put(topicName, arrayList.get(arrayList.size() - 1));
       }
 
-      ArrayList<Double> arrayList = doubleHash.get(topicName);
+      List<Double> arrayList = DOUBLE_HASH.get(topicName);
 
-      if (prevDouble.get(topicName) != entryList.get(i).get()) {
+      if (PREV_DOUBLE.get(topicName) != doubleEntry.get()) {
 
-        arrayList.add(entryList.get(i).get());
+        arrayList.add(doubleEntry.get());
 
         /* Updating the previous double value */
-        prevDouble.put(topicName, entryList.get(i).get());
+        PREV_DOUBLE.put(topicName, doubleEntry.get());
       }
     }
   }
@@ -393,28 +434,28 @@ public final class Tuning {
    * @param entryList A list of IntegerEntries
    */
   public static void updateInts(List<IntegerEntry> entryList) {
-    for (int i = 0; i < entryList.size(); i++) {
-      String topicName = entryList.get(i).getTopic().getName();
+    for (IntegerEntry integerEntry : entryList) {
+      String topicName = integerEntry.getTopic().getName();
 
       /* For the circumstance that the given key doesn't exist */
-      if (!intHash.containsKey(topicName)) {
+      if (!INT_HASH.containsKey(topicName)) {
 
-        ArrayList<Long> arrayList = new ArrayList<>();
-        arrayList.add(entryList.get(i).get());
+        List<Long> arrayList = new ArrayList<>();
+        arrayList.add(integerEntry.get());
 
-        intHash.put(topicName, arrayList);
+        INT_HASH.put(topicName, arrayList);
 
-        prevInt.put(topicName, arrayList.get(arrayList.size() - 1));
+        PREV_INT.put(topicName, arrayList.get(arrayList.size() - 1));
       }
 
-      ArrayList<Long> arrayList = intHash.get(topicName);
+      List<Long> arrayList = INT_HASH.get(topicName);
 
-      if (prevInt.get(topicName) != entryList.get(i).get()) {
+      if (PREV_INT.get(topicName) != integerEntry.get()) {
 
-        arrayList.add(entryList.get(i).get());
+        arrayList.add(integerEntry.get());
 
         /* Updating the previous int value */
-        prevInt.put(topicName, entryList.get(i).get());
+        PREV_INT.put(topicName, integerEntry.get());
       }
     }
   }
@@ -426,28 +467,28 @@ public final class Tuning {
    * @param entryList A list of StringEntries
    */
   public static void updateStrings(List<StringEntry> entryList) {
-    for (int i = 0; i < entryList.size(); i++) {
-      String topicName = entryList.get(i).getTopic().getName();
+    for (StringEntry stringEntry : entryList) {
+      String topicName = stringEntry.getTopic().getName();
 
       /* For the circumstance that the given key doesn't exist */
-      if (!stringHash.containsKey(topicName)) {
+      if (!STRING_HASH.containsKey(topicName)) {
 
-        ArrayList<String> arrayList = new ArrayList<>();
-        arrayList.add(entryList.get(i).get());
+        List<String> arrayList = new ArrayList<>();
+        arrayList.add(stringEntry.get());
 
-        stringHash.put(topicName, arrayList);
+        STRING_HASH.put(topicName, arrayList);
 
-        prevString.put(topicName, arrayList.get(arrayList.size() - 1));
+        PREV_STRING.put(topicName, arrayList.get(arrayList.size() - 1));
       }
 
-      ArrayList<String> arrayList = stringHash.get(topicName);
+      List<String> arrayList = STRING_HASH.get(topicName);
 
-      if (!(prevString.get(topicName).equals(entryList.get(i).get()))) {
+      if (!PREV_STRING.get(topicName).equals(stringEntry.get())) {
 
-        arrayList.add(entryList.get(i).get());
+        arrayList.add(stringEntry.get());
 
         /* Updating the previous String value */
-        prevString.put(topicName, entryList.get(i).get());
+        PREV_STRING.put(topicName, stringEntry.get());
       }
     }
   }
@@ -459,28 +500,28 @@ public final class Tuning {
    * @param entryList A list of BooleanEntries
    */
   public static void updateBooleans(List<BooleanEntry> entryList) {
-    for (int i = 0; i < entryList.size(); i++) {
-      String topicName = entryList.get(i).getTopic().getName();
+    for (BooleanEntry booleanEntry : entryList) {
+      String topicName = booleanEntry.getTopic().getName();
 
       /* For the circumstance that the given key doesn't exist */
-      if (!booleanHash.containsKey(topicName)) {
+      if (!BOOLEAN_HASH.containsKey(topicName)) {
 
-        ArrayList<Boolean> arrayList = new ArrayList<>();
-        arrayList.add(entryList.get(i).get());
+        List<Boolean> arrayList = new ArrayList<>();
+        arrayList.add(booleanEntry.get());
 
-        booleanHash.put(topicName, arrayList);
+        BOOLEAN_HASH.put(topicName, arrayList);
 
-        prevBoolean.put(topicName, arrayList.get(arrayList.size() - 1));
+        PREV_BOOLEAN.put(topicName, arrayList.get(arrayList.size() - 1));
       }
 
-      ArrayList<Boolean> arrayList = booleanHash.get(topicName);
+      List<Boolean> arrayList = BOOLEAN_HASH.get(topicName);
 
-      if (prevBoolean.get(topicName) != entryList.get(i).get()) {
+      if (PREV_BOOLEAN.get(topicName) != booleanEntry.get()) {
 
-        arrayList.add(entryList.get(i).get());
+        arrayList.add(booleanEntry.get());
 
         /* Updating the previous boolean value */
-        prevBoolean.put(topicName, entryList.get(i).get());
+        PREV_BOOLEAN.put(topicName, booleanEntry.get());
       }
     }
   }

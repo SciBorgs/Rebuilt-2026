@@ -23,8 +23,8 @@ public class HoodConstants {
   public static final Current STATOR_LIMIT = Amps.of(30);
   public static final AngularAcceleration MAX_ACCEL = RadiansPerSecondPerSecond.of(1);
   public static final AngularVelocity MAX_VELOCITY = RadiansPerSecond.of(1);
-
   public static final Angle POS_TOLERANCE = Radians.of(0.01);
+  public static final Angle SHOOTING_ANGLE_OFFSET = Degrees.of(90);
 
   public static final Velocity<VoltageUnit> RAMP_RATE = Volts.of(0.5).per(Second);
   public static final Voltage STEP_VOLTAGE = Volts.of(0.3);

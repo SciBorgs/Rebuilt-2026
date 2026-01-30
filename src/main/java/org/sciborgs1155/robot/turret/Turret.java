@@ -26,16 +26,6 @@ import org.sciborgs1155.robot.Robot;
  * shooter at a specific target.
  */
 public class Turret extends SubsystemBase implements AutoCloseable {
-  /**
-   * Factory for the {@code Turret} subsystem. The hardware interface is varied depending on the
-   * type of robot being operated on.
-   *
-   * @return A newly instantiated instance of {@code Turret} using a {@code RealTurret} hardware
-   *     interface if the robot is real and a {@code SimTurret} hardware interface is the robot is
-   *     simulated.
-   */
-  @Logged private double setpoint;
-
   /** Creates real or simulated turret based on {@link Robot#isReal()}. */
   @NotLogged
   public static Turret create() {
@@ -54,7 +44,7 @@ public class Turret extends SubsystemBase implements AutoCloseable {
   }
 
   /** Motor used to rotate the turret. */
-  @NotLogged private final TurretIO hardware;
+  @NotLogged public final TurretIO hardware;
 
   /** {@code PIDController} used to orient the turret to a specified angle. */
   @NotLogged
@@ -118,6 +108,7 @@ public class Turret extends SubsystemBase implements AutoCloseable {
    *
    * @return The angular setpoint of the turret.
    */
+  @Logged
   public Angle setpoint() {
     return Radians.of(controller.getSetpoint().position);
   }
@@ -184,8 +175,6 @@ public class Turret extends SubsystemBase implements AutoCloseable {
     double ffdVolts = feedforward.calculateWithVelocities(hardware.velocity(), targetVelocity);
 
     hardware.setVoltage(pidVolts + ffdVolts);
-
-    setpoint = positionSetpoint;
   }
 
   /**
@@ -213,6 +202,10 @@ public class Turret extends SubsystemBase implements AutoCloseable {
     LoggingUtils.log("Robot/Turret/POSITION", hardware.position());
     LoggingUtils.log("Robot/Turret/VELOCITY", hardware.velocity());
     LoggingUtils.log("Robot/Turret/SETPOINT", controller.getSetpoint().position);
+
+    if (hardware instanceof SimTurret sim) {
+      LoggingUtils.log("Robot/Turret/TRUEPOSITION", sim.trueAngleRad());
+    }
 
     // VISUALIZATION
     visualizer.update(hardware.position(), controller.getSetpoint().position);

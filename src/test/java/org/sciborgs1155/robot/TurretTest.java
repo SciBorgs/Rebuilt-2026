@@ -37,7 +37,7 @@ public class TurretTest {
    */
   public void goToTest(Angle setpoint) {
     turret.goTo(setpoint.in(Radians)).schedule();
-    fastForward(10000);
+    fastForward(6700);
   }
 
   /**
@@ -56,5 +56,20 @@ public class TurretTest {
     goToTest(setpoint);
 
     assertEquals(setpoint.in(Radians), turret.position(), 0.01, "Turret orientation failed!");
+  }
+
+  /** Tests CRT encoder reconstruction accuracy. */
+  @RepeatedTest(5)
+  public void encoder() {
+    Angle trueAngle = randomAngle();
+    goToTest(trueAngle);
+
+    double crtAngle = turret.position();
+
+    assertEquals(
+        trueAngle.in(Radians),
+        crtAngle,
+        CRT_MATCH_TOLERANCE.in(Radians),
+        "CRT failed to reconstruct encoder angle");
   }
 }

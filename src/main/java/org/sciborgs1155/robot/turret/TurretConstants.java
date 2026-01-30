@@ -41,7 +41,7 @@ public class TurretConstants {
 
   public static final class ControlConstants {
     // PID CONSTANTS
-    public static final double P = 1;
+    public static final double P = 6.7;
     public static final double I = 0;
     public static final double D = 0;
 
@@ -54,7 +54,13 @@ public class TurretConstants {
     public static final Angle TOLERANCE = Degree.of(20);
   }
 
-  public static final Velocity<VoltageUnit> RAMP_RATE = Volts.of(0.2).per(Second);
-  public static final Voltage STEP_VOLTAGE = Volts.of(0.5);
+  public static final Velocity<VoltageUnit> RAMP_RATE = Volts.of(1).per(Second);
+  public static final Voltage STEP_VOLTAGE = Volts.of(2);
   public static final Time TIME_OUT = Seconds.of(6);
+
+  public static final int TURRET_GEARING = 84;
+  public static final int ENCODER_A_GEARING = 12;
+  public static final int ENCODER_B_GEARING = 13;
+
+  public static final Angle CRT_MATCH_TOLERANCE = Degrees.of(1);
 }

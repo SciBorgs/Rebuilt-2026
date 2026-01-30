@@ -12,7 +12,7 @@ import static org.sciborgs1155.robot.Constants.TUNING;
 import static org.sciborgs1155.robot.drive.DriveConstants.*;
 
 import com.ctre.phoenix6.SignalLogger;
-import edu.wpi.first.epilogue.EpilogueConfiguration;
+import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.geometry.Pose3d;

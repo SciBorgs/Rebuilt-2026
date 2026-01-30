@@ -1,65 +1,76 @@
 package org.sciborgs1155.robot.intake;
 
+import static edu.wpi.first.units.Units.Amps;
+import static org.sciborgs1155.robot.Ports.Intake.*;
+import static org.sciborgs1155.robot.intake.IntakeConstants.*;
+
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.sciborgs1155.lib.SimpleMotor;
 import org.sciborgs1155.robot.Robot;
 
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
+public class Intake extends SubsystemBase implements AutoCloseable {
+  // hardware initialization
+  private final SimpleMotor hardware;
 
-public class Intake{
-    //hardware initialization
-    public static IntakeIO hardware;
+  /**
+   * @param hardware the hardware is the object that will be operated on
+   */
+  public Intake(SimpleMotor hardware) {
+    this.hardware = hardware;
+    setDefaultCommand(stop());
+  }
 
-    //TODO set up IntakeIO Constructor so this sequence works
-    /**
-     * (1) method signature (input: IntakeIO) (output: Intake class)
-     * (2) this.hardware = hardware
-     *
-     */
+  /**
+   * @return a real intake if the intake is real and a simmed intake if it is not in order to
+   *     simulate the arm
+   */
+  public static Intake create() {
+    return Robot.isReal() ? new Intake(realMotor()) : new Intake(SimpleMotor.none());
+  }
 
-    public Intake(IntakeIO hardware) {
-        this.hardware = hardware;
-    }
+  /**
+   * @return a simple motor that will run the rollers
+   */
+  public static SimpleMotor realMotor() {
+    final TalonFX motor = new TalonFX(ROLLERS);
+    TalonFXConfiguration config = new TalonFXConfiguration();
+    config.CurrentLimits.SupplyCurrentLimit = CURRENT_LIMIT.in(Amps);
+    config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    return SimpleMotor.talon(motor, config);
+  }
 
-    public static Intake create(){
-        if (Robot.isReal()){
-            return new Intake(new RealIntake());
-        }
-        else{
-            return new Intake(new SimIntake());
-        }
-    }
+  /**
+   * @return create a new intake without hardware
+   */
+  public static Intake none() {
+    return new Intake(SimpleMotor.none());
+  }
 
-    //TODO 
-    /**
-     * 
-     * Command Factory:
-    
-     * 
-    */
-    public Command extend(){
-        return new InstantCommand(() -> hardware.extend());
-    }
-    public Command startRollers(){
-        return Commands.run(() -> hardware.setRollerVoltage());
-    }
+  /**
+   * @return start the rollers in order to intake fuel
+   */
+  public Command spin(double power) {
+    return run(() -> hardware.set(power));
+  }
 
+  public Command intake() {
+    return run(() -> spin(INTAKE_POWER));
+  }
 
-    /*public AngularVelocity rollerVelocity() {
-        return hardware.rollerVelocity();
-    }
+  /**
+   * @return stop the motors
+   */
+  public Command stop() {
+    return run(() -> spin(0));
+  }
 
-    public void setRollerVoltage() {
-        hardware.setRollerVoltage();
-    }
-
-    public void setExtensionVoltage() {
-        hardware.setExtensionVoltage();
-    }
-
-    public double extensionPosition() {
-        return hardware.extensionPosition();
-    }*/
-
+  /** close the hardware */
+  @Override
+  public void close() throws Exception {
+    hardware.close();
+  }
 }

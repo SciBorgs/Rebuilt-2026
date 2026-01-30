@@ -36,7 +36,7 @@ public class TurretTest {
    * @param Angle The setpoint.
    */
   public void goToTest(Angle setpoint) {
-    turret.runTurret(setpoint.in(Radians)).schedule();
+    turret.goTo(setpoint.in(Radians)).schedule();
     fastForward(10000);
   }
 

@@ -21,7 +21,7 @@ public class SimTurret implements TurretIO {
           TURRET_LENGTH.in(Meters), // ARM LENGTH
           MIN_ANGLE.in(Radians), // MINIMUM ANGLE
           MAX_ANGLE.in(Radians), // MAXIMUM ANGLE
-          false, // GRAVITY ENABLED
+          false, // GRAVITY DISBLAED
           START_ANGLE.in(Radians)); // STARTING ANGLE
 
   /** Simulated hardware interface for the {@code Turret} subsystem. */
@@ -41,11 +41,6 @@ public class SimTurret implements TurretIO {
   @Override
   public double velocity() {
     return simulation.getVelocityRadPerSec();
-  }
-
-  @Override
-  public double voltage() {
-    return simulation.getInput(0);
   }
 
   @Override

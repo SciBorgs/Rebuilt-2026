@@ -17,16 +17,9 @@ public interface TurretIO extends AutoCloseable {
   double position();
 
   /**
-   * Returns the angular velocity of the motor.
+   * Returns the angular velocity of the motor in radians per second.
    *
-   * @return The angular velocity of the motor.
+   * @return The angular velocity of the motor in radians per second.
    */
   double velocity();
-
-  /**
-   * Returns the voltage of the motor.
-   *
-   * @return The voltage of the motor.
-   */
-  double voltage();
 }

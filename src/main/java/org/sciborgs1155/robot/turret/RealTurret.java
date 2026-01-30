@@ -49,11 +49,6 @@ public class RealTurret implements TurretIO {
   }
 
   @Override
-  public double voltage() {
-    return hardware.getMotorVoltage().getValueAsDouble();
-  }
-
-  @Override
   public void close() throws Exception {
     hardware.close();
   }

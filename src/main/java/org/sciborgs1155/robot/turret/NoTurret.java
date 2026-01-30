@@ -19,10 +19,5 @@ public class NoTurret implements TurretIO {
   }
 
   @Override
-  public double voltage() {
-    return 0;
-  }
-
-  @Override
   public void close() throws Exception {}
 }

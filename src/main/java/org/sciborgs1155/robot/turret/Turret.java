@@ -1,7 +1,6 @@
 package org.sciborgs1155.robot.turret;
 
 import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 import static org.sciborgs1155.robot.Constants.PERIOD;
@@ -36,9 +35,6 @@ public class Turret extends SubsystemBase implements AutoCloseable {
    *     simulated.
    */
   @Logged private double setpoint;
-
-  // * Logs previous velocity. */
-  @Logged private double lastVelocity;
 
   /** Creates real or simulated turret based on {@link Robot#isReal()}. */
   @NotLogged
@@ -91,9 +87,7 @@ public class Turret extends SubsystemBase implements AutoCloseable {
             new SysIdRoutine.Mechanism(
                 v -> hardware.setVoltage(v.in(Volts)),
                 log -> {
-                  log.motor("turret")
-                      .angularPosition(Radians.of(hardware.position()))
-                      .angularVelocity(RadiansPerSecond.of(hardware.velocity()));
+                  log.motor("turret");
                 },
                 this));
 
@@ -106,6 +100,8 @@ public class Turret extends SubsystemBase implements AutoCloseable {
         "Turret dynamic clockwise", sysIdTest(SysIdTestType.DYNAMIC, Direction.kForward));
     SmartDashboard.putData(
         "Turret dynamic counterclockwise", sysIdTest(SysIdTestType.DYNAMIC, Direction.kReverse));
+
+    SmartDashboard.putData("Turret PID Controller", controller);
   }
 
   /**
@@ -124,6 +120,15 @@ public class Turret extends SubsystemBase implements AutoCloseable {
    */
   public Angle setpoint() {
     return Radians.of(controller.getSetpoint().position);
+  }
+
+  /**
+   * Returns whether the turret is at its goal or not.
+   *
+   * @return whether the turret is at its goal or not.
+   */
+  public boolean atGoal() {
+    return controller.atGoal();
   }
 
   /** Enum used to specify the type of sysId test. */
@@ -176,11 +181,10 @@ public class Turret extends SubsystemBase implements AutoCloseable {
     double pidVolts = controller.calculate(currentPosition, positionSetpoint);
 
     double targetVelocity = controller.getSetpoint().velocity;
-    double ffdVolts = feedforward.calculate(lastVelocity, targetVelocity);
+    double ffdVolts = feedforward.calculateWithVelocities(hardware.velocity(), targetVelocity);
 
     hardware.setVoltage(pidVolts + ffdVolts);
 
-    lastVelocity = targetVelocity;
     setpoint = positionSetpoint;
   }
 
@@ -189,7 +193,7 @@ public class Turret extends SubsystemBase implements AutoCloseable {
    *
    * @param DoubleSupplier The position supplier.
    */
-  public Command runTurret(DoubleSupplier position) {
+  public Command goTo(DoubleSupplier position) {
     return runOnce(() -> controller.setGoal(position.getAsDouble()))
         .andThen(run(() -> update(position.getAsDouble())));
   }
@@ -199,8 +203,8 @@ public class Turret extends SubsystemBase implements AutoCloseable {
    *
    * @param Double The position.
    */
-  public Command runTurret(Double position) {
-    return runTurret(() -> position);
+  public Command goTo(Double position) {
+    return goTo(() -> position);
   }
 
   @Override
@@ -208,7 +212,6 @@ public class Turret extends SubsystemBase implements AutoCloseable {
     // LOGGING
     LoggingUtils.log("Robot/Turret/POSITION", hardware.position());
     LoggingUtils.log("Robot/Turret/VELOCITY", hardware.velocity());
-    LoggingUtils.log("Robot/Turret/VOLTAGE", hardware.voltage());
     LoggingUtils.log("Robot/Turret/SETPOINT", controller.getSetpoint().position);
 
     // VISUALIZATION

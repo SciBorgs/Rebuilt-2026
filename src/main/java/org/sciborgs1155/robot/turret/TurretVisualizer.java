@@ -27,9 +27,17 @@ public class TurretVisualizer {
   private final MechanismLigament2d setpoint =
       root.append(new MechanismLigament2d("Setpoint", 3, 0, 2, new Color8Bit(255, 0, 0)));
 
+  private final MechanismLigament2d blindspotA =
+      root.append(new MechanismLigament2d("Blindspot A", 3, 0, 2, new Color8Bit(255, 255, 0)));
+
+  private final MechanismLigament2d blindspotB =
+      root.append(new MechanismLigament2d("Blindspot B", 3, 0, 2, new Color8Bit(255, 255, 0)));
+
   /** Visualizes the {@code Turret} subsystem using {@code Mechanism2d}. */
   public TurretVisualizer(int width, int height) {
     SmartDashboard.putData("TurretVisualizer", mechanism);
+    blindspotA.setAngle(175);
+    blindspotB.setAngle(-175);
   }
 
   /**

@@ -81,7 +81,7 @@ public class Shooting {
 
   private static final Transform3d TURRET_FROM_ROBOT = new Transform3d(0, 0, 0, new Rotation3d());
   private static final Translation2d HUB_TARGET =
-      FieldConstants.Hub.topCenterPoint.toTranslation2d();
+      FieldConstants.Hub.TOP_CENTER_POINT.toTranslation2d();
 
   /**
    * Shoots the ball at the hub. Can do it while driving.

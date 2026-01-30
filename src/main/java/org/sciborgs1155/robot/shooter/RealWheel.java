@@ -13,6 +13,7 @@ import org.sciborgs1155.lib.TalonUtils;
 public class RealWheel implements WheelIO {
   private final TalonFX motor;
 
+  /** Sets the TalonFX motor configurations */
   public RealWheel() {
     motor = new TalonFX(SHOOTER_MOTOR);
     TalonFXConfiguration config = new TalonFXConfiguration();
@@ -36,7 +37,7 @@ public class RealWheel implements WheelIO {
 
   @Override
   public double velocity() {
-    return motor.getVelocity().getValueAsDouble();
+    return motor.getVelocity().getValueAsDouble() * 60;
   }
 
   @Override

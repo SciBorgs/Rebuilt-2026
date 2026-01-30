@@ -37,7 +37,7 @@ public class RealWheel implements WheelIO {
 
   @Override
   public double velocity() {
-    return motor.getVelocity().getValueAsDouble() * 60;
+    return motor.getVelocity().getValueAsDouble();
   }
 
   @Override

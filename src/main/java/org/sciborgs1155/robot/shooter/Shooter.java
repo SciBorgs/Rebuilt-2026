@@ -14,7 +14,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.function.DoubleSupplier;
 import org.sciborgs1155.robot.Robot;
 
-public class Shooter extends SubsystemBase implements AutoCloseable {
+public final class Shooter extends SubsystemBase implements AutoCloseable {
   private final WheelIO hardware;
 
   @Logged private double setpoint;
@@ -31,9 +31,9 @@ public class Shooter extends SubsystemBase implements AutoCloseable {
   public Shooter(WheelIO hardware) {
     this.hardware = hardware;
 
-    controller.setTolerance(VELOCITY_TOLERANCE.in(RPM));
+    controller.setTolerance(VELOCITY_TOLERANCE.in(RadiansPerSecond));
 
-    setDefaultCommand(runShooter(IDLE_VELOCITY.in(RPM)).withName("Idle"));
+    setDefaultCommand(runShooter(IDLE_VELOCITY.in(RadiansPerSecond)).withName("Idle"));
   }
 
   /**
@@ -71,12 +71,13 @@ public class Shooter extends SubsystemBase implements AutoCloseable {
    */
   public void update(double velocitySetpoint) {
     double velocity =
-        Double.isNaN(velocitySetpoint)
-            ? DEFAULT_VELOCITY.in(RPM)
-            : MathUtil.clamp(velocitySetpoint, -MAX_VELOCITY.in(RPM), MAX_VELOCITY.in(RPM));
+        MathUtil.clamp(
+            velocitySetpoint,
+            -MAX_VELOCITY.in(RadiansPerSecond),
+            MAX_VELOCITY.in(RadiansPerSecond));
     double ffVolts = feedforward.calculate(velocity); // feedforward
     double pidVolts = controller.calculate(getVelocity(), velocity);
-    hardware.setVoltage(MathUtil.clamp(pidVolts + ffVolts, -12, 12));
+    hardware.setVoltage(MathUtil.clamp(pidVolts + ffVolts, -MAX_VOLTAGE, MAX_VOLTAGE));
   }
 
   /**
@@ -95,7 +96,7 @@ public class Shooter extends SubsystemBase implements AutoCloseable {
    * @return true or false
    */
   public boolean atVelocity(double velocity) {
-    return Math.abs(velocity - getVelocity()) < VELOCITY_TOLERANCE.in(RPM);
+    return Math.abs(velocity - getVelocity()) < VELOCITY_TOLERANCE.in(RadiansPerSecond);
   }
 
   public double setpoint() {

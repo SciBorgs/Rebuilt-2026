@@ -13,15 +13,12 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.networktables.IntegerPublisher;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.StructArrayPublisher;
-import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import java.util.function.Supplier;
+import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.lib.Tracer;
 import org.sciborgs1155.robot.Constants.Robot;
 
@@ -51,9 +48,6 @@ public final class FuelVisualizer {
   /** All Fuel currently being simulated. */
   private static FuelSim[] fuelSims;
 
-  /** The poses of every Fuel currently being simulated. */
-  private static Pose3d[] fuelPoses;
-
   /** A supplier for the angular velocity of the shooter. */
   private static Supplier<AngularVelocity> shooterVelocity;
 
@@ -68,25 +62,6 @@ public final class FuelVisualizer {
 
   /** A supplier for the current velocity of the robot. */
   private static Supplier<ChassisSpeeds> robotVelocity;
-
-  /**
-   * A publisher for the positions of the {@code FuelSim}'s. Used to track Fuel in logging
-   * framework.
-   */
-  private static StructArrayPublisher<Pose3d> fuelPosePublisher =
-      NetworkTableInstance.getDefault()
-          .getStructArrayTopic("Fuel Visualizer/Fuel Poses", Pose3d.struct)
-          .publish();
-
-  /** A publisher for the orientation of the shooter. */
-  private static StructPublisher<Pose3d> shooterPosePublisher =
-      NetworkTableInstance.getDefault()
-          .getStructTopic("Fuel Visualizer/Shooter Pose", Pose3d.struct)
-          .publish();
-
-  /** A publisher for the orientation of the shooter. */
-  private static IntegerPublisher scorePublisher =
-      NetworkTableInstance.getDefault().getIntegerTopic("Fuel Visualizer/SCORES").publish();
 
   /**
    * To be called on robot startup. Parameters used to calculate Fuel trajectory after launch.
@@ -113,12 +88,7 @@ public final class FuelVisualizer {
 
     // FUEL INSTANTIATION
     fuelSims = new FuelSim[fuelCapacity];
-    fuelPoses = new Pose3d[fuelCapacity];
-
-    for (int index = 0; index < fuelSims.length; index++) {
-      fuelSims[index] = new FuelSim();
-      fuelPoses[index] = new Pose3d();
-    }
+    for (int index = 0; index < fuelSims.length; index++) fuelSims[index] = new FuelSim();
   }
 
   /** Publishes the Fuel display data to {@code NetworkTables}. */
@@ -127,18 +97,17 @@ public final class FuelVisualizer {
     Tracer.startTrace("Fuel Visualizer");
 
     int scores = 0;
-    for (int index = 0; index < fuelPoses.length; index++) {
-      fuelSims[index].nextFrame();
-      fuelPoses[index] = fuelSims[index].pose3d();
-      scores += fuelSims[index].scores;
+    for (FuelSim fuelSim : fuelSims) {
+      fuelSim.nextFrame();
+      scores += fuelSim.scores;
     }
 
     Tracer.endTrace();
 
     // PUBLISHING DATA
-    fuelPosePublisher.accept(fuelPoses);
-    shooterPosePublisher.accept(shooterPose());
-    scorePublisher.accept(scores);
+    LoggingUtils.log("Fuel Visualizer/Fuel Poses", fuelPoses(), Pose3d.struct);
+    LoggingUtils.log("Fuel Visualizer/Shooter Pose", shooterPose(), Pose3d.struct);
+    LoggingUtils.log("Fuel Visualizer/Scores", scores);
   }
 
   /**
@@ -174,6 +143,18 @@ public final class FuelVisualizer {
     // ITERATE THROUGH REST OF THE ELEMENTS
     fuelIndex = 0;
     return getLaunchableFuel();
+  }
+
+  /**
+   * Returns poses of every Fuel currently being simulated.
+   *
+   * @return The poses of every Fuel currently being simulated (METERS).
+   */
+  private static Pose3d[] fuelPoses() {
+    Pose3d[] fuelPoses = new Pose3d[fuelSims.length];
+    for (int index = 0; index < fuelPoses.length; index++)
+      fuelPoses[index] = fuelSims[index].pose3d();
+    return fuelPoses;
   }
 
   /**

@@ -3,6 +3,7 @@ package org.sciborgs1155.robot.commands;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static org.sciborgs1155.robot.FieldConstants.*;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
@@ -12,6 +13,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.networktables.IntegerPublisher;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.networktables.StructPublisher;
@@ -22,7 +24,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import java.util.function.Supplier;
 import org.sciborgs1155.lib.Tracer;
 import org.sciborgs1155.robot.Constants.Robot;
-import org.sciborgs1155.robot.FieldConstants;
 
 /** Simulates the behavior of multiple Fuel projectiles using {@code FuelSim}. */
 public final class FuelVisualizer {
@@ -35,8 +36,8 @@ public final class FuelVisualizer {
   /** The mass density of the air (KILOGRAMS / METER^3). */
   private static final double AIR_DENSITY = 1.225;
 
-  /** The diameter of the Fuel (METERS). */
-  private static final double FUEL_DIAMETER = 0.15;
+  /** The radius of the Fuel (METERS). */
+  private static final double FUEL_RADIUS = 0.075;
 
   /** How long each frame of the animation is (SECONDS / FRAME). */
   private static final double FRAME_LENGTH = 0.02;
@@ -78,10 +79,14 @@ public final class FuelVisualizer {
           .publish();
 
   /** A publisher for the orientation of the shooter. */
-  private static StructPublisher<Pose3d> shooterPose =
+  private static StructPublisher<Pose3d> shooterPosePublisher =
       NetworkTableInstance.getDefault()
           .getStructTopic("Fuel Visualizer/Shooter Pose", Pose3d.struct)
           .publish();
+
+  /** A publisher for the orientation of the shooter. */
+  private static IntegerPublisher scorePublisher =
+      NetworkTableInstance.getDefault().getIntegerTopic("Fuel Visualizer/SCORES").publish();
 
   /**
    * To be called on robot startup. Parameters used to calculate Fuel trajectory after launch.
@@ -121,16 +126,19 @@ public final class FuelVisualizer {
     // UPDATING SIMULATIONS
     Tracer.startTrace("Fuel Visualizer");
 
+    int scores = 0;
     for (int index = 0; index < fuelPoses.length; index++) {
       fuelSims[index].nextFrame();
       fuelPoses[index] = fuelSims[index].pose3d();
+      scores += fuelSims[index].scores;
     }
 
     Tracer.endTrace();
 
     // PUBLISHING DATA
     fuelPosePublisher.accept(fuelPoses);
-    shooterPose.accept(shooterPose());
+    shooterPosePublisher.accept(shooterPose());
+    scorePublisher.accept(scores);
   }
 
   /**
@@ -192,8 +200,8 @@ public final class FuelVisualizer {
         .getTranslation()
         .toVector()
         .plus(
-            FieldConstants.fromSphericalCoords(
-                Robot.SHOOTER_LENGTH.in(Meters) + FUEL_DIAMETER / 2, shooterPose().getRotation()));
+            fromSphericalCoords(
+                Robot.SHOOTER_LENGTH.in(Meters) + FUEL_RADIUS, shooterPose().getRotation()));
   }
 
   /**
@@ -204,10 +212,10 @@ public final class FuelVisualizer {
   // TODO: ACCOUNT FOR CONVERSION BETWEEN SHOOTER VELOCITY AND LAUNCH VELOCITY
   private static Vector<N3> calculateFuelLaunchVelocity() {
     Vector<N3> stationaryVelocity =
-        FieldConstants.fromSphericalCoords(
+        fromSphericalCoords(
             shooterVelocity.get().in(RadiansPerSecond), shooterPose().getRotation());
     Vector<N3> rotationalVelocity =
-        FieldConstants.fromSphericalCoords(
+        fromSphericalCoords(
             robotVelocity.get().omegaRadiansPerSecond * Robot.ROBOT_TO_TURRET.getNorm(),
             robotPose.get().getRotation().plus(new Rotation3d(0, 0, Math.PI / 2)));
     Vector<N3> translationalVelocity =
@@ -228,6 +236,9 @@ public final class FuelVisualizer {
   protected static class FuelSim {
     /** If the Fuel is suspended in the air, it is being launched. */
     protected boolean isBeingLaunched;
+
+    /** How many times this Fuel has been scored. */
+    protected int scores;
 
     /**
      * A vector whose elements represent the current X, Y, and Z components of the Fuel's
@@ -259,7 +270,7 @@ public final class FuelVisualizer {
       // DRAG CALCULATIONS (METERS / FRAME^2)
       double speedSquared = Math.pow(velocity.norm(), 2); // MAGNITUDE OF VELOCITY^2
       double dragCoefficient = 0.47; // SPECIFIC TO SPHERICAL OBJECTS
-      double referenceArea = Math.PI * Math.pow(FUEL_DIAMETER / 2, 2); // CROSS SECTION
+      double referenceArea = Math.PI * Math.pow(FUEL_RADIUS, 2); // CROSS SECTION
       double dragFactor = 0.5 * AIR_DENSITY * speedSquared * dragCoefficient * referenceArea;
       Vector<N3> drag = velocity.unit().times(dragFactor).div(FUEL_MASS).times(-1);
 
@@ -273,6 +284,34 @@ public final class FuelVisualizer {
      */
     protected Pose3d pose3d() { // TODO: INCLUDE ROTATION
       return new Pose3d(new Translation3d(translation), new Rotation3d());
+    }
+
+    /**
+     * Whether or not the Fuel is being scored into the Hub (used to end frame generation). A scored
+     * Fuel is defined as Fuel which is directly above the Hub with a downwards velocity into the
+     * Hub.
+     *
+     * @return True if the Fuel is destined to be scored. False if the Fuel is not destined to be
+     *     scored / if it is not determinable.
+     */
+    protected boolean scored() {
+      double planarDistance =
+          Math.hypot(HUB.getX() - translation.get(0), HUB.getY() - translation.get(1));
+      double verticalDisplacement = HUB.getZ() - translation.get(2);
+
+      return (verticalDisplacement < 0)
+          && (verticalDisplacement > -FUEL_RADIUS)
+          && (planarDistance < FUEL_RADIUS + HUB_DIAMETER / 2)
+          && velocity.get(2) < 0;
+    }
+
+    /**
+     * Whether or not the Fuel is grounded (used to end frame generation).
+     *
+     * @return True if the Fuel is on/below the ground. False if the Fuel is in the air.
+     */
+    protected boolean grounded() {
+      return translation.get(2) < FUEL_RADIUS;
     }
 
     /** Starts frame generation. Resets Fuel state. */
@@ -296,13 +335,21 @@ public final class FuelVisualizer {
       translation.setColumn(0, translation.plus(velocity));
 
       // IF THE FUEL TOUCHES THE GROUND, FRAME GENERATION ENDS
-      if (translation.get(2) < FUEL_DIAMETER / 2) end();
+      // IF THE FUEL IS SCORED IN THE HUB, FRAME GENERATION ENDS
+      if (grounded() || scored()) end();
     }
 
     /** Ends frame generation. Freezes Fuel in place. */
     private void end() {
       // PREVENT CLIPPING INTO THE GROUND
-      translation.set(2, 0, FUEL_DIAMETER / 2);
+      if (grounded()) translation.set(2, 0, FUEL_RADIUS);
+
+      // VISUAL CUE FOR SCORED FUEL
+      if (scored()) {
+        translation = HUB.toVector().minus(VecBuilder.fill(0, 0, HUB.getZ()));
+        scores++;
+      }
+
       velocity = VecBuilder.fill(0, 0, 0);
       acceleration = VecBuilder.fill(0, 0, 0);
 

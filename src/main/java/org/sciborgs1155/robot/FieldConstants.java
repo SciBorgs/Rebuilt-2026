@@ -11,6 +11,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.measure.Distance;
@@ -124,4 +125,7 @@ public final class FieldConstants {
   }
 
   // List field constants below!
+
+  public static final double HUB_DIAMETER = 1.059942;
+  public static final Translation3d HUB = new Translation3d(4.611624, 4.021328, 1.8288);
 }

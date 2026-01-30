@@ -10,16 +10,19 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-
 import org.sciborgs1155.lib.Beambreak;
 import org.sciborgs1155.lib.SimpleMotor;
 import org.sciborgs1155.robot.Robot;
 
-public class Indexer extends SubsystemBase implements AutoCloseable {
+public final class Indexer extends SubsystemBase implements AutoCloseable {
   private final SimpleMotor hardware;
-  private final Beambreak beambreak; 
-  public final Trigger blocked; 
+  private final Beambreak beambreak;
+  public final Trigger blocked;
 
+  /**
+   * @param hardware represents motor
+   * @param beambreak represents beambreak
+   */
   private Indexer(SimpleMotor hardware, Beambreak beambreak) {
     this.hardware = hardware;
     this.beambreak = beambreak;
@@ -29,14 +32,23 @@ public class Indexer extends SubsystemBase implements AutoCloseable {
     setDefaultCommand(stop());
   }
 
+  /**
+   * @return Creates a real indexer or no indexer based on Robot.isReal()
+   */
   public static Indexer create() {
-    return (Robot.isReal()) ? new Indexer(realMotor(), Beambreak.real(BEAMBREAK)) : none();
+    return Robot.isReal() ? new Indexer(realMotor(), Beambreak.real(BEAMBREAK)) : none();
   }
 
+  /**
+   * @return non-real indexer
+   */
   public static Indexer none() {
     return new Indexer(SimpleMotor.none(), Beambreak.none());
   }
 
+  /**
+   * @return simple motor with hardware config
+   */
   public static SimpleMotor realMotor() {
     TalonFX motor = new TalonFX(MOTOR);
     TalonFXConfiguration config = new TalonFXConfiguration();
@@ -47,20 +59,33 @@ public class Indexer extends SubsystemBase implements AutoCloseable {
     return SimpleMotor.talon(motor, config);
   }
 
-  public Command runIntake(double power) {
+  /**
+   * @param power Power of indexer
+   * @return run command that sets indexer motor power to power
+   */
+  public Command runIndexer(double power) {
     return run(() -> hardware.set(power));
   }
 
+  /**
+   * @return runs indexer with intake power
+   */
   public Command forward() {
-    return runIntake(INTAKE_POWER);
+    return runIndexer(INTAKE_POWER);
   }
 
+  /**
+   * @return runs indexer in the opposite direction
+   */
   public Command backward() {
-    return runIntake(-INTAKE_POWER);
+    return runIndexer(-INTAKE_POWER);
   }
 
+  /**
+   * @return runs indexer withno power
+   */
   public Command stop() {
-    return runIntake(0);
+    return runIndexer(0);
   }
 
   @Override

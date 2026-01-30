@@ -33,7 +33,7 @@ public final class TalonUtils {
    *
    * @param signal The status signal to add.
    */
-  public static void addSignal(StatusSignal signal) {
+  public static void addSignal(StatusSignal<?> signal) {
     BaseStatusSignal[] newSignals = new BaseStatusSignal[talonSignals.length + 1];
     System.arraycopy(talonSignals, 0, newSignals, 0, talonSignals.length);
     newSignals[talonSignals.length] = signal;

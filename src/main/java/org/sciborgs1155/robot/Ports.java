@@ -63,4 +63,7 @@ public final class Ports {
     public static final int MOTOR_PORT = 18;
     public static final int CANCODER = 19;
   }
+    public static final class Turret {
+    public static final int MOTOR = 67;
+  }
 }

@@ -5,6 +5,7 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 import static org.sciborgs1155.lib.Assertion.eAssert;
+import static org.sciborgs1155.robot.Constants.tuning;
 import static org.sciborgs1155.robot.climb.ClimbConstants.*;
 
 import com.ctre.phoenix6.SignalLogger;
@@ -14,7 +15,6 @@ import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.networktables.DoubleEntry;
-import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color8Bit;
@@ -22,10 +22,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-
 import java.util.Set;
 import java.util.function.DoubleSupplier;
-
 import org.sciborgs1155.lib.Assertion;
 import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.lib.Tuning;
@@ -95,7 +93,7 @@ public class Climb extends SubsystemBase implements AutoCloseable {
                 (state) -> SignalLogger.writeString("elevator state", state.toString())),
             new SysIdRoutine.Mechanism(v -> hardware.setVoltage(v.in(Volts)), null, this));
 
-    if (TUNING) {
+    if (tuning) {
       SmartDashboard.putData(
           "Robot/elevator/quasistatic forward",
           sysIdRoutine
@@ -177,7 +175,7 @@ public class Climb extends SubsystemBase implements AutoCloseable {
     setpoint.setLength(positionSetpoint());
     measurement.setLength(position());
 
-    if (TUNING) {
+    if (tuning) {
       ff.setKs(kS.get());
       ff.setKg(kG.get());
       ff.setKv(kV.get());
@@ -185,12 +183,14 @@ public class Climb extends SubsystemBase implements AutoCloseable {
     }
   }
 
-   /** 
-    * test for climb to go to a set goal position
-    * @param goal The goal height of the climb.
-    */
+  /**
+   * test for climb to go to a set goal position
+   *
+   * @param goal The goal height of the climb.
+   */
   public Test goToTest(Distance goal) {
-    Command testCommand = goTo(goal.in(Meters)).until(() -> atPosition(goal.in(Meters))).withTimeout(5);
+    Command testCommand =
+        goTo(goal.in(Meters)).until(() -> atPosition(goal.in(Meters))).withTimeout(5);
     Set<Assertion> assertions =
         Set.of(
             eAssert(
@@ -227,9 +227,9 @@ public class Climb extends SubsystemBase implements AutoCloseable {
    * @return A retracting command.
    */
   public Command retract() {
-    return run(() -> hardware.brake())
-            .andThen(goTo(MIN_HEIGHT.in(Meters)))
-            .withName("retracting");
+    return runOnce(() -> hardware.brake())
+        .andThen(goTo(MIN_HEIGHT.in(Meters)))
+        .withName("retracting");
   }
 
   /**
@@ -238,8 +238,8 @@ public class Climb extends SubsystemBase implements AutoCloseable {
    * @return An extending command.
    */
   public Command extend() {
-    return run(() -> hardware.coast())
-            .andThen(run(() -> hardware.setVoltage(0)))
-            .withName("extending");
+    return runOnce(() -> hardware.coast())
+        .andThen(run(() -> hardware.setVoltage(0)))
+        .withName("extending");
   }
 }

@@ -36,6 +36,7 @@ import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.lib.Tracer;
 import org.sciborgs1155.robot.Ports.OI;
+import org.sciborgs1155.robot.climb.Climb;
 import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
 import org.sciborgs1155.robot.drive.Drive;
@@ -58,6 +59,7 @@ public class Robot extends CommandRobot {
   // SUBSYSTEMS
   private final Drive drive = Drive.create();
   private final Vision vision = Vision.create();
+  private final Climb climb = Climb.create();
 
   // COMMANDS
   private final Alignment align = new Alignment(drive);
@@ -135,6 +137,8 @@ public class Robot extends CommandRobot {
   /** Configures trigger -> command bindings. */
   private void configureBindings() {
     // x and y are switched: we use joystick Y axis to control field x motion
+    operator.a().whileTrue(climb.extend());
+    operator.b().whileTrue(climb.retract());
     InputStream rawX = InputStream.of(driver::getLeftY).log("/Robot/raw x").negate();
     InputStream rawY = InputStream.of(driver::getLeftX).log("/Robot/raw y").negate();
 

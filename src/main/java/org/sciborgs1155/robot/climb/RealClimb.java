@@ -1,6 +1,7 @@
 package org.sciborgs1155.robot.climb;
 
 import static edu.wpi.first.units.Units.Amps;
+import static org.sciborgs1155.robot.Ports.Climb.*;
 import static org.sciborgs1155.robot.climb.ClimbConstants.*;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;

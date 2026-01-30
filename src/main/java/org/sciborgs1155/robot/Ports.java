@@ -50,4 +50,9 @@ public final class Ports {
   public static final class LEDs {
     public static final int LED_PORT = 9;
   }
+
+  public static final class Climb {
+    public static final int LEFT_MOTOR_ID = 260;
+    public static final int RIGHT_MOTOR_ID = 16231;
+  }
 }

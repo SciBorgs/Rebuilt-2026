@@ -19,7 +19,7 @@ public class SimClimb implements ClimbIO {
           MIN_HEIGHT.in(Meters),
           MAX_HEIGHT.in(Meters),
           false,
-          MIN_HEIGHT.in(Meters));
+          STARTING_HEIGHT.in(Meters));
 
   /** Constructor of the climb simulator */
   public SimClimb() {
@@ -30,6 +30,7 @@ public class SimClimb implements ClimbIO {
   public void setVoltage(double voltage) {
     climb.setInputVoltage(voltage + EXTRA_VOLT_FOR_SIM);
     climb.update(PERIOD.in(Seconds));
+    System.out.println(voltage + EXTRA_VOLT_FOR_SIM);
   }
 
   @Override
@@ -51,14 +52,8 @@ public class SimClimb implements ClimbIO {
   public void close() throws Exception {}
 
   @Override
-  public void brake() {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'brake'");
-  }
+  public void brake() {}
 
   @Override
-  public void coast() {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'coast'");
-  }
+  public void coast() {}
 }

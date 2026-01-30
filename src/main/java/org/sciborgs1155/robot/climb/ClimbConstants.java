@@ -25,6 +25,8 @@ public class ClimbConstants {
   public static final double V = 0;
   public static final double A = 0;
 
+  public static final double EXTRA_VOLT_FOR_SIM = 1;
+
   public static final LinearVelocity MAX_VELOCITY = MetersPerSecond.of(.5);
   public static final LinearAcceleration MAX_ACCEL = MetersPerSecondPerSecond.of(.2);
 

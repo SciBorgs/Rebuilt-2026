@@ -18,7 +18,7 @@ public class SimClimb implements ClimbIO {
           DCMotor.getKrakenX60(2),
           MIN_HEIGHT.in(Meters),
           MAX_HEIGHT.in(Meters),
-          true,
+          false,
           MIN_HEIGHT.in(Meters));
 
   /** Constructor of the climb simulator */
@@ -28,7 +28,7 @@ public class SimClimb implements ClimbIO {
 
   @Override
   public void setVoltage(double voltage) {
-    climb.setInputVoltage(voltage);
+    climb.setInputVoltage(voltage + EXTRA_VOLT_FOR_SIM);
     climb.update(PERIOD.in(Seconds));
   }
 

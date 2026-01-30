@@ -83,8 +83,6 @@ public class Shooting {
   private static final Translation2d HUB_TARGET =
       FieldConstants.Hub.topCenterPoint.toTranslation2d();
 
-  private ShooterParams calculated = new ShooterParams(0, 0, 0);
-
   /**
    * Shoots the ball at the hub. Can do it while driving.
    *
@@ -93,12 +91,7 @@ public class Shooting {
   public Command shootHub() {
     return Commands.waitUntil(() -> shooter.atSetpoint() && hood.atGoal() && true)
         .andThen(Commands.idle())
-        .deadlineFor(
-            Commands.run(
-                () -> {
-                  calculated = calculateShot(HUB_TARGET);
-                }),
-            runShooterSuperstructure(() -> calculated));
+        .deadlineFor(runShooterSuperstructure(() -> calculateShot(HUB_TARGET)));
   }
 
   private Command runShooterSuperstructure(Supplier<ShooterParams> params) {
@@ -112,11 +105,7 @@ public class Shooting {
    * Lets you drive around while the turret aims at the hub. Should be doing this most of the match.
    */
   public Command faceHub() {
-    return Commands.run(
-            () -> {
-              calculated = calculateShot(HUB_TARGET);
-            })
-        .alongWith(turret.runTurret(() -> calculated.turretAngle));
+    return turret.runTurret(() -> calculateShot(HUB_TARGET).turretAngle);
   }
 
   /**
@@ -171,9 +160,17 @@ public class Shooting {
 
     ChassisSpeeds speeds = drive.fieldRelativeChassisSpeeds();
 
-    // add rotational velocity and acceleration projection later
-    Vector<N2> turretSpeeds = VecBuilder.fill(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
-    // TOF iterative solver
+    Vector<N2> translationSpeeds =
+        VecBuilder.fill(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
+    Vector<N2> rotationSpeeds =
+        TURRET_FROM_ROBOT
+            .getTranslation()
+            .toTranslation2d()
+            .rotateBy(Rotation2d.kCCW_90deg.plus(drive.heading()))
+            .toVector()
+            .times(speeds.omegaRadiansPerSecond);
+    Vector<N2> turretSpeeds = translationSpeeds.plus(rotationSpeeds);
+    // ToF iterative solver
     for (int i = 0; i < 25; i++) {
       double distance = target.getDistance(turretPose.getTranslation());
       double tof = DISTANCE_TO_TOF.get(distance);

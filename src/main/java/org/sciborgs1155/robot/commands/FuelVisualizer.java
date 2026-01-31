@@ -41,6 +41,15 @@ public final class FuelVisualizer {
   /** How long each frame of the animation is (SECONDS / FRAME). */
   private static final double FRAME_LENGTH = 0.02;
 
+  /** How fast the shooter can launch Fuel (SECONDS / FUEL LAUNCH). */
+  private static final double COOLDOWN = 0.05;
+
+  /** The radius of the shooter wheel (METERS). */
+  private static final double SHOOTER_WHEEL_RADIUS = 0.1016;
+
+  /** The mass of the shooter wheel (KILOGRAMS). */
+  private static final double SHOOTER_WHEEL_MASS = 0.27215542;
+
   /** This constructor is not meant to be used. */
   private FuelVisualizer() {}
 
@@ -68,6 +77,12 @@ public final class FuelVisualizer {
   /** A supplier for the current velocity of the robot. */
   private static Supplier<ChassisSpeeds> robotVelocity;
 
+  /** If True, all Fuel launch data is retrieved from vector suppliers. */
+  private static boolean vectorControl;
+
+  /** A supplier for the launch velocity of the Fuel. Only used in Vector control mode. */
+  private static Supplier<Vector<N3>> fuelLaunchVelocity;
+
   /**
    * To be called on robot startup. Parameters used to calculate Fuel trajectory after launch.
    *
@@ -76,7 +91,6 @@ public final class FuelVisualizer {
    * @param hoodAngleSupplier A supplier for the angle of the {@code Hood}.
    * @param robotPoseSupplier A supplier for the pose of the {@code Drive}.
    * @param robotVelocitySupplier A supplier for the velocity of the {@code Drive}.
-   * @param fuelCapacity The number of Fuel's to simulate.
    */
   public static void init(
       Supplier<AngularVelocity> shooterVelocitySupplier,
@@ -90,18 +104,43 @@ public final class FuelVisualizer {
     robotPose = robotPoseSupplier;
     robotVelocity = robotVelocitySupplier;
 
+    // DISABLE VECTOR CONTROL
+    fuelLaunchVelocity = () -> VecBuilder.fill(0, 0, 0);
+    vectorControl = false;
+
     // FUEL INSTANTIATION
     fuelSims = new ArrayList<>(1);
     fuelSims.add(new FuelSim());
   }
-//same as above but for vectors
-//   public static void initVector(
-//     Supplier<Vector<N3>> vector) {
- 
-//   // FUEL INSTANTIATION
-//   fuelSims = new ArrayList<>(1);
-//   fuelSims.add(new FuelSim());
-// }
+
+  /**
+   * To be called on robot startup. Parameters used to calculate Fuel trajectory after launch. <br>
+   * </br> {@code NOTE: This enables vector control mode.}
+   *
+   * @param fuelLaunchVelocitySupplier A supplier for the robot-relative launch velocity of the Fuel
+   *     (X, Y, Z : METERS PER SECOND)
+   * @param robotPoseSupplier A supplier for the pose of the {@code Drive}.
+   * @param robotVelocitySupplier A supplier for the velocity of the {@code Drive}.
+   */
+  public static void init(
+      Supplier<Vector<N3>> fuelLaunchVelocitySupplier,
+      Supplier<Pose3d> robotPoseSupplier,
+      Supplier<ChassisSpeeds> robotVelocitySupplier) {
+    shooterVelocity = RadiansPerSecond::zero;
+    turretAngle = Radians::zero;
+    hoodAngle = Radians::zero;
+    robotPose = robotPoseSupplier;
+    robotVelocity = robotVelocitySupplier;
+
+    // ENABLE VECTOR CONTROL
+    fuelLaunchVelocity = fuelLaunchVelocitySupplier;
+    vectorControl = true;
+
+    // FUEL INSTANTIATION
+    fuelSims = new ArrayList<>(1);
+    fuelSims.add(new FuelSim());
+  }
+
 
   /** Publishes the Fuel display data to {@code NetworkTables}. */
   public static void periodic() {
@@ -112,7 +151,7 @@ public final class FuelVisualizer {
     for (int index = 0; index < fuelSims.size(); index++) {
       // INCREMENT FRAME
       fuelSims.get(index).nextFrame();
-      
+
       // UPDATE SCORE
       scores += fuelSims.get(index).scores;
 
@@ -120,7 +159,7 @@ public final class FuelVisualizer {
       if (fuelSims.get(index).hasBeenLaunched) {
         deletedScores += fuelSims.get(index).scores;
         fuelSims.remove(index);
-      } 
+      }
     }
 
     Tracer.endTrace();
@@ -138,6 +177,7 @@ public final class FuelVisualizer {
    */
   public static Command launchFuel() {
     return Commands.deferredProxy(() -> Commands.runOnce(getLaunchableFuel()::init))
+        .andThen(Commands.waitSeconds(COOLDOWN))
         .withName("LAUNCH FUEL");
   }
 
@@ -186,11 +226,15 @@ public final class FuelVisualizer {
    * @return The pose of the shooter (FIELD RELATIVE METERS).
    */
   private static Pose3d shooterPose() {
+    if (vectorControl)
+      return new Pose3d(
+          robotPose.get().getTranslation().plus(Robot.ROBOT_TO_SHOOTER),
+          new Rotation3d()); // TODO: Add vector rotation.
     return robotPose
         .get()
         .transformBy(
             new Transform3d(
-                Robot.ROBOT_TO_TURRET,
+                Robot.ROBOT_TO_SHOOTER,
                 new Rotation3d(Radians.zero(), hoodAngle.get(), turretAngle.get())));
   }
 
@@ -200,6 +244,11 @@ public final class FuelVisualizer {
    * @return A vector representing the translation of the Fuel at launch (METERS).
    */
   private static Vector<N3> calculateFuelLaunchTranslation() {
+    if (vectorControl)
+      return shooterPose()
+          .getTranslation()
+          .toVector()
+          .plus(fuelLaunchVelocity.get().unit().times(Robot.SHOOTER_LENGTH.in(Meters)));
     return shooterPose()
         .getTranslation()
         .toVector()
@@ -213,14 +262,25 @@ public final class FuelVisualizer {
    *
    * @return A vector representing the velocity of the Fuel at launch (METERS / FRAME).
    */
-  // TODO: ACCOUNT FOR CONVERSION BETWEEN SHOOTER VELOCITY AND LAUNCH VELOCITY
   private static Vector<N3> calculateFuelLaunchVelocity() {
-    Vector<N3> stationaryVelocity =
-        fromSphericalCoords(
-            shooterVelocity.get().in(RadiansPerSecond), shooterPose().getRotation());
+    if (vectorControl) return fuelLaunchVelocity.get().times(FRAME_LENGTH);
+
+    // CONVERT FUEL LAUNCH SPEED (SOURCE BELOW)
+    // https://docs.carlmontrobotics.org/jupyter_notebooks/files/FlywheelShooter.html#Equation-1
+    // USED "WHEEL VELOCITY WITH SHAPE FACTORS" EQUATION
+    double massRatio = FUEL_MASS / SHOOTER_WHEEL_MASS;
+    double numerator = SHOOTER_WHEEL_RADIUS * shooterVelocity.get().in(RadiansPerSecond);
+
+    // SPECIFIC TO BALL PROJECTILE AND CYLINDRICAL WHEEL
+    double shapeFactor = 7 / 5;
+
+    double launchSpeed = numerator / (2 + shapeFactor * massRatio);
+
+    // CALCULATE FUEL LAUNCH VELOCITY
+    Vector<N3> stationaryVelocity = fromSphericalCoords(launchSpeed, shooterPose().getRotation());
     Vector<N3> rotationalVelocity =
         fromSphericalCoords(
-            robotVelocity.get().omegaRadiansPerSecond * Robot.ROBOT_TO_TURRET.getNorm(),
+            robotVelocity.get().omegaRadiansPerSecond * Robot.ROBOT_TO_SHOOTER.getNorm(),
             robotPose.get().getRotation().plus(new Rotation3d(0, 0, Math.PI / 2)));
     Vector<N3> translationalVelocity =
         VecBuilder.fill(

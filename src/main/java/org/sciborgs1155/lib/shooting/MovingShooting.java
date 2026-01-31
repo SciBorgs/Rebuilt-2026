@@ -1,5 +1,7 @@
 package org.sciborgs1155.lib.shooting;
 
+import org.sciborgs1155.robot.FieldConstants;
+
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -12,14 +14,14 @@ public class MovingShooting implements ShootingAlgorithm {
   InterpolatingDoubleTreeMap angleMap = new InterpolatingDoubleTreeMap();
 
   // constants
-  double latency;
-  double totalSpeed;
+  double latency = 0.1;
+  double totalSpeed = 1.5;
 
   // goal pos
-  double goalX;
-  double goalY;
+  double goalX = FieldConstants.HUB.getX();
+  double goalY = FieldConstants.HUB.getY();
 
-  double magnusCorrection;
+  double magnusCorrection = 0;
 
   @Override
   public Vector<N3> calculate(Translation2d pose, Vector<N2> velocity) {
@@ -50,8 +52,8 @@ public class MovingShooting implements ShootingAlgorithm {
 
     // final X, Y, and Z
     double finalX = Math.cos(adjustedAngle) * totalSpeed;
-    double finalY = Math.sin(pitch) * totalSpeed;
-    double finalZ = Math.sin(adjustedAngle) * totalSpeed;
+    double finalZ = Math.sin(pitch) * totalSpeed;
+    double finalY = Math.sin(adjustedAngle) * totalSpeed;
 
     Vector<N3> finalVector = new Translation3d(finalX, finalY, finalZ).toVector();
 

@@ -14,6 +14,9 @@ import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.Vector;
+import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
@@ -34,6 +37,8 @@ import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.lib.Tracer;
+import org.sciborgs1155.lib.shooting.MovingShooting;
+import org.sciborgs1155.lib.shooting.ShootingAlgorithm;
 import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
@@ -56,6 +61,8 @@ public class Robot extends CommandRobot {
 
   // SUBSYSTEMS
   private final Drive drive = Drive.create();
+
+  private final ShootingAlgorithm shootingAlgorithm = new MovingShooting();
 
   // COMMANDS
   private final Alignment align = new Alignment(drive);
@@ -89,11 +96,10 @@ public class Robot extends CommandRobot {
     SignalLogger.enableAutoLogging(true);
     addPeriodic(FaultLogger::update, 2);
     Epilogue.bind(this);
-    FuelVisualizer.init(() -> RotationsPerSecond.of(2000/60), 
-    () -> Radians.of(0), 
-    () -> Radians.of(90), 
-    drive::pose3d, 
-    () -> drive.fieldRelativeChassisSpeeds());
+    // FuelVisualizer.init(() -> shootingAlgorithm.calculate(drive.pose().getTranslation(), VecBuilder.fill(drive.fieldRelativeChassisSpeeds().vxMetersPerSecond, drive.fieldRelativeChassisSpeeds().vyMetersPerSecond))
+    // , drive::pose3d, drive::fieldRelativeChassisSpeeds);
+    FuelVisualizer.init(() -> shootingAlgorithm.calculate(drive.pose().getTranslation().plus(Constants.Robot.ROBOT_TO_SHOOTER.toTranslation2d()), VecBuilder.fill(0,67))
+    , drive::pose3d, drive::fieldRelativeChassisSpeeds);
 
     addPeriodic(FuelVisualizer::periodic, 0.02);
 
@@ -123,8 +129,8 @@ public class Robot extends CommandRobot {
 
     // Configure pose estimation updates every tick
     FuelVisualizer.init(
-        () -> RadiansPerSecond.of(7),
-        Radians::zero,
+        () -> RotationsPerSecond.of(2000 / 60),
+        Degrees::zero,
         () -> Radians.of(1),
         drive::pose3d,
         drive::fieldRelativeChassisSpeeds);

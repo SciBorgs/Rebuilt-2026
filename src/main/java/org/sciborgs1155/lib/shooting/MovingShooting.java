@@ -2,6 +2,8 @@ package org.sciborgs1155.lib.shooting;
 
 import static org.sciborgs1155.robot.FieldConstants.HUB;
 
+import org.sciborgs1155.robot.Constants.Robot;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
@@ -20,13 +22,9 @@ public class MovingShooting implements ShootingAlgorithm {
 
     // angle to shoot at goal
     double angle = Math.atan2(target.get(1), target.get(0));
-    
-    // shot speed
-    double requiredSpeed = target.norm();
 
     // pitch to shoot at goal
-    if (launchSpeed < requiredSpeed) return VecBuilder.fill(0,0,0);
-    double pitch = Math.acos(MathUtil.clamp(requiredSpeed / launchSpeed, -1 ,1));
+    double pitch = Math.acos(target.norm() * Math.sqrt(9.81 / (2 * (HUB.getZ()))) / launchSpeed);
 
     // final X, Y, and Z
     double finalX = Math.cos(angle) * launchSpeed;

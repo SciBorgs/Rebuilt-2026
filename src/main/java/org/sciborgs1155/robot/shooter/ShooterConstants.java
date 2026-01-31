@@ -10,6 +10,7 @@ import edu.wpi.first.units.measure.Distance;
 
 public class ShooterConstants {
   public static final double GEARING = 1 / 0.8;
+  public static final double SENSOR_MECHANISM_RATIO = GEARING * 2 * Math.PI;
 
   public static final Distance RADIUS = Inches.of(2);
   public static final Distance CIRCUMFERENCE = RADIUS.times(2 * Math.PI);

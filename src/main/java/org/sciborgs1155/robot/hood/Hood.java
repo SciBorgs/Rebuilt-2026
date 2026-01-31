@@ -3,6 +3,7 @@ package org.sciborgs1155.robot.hood;
 import static edu.wpi.first.units.Units.*;
 import static org.sciborgs1155.lib.Assertion.eAssert;
 import static org.sciborgs1155.robot.hood.HoodConstants.*;
+import static org.sciborgs1155.robot.hood.HoodConstants.PID.*;
 
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
@@ -39,27 +40,27 @@ public class Hood extends SubsystemBase implements AutoCloseable {
   @Logged
   private final ProfiledPIDController fb =
       new ProfiledPIDController(
-          K_P,
-          K_I,
-          K_D,
+          P,
+          I,
+          D,
           new TrapezoidProfile.Constraints(
               MAX_VELOCITY.in(RadiansPerSecond), MAX_ACCEL.in(RadiansPerSecondPerSecond)));
 
   /** Arm feed forward controller. */
-  private final ArmFeedforward ff = new ArmFeedforward(K_S, K_G, K_V, K_A);
+  private final ArmFeedforward ff = new ArmFeedforward(S, G, V, A);
 
   private final HoodVisualizer measurement =
       new HoodVisualizer("measurement", new Color8Bit(Color.kBlue), new Color8Bit(Color.kDarkBlue));
   private final HoodVisualizer setpoint =
       new HoodVisualizer("setpoint", new Color8Bit(Color.kOrange), new Color8Bit(Color.kOrangeRed));
 
-  @NotLogged private final DoubleEntry tuningP = Tuning.entry("Robot/tuning/hood/K_P", K_P);
-  @NotLogged private final DoubleEntry tuningI = Tuning.entry("Robot/tuning/hood/K_I", K_I);
-  @NotLogged private final DoubleEntry tuningD = Tuning.entry("Robot/tuning/hood/K_D", K_D);
-  @NotLogged private final DoubleEntry tuningS = Tuning.entry("Robot/tuning/hood/K_S", K_S);
-  @NotLogged private final DoubleEntry tuningG = Tuning.entry("Robot/tuning/hood/K_G", K_G);
-  @NotLogged private final DoubleEntry tuningV = Tuning.entry("Robot/tuning/hood/K_V", K_V);
-  @NotLogged private final DoubleEntry tuningA = Tuning.entry("Robot/tuning/hood/K_A", K_A);
+  @NotLogged private final DoubleEntry tuningP = Tuning.entry("Robot/tuning/hood/K_P", P);
+  @NotLogged private final DoubleEntry tuningI = Tuning.entry("Robot/tuning/hood/K_I", I);
+  @NotLogged private final DoubleEntry tuningD = Tuning.entry("Robot/tuning/hood/K_D", D);
+  @NotLogged private final DoubleEntry tuningS = Tuning.entry("Robot/tuning/hood/S", S);
+  @NotLogged private final DoubleEntry tuningG = Tuning.entry("Robot/tuning/hood/G", G);
+  @NotLogged private final DoubleEntry tuningV = Tuning.entry("Robot/tuning/hood/V", V);
+  @NotLogged private final DoubleEntry tuningA = Tuning.entry("Robot/tuning/hood/A", A);
 
   /** Routine for recording and analyzing motor data. */
   private final SysIdRoutine sysIdRoutine;

@@ -138,6 +138,7 @@ public class Turret extends SubsystemBase implements AutoCloseable {
    * @param direction Direction of the motor. Forward is clockwise while reverse is
    *     counterclockwise.
    */
+  @NotLogged
   public Command sysIdTest(SysIdTestType type, Direction direction) {
     /*
     Angle startAngle = direction == Direction.kForward ? MIN_ANGLE : MAX_ANGLE;
@@ -171,6 +172,8 @@ public class Turret extends SubsystemBase implements AutoCloseable {
    * @param double The position setpoint in radians.
    */
   public void update(double positionSetpoint) {
+    controller.setGoal(positionSetpoint);
+
     double currentPosition = hardware.position();
     double pidVolts = controller.calculate(currentPosition, positionSetpoint);
 
@@ -186,8 +189,7 @@ public class Turret extends SubsystemBase implements AutoCloseable {
    * @param DoubleSupplier The position supplier.
    */
   public Command goTo(DoubleSupplier position) {
-    return runOnce(() -> controller.setGoal(position.getAsDouble()))
-        .andThen(run(() -> update(position.getAsDouble())));
+    return run(() -> update(position.getAsDouble())).withName("goTo (DoubleSupplier)");
   }
 
   /**
@@ -196,11 +198,14 @@ public class Turret extends SubsystemBase implements AutoCloseable {
    * @param Double The position.
    */
   public Command goTo(Double position) {
-    return goTo(() -> position);
+    return goTo(() -> position).withName("goTo (Double)");
   }
 
   @Override
   public void periodic() {
+    var command = getCurrentCommand();
+    LoggingUtils.log("Robot/turret/current command", command != null ? command.getName() : "None");
+
     if (hardware instanceof SimTurret sim) {
       LoggingUtils.log("Robot/turret/true position", sim.trueAngleRad());
       LoggingUtils.log("Robot/turret/encoder A position", sim.encoderARotations());

@@ -19,6 +19,8 @@ public class MovingShooting implements ShootingAlgorithm {
   double goalX;
   double goalY;
 
+  double magnusCorrection;
+
   @Override
   public Vector<N3> calculate(Translation2d pose, Vector<N2> velocity) {
 
@@ -38,6 +40,8 @@ public class MovingShooting implements ShootingAlgorithm {
     // angle to shoot at goal
     double angle = Math.atan2(goalY, goalX);
 
+    double adjustedAngle = angle + magnusCorrection * velocity.norm();
+    
     // shot speed
     double speed = shot.norm();
 
@@ -45,9 +49,9 @@ public class MovingShooting implements ShootingAlgorithm {
     double pitch = Math.acos(speed / totalSpeed);
 
     // final X, Y, and Z
-    double finalX = Math.cos(angle) * totalSpeed;
+    double finalX = Math.cos(adjustedAngle) * totalSpeed;
     double finalY = Math.sin(pitch) * totalSpeed;
-    double finalZ = Math.sin(angle) * totalSpeed;
+    double finalZ = Math.sin(adjustedAngle) * totalSpeed;
 
     Vector<N3> finalVector = new Translation3d(finalX, finalY, finalZ).toVector();
 

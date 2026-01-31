@@ -73,11 +73,6 @@
           "visible": true
         }
       },
-      "/SmartDashboard/Auto Chooser": {
-        "window": {
-          "visible": true
-        }
-      },
       "/SmartDashboard/Drive Field": {
         "bottom": 1914,
         "height": 8.069275856018066,

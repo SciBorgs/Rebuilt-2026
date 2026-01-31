@@ -227,9 +227,7 @@ public class Climb extends SubsystemBase implements AutoCloseable {
    * @return A retracting command.
    */
   public Command retract() {
-    return runOnce(() -> hardware.brake())
-        .andThen(goTo(MIN_HEIGHT.in(Meters)))
-        .withName("retracting");
+    return goTo(MIN_HEIGHT.in(Meters)).withName("retracting");
   }
 
   /**
@@ -238,8 +236,6 @@ public class Climb extends SubsystemBase implements AutoCloseable {
    * @return An extending command.
    */
   public Command extend() {
-    return runOnce(() -> hardware.coast())
-        .andThen(run(() -> hardware.setVoltage(0)))
-        .withName("extending");
+    return goTo(MAX_HEIGHT.in(Meters)).withName("extending");
   }
 }

@@ -21,10 +21,4 @@ public interface ClimbIO extends AutoCloseable {
    * @return Velocity in m/s.
    */
   double velocity();
-
-  /** Sets the motors to brake mode */
-  void brake();
-
-  /** Sets the motors to coast mode */
-  void coast();
 }

@@ -66,16 +66,4 @@ public class RealClimb implements ClimbIO {
   public void close() {
     leftMotor.close();
   }
-
-  @Override
-  public void coast() {
-    leftMotor.setNeutralMode(NeutralModeValue.Coast);
-    rightMotor.setNeutralMode(NeutralModeValue.Coast);
-  }
-
-  @Override
-  public void brake() {
-    leftMotor.setNeutralMode(NeutralModeValue.Brake);
-    rightMotor.setNeutralMode(NeutralModeValue.Brake);
-  }
 }

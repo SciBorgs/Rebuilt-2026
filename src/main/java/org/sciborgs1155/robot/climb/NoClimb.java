@@ -17,10 +17,4 @@ public class NoClimb implements ClimbIO {
   public double velocity() {
     return 0.0;
   }
-
-  @Override
-  public void brake() {}
-
-  @Override
-  public void coast() {}
 }

@@ -88,7 +88,8 @@ public final class FuelVisualizer {
    * @return A command to launch Fuel.
    */
   public static Command shootFuel() {
-    return Commands.runOnce(() -> CommandScheduler.getInstance().schedule(getLaunchableFuel().shoot()));
+    return Commands.runOnce(
+        () -> CommandScheduler.getInstance().schedule(getLaunchableFuel().shoot()));
   }
 
   /** Publishes the current poses of the {@code FuelSim}'s to {@code NetworkTables}. */

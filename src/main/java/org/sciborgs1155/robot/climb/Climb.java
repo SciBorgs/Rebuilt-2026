@@ -184,24 +184,6 @@ public class Climb extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * test for climb to go to a set goal position
-   *
-   * @param goal The goal height of the climb.
-   */
-  public Test goToTest(Distance goal) {
-    Command testCommand =
-        goTo(goal.in(Meters)).until(() -> atPosition(goal.in(Meters))).withTimeout(5);
-    Set<Assertion> assertions =
-        Set.of(
-            eAssert(
-                "Climb system check",
-                () -> goal.in(Meters),
-                this::position,
-                POSITION_TOLERANCE.in(Meters)));
-    return new Test(testCommand, assertions);
-  }
-
-  /**
    * A command to move the climb to a certain height.
    *
    * @param height The height to set the climb to.

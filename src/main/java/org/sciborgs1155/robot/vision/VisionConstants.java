@@ -108,7 +108,7 @@ public class VisionConstants {
   public static final Matrix<N3, N1> MULTIPLE_TAG_STD_DEVS = VecBuilder.fill(0.3, 0.3, 4);
 
   public static final double MAX_HEIGHT = 0.305;
-  public static final double MAX_ANGLE = 1;
+  public static final double MAX_ANGLE = Math.PI;
   public static final double MAX_AMBIGUITY = 0.20;
 
   /** TODO: Modify AprilTag information as needed. */

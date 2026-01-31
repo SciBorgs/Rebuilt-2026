@@ -21,6 +21,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+
+import org.ejml.simple.SimpleMatrix;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
@@ -49,11 +51,14 @@ public class Vision {
   private final Map<String, Boolean> camerasEnabled;
   @Logged private final List<Pose3d> filteredEstimates;
 
+  // Completely overtrusts vision, including heading.
+  private boolean overTrustVision = false;
+
   private VisionSystemSim visionSim;
 
   /** A factory to create new vision classes with our cameras. */
   public static Vision create() {
-    return new Vision(CAMERA_0, CAMERA_1, CAMERA_2, CAMERA_3, CAMERA_4, CAMERA_5);
+    return new Vision(CAMERA_0, CAMERA_1);//, CAMERA_2, CAMERA_3, CAMERA_4, CAMERA_5);
   }
 
   /**
@@ -263,6 +268,15 @@ public class Vision {
   }
 
   /**
+   * Enables vision heading calculaton and also fully trusts it.
+   *
+   * @param enable Whether or not to enable this feature.
+   */
+  public void overTrust(boolean enable) {
+    overTrustVision = enable;
+  }
+
+  /**
    * Sets the pose estimation strategy of relevant cameras. TODO: update this with the actual
    * cameras!
    */
@@ -321,6 +335,16 @@ public class Vision {
     if (targets.size() == 1 && avgDist > 4)
       estStdDevs = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
     else estStdDevs = estStdDevs.times(1 + (avgDist * avgDist / 30));
+
+    if (overTrustVision)
+      estStdDevs.setColumn(
+          0,
+          new Matrix<N3, N1>(
+              new SimpleMatrix(
+                  3,
+                  1,
+                  true,
+                  new double[] {Double.MIN_VALUE, Double.MIN_VALUE, Double.MIN_VALUE})));
 
     return estStdDevs.times(avgWeight);
   }

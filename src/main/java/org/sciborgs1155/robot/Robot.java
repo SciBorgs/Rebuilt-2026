@@ -184,10 +184,11 @@ public class Robot extends CommandRobot {
 
     test().whileTrue(systemsCheck());
 
+    addPeriodic(() -> vision.overTrust(driver.rightBumper().getAsBoolean()), PERIOD);
+
     driver.b().whileTrue(drive.zeroHeading());
     driver
         .leftBumper()
-        .or(driver.rightBumper())
         .onTrue(Commands.runOnce(() -> speedMultiplier = Constants.SLOW_SPEED_MULTIPLIER))
         .onFalse(Commands.runOnce(() -> speedMultiplier = Constants.FULL_SPEED_MULTIPLIER));
 

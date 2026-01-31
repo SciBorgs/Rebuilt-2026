@@ -49,7 +49,7 @@ public class SimTurret implements TurretIO {
   }
 
   /** Absolute encoder A output as Angle [0,1) rotations. */
-  private Angle encoderARotations() {
+  public Angle encoderARotations() {
     double turretRot = trueAngleRad() / (2.0 * Math.PI);
     double encoderRot = turretRot * ((double) TURRET_GEARING / ENCODER_A_GEARING);
 
@@ -57,7 +57,7 @@ public class SimTurret implements TurretIO {
   }
 
   /** Absolute encoder B output as Angle [0,1) rotations. */
-  private Angle encoderBRotations() {
+  public Angle encoderBRotations() {
     double turretRot = trueAngleRad() / (2.0 * Math.PI);
     double encoderRot = turretRot * ((double) TURRET_GEARING / ENCODER_B_GEARING);
 

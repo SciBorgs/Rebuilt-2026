@@ -204,7 +204,9 @@ public class Turret extends SubsystemBase implements AutoCloseable {
     LoggingUtils.log("Robot/Turret/SETPOINT", controller.getSetpoint().position);
 
     if (hardware instanceof SimTurret sim) {
-      LoggingUtils.log("Robot/Turret/TRUEPOSITION", sim.trueAngleRad());
+      LoggingUtils.log("Robot/Turret/TRUE POSITION", sim.trueAngleRad());
+      LoggingUtils.log("Robot/Turret/ENCODER A ROTATIONS", sim.encoderARotations());
+      LoggingUtils.log("Robot/Turret/ENCODER B ROTATIONS", sim.encoderBRotations());
     }
 
     // VISUALIZATION

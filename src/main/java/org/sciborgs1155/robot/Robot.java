@@ -136,7 +136,7 @@ public class Robot extends CommandRobot {
 
   /** Configures trigger -> command bindings. */
   private void configureBindings() {
-    operator.a().onTrue(shooter.runShooter(500));
+    operator.a().whileTrue(shooter.runShooter(500));
 
     // x and y are switched: we use joystick Y axis to control field x motion
     InputStream raw_x = InputStream.of(driver::getLeftY).log("/Robot/raw x").negate();

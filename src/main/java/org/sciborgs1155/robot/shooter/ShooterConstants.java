@@ -9,7 +9,7 @@ import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
 
 public class ShooterConstants {
-  public static final double GEARING = 0.8;
+  public static final double GEARING = 1 / 0.8;
 
   public static final Distance RADIUS = Inches.of(2);
   public static final Distance CIRCUMFERENCE = RADIUS.times(2 * Math.PI);
@@ -26,13 +26,13 @@ public class ShooterConstants {
       new Transform3d(5.975, -5.975, -13.375, new Rotation3d());
 
   public static final class ControlConstants {
-    public static final double P = 10.0;
+    public static final double P = 0.03;
     public static final double I = 0.0;
     public static final double D = 0.0;
 
     public static final double S = 0.0;
-    public static final double V = 1.0;
-    public static final double A = 0.1;
+    public static final double V = 0.016981;
+    public static final double A = 0.0021296;
   }
 
   public static final AngularVelocity VELOCITY_TOLERANCE = RadiansPerSecond.of(0.5);

@@ -15,8 +15,7 @@ public class SimWheel implements WheelIO {
   /** Creates an instance of the flywheel motor. */
   public SimWheel() {
     flywheel =
-        new FlywheelSim(
-            LinearSystemId.identifyVelocitySystem(V, A), DCMotor.getKrakenX60(1), GEARING);
+        new FlywheelSim(LinearSystemId.identifyVelocitySystem(V, A), DCMotor.getKrakenX60(1));
   }
 
   /**
@@ -26,6 +25,7 @@ public class SimWheel implements WheelIO {
    */
   @Override
   public void setVoltage(double voltage) {
+    System.out.println(voltage);
     flywheel.setInputVoltage(voltage);
     flywheel.update(PERIOD.in(Seconds));
   }

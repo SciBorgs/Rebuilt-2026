@@ -22,8 +22,6 @@ import org.sciborgs1155.robot.Robot;
 public final class Shooter extends SubsystemBase implements AutoCloseable {
   private final WheelIO hardware;
 
-  @Logged private double setpoint;
-
   @Logged private final PIDController controller = new PIDController(P, I, D);
   private final SimpleMotorFeedforward feedforward =
       new SimpleMotorFeedforward(S, V, A, PERIOD.in(Seconds));
@@ -104,8 +102,14 @@ public final class Shooter extends SubsystemBase implements AutoCloseable {
     return Math.abs(velocity - getVelocity()) < VELOCITY_TOLERANCE.in(RadiansPerSecond);
   }
 
+  @Logged
   public double setpoint() {
-    return setpoint;
+    return controller.getSetpoint();
+  }
+
+  @Logged
+  public double velocity() {
+    return hardware.velocity();
   }
 
   /**

@@ -10,6 +10,7 @@ import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import org.sciborgs1155.robot.drive.DriveConstants;
 
@@ -30,7 +31,7 @@ public final class Constants {
   // TODO: Modify as needed.
   /** Returns the robot's alliance. */
   public static Alliance alliance() {
-    return DriverStation.getAlliance().orElse(Alliance.Blue);
+    return DriverStation.getAlliance().orElse(Alliance.Red);
   }
 
   /** Returns the rotation of the robot's alliance with respect to the origin. */
@@ -49,7 +50,7 @@ public final class Constants {
   public static final AtomicReference<RobotType> ROBOT_TYPE = new AtomicReference<>(RobotType.FULL);
 
   /** States if we are in tuning mode. Ideally, keep it at false when not used. */
-  public static final AtomicReference<Boolean> TUNING = new AtomicReference<>(false);
+  public static final AtomicBoolean TUNING = new AtomicBoolean(false);
 
   // TODO: UPDATE ALL OF THESE VALUES.
   /** Describes physical properites of the robot. */
@@ -68,5 +69,5 @@ public final class Constants {
   public static final double FULL_SPEED_MULTIPLIER = 1.0;
 
   // The name of seperate canivore, set to rio if no seperate canivore
-  public static final CANBus DRIVE_CANIVORE = new CANBus("drivetrain");
+  public static final CANBus DRIVE_CANIVORE = new CANBus("");
 }

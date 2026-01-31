@@ -49,7 +49,7 @@ public final class Constants {
   public static final AtomicReference<RobotType> ROBOT_TYPE = new AtomicReference<>(RobotType.FULL);
 
   /** States if we are in tuning mode. Ideally, keep it at false when not used. */
-  public static final boolean TUNING = new AtomicReference<>(false);
+  public static final boolean TUNING = false;
 
   // TODO: UPDATE ALL OF THESE VALUES.
   /** Describes physical properites of the robot. */

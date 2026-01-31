@@ -95,7 +95,7 @@ public class Robot extends CommandRobot {
     FaultLogger.register(pdh);
     SmartDashboard.putData("Auto Chooser", autos);
 
-    if (TUNING.get()) {
+    if (TUNING) {
       addPeriodic(
           () ->
               log(
@@ -172,7 +172,7 @@ public class Robot extends CommandRobot {
 
     drive.setDefaultCommand(drive.drive(x, y, omega).withName("joysticks"));
 
-    if (TUNING.get()) {
+    if (TUNING) {
       SignalLogger.enableAutoLogging(false);
 
       // manual .start() call is blocking, for up to 100ms

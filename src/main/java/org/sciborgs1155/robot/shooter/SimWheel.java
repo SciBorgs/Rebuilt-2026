@@ -25,7 +25,6 @@ public class SimWheel implements WheelIO {
    */
   @Override
   public void setVoltage(double voltage) {
-    System.out.println(voltage);
     flywheel.setInputVoltage(voltage);
     flywheel.update(PERIOD.in(Seconds));
   }

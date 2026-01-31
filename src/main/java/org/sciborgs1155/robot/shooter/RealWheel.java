@@ -21,7 +21,7 @@ public class RealWheel implements WheelIO {
     config.CurrentLimits.StatorCurrentLimit = STATOR_CURRENT_LIMIT.in(Amps);
     config.CurrentLimits.SupplyCurrentLimit = SUPPLY_CURRENT_LIMIT.in(Amps);
 
-    config.Feedback.SensorToMechanismRatio = GEARING;
+    config.Feedback.SensorToMechanismRatio = GEARING * 2 * Math.PI;
 
     config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
 

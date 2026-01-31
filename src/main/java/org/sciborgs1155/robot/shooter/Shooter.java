@@ -11,8 +11,11 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import java.util.Set;
 import java.util.function.DoubleSupplier;
 import org.sciborgs1155.lib.Assertion.EqualityAssertion;
@@ -25,6 +28,7 @@ public final class Shooter extends SubsystemBase implements AutoCloseable {
   @Logged private final PIDController controller = new PIDController(P, I, D);
   private final SimpleMotorFeedforward feedforward =
       new SimpleMotorFeedforward(S, V, A, PERIOD.in(Seconds));
+  private final SysIdRoutine characterization;
 
   /**
    * Sets the shooter's default command and PID tolerance.
@@ -35,6 +39,21 @@ public final class Shooter extends SubsystemBase implements AutoCloseable {
     this.hardware = hardware;
 
     controller.setTolerance(VELOCITY_TOLERANCE.in(RadiansPerSecond));
+
+    characterization =
+        new SysIdRoutine(
+            new SysIdRoutine.Config(Volts.per(Second).of(1), Volts.of(10.0), Seconds.of(11)),
+            new SysIdRoutine.Mechanism(
+                v -> hardware.setVoltage(v.in(Volts)), null, this, "top shooter"));
+
+    SmartDashboard.putData(
+        "shooter top quasistatic backward", characterization.quasistatic(Direction.kReverse));
+    SmartDashboard.putData(
+        "shooter top quasistatic forward", characterization.quasistatic(Direction.kForward));
+    SmartDashboard.putData(
+        "shooter top dynamic backward", characterization.dynamic(Direction.kReverse));
+    SmartDashboard.putData(
+        "shooter top dynamic forward", characterization.dynamic(Direction.kForward));
 
     setDefaultCommand(runShooter(IDLE_VELOCITY.in(RadiansPerSecond)).withName("Idle"));
   }
@@ -54,7 +73,7 @@ public final class Shooter extends SubsystemBase implements AutoCloseable {
    * @return A shooter that is blank.
    */
   public static Shooter none() {
-    return new Shooter(new NoWheel());
+    return new Shooter(new Wheel());
   }
 
   /**

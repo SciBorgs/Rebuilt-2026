@@ -62,4 +62,9 @@ public final class Ports {
     public static final int ENCODER_A = 68;
     public static final int ENCODER_B = 69;
   }
+  
+  public static final class Indexer {
+    public static final int MOTOR = 0;
+    public static final int BEAMBREAK = 0;
+  }
 }

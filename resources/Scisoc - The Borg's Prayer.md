@@ -1,1 +1,3 @@
 Oh robotics gods, we ask your blessing so our robot may achieve greatness in our endeavors. Grant us the height for L4, the speed for quick cycles, the endurance for long pit times, and the energy for working electronics. Give us peace in this troubled time. Let our cameras remain ever vigilant in these dark days. Borg bless us.
+
+Oh robotics gods, we ask your enlightenment so we may stimulate our neurons. Deliver to us the power to shoot far, the colossal stature so as to store fuel, the patience while waiting for the robot, and the cosmic energy to SUPERCHARGE!™  Give us peace in this troubled time. Let our cameras remain ever vigilant in these dark days. Borg bless us.

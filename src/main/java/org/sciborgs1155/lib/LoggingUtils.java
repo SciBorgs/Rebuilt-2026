@@ -172,7 +172,6 @@ public final class LoggingUtils {
    * @param value The struct value to log.
    * @param struct The struct descriptor.
    */
-  @SuppressWarnings("unchecked")
   public static <S> void log(String identifier, S value, Struct<S> struct) {
     Epilogue.getConfig().backend.log(identifier, value, struct);
   }
@@ -185,7 +184,6 @@ public final class LoggingUtils {
    * @param value The struct array to log.
    * @param struct The struct descriptor.
    */
-  @SuppressWarnings("unchecked")
   public static <S> void log(String identifier, S[] value, Struct<S> struct) {
     Epilogue.getConfig().backend.log(identifier, value, struct);
   }

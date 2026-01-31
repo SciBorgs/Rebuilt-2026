@@ -10,7 +10,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.sciborgs1155.robot.shooter.Shooter;
-import org.sciborgs1155.robot.shooter.SimWheel;
 
 public class ShooterTest {
   private Shooter shooter;
@@ -18,7 +17,7 @@ public class ShooterTest {
   @BeforeEach
   public void setup() {
     setupTests();
-    shooter = new Shooter(new SimWheel());
+    shooter = Shooter.create();
   }
 
   @AfterEach
@@ -27,7 +26,7 @@ public class ShooterTest {
   }
 
   @Test
-  public void randVelocity() {
+  public void randVelocity() throws Exception {
     runUnitTest(
         shooter.goToTest(RadiansPerSecond.of(Math.random() * MAX_VELOCITY.in(RadiansPerSecond))));
   }

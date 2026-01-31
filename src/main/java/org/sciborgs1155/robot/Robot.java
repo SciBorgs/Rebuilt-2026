@@ -39,6 +39,7 @@ import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
 import org.sciborgs1155.robot.drive.Drive;
+import org.sciborgs1155.robot.shooter.Shooter;
 import org.sciborgs1155.robot.vision.Vision;
 
 /**
@@ -58,6 +59,7 @@ public class Robot extends CommandRobot {
   // SUBSYSTEMS
   private final Drive drive = Drive.create();
   private final Vision vision = Vision.create();
+  private final Shooter shooter = Shooter.create();
 
   // COMMANDS
   private final Alignment align = new Alignment(drive);
@@ -134,6 +136,8 @@ public class Robot extends CommandRobot {
 
   /** Configures trigger -> command bindings. */
   private void configureBindings() {
+    operator.a().onTrue(shooter.runShooter(500));
+
     // x and y are switched: we use joystick Y axis to control field x motion
     InputStream raw_x = InputStream.of(driver::getLeftY).log("/Robot/raw x").negate();
     InputStream raw_y = InputStream.of(driver::getLeftX).log("/Robot/raw y").negate();

@@ -1,8 +1,11 @@
 package org.sciborgs1155.lib.shooting;
 
+import static org.sciborgs1155.robot.FieldConstants.HUB;
+
 import org.sciborgs1155.robot.FieldConstants;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -18,21 +21,14 @@ public class MovingShooting implements ShootingAlgorithm {
   double latency = 0.1;
   double totalSpeed = 10;
 
-  // goal pos
-  double goalX = FieldConstants.HUB.getX();
-  double goalY = FieldConstants.HUB.getY();
-
-  double magnusCorrection = 0;
+  double magnusCorrection = 1;
 
   @Override
   public Vector<N3> calculate(Translation2d pose, Vector<N2> velocity) {
-
-    // robot pos, robot velocity, and project pos
-    Vector<N2> robotPos = new Translation2d(pose.getX(), pose.getY()).toVector();
+    // robot pos, robot velocity, and project pos, goal po
+    Vector<N2> robotPos = pose.toVector();
     Vector<N2> projectedPos = robotPos.plus(velocity).times(latency);
-
-    // goal pos
-    Vector<N2> goalPos = new Translation2d(goalX, goalY).toVector();
+    Vector<N2> goalPos = HUB.toTranslation2d().toVector();
 
     // target vector (from robot to goal not moving)
     Vector<N2> target = goalPos.minus(projectedPos);
@@ -41,9 +37,7 @@ public class MovingShooting implements ShootingAlgorithm {
     Vector<N2> shot = target.minus(velocity);
 
     // angle to shoot at goal
-    double angle = Math.atan2(goalY, goalX);
-
-    double adjustedAngle = angle + magnusCorrection * velocity.norm();
+    double angle = Math.atan2(shot.get(1), shot.get(0));
     
     // shot speed
     double speed = shot.norm();
@@ -52,12 +46,10 @@ public class MovingShooting implements ShootingAlgorithm {
     double pitch = Math.acos(MathUtil.clamp(speed / totalSpeed, 0 ,1));
 
     // final X, Y, and Z
-    double finalX = Math.cos(adjustedAngle) * totalSpeed;
+    double finalX = Math.cos(angle) * totalSpeed;
+    double finalY = Math.sin(angle) * totalSpeed;
     double finalZ = Math.sin(pitch) * totalSpeed;
-    double finalY = Math.sin(adjustedAngle) * totalSpeed;
 
-    Vector<N3> finalVector = new Translation3d(finalX, finalY, finalZ).toVector();
-
-    return finalVector;
+    return VecBuilder.fill(finalX,finalY,finalZ);
   }
 }

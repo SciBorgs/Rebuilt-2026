@@ -2,6 +2,7 @@ package org.sciborgs1155.robot.hood;
 
 import static edu.wpi.first.units.Units.*;
 import static org.sciborgs1155.lib.Assertion.eAssert;
+import static org.sciborgs1155.robot.Constants.TUNING;
 import static org.sciborgs1155.robot.hood.HoodConstants.*;
 import static org.sciborgs1155.robot.hood.HoodConstants.PID.*;
 
@@ -211,7 +212,7 @@ public class Hood extends SubsystemBase implements AutoCloseable {
    * @return a command to go to the shooting angle
    */
   public Command goToShootingAngle(DoubleSupplier goal) {
-    return run(() -> update(goal.getAsDouble() - Math.PI / 2))
+    return run(() -> update(goal.getAsDouble() - SHOOTING_ANGLE_OFFSET.in(Radians)))
         .until(this::atGoal)
         .withName("Hood GoTo Angle");
   }
@@ -261,13 +262,15 @@ public class Hood extends SubsystemBase implements AutoCloseable {
   public void periodic() {
     measurement.setAngle(Radians.of(angle()).in(Degrees));
     setpoint.setAngle(Radians.of(angleSetpoint()).in(Degrees));
-    fb.setP(tuningP.get());
-    fb.setI(tuningI.get());
-    fb.setD(tuningD.get());
-    ff.setKs(tuningS.get());
-    ff.setKg(tuningG.get());
-    ff.setKv(tuningV.get());
-    ff.setKa(tuningA.get());
+    if (TUNING.get()) {
+      fb.setP(tuningP.get());
+      fb.setI(tuningI.get());
+      fb.setD(tuningD.get());
+      ff.setKs(tuningS.get());
+      ff.setKg(tuningG.get());
+      ff.setKv(tuningV.get());
+      ff.setKa(tuningA.get());
+    }
     LoggingUtils.log(
         "/Robot/hood/command",
         Optional.ofNullable(getCurrentCommand()).map(Command::getName).orElse("none"));

@@ -84,11 +84,6 @@
           "visible": true
         }
       },
-      "/Shuffleboard/Sim/Turret": {
-        "window": {
-          "visible": true
-        }
-      },
       "/SmartDashboard/Auto Chooser": {
         "width": 17.54825210571289,
         "window": {
@@ -96,22 +91,6 @@
         }
       },
       "/SmartDashboard/Drive Field": {
-        "bottom": 1914,
-        "height": 8.069275856018066,
-        "left": 245,
-        "right": 3942,
-        "top": 118,
-        "width": 16.54119300842285,
-        "window": {
-          "visible": true
-        }
-      },
-      "/SmartDashboard/TurretVisualizer": {
-        "window": {
-          "visible": true
-        }
-      },
-      "/SmartDashboard/VisionSystemSim-main/Sim Field": {
         "bottom": 1914,
         "height": 8.069275856018066,
         "left": 245,

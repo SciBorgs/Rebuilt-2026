@@ -18,10 +18,7 @@ import org.sciborgs1155.robot.vision.Vision.CameraConfig;
 public class VisionConstants {
   public static Rotation3d yawPitchRoll(
       double yawDegrees, double pitchDegrees, double rollDegrees) {
-    return new Rotation3d(
-        Degrees.of(rollDegrees), Degrees.of(0), Degrees.of(0))
-        .rotateBy(new Rotation3d(Degrees.of(0), Degrees.of(pitchDegrees), Degrees.of(0))
-        .rotateBy(new Rotation3d(Degrees.of(0), Degrees.of(0), Degrees.of(yawDegrees))));
+    return new Rotation3d(Degrees.of(rollDegrees), Degrees.of(pitchDegrees), Degrees.of(yawDegrees));
   }
 
   public static final AprilTagFieldLayout TAG_LAYOUT =

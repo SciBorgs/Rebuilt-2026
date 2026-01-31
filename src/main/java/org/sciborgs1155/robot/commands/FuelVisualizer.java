@@ -41,6 +41,12 @@ public final class FuelVisualizer {
   /** How long each frame of the animation is (SECONDS / FRAME). */
   private static final double FRAME_LENGTH = 0.02;
 
+  /** The radius of the shooter wheel (METERS). */
+  private static final double SHOOTER_WHEEL_RADIUS = 0.1016;
+
+  /** The mass of the shooter wheel (KILOGRAMS). */
+  private static final double SHOOTER_WHEEL_MASS = 0.27215542;
+
   /** This constructor is not meant to be used. */
   private FuelVisualizer() {}
 
@@ -104,7 +110,7 @@ public final class FuelVisualizer {
     for (int index = 0; index < fuelSims.size(); index++) {
       // INCREMENT FRAME
       fuelSims.get(index).nextFrame();
-      
+
       // UPDATE SCORE
       scores += fuelSims.get(index).scores;
 
@@ -112,7 +118,7 @@ public final class FuelVisualizer {
       if (fuelSims.get(index).hasBeenLaunched) {
         deletedScores += fuelSims.get(index).scores;
         fuelSims.remove(index);
-      } 
+      }
     }
 
     Tracer.endTrace();
@@ -205,11 +211,20 @@ public final class FuelVisualizer {
    *
    * @return A vector representing the velocity of the Fuel at launch (METERS / FRAME).
    */
-  // TODO: ACCOUNT FOR CONVERSION BETWEEN SHOOTER VELOCITY AND LAUNCH VELOCITY
   private static Vector<N3> calculateFuelLaunchVelocity() {
-    Vector<N3> stationaryVelocity =
-        fromSphericalCoords(
-            shooterVelocity.get().in(RadiansPerSecond), shooterPose().getRotation());
+    // CONVERT FUEL LAUNCH SPEED (SOURCE BELOW)
+    // https://docs.carlmontrobotics.org/jupyter_notebooks/files/FlywheelShooter.html#Equation-1
+    // USED "WHEEL VELOCITY WITH SHAPE FACTORS" EQUATION
+
+    double massRatio = FUEL_MASS / SHOOTER_WHEEL_MASS;
+    double numerator = SHOOTER_WHEEL_RADIUS * shooterVelocity.get().in(RadiansPerSecond);
+
+    // SPECIFIC TO BALL PROJECTILE AND CYLINDRICAl WHEEL
+    double shapeFactor = 7 / 5;
+    double launchSpeed = numerator / (2 + shapeFactor * massRatio);
+
+    // CALCULATE FUEL LAUNCH VELOCITY
+    Vector<N3> stationaryVelocity = fromSphericalCoords(launchSpeed, shooterPose().getRotation());
     Vector<N3> rotationalVelocity =
         fromSphericalCoords(
             robotVelocity.get().omegaRadiansPerSecond * Robot.ROBOT_TO_TURRET.getNorm(),

@@ -93,8 +93,8 @@ public class Robot extends CommandRobot {
 
     // Configure pose estimation updates every tick
     FuelVisualizer.init(
-        () -> RadiansPerSecond.of(7),
-        Radians::zero,
+        () -> RotationsPerSecond.of(2000 / 60),
+        Degrees::zero,
         () -> Radians.of(1),
         drive::pose3d,
         drive::fieldRelativeChassisSpeeds);

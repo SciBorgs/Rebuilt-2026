@@ -1,11 +1,10 @@
 package org.sciborgs1155.robot;
 
-import static edu.wpi.first.units.Units.MetersPerSecond;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.Second;
-import static edu.wpi.first.units.Units.Seconds;
-import static edu.wpi.first.wpilibj2.command.button.RobotModeTriggers.*;
-import static org.sciborgs1155.lib.LoggingUtils.log;
+import static edu.wpi.first.units.Units.*;
+import static edu.wpi.first.wpilibj2.command.button.RobotModeTriggers.autonomous;
+import static edu.wpi.first.wpilibj2.command.button.RobotModeTriggers.disabled;
+import static edu.wpi.first.wpilibj2.command.button.RobotModeTriggers.teleop;
+import static edu.wpi.first.wpilibj2.command.button.RobotModeTriggers.test;
 import static org.sciborgs1155.robot.Constants.DEADBAND;
 import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.Constants.TUNING;
@@ -15,7 +14,6 @@ import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
@@ -27,6 +25,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+
 import java.util.Arrays;
 import java.util.Set;
 import org.littletonrobotics.urcl.URCL;
@@ -38,8 +37,8 @@ import org.sciborgs1155.lib.Tracer;
 import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
+import org.sciborgs1155.robot.commands.FuelVisualizer;
 import org.sciborgs1155.robot.drive.Drive;
-import org.sciborgs1155.robot.vision.Vision;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -57,7 +56,6 @@ public class Robot extends CommandRobot {
 
   // SUBSYSTEMS
   private final Drive drive = Drive.create();
-  private final Vision vision = Vision.create();
 
   // COMMANDS
   private final Alignment align = new Alignment(drive);
@@ -91,34 +89,46 @@ public class Robot extends CommandRobot {
     SignalLogger.enableAutoLogging(true);
     addPeriodic(FaultLogger::update, 2);
     Epilogue.bind(this);
+    FuelVisualizer.init(() -> RotationsPerSecond.of(2000/60), 
+    () -> Radians.of(0), 
+    () -> Radians.of(90), 
+    drive::pose3d, 
+    () -> drive.fieldRelativeChassisSpeeds());
+
+    addPeriodic(FuelVisualizer::periodic, 0.02);
 
     FaultLogger.register(pdh);
     SmartDashboard.putData("Auto Chooser", autos);
 
-    if (TUNING) {
-      addPeriodic(
-          () ->
-              log(
-                  "/Robot/camera transforms",
-                  Arrays.stream(vision.cameraTransforms())
-                      .map(
-                          t ->
-                              new Pose3d(
-                                  drive
-                                      .pose3d()
-                                      .getTranslation()
-                                      .plus(
-                                          t.getTranslation()
-                                              .rotateBy(drive.pose3d().getRotation())),
-                                  t.getRotation().plus(drive.pose3d().getRotation())))
-                      .toArray(Pose3d[]::new),
-                  Pose3d.struct),
-          PERIOD.in(Seconds));
-    }
+    // if (TUNING.get()) {
+    //   addPeriodic(
+    //       () ->
+    //           log(
+    //               "/Robot/camera transforms",
+    //               Arrays.stream(vision.cameraTransforms())
+    //                   .map(
+    //                       t ->
+    //                           new Pose3d(
+    //                               drive
+    //                                   .pose3d()
+    //                                   .getTranslation()
+    //                                   .plus(
+    //                                       t.getTranslation()
+    //                                           .rotateBy(drive.pose3d().getRotation())),
+    //                               t.getRotation().plus(drive.pose3d().getRotation())))
+    //                   .toArray(Pose3d[]::new),
+    //               Pose3d.struct),
+    //       PERIOD.in(Seconds));
+    // }
 
     // Configure pose estimation updates every tick
-    addPeriodic(
-        () -> drive.updateEstimates(vision.estimatedGlobalPoses(drive.gyroHeading())), PERIOD);
+    FuelVisualizer.init(
+        () -> RadiansPerSecond.of(7),
+        Radians::zero,
+        () -> Radians.of(1),
+        drive::pose3d,
+        drive::fieldRelativeChassisSpeeds);
+    addPeriodic(FuelVisualizer::periodic, PERIOD);
 
     RobotController.setBrownoutVoltage(6.0);
 
@@ -128,7 +138,6 @@ public class Robot extends CommandRobot {
       pdh.setSwitchableChannel(true);
     } else {
       DriverStation.silenceJoystickConnectionWarning(true);
-      addPeriodic(() -> vision.simulationPeriodic(drive.pose()), PERIOD.in(Seconds));
     }
   }
 
@@ -172,7 +181,7 @@ public class Robot extends CommandRobot {
 
     drive.setDefaultCommand(drive.drive(x, y, omega).withName("joysticks"));
 
-    if (TUNING) {
+    if (TUNING.get()) {
       SignalLogger.enableAutoLogging(false);
 
       // manual .start() call is blocking, for up to 100ms
@@ -191,7 +200,12 @@ public class Robot extends CommandRobot {
         .onTrue(Commands.runOnce(() -> speedMultiplier = Constants.SLOW_SPEED_MULTIPLIER))
         .onFalse(Commands.runOnce(() -> speedMultiplier = Constants.FULL_SPEED_MULTIPLIER));
 
-    // TODO: Add any additional bindings.
+    operator.a().onTrue(FuelVisualizer.launchFuel());
+    operator
+        .a()
+        .whileTrue(
+            Commands.repeatingSequence(
+                FuelVisualizer.launchFuel().andThen(Commands.waitSeconds(0.02))));
   }
 
   /**

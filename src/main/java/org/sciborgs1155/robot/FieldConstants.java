@@ -8,9 +8,12 @@ import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N2;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
@@ -42,6 +45,23 @@ public final class FieldConstants {
   }
 
   /**
+   * Creates a Vector from spherical coordinates.
+   *
+   * @param magnitude The magnitude of the vector.
+   * @param direction The direction of the vector.
+   * @return A Vector from the given spherical coordinates.
+   */
+  public static Vector<N3> fromSphericalCoords(double magnitude, Rotation3d direction) {
+    double theta = direction.toRotation2d().getRadians();
+    double alpha = direction.getY();
+
+    return VecBuilder.fill(
+        magnitude * Math.cos(theta) * Math.cos(-alpha),
+        magnitude * Math.sin(theta) * Math.cos(-alpha),
+        -magnitude * Math.sin(-alpha));
+  }
+
+  /**
    * Rotates a pose 180* with respect to the center of the field, effectively swapping alliances.
    *
    * <p><b> NOTE: This only works for rotated reflect fields like Reefscape, not mirrored fields
@@ -66,7 +86,7 @@ public final class FieldConstants {
    * @param blueDist The input distance, usually for the blue alliance.
    * @return A reflected distance, only if the alliance is red.
    */
-  private static Distance reflectDistance(Distance blueDist) {
+  public static Distance reflectDistance(Distance blueDist) {
     return alliance() == Alliance.Blue ? blueDist : WIDTH.minus(blueDist);
   }
 
@@ -106,6 +126,6 @@ public final class FieldConstants {
 
   // List field constants below!
 
-  public static final Translation2d HUB =
-      new Translation2d(); // TODO the hub is not actually at 0,0
+  public static final double HUB_DIAMETER = 1.059942;
+  public static final Translation3d HUB = new Translation3d(4.611624, 4.021328, 1.8288);
 }

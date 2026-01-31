@@ -97,8 +97,7 @@ public class Robot extends CommandRobot {
         Radians::zero,
         () -> Radians.of(1),
         drive::pose3d,
-        drive::fieldRelativeChassisSpeeds,
-        504);
+        drive::fieldRelativeChassisSpeeds);
     addPeriodic(FuelVisualizer::periodic, PERIOD);
 
     RobotController.setBrownoutVoltage(6.0);

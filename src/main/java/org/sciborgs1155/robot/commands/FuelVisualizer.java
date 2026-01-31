@@ -17,6 +17,8 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Supplier;
 import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.lib.Tracer;
@@ -45,8 +47,11 @@ public final class FuelVisualizer {
   /** The index of the latest Fuel to have been launched. */
   private static int fuelIndex;
 
+  /** When deleting {@code FuelSim}'s , their scores are stored here. */
+  private static int deletedScores;
+
   /** All Fuel currently being simulated. */
-  private static FuelSim[] fuelSims;
+  private static List<FuelSim> fuelSims;
 
   /** A supplier for the angular velocity of the shooter. */
   private static Supplier<AngularVelocity> shooterVelocity;
@@ -78,8 +83,7 @@ public final class FuelVisualizer {
       Supplier<Angle> turretAngleSupplier,
       Supplier<Angle> hoodAngleSupplier,
       Supplier<Pose3d> robotPoseSupplier,
-      Supplier<ChassisSpeeds> robotVelocitySupplier,
-      int fuelCapacity) {
+      Supplier<ChassisSpeeds> robotVelocitySupplier) {
     shooterVelocity = shooterVelocitySupplier;
     turretAngle = turretAngleSupplier;
     hoodAngle = hoodAngleSupplier;
@@ -87,8 +91,8 @@ public final class FuelVisualizer {
     robotVelocity = robotVelocitySupplier;
 
     // FUEL INSTANTIATION
-    fuelSims = new FuelSim[fuelCapacity];
-    for (int index = 0; index < fuelSims.length; index++) fuelSims[index] = new FuelSim();
+    fuelSims = new ArrayList<>(1);
+    fuelSims.add(new FuelSim());
   }
 
   /** Publishes the Fuel display data to {@code NetworkTables}. */
@@ -96,10 +100,19 @@ public final class FuelVisualizer {
     // UPDATING SIMULATIONS
     Tracer.startTrace("Fuel Visualizer");
 
-    int scores = 0;
-    for (FuelSim fuelSim : fuelSims) {
-      fuelSim.nextFrame();
-      scores += fuelSim.scores;
+    int scores = deletedScores;
+    for (int index = 0; index < fuelSims.size(); index++) {
+      // INCREMENT FRAME
+      fuelSims.get(index).nextFrame();
+      
+      // UPDATE SCORE
+      scores += fuelSims.get(index).scores;
+
+      // DELETE IDLE FUEL SIMS
+      if (fuelSims.get(index).hasBeenLaunched) {
+        deletedScores += fuelSims.get(index).scores;
+        fuelSims.remove(index);
+      } 
     }
 
     Tracer.endTrace();
@@ -121,24 +134,26 @@ public final class FuelVisualizer {
   }
 
   /**
-   * Returns the first unlaunched Fuel. If all Fuel has been launched, return the first idle Fuel.
-   * If no Fuel meets this criteria, return the first Fuel in the visualizer.
+   * Returns the first unlaunched Fuel. If all Fuel has been launched, create a new Fuel.
    *
    * @return The first launchable Fuel.
    */
   private static FuelSim getLaunchableFuel() {
     // RESET INDEX IF OUT OF BOUNDS
-    if (fuelIndex >= fuelSims.length - 1) fuelIndex = 0;
+    if (fuelIndex >= fuelSims.size() - 1) fuelIndex = 0;
 
     // WHETHER OR NOT THE ENTIRE ARRAY IS GOING TO BE ITERATED THROUGH
     boolean fullCycle = fuelIndex == 0;
 
     // ITERATE THROUGH NON-CYCLED FUEL
-    for (fuelIndex++; fuelIndex < fuelSims.length; fuelIndex++)
-      if (!fuelSims[fuelIndex].isBeingLaunched) return fuelSims[fuelIndex];
+    for (fuelIndex++; fuelIndex < fuelSims.size(); fuelIndex++)
+      if (!fuelSims.get(fuelIndex).isBeingLaunched) return fuelSims.get(fuelIndex);
 
-    // IF ITERATED THROUGH WHOLE ARRAY, RETURN FIRST FUEL
-    if (fullCycle) return fuelSims[0];
+    // IF ITERATED THROUGH WHOLE ARRAY, CREATE NEW FUEL
+    if (fullCycle) {
+      fuelSims.add(new FuelSim());
+      return fuelSims.get(fuelIndex);
+    }
 
     // ITERATE THROUGH REST OF THE ELEMENTS
     fuelIndex = 0;
@@ -151,9 +166,9 @@ public final class FuelVisualizer {
    * @return The poses of every Fuel currently being simulated (METERS).
    */
   private static Pose3d[] fuelPoses() {
-    Pose3d[] fuelPoses = new Pose3d[fuelSims.length];
+    Pose3d[] fuelPoses = new Pose3d[fuelSims.size()];
     for (int index = 0; index < fuelPoses.length; index++)
-      fuelPoses[index] = fuelSims[index].pose3d();
+      fuelPoses[index] = fuelSims.get(index).pose3d();
     return fuelPoses;
   }
 
@@ -217,6 +232,9 @@ public final class FuelVisualizer {
   protected static class FuelSim {
     /** If the Fuel is suspended in the air, it is being launched. */
     protected boolean isBeingLaunched;
+
+    /** Once the Fuel ends it's first launch, this will permanently be True. */
+    protected boolean hasBeenLaunched;
 
     /** How many times this Fuel has been scored. */
     protected int scores;
@@ -336,6 +354,7 @@ public final class FuelVisualizer {
 
       // PREVENTS FRAMES FROM BEING RENDERED
       isBeingLaunched = false;
+      hasBeenLaunched = true;
     }
   }
 }

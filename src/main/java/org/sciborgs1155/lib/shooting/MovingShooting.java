@@ -6,19 +6,12 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
 
 public class MovingShooting implements ShootingAlgorithm {
-
-  InterpolatingDoubleTreeMap angleMap = new InterpolatingDoubleTreeMap();
-
   // constants
-  double latency = 0.1;
-  double exitSpeed = 10;
-
-  double magnusCorrection = 1;
+  double launchSpeed = 6.7;
 
   @Override
   public Vector<N3> calculate(Translation2d pose, Vector<N2> velocity) {
@@ -32,12 +25,13 @@ public class MovingShooting implements ShootingAlgorithm {
     double requiredSpeed = target.norm();
 
     // pitch to shoot at goal
-    double pitch = Math.acos(MathUtil.clamp(requiredSpeed / exitSpeed, 0 ,1));
+    if (launchSpeed < requiredSpeed) return VecBuilder.fill(0,0,0);
+    double pitch = Math.acos(MathUtil.clamp(requiredSpeed / launchSpeed, -1 ,1));
 
     // final X, Y, and Z
-    double finalX = Math.cos(angle) * exitSpeed;
-    double finalY = Math.sin(angle) * exitSpeed;
-    double finalZ = Math.sin(pitch) * exitSpeed;
+    double finalX = Math.cos(angle) * launchSpeed;
+    double finalY = Math.sin(angle) * launchSpeed;
+    double finalZ = Math.sin(pitch) * launchSpeed;
 
     return VecBuilder.fill(finalX,finalY,finalZ);
   }

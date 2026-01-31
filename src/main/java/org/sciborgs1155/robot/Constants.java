@@ -61,7 +61,7 @@ public final class Constants {
     public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.2);
 
     // TODO: UPDATE.
-    public static final Translation3d ROBOT_TO_TURRET = new Translation3d(0.5, 0.5, 0.5);
+    public static final Translation3d ROBOT_TO_SHOOTER = new Translation3d(0.5, 0.5, 0.5);
     public static final Distance SHOOTER_LENGTH = Meters.of(0.1);
   }
 

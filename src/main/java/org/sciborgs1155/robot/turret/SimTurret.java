@@ -1,7 +1,6 @@
 package org.sciborgs1155.robot.turret;
 
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
-import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Seconds;
@@ -23,7 +22,7 @@ public class SimTurret implements TurretIO {
           DCMotor.getKrakenX60(1), // GEARBOX
           GEAR_RATIO, // GEARING
           MOI.in(KilogramSquareMeters), // MOMENT OF INERTIA
-          TURRET_LENGTH.in(Meters), // ARM LENGTH
+          0.1, // ARM LENGTH
           MIN_ANGLE.in(Radians), // MINIMUM ANGLE
           MAX_ANGLE.in(Radians), // MAXIMUM ANGLE
           false, // GRAVITY DISBLAED

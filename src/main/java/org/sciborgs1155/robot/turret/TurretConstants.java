@@ -4,7 +4,6 @@ import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degree;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
-import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
@@ -15,7 +14,6 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Current;
-import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Velocity;
@@ -27,10 +25,9 @@ public class TurretConstants {
   public static final Current CURRENT_LIMIT = Amps.of(60);
 
   public static final double GEAR_RATIO = 100.0; // TODO: Update.
-  public static final double SENSOR_TO_MECHANISM_RATIO = 2 * Math.PI / GEAR_RATIO; // TODO: Update.
+  public static final double SENSOR_TO_MECHANISM_RATIO = 2 * Math.PI / GEAR_RATIO;
   public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.026); // TODO: Update.
   public static final Constraints CONSTRAINTS = new Constraints(0, 0); // TODO: Update.
-  public static final Distance TURRET_LENGTH = Meters.of(0.1); // TODO: Update.
 
   public static final Angle MAX_ANGLE = Degrees.of(175);
   public static final Angle MIN_ANGLE = Degrees.of(-175);

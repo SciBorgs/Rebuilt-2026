@@ -25,6 +25,7 @@ import org.sciborgs1155.robot.Robot;
  * The {@code Turret} subsystem consists of a single motor that is used to aim a variable hood
  * shooter at a specific target.
  */
+@Logged(name = "turret")
 public class Turret extends SubsystemBase implements AutoCloseable {
   /** Creates real or simulated turret based on {@link Robot#isReal()}. */
   @NotLogged
@@ -99,18 +100,19 @@ public class Turret extends SubsystemBase implements AutoCloseable {
    *
    * @return The angular position of the turret.
    */
+  @Logged
   public double position() {
     return hardware.position();
   }
 
   /**
-   * Returns the angular setpoint of the turret specified by the {@code setAngle} method.
+   * Returns the setpoint of the turret.
    *
-   * @return The angular setpoint of the turret.
+   * @return The setpoint of the turret.
    */
   @Logged
-  public Angle setpoint() {
-    return Radians.of(controller.getSetpoint().position);
+  public double setpoint() {
+    return controller.getSetpoint().position;
   }
 
   /**
@@ -118,6 +120,7 @@ public class Turret extends SubsystemBase implements AutoCloseable {
    *
    * @return whether the turret is at its goal or not.
    */
+  @Logged
   public boolean atGoal() {
     return controller.atGoal();
   }
@@ -198,15 +201,10 @@ public class Turret extends SubsystemBase implements AutoCloseable {
 
   @Override
   public void periodic() {
-    // LOGGING
-    LoggingUtils.log("Robot/Turret/POSITION", hardware.position());
-    LoggingUtils.log("Robot/Turret/VELOCITY", hardware.velocity());
-    LoggingUtils.log("Robot/Turret/SETPOINT", controller.getSetpoint().position);
-
     if (hardware instanceof SimTurret sim) {
-      LoggingUtils.log("Robot/Turret/TRUE POSITION", sim.trueAngleRad());
-      LoggingUtils.log("Robot/Turret/ENCODER A ROTATIONS", sim.encoderARotations());
-      LoggingUtils.log("Robot/Turret/ENCODER B ROTATIONS", sim.encoderBRotations());
+      LoggingUtils.log("Robot/turret/true position", sim.trueAngleRad());
+      LoggingUtils.log("Robot/turret/encoder A position", sim.encoderARotations());
+      LoggingUtils.log("Robot/turret/encoder B position", sim.encoderBRotations());
     }
 
     // VISUALIZATION

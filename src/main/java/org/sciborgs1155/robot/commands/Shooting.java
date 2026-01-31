@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Seconds;
 import static java.lang.Math.atan;
 
+import edu.wpi.first.math.InterpolatingMatrixTreeMap;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -37,7 +38,76 @@ public class Shooting {
 
   /* Create Lookup Table */
   private static final InterpolatingDoubleTreeMap shotVelocityLookup =
-      new InterpolatingDoubleTreeMap(); // I still don't really know how to use or construct this...
+      new InterpolatingDoubleTreeMap(); /* Ethan says we are measuring out about 0.5 meter increments, for the interpolation stuff done. I want to see if there is a way to have non-linear interpolation */
+
+  /* Experimenatla currentling */
+  private static final InterpolatingMatrixTreeMap matrixVelocityLookup = 
+      new InterpolatingMatrixTreeMap(); //consult masua for help?
+
+  
+      //Ax = b
+      //columns of A correlate ot the row of x
+
+      
+      /* 
+                                                      |distance|
+                                                      |theta   |(hood) nj
+      [Matrix A][distance, theta, RPM, velocity]  =   |RPM     | <--- solution column vector
+
+
+      [A][N = 2 (5)] <--double values = [RPM]
+
+      2 x 2 <--- more essential?
+      5 x 5 <-- this is okay
+
+
+      We want to interpolate for the exact Matrix A 
+
+      What kind of algorithm could we use for this?
+
+      ---
+
+      [key] = [distance, velocity -vectors?]
+
+      --> how do we come up with the initial matrix --> algorithm for the matrix (based on physical constraint)
+
+      [solution] = [thetas, rpms] ==> or if you output a function instead
+      
+      -----------------
+
+      optimize over larger dataset --> different metrix for best
+      --> [     
+      
+                      ] minimize time for robot to get to position
+      continuous set
+
+    //Next steps
+      - potentially use a lienar program
+      - multi-face thing --> physics problem defining the shot
+
+
+    Determine model
+    - 
+
+    Determine all solutions
+
+    Optimize 
+    
+    Repeat
+___________________________________________________________________________________________________________________
+      
+      3*3 X 3 *1  = 3*1 
+        Velocity    | //maybe? (this is not the best to include)
+
+
+    
+      I will keep this for notes to be deleted next time. I have a different schematic of my algorithm already tho!
+
+  ____Outdated Protocol____
+
+    Try to remember the concepts of how to use InterpolationTreeMaps however! (this is so cool!)
+    --> follow the "theoretical algorithm" by averaging between it (when simulated) and the points that have been interpolated based on real data collection! 
+  */
 
   private static final Translation3d hub =
       new Translation3d(
@@ -293,7 +363,7 @@ public class Shooting {
       Pose2d robotPose, double velocity, double prevPitch, int i) {
     double G = 9.81;
     Translation3d shooterTranslation =
-        shooterPose(Pivot.transform(-prevPitch), robotPose)
+        shooterPose(Pivot.transform(-prevPitch), robotPose)  // TODO how does this transform work? what the heckkkkk
             .getTranslation(); // TODO pivot needs to be set as Turret instead --> look at the code
     // that people are using there and try to make it work
     double dist = translationToHub(shooterTranslation.toTranslation2d()).getNorm();

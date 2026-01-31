@@ -24,8 +24,12 @@ import static edu.wpi.first.units.Units.Seconds;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import org.sciborgs1155.lib.InputStream;
+import org.sciborgs1155.robot.Ports.Turret;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.drive.DriveConstants;
+import org.sciborgs1155.robot.hopper.Hopper;
+import org.sciborgs1155.robot.drive.DriveConstants;
+import org.sciborgs1155.robot.hood.Hood;
 import org.sciborgs1155.robot.shooter.Shooter;
 
 import static java.lang.Math.atan;
@@ -34,20 +38,32 @@ import static java.lang.Math.atan;
 public class Shooting {
   private final Shooter shooter;
   private final Drive drive;
-  // private final Hood hood;
-  // private final Turret turret;
-  // private final Hopper hopper; // all of this stuff is still waiting to be merged in
+  private final Hood hood;
+  private final Turret turret;
+  private final Hopper hopper; // all of this stuff is still waiting to be merged in
+  
 
   /* Create Lookup Table */
   private static final InterpolatingDoubleTreeMap shotVelocityLookup = new InterpolatingDoubleTreeMap(); //I still don't really know how to use or construct this...
 
 
-  public Shooting(Shooter shooter, Drive drive) {
+  private static final Translation3d hub = new Translation3d(0, 0, 0); // put this in constants please lwaeiojfaopiwejfpowj and actually find the position on the field
+
+  public Shooting(Shooter shooter, Drive drive, Hood hood, Turret turret, Hopper hopper) {
     this.shooter = shooter;
     this.drive = drive;
-    // this.hood = hood;
-    // this.turret = turret;
-    // this.hopper = hopper;
+    this.hood = hood;
+    this.turret = turret;
+    this.hopper = hopper;
+
+
+    /* Need to test and input own values very soon, there does not seem to be a bunch of different values to work with so far.
+     I should start to work on the algorithmic / simulated / digital part of it. I am not really show how exactly to work out the math, so I will consult onlines sources for now*/
+
+    shotVelocityLookup.put(0.0, 300.0); /* [distance in meters]:[rotations per second] */
+    shotVelocityLookup.put(1.0, 450.0);
+    // shotVelocityLookup.put(4.0, 550.0);
+    shotVelocityLookup.put(4.0, shooter.MAX_VELOCITY.in(RadiansPerSecond));
   }
 
   /**
@@ -57,7 +73,7 @@ public class Shooting {
    * @param desiredVelocity The velocity in radians per second to shoot at.
    * @return The command to shoot at the desired velocity.
    */
-  public Command shoot(AngularVelocity desiredVelocity) {
+  public Command shoot(AngularVelocity desiredVelocity) { //might delete or implement differently
     return null;
   }
 
@@ -75,8 +91,8 @@ public class Shooting {
             () ->
                 shooter.atVelocity(desiredVelocity.getAsDouble()) &&
   shootCondition.getAsBoolean())
-        .andThen(hopper.eject()) //change this line for hopper instead TODO
-        .deadlineWith(shooter.runShooter(desiredVelocity));
+        .andThen(hopper.intake()) 
+        .deadlineWith(shooter.runShooter(desiredVelocity)); //TODO change 
   }
 
 
@@ -124,7 +140,7 @@ public class Shooting {
 
   public Vector<N3> calculateFuelVelocity(Time predictionTime) { //this code structure seems to account for the extra yaw / pitch that I was looking for before 
     return calculateFuelVelocity(
-        predictedPose(
+        constantVelocityPredictedPose(
             drive.pose(),
             drive.fieldRelativeChassisSpeeds(),
             predictionTime)); 
@@ -170,8 +186,8 @@ public class Shooting {
   }
 
 
-   public static Pose2d predictedPose(Pose2d robotPose, ChassisSpeeds speeds, Time
-  predictionTime) {
+   public static Pose2d constantVelocityPredictedPose(Pose2d robotPose, ChassisSpeeds speeds, Time
+  predictionTime) { //TODO finish this sometime soon
     // TODO (look at from crescendo again)
 
     Vector<N3> position = //is there a better name that could be used here?
@@ -180,8 +196,9 @@ public class Shooting {
     Vector<N3> velocity =
       VecBuilder.fill(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond, speeds.omegaRadiansPerSecond);
 
-    Vector<N3> predicted = position.plus(velocity.times())
+    Vector<N3> predicted = position.plus(velocity.times(predictionTime.in(Seconds))); /* how is this prediciton time calculated? */
     
+    return new Pose2d(predicted.get(0), predicted.get(1), Rotation2d.fromRadians(predicted.get(2)));
   }
 
   /**
@@ -218,7 +235,7 @@ public class Shooting {
    * @return Flywheel speed (rads / s)
    */
   public static double rotationalVelocityFromFuelVelocity(Vector<N3> velocity) {
-    return velocity.norm() / RADIUS.in(Meters) * siggysConstant.get(); //make some constants and valuess to reflect, see if we want to still honor siggysConstant? 
+    return velocity.norm() / fuel.RADIUS.in(Meters) * siggysConstant.get(); //make some constants and valuess to reflect, see if we want to still honor siggysConstant? 
   }
 
   public static Translation2d translationToHub(Translation2d robotTranslation) {
@@ -226,8 +243,22 @@ public class Shooting {
   }
 
   public static double calculateStationaryVelocity(double distance) { //TODO HOOD Angle is flexible as well
-    return flywheelToNoteSpeed(shotVelocityLookup.get(distance)); 
+    return flywheelToFuelSpeed(shotVelocityLookup.get(distance)); //copy and update method... TODO
   }
+
+  /**
+   * 
+   * @param flywheelSpeed is in Radians/second
+   * @return rectangular note-speed (with adjustments made from translational)
+   */
+  public static double flywheelToFuelSpeed9(double flywheelSpeed) {
+    return flywheelSpeed * fuel.RADIUS.in(Meters) / siggysConstant.get(); 
+  }
+
+  /* In order to use siggysConstant still, I think that we should try our best to approximate what the best constant value is 
+  (experimentally) either through interpolation or extrapolation of data that we collect from different distances */
+
+  /* I think that a hood angle that would cause the fuel to travel at 45-70 degrees from horizontal would definitely work the best (pi/4 - [pi/3 + pi/18]) */
 
   /**
    * Calculates a stationary pitch from a pose so that the note goes into the speaker.
@@ -246,12 +277,12 @@ public class Shooting {
     double G = 9.81;
     Translation3d shooterTranslation =
         shooterPose(Pivot.transform(-prevPitch), robotPose).getTranslation(); //TODO pivot needs to be set as Turret instead --> look at the code that people are using there and try to make it work
-    double dist = translationToSpeaker(shooterTranslation.toTranslation2d()).getNorm();
-    double h = speaker().getZ() - shooterTranslation.getZ(); //TODO hub
+    double dist = translationToHub(shooterTranslation.toTranslation2d()).getNorm();
+    double h = hub().getZ() - shooterTranslation.getZ(); //TODO hub
     double denom = (G * Math.pow(dist, 2));
     double rad =
         Math.pow(dist, 2) * Math.pow(velocity, 4)
-            - G * Math.pow(dist, 2) * (G * Math.pow(dist, 2) + 2 * h * Math.pow(velocity, 2)); //TODO try to import pow statically, this is bugging me
+            - G * Math.pow(dist, 2) * (G * Math.pow(dist, 2) + 2 * h * Math.pow(velocity, 2));
     double pitch = Math.atan((1 / (denom)) * (dist * Math.pow(velocity, 2) - Math.sqrt(rad)));
     if (Math.abs(pitch - prevPitch) < 0.005 || i > 50) {
       return pitch;

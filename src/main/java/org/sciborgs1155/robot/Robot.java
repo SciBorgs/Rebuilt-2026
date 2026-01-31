@@ -14,7 +14,6 @@ import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
-import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
@@ -94,7 +93,9 @@ public class Robot extends CommandRobot {
 
     // Configure pose estimation updates every tick
     FuelVisualizer.init(
-        () -> VecBuilder.fill(5,0,5),
+        () -> RPM.of(1000),
+        () -> Degrees.of(0),
+        () -> Degrees.of(0),
         drive::pose3d,
         drive::fieldRelativeChassisSpeeds);
     addPeriodic(FuelVisualizer::periodic, PERIOD);

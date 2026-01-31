@@ -1,5 +1,6 @@
 package org.sciborgs1155.robot.climb;
 
+import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
@@ -190,7 +191,7 @@ public class Climb extends SubsystemBase implements AutoCloseable {
    */
   public Test goToTest(Distance goal) {
     Command testCommand =
-        goTo(goal.in(Meters)).until(() -> atPosition(goal.in(Meters))).withTimeout(5);
+        goTo(goal.in(Meters)).until(() -> atPosition(goal.in(Meters))).withTimeout(10);
     Set<Assertion> assertions =
         Set.of(
             eAssert(

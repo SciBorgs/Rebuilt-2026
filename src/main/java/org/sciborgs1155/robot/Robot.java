@@ -137,8 +137,6 @@ public class Robot extends CommandRobot {
   /** Configures trigger -> command bindings. */
   private void configureBindings() {
     // x and y are switched: we use joystick Y axis to control field x motion
-    operator.a().whileTrue(climb.extend());
-    operator.b().whileTrue(climb.retract());
     InputStream rawX = InputStream.of(driver::getLeftY).log("/Robot/raw x").negate();
     InputStream rawY = InputStream.of(driver::getLeftX).log("/Robot/raw y").negate();
 
@@ -196,6 +194,9 @@ public class Robot extends CommandRobot {
         .onFalse(Commands.runOnce(() -> speedMultiplier = Constants.FULL_SPEED_MULTIPLIER));
 
     // TODO: Add any additional bindings.
+
+    operator.a().whileTrue(climb.extend());
+    operator.b().whileTrue(climb.retract());
   }
 
   /**

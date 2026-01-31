@@ -31,7 +31,7 @@ public class ClimbConstants {
   public static final double GEARING = 60.0; // TODO
   public static final Current STATOR_LIMIT = Amps.of(60);
   public static final Current SUPPLY_LIMIT = Amps.of(100);
-  public static final Distance POSITION_TOLERANCE = Inches.of(1.5);
+  public static final Distance POSITION_TOLERANCE = Inches.of(0.5);
 
   public static final DCMotor GEARBOX = DCMotor.getKrakenX60(2);
   public static final double MOI = 0.001;

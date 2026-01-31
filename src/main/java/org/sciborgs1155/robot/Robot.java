@@ -96,9 +96,7 @@ public class Robot extends CommandRobot {
     SignalLogger.enableAutoLogging(true);
     addPeriodic(FaultLogger::update, 2);
     Epilogue.bind(this);
-    // FuelVisualizer.init(() -> shootingAlgorithm.calculate(drive.pose().getTranslation(), VecBuilder.fill(drive.fieldRelativeChassisSpeeds().vxMetersPerSecond, drive.fieldRelativeChassisSpeeds().vyMetersPerSecond))
-    // , drive::pose3d, drive::fieldRelativeChassisSpeeds);
-    FuelVisualizer.init(() -> shootingAlgorithm.calculate(drive.pose().getTranslation().plus(Constants.Robot.ROBOT_TO_SHOOTER.toTranslation2d()), VecBuilder.fill(0,67))
+    FuelVisualizer.init(() -> shootingAlgorithm.calculate(drive.pose().getTranslation(), VecBuilder.fill(drive.fieldRelativeChassisSpeeds().vxMetersPerSecond, drive.fieldRelativeChassisSpeeds().vyMetersPerSecond))
     , drive::pose3d, drive::fieldRelativeChassisSpeeds);
 
     addPeriodic(FuelVisualizer::periodic, 0.02);
@@ -128,12 +126,6 @@ public class Robot extends CommandRobot {
     // }
 
     // Configure pose estimation updates every tick
-    FuelVisualizer.init(
-        () -> RotationsPerSecond.of(2000 / 60),
-        Degrees::zero,
-        () -> Radians.of(1),
-        drive::pose3d,
-        drive::fieldRelativeChassisSpeeds);
     addPeriodic(FuelVisualizer::periodic, PERIOD);
 
     RobotController.setBrownoutVoltage(6.0);

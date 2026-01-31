@@ -2,6 +2,7 @@ package org.sciborgs1155.lib.shooting;
 
 import org.sciborgs1155.robot.FieldConstants;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -15,7 +16,7 @@ public class MovingShooting implements ShootingAlgorithm {
 
   // constants
   double latency = 0.1;
-  double totalSpeed = 1.5;
+  double totalSpeed = 10;
 
   // goal pos
   double goalX = FieldConstants.HUB.getX();
@@ -48,7 +49,7 @@ public class MovingShooting implements ShootingAlgorithm {
     double speed = shot.norm();
 
     // pitch to shoot at goal
-    double pitch = Math.acos(speed / totalSpeed);
+    double pitch = Math.acos(MathUtil.clamp(speed / totalSpeed, 0 ,1));
 
     // final X, Y, and Z
     double finalX = Math.cos(adjustedAngle) * totalSpeed;

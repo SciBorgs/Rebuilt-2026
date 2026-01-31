@@ -1,5 +1,5 @@
 {
- "name":"Autos",
+ "name":"Untitled",
  "version":2,
  "type":"Swerve",
  "variables":{
@@ -40,20 +40,20 @@
    "val":6.5
   },
   "radius":{
-   "exp":"1.75 in",
-   "val":0.04445
+   "exp":"2 in",
+   "val":0.0508
   },
   "vmax":{
    "exp":"6000 RPM",
    "val":628.3185307179587
   },
   "tmax":{
-   "exp":"0.7 N * m",
-   "val":0.7
+   "exp":"1.2 N * m",
+   "val":1.2
   },
   "cof":{
-   "exp":"1",
-   "val":1.0
+   "exp":"1.5",
+   "val":1.5
   },
   "bumper":{
    "front":{

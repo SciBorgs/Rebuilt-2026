@@ -18,7 +18,8 @@ import org.sciborgs1155.robot.vision.Vision.CameraConfig;
 public class VisionConstants {
   public static Rotation3d yawPitchRoll(
       double yawDegrees, double pitchDegrees, double rollDegrees) {
-    return new Rotation3d(Degrees.of(rollDegrees), Degrees.of(pitchDegrees), Degrees.of(yawDegrees));
+    return new Rotation3d(
+        Degrees.of(rollDegrees), Degrees.of(pitchDegrees), Degrees.of(yawDegrees));
   }
 
   public static final AprilTagFieldLayout TAG_LAYOUT =
@@ -38,7 +39,7 @@ public class VisionConstants {
               Inches.of(-11.935943),
               Inches.of(-12.493204),
               Inches.of(5.176840 + 4.6),
-              yawPitchRoll(65+180, -20, 180)),
+              yawPitchRoll(65 + 180, -20, 180)),
           PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
 
   public static final CameraConfig CAMERA_1 =
@@ -49,7 +50,7 @@ public class VisionConstants {
               Inches.of(-11.935943),
               Inches.of(12.493204),
               Inches.of(5.176840 + 4.6),
-              yawPitchRoll(-65+180, -20, 180)),
+              yawPitchRoll(-65 + 180, -20, 180)),
           PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
 
   public static final CameraConfig CAMERA_2 =

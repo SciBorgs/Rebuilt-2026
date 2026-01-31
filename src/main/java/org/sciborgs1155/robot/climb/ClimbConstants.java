@@ -5,6 +5,7 @@ import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Pounds;
+
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
@@ -18,7 +19,8 @@ public class ClimbConstants {
   public static final double I = 0;
   public static final double D = 0;
 
-  public static final LinearAcceleration SPRING_ACCELERATION = MetersPerSecondPerSecond.of(20); //TODO
+  public static final LinearAcceleration SPRING_ACCELERATION =
+      MetersPerSecondPerSecond.of(20); // TODO
 
   public static final double S = 0;
   public static final double G = 0;

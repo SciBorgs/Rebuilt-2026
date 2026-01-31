@@ -19,16 +19,16 @@ import edu.wpi.first.wpilibj.simulation.LinearSystemSim;
 /** Represents a simulated elevator mechanism. */
 public class SpringLoadedClimbSim extends LinearSystemSim<N2, N1, N2> {
   // Gearbox for the elevator.
-  private final DCMotor m_gearbox;
+  private final DCMotor mGearbox;
 
   // The min allowable height for the elevator.
-  private final double m_minHeight;
+  private final double mMinHeight;
 
   // The max allowable height for the elevator.
-  private final double m_maxHeight;
+  private final double mMaxHeight;
 
   // Whether the simulator should simulate gravity.
-  private final double m_springAcceleration;
+  private final double mSpringAcceleration;
 
   /**
    * Creates a simulated elevator mechanism.
@@ -54,10 +54,10 @@ public class SpringLoadedClimbSim extends LinearSystemSim<N2, N1, N2> {
       double startingHeightMeters,
       double... measurementStdDevs) {
     super(plant, measurementStdDevs);
-    m_gearbox = gearbox;
-    m_minHeight = minHeightMeters;
-    m_maxHeight = maxHeightMeters;
-    m_springAcceleration = springAcceleration;
+    mGearbox = gearbox;
+    mMinHeight = minHeightMeters;
+    mMaxHeight = maxHeightMeters;
+    mSpringAcceleration = springAcceleration;
 
     setState(startingHeightMeters, 0);
   }
@@ -138,7 +138,7 @@ public class SpringLoadedClimbSim extends LinearSystemSim<N2, N1, N2> {
   public final void setState(double positionMeters, double velocityMetersPerSecond) {
     setState(
         VecBuilder.fill(
-            MathUtil.clamp(positionMeters, m_minHeight, m_maxHeight), velocityMetersPerSecond));
+            MathUtil.clamp(positionMeters, mMinHeight, mMaxHeight), velocityMetersPerSecond));
   }
 
   /**
@@ -148,7 +148,7 @@ public class SpringLoadedClimbSim extends LinearSystemSim<N2, N1, N2> {
    * @return Whether the elevator would hit the lower limit.
    */
   public boolean wouldHitLowerLimit(double elevatorHeightMeters) {
-    return elevatorHeightMeters <= this.m_minHeight;
+    return elevatorHeightMeters <= this.mMinHeight;
   }
 
   /**
@@ -158,7 +158,7 @@ public class SpringLoadedClimbSim extends LinearSystemSim<N2, N1, N2> {
    * @return Whether the elevator would hit the upper limit.
    */
   public boolean wouldHitUpperLimit(double elevatorHeightMeters) {
-    return elevatorHeightMeters >= this.m_maxHeight;
+    return elevatorHeightMeters >= this.mMaxHeight;
   }
 
   /**
@@ -209,9 +209,9 @@ public class SpringLoadedClimbSim extends LinearSystemSim<N2, N1, N2> {
     // v = r w, so w = v/r
     double kA = 1 / m_plant.getB().get(1, 0);
     double kV = -m_plant.getA().get(1, 1) * kA;
-    double motorVelocityRadPerSec = m_x.get(1, 0) * kV * m_gearbox.KvRadPerSecPerVolt;
+    double motorVelocityRadPerSec = m_x.get(1, 0) * kV * mGearbox.KvRadPerSecPerVolt;
     var appliedVoltage = m_u.get(0, 0);
-    return m_gearbox.getCurrent(motorVelocityRadPerSec, appliedVoltage)
+    return mGearbox.getCurrent(motorVelocityRadPerSec, appliedVoltage)
         * Math.signum(appliedVoltage);
   }
 
@@ -237,9 +237,9 @@ public class SpringLoadedClimbSim extends LinearSystemSim<N2, N1, N2> {
     // Calculate updated x-hat from Runge-Kutta.
     var updatedXhat =
         NumericalIntegration.rkdp(
-            (x, _u) -> {
-              Matrix<N2, N1> xdot = m_plant.getA().times(x).plus(m_plant.getB().times(_u));
-              xdot = xdot.plus(VecBuilder.fill(0, -9.8 + m_springAcceleration));
+            (x, b) -> {
+              Matrix<N2, N1> xdot = m_plant.getA().times(x).plus(m_plant.getB().times(b));
+              xdot = xdot.plus(VecBuilder.fill(0, -9.8 + mSpringAcceleration));
               return xdot;
             },
             currentXhat,
@@ -248,10 +248,10 @@ public class SpringLoadedClimbSim extends LinearSystemSim<N2, N1, N2> {
 
     // We check for collisions after updating x-hat.
     if (wouldHitLowerLimit(updatedXhat.get(0, 0))) {
-      return VecBuilder.fill(m_minHeight, 0);
+      return VecBuilder.fill(mMinHeight, 0);
     }
     if (wouldHitUpperLimit(updatedXhat.get(0, 0))) {
-      return VecBuilder.fill(m_maxHeight, 0);
+      return VecBuilder.fill(mMaxHeight, 0);
     }
     return updatedXhat;
   }

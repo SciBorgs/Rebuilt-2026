@@ -1,11 +1,9 @@
 package org.sciborgs1155.robot.climb;
 
-import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Volts;
-import static org.sciborgs1155.lib.Assertion.eAssert;
 import static org.sciborgs1155.robot.Constants.tuning;
 import static org.sciborgs1155.robot.climb.ClimbConstants.*;
 
@@ -16,17 +14,13 @@ import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.networktables.DoubleEntry;
-import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import java.util.Set;
 import java.util.function.DoubleSupplier;
-import org.sciborgs1155.lib.Assertion;
-import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.lib.Tuning;
 import org.sciborgs1155.robot.Robot;
 

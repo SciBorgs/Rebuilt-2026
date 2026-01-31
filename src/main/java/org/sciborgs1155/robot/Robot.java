@@ -36,6 +36,7 @@ import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.lib.Tracer;
 import org.sciborgs1155.robot.Ports.OI;
+import org.sciborgs1155.robot.climb.Climb;
 import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
 import org.sciborgs1155.robot.drive.Drive;
@@ -58,6 +59,7 @@ public class Robot extends CommandRobot {
   // SUBSYSTEMS
   private final Drive drive = Drive.create();
   private final Vision vision = Vision.create();
+  private final Climb climb = Climb.create();
 
   // COMMANDS
   private final Alignment align = new Alignment(drive);
@@ -192,6 +194,9 @@ public class Robot extends CommandRobot {
         .onFalse(Commands.runOnce(() -> speedMultiplier = Constants.FULL_SPEED_MULTIPLIER));
 
     // TODO: Add any additional bindings.
+
+    operator.a().whileTrue(climb.extend());
+    operator.b().whileTrue(climb.retract());
   }
 
   /**

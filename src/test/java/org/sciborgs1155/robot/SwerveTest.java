@@ -52,7 +52,6 @@ public class SwerveTest {
   }
 
   /** Tests the drive systems check functionality. */
-  @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
   @Disabled
   @Test
   public void systemCheck() {

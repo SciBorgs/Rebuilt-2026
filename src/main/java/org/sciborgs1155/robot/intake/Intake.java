@@ -36,11 +36,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
    * @return a simple motor that will run the rollers
    */
   public static SimpleMotor realMotor() {
-<<<<<<< HEAD
     final TalonFX motor = new TalonFX(ROLLERS);
-=======
-    final TalonFX motor = new TalonFX(ROLLER);
->>>>>>> c68abe5f121ab17a8bb724b18f98bda8b8e23066
     TalonFXConfiguration config = new TalonFXConfiguration();
     config.CurrentLimits.SupplyCurrentLimit = CURRENT_LIMIT.in(Amps);
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
@@ -57,31 +53,19 @@ public class Intake extends SubsystemBase implements AutoCloseable {
   /**
    * @return start the rollers in order to intake fuel
    */
-<<<<<<< HEAD
   public Command spin(double power) {
-=======
-  public Command runRollers(double power) {
->>>>>>> c68abe5f121ab17a8bb724b18f98bda8b8e23066
     return run(() -> hardware.set(power));
   }
 
   public Command intake() {
-<<<<<<< HEAD
     return run(() -> spin(INTAKE_POWER));
-=======
-    return run(() -> runRollers(INTAKE_POWER));
->>>>>>> c68abe5f121ab17a8bb724b18f98bda8b8e23066
   }
 
   /**
    * @return stop the motors
    */
   public Command stop() {
-<<<<<<< HEAD
     return run(() -> spin(0));
-=======
-    return run(() -> runRollers(0));
->>>>>>> c68abe5f121ab17a8bb724b18f98bda8b8e23066
   }
 
   /** close the hardware */

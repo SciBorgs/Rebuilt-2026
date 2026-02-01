@@ -4,6 +4,25 @@
       "window": {
         "visible": false
       }
+    },
+    "PowerDistributions": {
+      "window": {
+        "visible": true
+      }
+    },
+    "RoboRIO": {
+      "3.3V Rail": {
+        "open": true
+      },
+      "5V Rail": {
+        "open": true
+      },
+      "6V Rail": {
+        "open": true
+      },
+      "RoboRIO Input": {
+        "open": true
+      }
     }
   },
   "NTProvider": {
@@ -47,7 +66,8 @@
       "/SmartDashboard/turn quasistatic forward": "Command",
       "Robot/autos": "String Chooser",
       "Robot/drive/rotationController": "PIDController",
-      "Robot/drive/translationController": "ProfiledPIDController"
+      "Robot/drive/translationController": "ProfiledPIDController",
+      "Robot/slapdown/pid": "ProfiledPIDController"
     },
     "windows": {
       "/Robot/drive/field2d": {
@@ -88,13 +108,15 @@
         "window": {
           "visible": true
         }
+      },
+      "Robot/drive/rotationController": {
+        "window": {
+          "visible": true
+        }
       }
     }
   },
   "NetworkTables": {
-    "Retained Values": {
-      "open": false
-    },
     "transitory": {
       "Epilogue": {
         "Stats": {
@@ -174,11 +196,58 @@
           },
           "open": true
         },
-        "open": true
+        "open": true,
+        "slapdown": {
+          "open": true
+        }
       }
     }
   },
   "NetworkTables Info": {
+    "Connections": {
+      "open": true
+    },
+    "Server": {
+      "Publishers": {
+        "open": true
+      },
+      "open": true
+    },
     "visible": true
+  },
+  "Plot": {
+    "Plot <0>": {
+      "plots": [
+        {
+          "backgroundColor": [
+            0.0,
+            0.0,
+            0.0,
+            0.8500000238418579
+          ],
+          "height": 578,
+          "series": [
+            {
+              "color": [
+                0.2980392277240753,
+                0.44705885648727417,
+                0.6901960968971252,
+                1.0
+              ],
+              "id": "NT:Robot/slapdown/setpoint"
+            },
+            {
+              "color": [
+                0.8666667342185974,
+                0.5176470875740051,
+                0.32156863808631897,
+                1.0
+              ],
+              "id": "NT:Robot/slapdown/position"
+            }
+          ]
+        }
+      ]
+    }
   }
 }

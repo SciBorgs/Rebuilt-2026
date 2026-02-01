@@ -12,7 +12,7 @@ import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.lib.TalonUtils;
 
 public class RealSlapdown implements SlapdownIO, AutoCloseable {
-  public static TalonFX motor;
+  private final TalonFX motor;
 
   /** Configures the motors */
   public RealSlapdown() {
@@ -32,13 +32,13 @@ public class RealSlapdown implements SlapdownIO, AutoCloseable {
   }
 
   @Override
-  /** extending/retracting the intake */
+  // extending/retracting the intake
   public void setVoltage(double voltage) {
     motor.setVoltage(voltage);
   }
 
   @Override
-  /** getting position of the intake (extended or retracted) */
+  // getting position of the intake (extended or retracted)
   public double position() {
     return motor.getPosition().getValue().in(Radians);
   }

@@ -1,5 +1,6 @@
 package org.sciborgs1155.robot;
 
+import static edu.wpi.first.units.Units.Radians;
 import static org.sciborgs1155.lib.Test.runUnitTest;
 import static org.sciborgs1155.lib.UnitTestingUtil.reset;
 import static org.sciborgs1155.lib.UnitTestingUtil.setupTests;
@@ -34,14 +35,8 @@ public class SlapdownTest {
   @Test
   /** make the arm move */
   public void setArmVoltage() {
-
-    System.out.println(Robot.isReal());
-    System.out.println("something sucks");
-
     slapdown = new Slapdown(new SimSlapdown());
 
-    System.out.println(slapdown.getSubsystem());
-
-    runUnitTest(slapdown.goToTest(MAX_ANGLE));
+    runUnitTest(slapdown.goToTest(MAX_ANGLE.in(Radians)));
   }
 }

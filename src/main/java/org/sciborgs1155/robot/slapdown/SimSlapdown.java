@@ -18,17 +18,17 @@ public class SimSlapdown implements SlapdownIO, AutoCloseable {
           MAX_ANGLE.in(Radians),
           true,
           START_ANGLE.in(Radians),
-          measurementStDevs);
+          MEASUREMENT_STDEVS);
 
   @Override
-  /** set the voltage of the slapdown */
+  // set the voltage of the slapdown
   public void setVoltage(double voltage) {
     sim.setInputVoltage(voltage);
     sim.update(PERIOD.in(Seconds));
   }
 
+  // get the position of the slapdown
   @Override
-  /** get the position of the slapdown */
   public double position() {
     return sim.getAngleRads();
   }

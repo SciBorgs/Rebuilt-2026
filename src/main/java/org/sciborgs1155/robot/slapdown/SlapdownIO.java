@@ -10,9 +10,5 @@ public interface SlapdownIO {
   /**
    * @return the position of the intake when it is extended
    */
-<<<<<<< HEAD
   double position();
-=======
-  public double position();
->>>>>>> 5183703b8f976f4f1224e119ed9154f2b7427e0f
 }

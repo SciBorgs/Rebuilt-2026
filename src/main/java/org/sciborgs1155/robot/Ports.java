@@ -63,4 +63,9 @@ public final class Ports {
   public static final class LEDs {
     public static final int LED_PORT = 9;
   }
+
+  public static final class Indexer {
+    public static final int MOTOR = 0;
+    public static final int BEAMBREAK = 0;
+  }
 }

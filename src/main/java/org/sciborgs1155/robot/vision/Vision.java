@@ -51,9 +51,6 @@ public class Vision {
   private final Map<String, Boolean> camerasEnabled;
   @Logged private final List<Pose3d> filteredEstimates;
 
-  // Completely overtrusts vision, including heading.
-  private boolean overTrustVision = false;
-
   private VisionSystemSim visionSim;
 
   /** A factory to create new vision classes with our cameras. */
@@ -143,7 +140,7 @@ public class Vision {
    * @return An {@link EstimatedRobotPose} with an estimated pose, estimate timestamp, and targets
    *     used for estimation.
    */
-  public PoseEstimate[] estimatedGlobalPoses(Rotation2d rotation) {
+  public PoseEstimate[] estimatedGlobalPoses(Rotation2d rotation, boolean overtrust) {
     Tracer.startTrace("vision estimatedGlobalPoses");
     List<PoseEstimate> estimates = new ArrayList<>();
     filteredEstimates.clear();
@@ -210,7 +207,7 @@ public class Vision {
                   e ->
                       estimates.add(
                           new PoseEstimate(
-                              e, estimationStdDevs(e.estimatedPose.toPose2d(), change))));
+                              e, overtrust?SUPERTRUST_TAG_STD_DEVS:estimationStdDevs(e.estimatedPose.toPose2d(), change))));
         }
       }
     }
@@ -265,15 +262,6 @@ public class Vision {
    */
   public boolean getCameraStatus(String name) {
     return camerasEnabled.get(name);
-  }
-
-  /**
-   * Enables vision heading calculaton and also fully trusts it.
-   *
-   * @param enable Whether or not to enable this feature.
-   */
-  public void overTrust(boolean enable) {
-    overTrustVision = enable;
   }
 
   /**
@@ -335,16 +323,6 @@ public class Vision {
     if (targets.size() == 1 && avgDist > 4)
       estStdDevs = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
     else estStdDevs = estStdDevs.times(1 + (avgDist * avgDist / 30));
-
-    if (overTrustVision)
-      estStdDevs.setColumn(
-          0,
-          new Matrix<N3, N1>(
-              new SimpleMatrix(
-                  3,
-                  1,
-                  true,
-                  new double[] {Double.MIN_VALUE, Double.MIN_VALUE, Double.MIN_VALUE})));
 
     return estStdDevs.times(avgWeight);
   }

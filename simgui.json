@@ -37,6 +37,10 @@
       "/SmartDashboard/rotation dynamic forward": "Command",
       "/SmartDashboard/rotation quasistatic backward": "Command",
       "/SmartDashboard/rotation quasistatic forward": "Command",
+      "/SmartDashboard/shooter top dynamic backward": "Command",
+      "/SmartDashboard/shooter top dynamic forward": "Command",
+      "/SmartDashboard/shooter top quasistatic backward": "Command",
+      "/SmartDashboard/shooter top quasistatic forward": "Command",
       "/SmartDashboard/translation dynamic backward": "Command",
       "/SmartDashboard/translation dynamic forward": "Command",
       "/SmartDashboard/translation quasistatic backward": "Command",
@@ -52,9 +56,9 @@
     },
     "windows": {
       "/Robot/drive/field2d": {
-        "bottom": 1638,
-        "height": 8.051901817321777,
-        "left": 534,
+        "bottom": 1914,
+        "height": 8.069275856018066,
+        "left": 245,
         "module- FL": {
           "style": "Line"
         },
@@ -67,9 +71,9 @@
         "module-RL": {
           "style": "Line"
         },
-        "right": 3466,
-        "top": 291,
-        "width": 17.54825210571289,
+        "right": 3942,
+        "top": 118,
+        "width": 16.54119300842285,
         "window": {
           "visible": true
         }
@@ -80,12 +84,12 @@
         }
       },
       "/SmartDashboard/Drive Field": {
-        "bottom": 1638,
-        "height": 8.051901817321777,
-        "left": 534,
-        "right": 3466,
-        "top": 291,
-        "width": 17.54825210571289,
+        "bottom": 1914,
+        "height": 8.069275856018066,
+        "left": 245,
+        "right": 3942,
+        "top": 118,
+        "width": 16.54119300842285,
         "window": {
           "visible": true
         }
@@ -191,7 +195,7 @@
             0.0,
             0.8500000238418579
           ],
-          "height": 338,
+          "height": 429,
           "series": [
             {
               "color": [

@@ -15,12 +15,14 @@ import org.sciborgs1155.lib.FaultLogger.FaultType;
 
 public class FaultLoggerTest {
 
+  /** Clears all faults and unregisters all fault reporters before running tests. */
   @BeforeAll
   public static void reset() {
     FaultLogger.clear();
     FaultLogger.unregisterAll();
   }
 
+  /** Sets up the test environment before each test. */
   @BeforeEach
   public void setup() {
     setupTests();
@@ -70,11 +72,6 @@ public class FaultLoggerTest {
     FaultLogger.update();
     FaultLogger.update();
 
-    // System.out.println(totalErrors.get().toString());
-    for (var e : totalErrors.get()) {
-      System.out.println(e);
-    }
-
     assertEquals(1, activeErrors.get().length);
     assertEquals(1, totalErrors.get().length);
   }
@@ -86,8 +83,10 @@ public class FaultLoggerTest {
     spark.close();
   }
 
+  @SuppressWarnings({"PMD.SystemPrintln"})
   @Test
   void registerTalon() {
+    System.out.println("--- The test is about to complain. This is good. ---");
     TalonFX talon = new TalonFX(10);
     FaultLogger.register(talon);
     talon.close();

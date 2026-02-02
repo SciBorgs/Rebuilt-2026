@@ -1,0 +1,105 @@
+<?xml version="1.0"?>
+<ruleset name="sciborgs1155-pmd-ruleset"
+  xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
+
+  <description>
+    The PMD config for FRC team 1155, the SciBorgs.
+    Please ask Jacob the programming mentor or the programming heads before
+    excluding rules.
+    If we are suppressing many violations of the same rule, we should
+    probably exclude it.
+    If you exclude a rule, please list the reason you excluded it.
+  </description>
+
+  <rule ref="category/java/bestpractices.xml">
+    <exclude name="AvoidPrintStackTrace" /> <!-- Violated a lot. Should probably fix with better logging -->
+    <exclude name="JUnit5TestShouldBePackagePrivate" /> <!-- Violated a lot but this isn't a big deal -->
+    <exclude name="UnitTestAssertionsShouldIncludeMessage" /> <!-- Not our current style, but maybe it should -->
+    <exclude name="UnitTestContainsTooManyAsserts" /> <!-- I personally think this is fine -->
+    <exclude name="UnitTestShouldIncludeAssert" /> <!-- Tests use built-in assertions. -->
+    <exclude name="UnusedPrivateField" /> <!-- This is often used during work in progress. This is fine. -->
+    <exclude name="UnusedPrivateMethod" /> <!-- This is often used during work in progress. This is fine. -->
+    <exclude name="UseVarargs" /> <!-- Does not fit our use cases -->
+  </rule>
+
+  <rule ref="category/java/codestyle.xml">
+    <exclude name="AtLeastOneConstructor" /> <!-- Unnecessary code if only default needed -->
+    <exclude name="CallSuperInConstructor" /> <!-- Compiler will catch this automatically if needed -->
+    <exclude name="CommentDefaultAccessModifier" /> <!-- Annoying and confusing -->
+    <exclude name="ControlStatementBraces" /> <!-- Violated a lot -->
+    <exclude name="FieldDeclarationsShouldBeAtStartOfClass" /> <!-- Violated a lot -->
+    <exclude name="LambdaCanBeMethodReference" /> <!-- I like doing this but some people can find this confusing -->
+    <exclude name="LocalVariableCouldBeFinal" /> <!-- Too verbose -->
+    <exclude name="LongVariable" /> <!-- Too sensitive -->
+    <exclude name="MethodArgumentCouldBeFinal" /> <!-- Too verbose -->
+    <exclude name="OnlyOneReturn" /> <!-- I disagree with this style -->
+    <exclude name="ShortClassName" /> <!-- Too sensitive -->
+    <exclude name="ShortMethodName" /> <!-- Too sensitive -->
+    <exclude name="ShortVariable" /> <!-- Too sensitive -->
+    <exclude name="TooManyStaticImports" /> <!-- Welcome to FRC... -->
+    <exclude name="UseExplicitTypes" /> <!-- Seems to be pretty standard in the project -->
+    <exclude name="UseUnderscoresInNumericLiterals" /> <!-- Not necessary -->
+  </rule>
+
+  <rule ref="category/java/design.xml">
+    <exclude name="CognitiveComplexity" /> <!-- Violated a lot -->
+    <exclude name="CouplingBetweenObjects" /> <!-- This is done a lot. I'll leave it for now. -->
+    <exclude name="DataClass" /> <!-- We should not use data classes -->
+    <exclude name="ExcessiveImports" /> <!-- Welcome to FRC... -->
+    <exclude name="LawOfDemeter" /> <!-- This happens a lot for us. To fix, it would require a lot of copying.
+      I'll save my programmers time... -->
+    <exclude name="LoosePackageCoupling" /> <!-- This rule was causing bugs in PMD itself. Disabling -->
+    <exclude name="SignatureDeclareThrowsException" /> <!-- Used in AutoCloseable -->
+    <exclude name="TooManyMethods" /> <!-- Violated a lot -->
+  </rule>
+
+  <rule ref="category/java/documentation.xml/CommentRequired"> <!-- This is listed separately so that we can configure it. We must list
+      it BEFORE the full `documentation` suite or else defaults are applied. -->
+    <properties>
+      <property name="methodWithOverrideCommentRequirement"
+        value="Ignored" />
+      <property name="accessorCommentRequirement" value="Ignored" />
+      <property name="classCommentRequirement" value="Ignored" />
+      <property name="fieldCommentRequirement" value="Ignored" />
+      <property name="publicMethodCommentRequirement"
+        value="Required" />
+      <property name="protectedMethodCommentRequirement"
+        value="Ignored" />
+      <property name="enumCommentRequirement" value="Ignored" />
+      <property name="serialVersionUIDCommentRequired"
+        value="Ignored" />
+      <property name="serialPersistentFieldsCommentRequired"
+        value="Ignored" />
+    </properties>
+  </rule>
+
+
+  <rule ref="category/java/documentation.xml">
+    <exclude name="CommentRequired" /> <!-- Defined and configured above, so we should not duplicate it here. -->
+    <exclude name="CommentSize" /> <!-- I'm fine with long comments as long as they maintain good information. -->
+    <exclude name="UncommentedEmptyConstructor" /> <!-- Not necessary -->
+    <exclude name="UncommentedEmptyMethodBody" /> <!-- Not necessary -->
+  </rule>
+
+  <rule ref="category/java/errorprone.xml">
+    <exclude name="AvoidCatchingGenericException" /> <!-- Used a lot in lock context. I'll stay far away -->
+    <exclude name="AvoidFieldNameMatchingMethodName" /> <!-- Violated often -->
+    <exclude name="CloseResource" /> <!-- Many violations exist currently. We may want to do something about this
+      to prevent resource leaks. -->
+    <exclude name="ConstructorCallsOverridableMethod" /> <!-- This is used often in subsystem construction -->
+  </rule>
+
+  <rule ref="category/java/multithreading.xml">
+    <exclude name="AvoidSynchronizedAtMethodLevel" /> <!-- Leads to complicated locking -->
+    <exclude name="DoNotUseThreads" /> <!-- Need to use threads -->
+  </rule>
+
+  <rule ref="category/java/performance.xml">
+    <exclude name="AvoidInstantiatingObjectsInLoops" /> <!-- We do this a lot and I think this is fine. Minimal performance effect. -->
+  </rule>
+
+  <rule ref="category/java/security.xml" />
+
+</ruleset>

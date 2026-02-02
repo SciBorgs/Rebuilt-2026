@@ -51,6 +51,7 @@ public class SimpleMotor {
     set.accept(power);
   }
 
+  /** Closes the motor by running the close runnable specified in the constructor. */
   public void close() {
     close.run();
   }

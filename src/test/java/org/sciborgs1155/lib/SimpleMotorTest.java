@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import org.junit.jupiter.api.Test;
 
 public class SimpleMotorTest {
+  /** Tests the SimpleMotor class with a simulated DC motor. */
   @Test
   public void test() throws Exception {
     setupTests();

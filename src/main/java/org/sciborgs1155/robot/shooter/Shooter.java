@@ -10,7 +10,6 @@ import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
-import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -121,11 +120,17 @@ public final class Shooter extends SubsystemBase implements AutoCloseable {
     return Math.abs(velocity - getVelocity()) < VELOCITY_TOLERANCE.in(RadiansPerSecond);
   }
 
+  /**
+   * @return Returns the setpoint of the controller.
+   */
   @Logged
   public double setpoint() {
     return controller.getSetpoint();
   }
 
+  /**
+   * @return Returns the velocity of the shooter (Radians Per Second).
+   */
   @Logged
   public double velocity() {
     return hardware.velocity();
@@ -151,12 +156,17 @@ public final class Shooter extends SubsystemBase implements AutoCloseable {
     return runShooter(() -> velocity);
   }
 
-  public Test goToTest(AngularVelocity goal) {
-    Command testCommand = runShooter(goal.in(RadiansPerSecond)).withTimeout(3);
+  /**
+   * Does a test command to check if the subsystem works.
+   *
+   * @param goal The velocity goal.
+   */
+  public Test goToTest(DoubleSupplier goal) {
+    Command testCommand = runShooter(goal).until(() -> atSetpoint());
     EqualityAssertion atGoal =
         eAssert(
             "Shooter Syst Check Speed",
-            () -> goal.in(RadiansPerSecond),
+            () -> goal.getAsDouble(),
             this::getVelocity,
             VELOCITY_TOLERANCE.in(RadiansPerSecond));
     return new Test(testCommand, Set.of(atGoal));

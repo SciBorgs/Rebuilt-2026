@@ -9,7 +9,7 @@ import static org.sciborgs1155.robot.hood.HoodConstants.*;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 
-// *hood simulated hardware interface */
+/** hood simulated hardware interface */
 public class SimHood implements HoodIO {
 
   private final SingleJointedArmSim sim;

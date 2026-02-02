@@ -47,6 +47,11 @@ public final class Ports {
     public static final int REAR_RIGHT_CANCODER = 8;
   }
 
+  public static final class Hopper {
+    public static final int MOTOR = 0;
+    public static final int BEAMBREAK = 0;
+  }
+
   public static final class LEDs {
     public static final int LED_PORT = 9;
   }
@@ -54,5 +59,10 @@ public final class Ports {
   public static final class Hood {
     public static final int MOTOR_PORT = 18;
     public static final int CANCODER = 19;
+  }
+
+  public static final class Indexer {
+    public static final int MOTOR = 0;
+    public static final int BEAMBREAK = 0;
   }
 }

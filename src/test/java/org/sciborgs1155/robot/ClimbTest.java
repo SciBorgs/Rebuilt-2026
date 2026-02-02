@@ -12,7 +12,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.sciborgs1155.robot.climb.Climb;
-import org.sciborgs1155.robot.climb.SimClimb;
 
 public class ClimbTest {
 
@@ -22,7 +21,7 @@ public class ClimbTest {
   @BeforeEach
   public void initialize() {
     setupTests();
-    climb = new Climb(new SimClimb());
+    climb = Climb.create();
   }
 
   /** resets the sim climb */

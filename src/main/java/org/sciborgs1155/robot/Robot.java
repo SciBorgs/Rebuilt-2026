@@ -194,9 +194,6 @@ public class Robot extends CommandRobot {
         .onFalse(Commands.runOnce(() -> speedMultiplier = Constants.FULL_SPEED_MULTIPLIER));
 
     // TODO: Add any additional bindings.
-
-    operator.a().whileTrue(climb.extend());
-    operator.b().whileTrue(climb.retract());
   }
 
   /**

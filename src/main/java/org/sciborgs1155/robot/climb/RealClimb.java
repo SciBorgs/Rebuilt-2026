@@ -49,7 +49,7 @@ public class RealClimb implements ClimbIO {
 
   @Override
   public double position() {
-    return leftMotor.getPosition().getValueAsDouble();
+    return leftMotor.getPosition().getValueAsDouble() * SENSOR_TO_MECHANISM_RATIO;
   }
 
   @Override
@@ -59,7 +59,7 @@ public class RealClimb implements ClimbIO {
 
   @Override
   public double velocity() {
-    return leftMotor.getVelocity().getValueAsDouble();
+    return leftMotor.getVelocity().getValueAsDouble() * SENSOR_TO_MECHANISM_RATIO;
   }
 
   @Override

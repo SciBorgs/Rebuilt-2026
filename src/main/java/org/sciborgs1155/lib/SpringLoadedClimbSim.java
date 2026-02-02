@@ -16,7 +16,7 @@ import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.LinearSystemSim;
 
-/** Represents a simulated elevator mechanism. */
+/** Represents a simulated spring-loaded elevator mechanism. */
 public class SpringLoadedClimbSim extends LinearSystemSim<N2, N1, N2> {
   // Gearbox for the elevator.
   private final DCMotor mGearbox;
@@ -27,7 +27,7 @@ public class SpringLoadedClimbSim extends LinearSystemSim<N2, N1, N2> {
   // The max allowable height for the elevator.
   private final double mMaxHeight;
 
-  // Whether the simulator should simulate gravity.
+  // The acceleration of the spring.
   private final double mSpringAcceleration;
 
   /**
@@ -39,7 +39,7 @@ public class SpringLoadedClimbSim extends LinearSystemSim<N2, N1, N2> {
    * @param gearbox The type of and number of motors in the elevator gearbox.
    * @param minHeightMeters The min allowable height of the elevator.
    * @param maxHeightMeters The max allowable height of the elevator.
-   * @param springAcceleration Whether gravity should be simulated or not.
+   * @param springAcceleration The acceleration produced by the spring.
    * @param startingHeightMeters The starting height of the elevator.
    * @param measurementStdDevs The standard deviations of the measurements. Can be omitted if no
    *     noise is desired. If present must have 1 element for position.
@@ -63,14 +63,14 @@ public class SpringLoadedClimbSim extends LinearSystemSim<N2, N1, N2> {
   }
 
   /**
-   * Creates a simulated elevator mechanism.
+   * Creates a simulated spring-loaded elevator mechanism.
    *
    * @param kV The velocity gain.
    * @param kA The acceleration gain.
    * @param gearbox The type of and number of motors in the elevator gearbox.
    * @param minHeightMeters The min allowable height of the elevator.
    * @param maxHeightMeters The max allowable height of the elevator.
-   * @param springAcceleration Whether gravity should be simulated or not.
+   * @param springAcceleration The acceleration produced by the spring.
    * @param startingHeightMeters The starting height of the elevator.
    * @param measurementStdDevs The standard deviations of the measurements. Can be omitted if no
    *     noise is desired. If present must have 1 element for position.
@@ -95,7 +95,7 @@ public class SpringLoadedClimbSim extends LinearSystemSim<N2, N1, N2> {
   }
 
   /**
-   * Creates a simulated elevator mechanism.
+   * Creates a simulated spring-loaded elevator mechanism.
    *
    * @param gearbox The type of and number of motors in the elevator gearbox.
    * @param gearing The gearing of the elevator (numbers greater than 1 represent reductions).
@@ -103,7 +103,7 @@ public class SpringLoadedClimbSim extends LinearSystemSim<N2, N1, N2> {
    * @param drumRadiusMeters The radius of the drum that the elevator spool is wrapped around.
    * @param minHeightMeters The min allowable height of the elevator.
    * @param maxHeightMeters The max allowable height of the elevator.
-   * @param springAcceleration Whether gravity should be simulated or not.
+   * @param springAcceleration The acceleration produced by the spring.
    * @param startingHeightMeters The starting height of the elevator.
    * @param measurementStdDevs The standard deviations of the measurements. Can be omitted if no
    *     noise is desired. If present must have 1 element for position.
@@ -129,8 +129,8 @@ public class SpringLoadedClimbSim extends LinearSystemSim<N2, N1, N2> {
   }
 
   /**
-   * Sets the elevator's state. The new position will be limited between the minimum and maximum
-   * allowed heights.
+   * Sets the spring-loaded elevator's state. The new position will be limited between the minimum
+   * and maximum allowed heights.
    *
    * @param positionMeters The new position in meters.
    * @param velocityMetersPerSecond New velocity in meters per second.
@@ -142,7 +142,7 @@ public class SpringLoadedClimbSim extends LinearSystemSim<N2, N1, N2> {
   }
 
   /**
-   * Returns whether the elevator would hit the lower limit.
+   * Returns whether the spring-loaded elevator would hit the lower limit.
    *
    * @param elevatorHeightMeters The elevator height.
    * @return Whether the elevator would hit the lower limit.
@@ -152,7 +152,7 @@ public class SpringLoadedClimbSim extends LinearSystemSim<N2, N1, N2> {
   }
 
   /**
-   * Returns whether the elevator would hit the upper limit.
+   * Returns whether the spring-loaded elevator would hit the upper limit.
    *
    * @param elevatorHeightMeters The elevator height.
    * @return Whether the elevator would hit the upper limit.
@@ -162,7 +162,7 @@ public class SpringLoadedClimbSim extends LinearSystemSim<N2, N1, N2> {
   }
 
   /**
-   * Returns whether the elevator has hit the lower limit.
+   * Returns whether the spring-loaded elevator has hit the lower limit.
    *
    * @return Whether the elevator has hit the lower limit.
    */
@@ -171,7 +171,7 @@ public class SpringLoadedClimbSim extends LinearSystemSim<N2, N1, N2> {
   }
 
   /**
-   * Returns whether the elevator has hit the upper limit.
+   * Returns whether the spring-loaded elevator has hit the upper limit.
    *
    * @return Whether the elevator has hit the upper limit.
    */
@@ -180,7 +180,7 @@ public class SpringLoadedClimbSim extends LinearSystemSim<N2, N1, N2> {
   }
 
   /**
-   * Returns the position of the elevator.
+   * Returns the position of the spring-loaded elevator.
    *
    * @return The position of the elevator.
    */
@@ -189,7 +189,7 @@ public class SpringLoadedClimbSim extends LinearSystemSim<N2, N1, N2> {
   }
 
   /**
-   * Returns the velocity of the elevator.
+   * Returns the velocity of the spring-loaded elevator.
    *
    * @return The velocity of the elevator.
    */
@@ -198,7 +198,7 @@ public class SpringLoadedClimbSim extends LinearSystemSim<N2, N1, N2> {
   }
 
   /**
-   * Returns the elevator current draw.
+   * Returns the spring-loaded elevator current draw.
    *
    * @return The elevator current draw.
    */
@@ -216,7 +216,7 @@ public class SpringLoadedClimbSim extends LinearSystemSim<N2, N1, N2> {
   }
 
   /**
-   * Sets the input voltage for the elevator.
+   * Sets the input voltage for the spring-loaded elevator.
    *
    * @param volts The input voltage.
    */
@@ -226,7 +226,7 @@ public class SpringLoadedClimbSim extends LinearSystemSim<N2, N1, N2> {
   }
 
   /**
-   * Updates the state of the elevator.
+   * Updates the state of the spring-loaded elevator.
    *
    * @param currentXhat The current state estimate.
    * @param u The system inputs (voltage).

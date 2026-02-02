@@ -1,5 +1,8 @@
 package org.sciborgs1155.robot.climb;
 
+import static edu.wpi.first.units.Units.Meters;
+import static org.sciborgs1155.robot.climb.ClimbConstants.MIN_HEIGHT;
+
 public class NoClimb implements ClimbIO {
 
   @Override
@@ -10,7 +13,7 @@ public class NoClimb implements ClimbIO {
 
   @Override
   public double position() {
-    return 0.0;
+    return MIN_HEIGHT.in(Meters);
   }
 
   @Override

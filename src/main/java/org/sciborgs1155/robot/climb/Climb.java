@@ -25,7 +25,7 @@ import org.sciborgs1155.lib.Tuning;
 import org.sciborgs1155.robot.Robot;
 
 @Logged
-public class Climb extends SubsystemBase implements AutoCloseable {
+public final class Climb extends SubsystemBase implements AutoCloseable {
   private final ClimbIO hardware;
   private final SysIdRoutine sysIdRoutine;
 
@@ -70,7 +70,7 @@ public class Climb extends SubsystemBase implements AutoCloseable {
    *
    * @param hardware our IO interface that represents the mechanism
    */
-  public Climb(ClimbIO hardware) {
+  private Climb(ClimbIO hardware) {
     setDefaultCommand(retract());
 
     this.hardware = hardware;
@@ -123,9 +123,8 @@ public class Climb extends SubsystemBase implements AutoCloseable {
    * @param position The position of the climb mechanisms.
    * @return A boolean for if the climb is within the margins.
    */
-  public boolean atPosition(double position) {
-    return Meters.of(position).minus(Meters.of(position())).magnitude()
-        < POSITION_TOLERANCE.in(Meters);
+  public boolean atPosition(double goal) {
+    return Math.abs(goal - position()) < POSITION_TOLERANCE.in(Meters);
   }
 
   /**

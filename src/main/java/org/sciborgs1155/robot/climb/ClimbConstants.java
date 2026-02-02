@@ -31,6 +31,11 @@ public class ClimbConstants {
   public static final LinearAcceleration MAX_ACCEL = MetersPerSecondPerSecond.of(.2);
 
   public static final double GEARING = 60.0; // TODO
+  public static final Distance WINCH_DIAMETER = Inches.of(0.750);
+  public static final double SENSOR_TO_MECHANISM_RATIO =
+      WINCH_DIAMETER.in(Inches)
+          * Math.PI
+          / GEARING; // 2prR of winch * number of rotations of motor / gear ratio
   public static final Current STATOR_LIMIT = Amps.of(60);
   public static final Current SUPPLY_LIMIT = Amps.of(100);
   public static final Distance POSITION_TOLERANCE = Inches.of(0.5);

@@ -76,7 +76,6 @@ public class FaultLoggerTest {
     assertEquals(1, totalErrors.get().length);
   }
 
-  @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
   @Test
   void registerSpark() {
     SparkFlex spark = new SparkFlex(10, MotorType.kBrushless);
@@ -84,7 +83,7 @@ public class FaultLoggerTest {
     spark.close();
   }
 
-  @SuppressWarnings({"PMD.UnitTestShouldIncludeAssert", "PMD.SystemPrintln"})
+  @SuppressWarnings({"PMD.SystemPrintln"})
   @Test
   void registerTalon() {
     System.out.println("--- The test is about to complain. This is good. ---");

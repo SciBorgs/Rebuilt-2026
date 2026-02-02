@@ -1,6 +1,7 @@
 package org.sciborgs1155.robot;
 
 import static edu.wpi.first.units.Units.Meters;
+import static org.sciborgs1155.lib.UnitTestingUtil.fastForward;
 import static org.sciborgs1155.lib.UnitTestingUtil.reset;
 import static org.sciborgs1155.lib.UnitTestingUtil.setupTests;
 import static org.sciborgs1155.robot.climb.ClimbConstants.MAX_HEIGHT;
@@ -40,6 +41,7 @@ public class ClimbTest {
   public void goDown() {
     CommandScheduler.getInstance()
         .schedule(climb.goTo(MIN_HEIGHT.in(Meters)).withDeadline(Commands.waitSeconds(3)));
+    fastForward();
     assert climb.atPosition(MIN_HEIGHT.in(Meters));
   }
 

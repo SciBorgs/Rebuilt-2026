@@ -15,25 +15,25 @@ import org.sciborgs1155.robot.slapdown.Slapdown;
 public class SlapdownTest {
   private Slapdown slapdown;
 
-  final double TOLERANCE = 0.1;
+  public static final double TOLERANCE = 0.1;
 
-  @BeforeEach
   /** make the slapdown */
+  @BeforeEach
   public void setup() {
     slapdown = Slapdown.create();
     setupTests();
   }
 
-  @AfterEach
   /**
    * @throws Exception reset the position
    */
+  @AfterEach
   public void destroy() throws Exception {
     reset(slapdown);
   }
 
-  @Test
   /** make the arm move */
+  @Test
   public void setArmVoltage() {
     slapdown = new Slapdown(new SimSlapdown());
 

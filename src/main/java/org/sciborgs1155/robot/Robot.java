@@ -13,6 +13,7 @@ import static org.sciborgs1155.robot.Constants.DEADBAND;
 import static org.sciborgs1155.robot.Constants.FULL_SPEED_MULTIPLIER;
 import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.Constants.ROBOT_TYPE;
+import static org.sciborgs1155.robot.Constants.SLOW_SPEED_MULTIPLIER;
 import static org.sciborgs1155.robot.Constants.TUNING;
 import static org.sciborgs1155.robot.drive.DriveConstants.MAX_ANGULAR_ACCEL;
 import static org.sciborgs1155.robot.drive.DriveConstants.MAX_SPEED;
@@ -203,8 +204,8 @@ public class Robot extends CommandRobot {
     driver
         .leftBumper()
         .or(driver.rightBumper())
-        .onTrue(Commands.runOnce(() -> speedMultiplier = Constants.SLOW_SPEED_MULTIPLIER))
-        .onFalse(Commands.runOnce(() -> speedMultiplier = Constants.FULL_SPEED_MULTIPLIER));
+        .onTrue(Commands.runOnce(() -> speedMultiplier = SLOW_SPEED_MULTIPLIER))
+        .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
 
     operator.a().whileTrue(slapdown.extend());
     // TODO: Add any additional bindings.

@@ -34,7 +34,7 @@ import org.sciborgs1155.robot.Robot;
 
 /** Hood subsystem for adjusting vertical shooting angle of the fuel */
 @Logged
-public class Hood extends SubsystemBase implements AutoCloseable {
+public final class Hood extends SubsystemBase implements AutoCloseable {
 
   private final HoodIO hardware;
 
@@ -67,14 +67,32 @@ public class Hood extends SubsystemBase implements AutoCloseable {
   private final SysIdRoutine sysIdRoutine;
 
   /**
+   * returns a new hood subsystem, which will have hardware if hood is real and sim if not
+   *
+   * @return a real or sim hood subsystem
+   */
+  public static Hood create() {
+    return new Hood(Robot.isReal() ? new RealHood() : new SimHood());
+  }
+
+  /**
+   * returns a hood with no interface
+   *
+   * @return
+   */
+  public static Hood none() {
+    return new Hood(new NoHood());
+  }
+  
+  /**
    * Constructor
    *
    * @param hardware : The HoodIO object (real/simulated/nonexistent) that will be operated on.
    */
-  public Hood(HoodIO hardware) {
+  private Hood(HoodIO hardware) {
     this.hardware = hardware;
 
-    fb.setTolerance(POS_TOLERANCE.in(Radians));
+    fb.setTolerance(POSITION_TOLERANCE.in(Radians));
     fb.reset(angle());
     setDefaultCommand(goTo(DEFAULT_ANGLE));
 
@@ -108,23 +126,6 @@ public class Hood extends SubsystemBase implements AutoCloseable {
             .withName("hood dynamic backward"));
   }
 
-  /**
-   * returns a new hood subsystem, which will have hardware if hood is real and sim if not
-   *
-   * @return a real or sim hood subsystem
-   */
-  public static Hood create() {
-    return new Hood(Robot.isReal() ? new RealHood() : new SimHood());
-  }
-
-  /**
-   * returns a hood with no interface
-   *
-   * @return
-   */
-  public static Hood none() {
-    return new Hood(new NoHood());
-  }
 
   /**
    * gets the current angle of the hood
@@ -187,7 +188,7 @@ public class Hood extends SubsystemBase implements AutoCloseable {
 
   /** checks if the hood is at a certain position within tolerance */
   public boolean atPosition(double angle) {
-    return Math.abs(angle - angle()) < POS_TOLERANCE.in(Radians);
+    return Math.abs(angle - angle()) < POSITION_TOLERANCE.in(Radians);
   }
 
   /**
@@ -200,7 +201,9 @@ public class Hood extends SubsystemBase implements AutoCloseable {
     return goTo(() -> goal.in(Radians));
   }
 
-  /** makes hood go to a set goal position */
+  /** makes hood go to a set goal position 
+   * 
+  */
   public Command goTo(DoubleSupplier goal) {
     return run(() -> update(goal.getAsDouble())).withName("Hood GoTo");
   }
@@ -248,7 +251,7 @@ public class Hood extends SubsystemBase implements AutoCloseable {
                 "Hood system check",
                 () -> goal.in(Radians),
                 this::angle,
-                POS_TOLERANCE.in(Radians)));
+                POSITION_TOLERANCE.in(Radians)));
     return new Test(testCommand, assertions);
   }
 

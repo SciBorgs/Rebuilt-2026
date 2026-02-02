@@ -194,19 +194,6 @@ public class Robot extends CommandRobot {
         .onTrue(Commands.runOnce(() -> speedMultiplier = Constants.SLOW_SPEED_MULTIPLIER))
         .onFalse(Commands.runOnce(() -> speedMultiplier = Constants.FULL_SPEED_MULTIPLIER));
 
-    operator
-        .a()
-        .whileTrue(
-            Commands.defer(
-                () ->
-                    hood.goTo(
-                        Radians.of(
-                                Math.random()
-                                    * HoodConstants.MAX_ANGLE
-                                        .minus(HoodConstants.MIN_ANGLE)
-                                        .in(Radians))
-                            .plus(HoodConstants.MIN_ANGLE)),
-                Set.of(hood)));
 
     // TODO: Add any additional bindings.
   }

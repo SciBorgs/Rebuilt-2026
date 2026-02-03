@@ -24,7 +24,7 @@ import java.util.Set;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
-import org.photonvision.PhotonPoseEstimator.PoseStrategy;
+import static org.photonvision.PhotonPoseEstimator.PoseStrategy.*;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
@@ -74,16 +74,14 @@ public class Vision {
     estimators = new PhotonPoseEstimator[configs.length];
     simCameras = new PhotonCameraSim[configs.length];
     lastResults = new PhotonPipelineResult[configs.length];
+
     filteredEstimates = new ArrayList<>();
     camerasEnabled = new HashMap<>();
 
     for (int i = 0; i < configs.length; i++) {
       PhotonCamera camera = new PhotonCamera(configs[i].name());
-      PhotonPoseEstimator estimator =
-          new PhotonPoseEstimator(
-              TAG_LAYOUT, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, configs[i].robotToCam());
+      PhotonPoseEstimator estimator = new PhotonPoseEstimator(TAG_LAYOUT, configs[i].robotToCam());
 
-      estimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
       cameras[i] = camera;
       estimators[i] = estimator;
       lastResults[i] = new PhotonPipelineResult();
@@ -138,7 +136,7 @@ public class Vision {
    * @return An {@link EstimatedRobotPose} with an estimated pose, estimate timestamp, and targets
    *     used for estimation.
    */
-  public PoseEstimate[] estimatedGlobalPoses(Rotation2d rotation) {
+  public PoseEstimate[] estimatedGlobalPoses(Rotation2d rotation, Pose3d referencePose) {
     Tracer.startTrace("vision estimatedGlobalPoses");
     List<PoseEstimate> estimates = new ArrayList<>();
     filteredEstimates.clear();
@@ -153,7 +151,7 @@ public class Vision {
 
         int unreadLength = unreadChanges.size();
 
-        if (estimators[i].getPrimaryStrategy() == PoseStrategy.PNP_DISTANCE_TRIG_SOLVE) {
+        if (POSE_STRATEGY == PNP_DISTANCE_TRIG_SOLVE) {
           estimators[i].addHeadingData(Timer.getFPGATimestamp(), rotation);
         }
 
@@ -164,10 +162,7 @@ public class Vision {
           var change = unreadChanges.get(j);
           // THIS NEGATES PITCH!!!
           if (Objects.equals(cameras[i].getName(), "example camera")) {
-            change.targets.forEach(
-                t -> {
-                  t.pitch = -t.pitch;
-                });
+            change.targets.forEach(t -> t.pitch = -t.pitch);
             change.multitagResult =
                 change.multitagResult.filter(
                     r ->
@@ -181,7 +176,18 @@ public class Vision {
           change.multitagResult =
               change.multitagResult.filter(r -> r.estimatedPose.ambiguity < MAX_AMBIGUITY);
 
-          estimate = estimators[i].update(change);
+          switch (POSE_STRATEGY) {
+            case LOWEST_AMBIGUITY -> estimate = estimators[i].estimateLowestAmbiguityPose(change);
+            case AVERAGE_BEST_TARGETS -> estimate = estimators[i].estimateAverageBestTargetsPose(change);
+            case PNP_DISTANCE_TRIG_SOLVE -> estimate = estimators[i].estimatePnpDistanceTrigSolvePose(change);
+            case MULTI_TAG_PNP_ON_COPROCESSOR -> estimate = estimators[i].estimateCoprocMultiTagPose(change);
+            case CLOSEST_TO_CAMERA_HEIGHT -> estimate = estimators[i].estimateClosestToCameraHeightPose(change);
+            case CLOSEST_TO_LAST_POSE -> throw new UnsupportedOperationException("CLOSEST_TO_LAST_POSE is not supported in this method. Please use CLOSEST_TO_REFERENCE_POSE and pass in a reference pose instead.");
+            case CLOSEST_TO_REFERENCE_POSE -> estimate = estimators[i].estimateClosestToReferencePose(change, referencePose);
+            case CONSTRAINED_SOLVEPNP -> throw new UnsupportedOperationException("CONSTRAINED_SOLVEPNP is not supported in this method. Please use a different pose strategy.");
+            case MULTI_TAG_PNP_ON_RIO -> throw new UnsupportedOperationException("MULTI_TAG_PNP_ON_RIO is not supported in this method. Please use a MULTI_TAG_PNP_ON_COPROCESSOR.");
+            default -> throw new IllegalArgumentException("Unexpected value: " + POSE_STRATEGY);
+          }
           log("Robot/vision/ " + name + " estimates present", estimate.isPresent());
           estimate
               .filter(
@@ -207,6 +213,13 @@ public class Vision {
     }
     Tracer.endTrace();
     return estimates.toArray(PoseEstimate[]::new);
+  }
+
+  public PoseEstimate[] estimatedGlobalPoses(Rotation2d rotation) {
+    if (POSE_STRATEGY == CLOSEST_TO_REFERENCE_POSE) {
+      throw new IllegalArgumentException("Please pass in a reference pose when using PoseStrategy.CLOSEST_TO_REFERENCE_POSE");
+    }
+    return estimatedGlobalPoses(rotation, Pose3d.kZero);
   }
 
   /**

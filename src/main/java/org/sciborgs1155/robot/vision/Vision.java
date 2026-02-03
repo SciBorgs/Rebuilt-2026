@@ -271,6 +271,7 @@ public class Vision {
    *
    * @param estimatedPose The estimated pose to guess standard deviations for.
    */
+  @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
   public Matrix<N3, N1> estimationStdDevs(
       Pose2d estimatedPose, PhotonPipelineResult pipelineResult) {
     var estStdDevs = SINGLE_TAG_STD_DEVS;

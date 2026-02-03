@@ -22,10 +22,6 @@ import java.util.function.DoubleSupplier;
 import org.sciborgs1155.robot.Constants;
 
 public class LEDStrip extends SubsystemBase implements AutoCloseable {
-  private static final AddressableLED LED = new AddressableLED(LED_PORT);
-  private static final AddressableLEDBuffer ALL_BUFFER = new AddressableLEDBuffer(LED_LENGTH);
-  private static boolean ledInitalized;
-
   public final int startLED;
   public final int endLED;
   public final boolean inverted;
@@ -40,17 +36,10 @@ public class LEDStrip extends SubsystemBase implements AutoCloseable {
    * @param end The ending LED index, inclusive.
    * @param invert Whether or not apply the pattern backwards.
    */
-  @SuppressWarnings("PMD.AssignmentToNonFinalStatic") // Intended behavior
   public LEDStrip(int start, int end, boolean invert) {
     startLED = start;
     endLED = end;
     inverted = invert;
-    if (!ledInitalized) {
-      ledInitalized = true;
-      LED.setLength(LED_LENGTH);
-      LED.setData(ALL_BUFFER);
-      LED.start();
-    }
     selfBuffer = new AddressableLEDBuffer(end - start + 1);
     setDefaultCommand(
         run(
@@ -153,9 +142,9 @@ public class LEDStrip extends SubsystemBase implements AutoCloseable {
   private void update(LEDPattern pattern) {
     (inverted ? pattern.reversed() : pattern).applyTo(selfBuffer);
     for (int i = startLED; i <= endLED; i++) {
-      ALL_BUFFER.setLED(i, selfBuffer.getLED(i - startLED));
+      Led.getLedBuffer().setLED(i, selfBuffer.getLED(i - startLED));
     }
-    LED.setData(ALL_BUFFER);
+    Led.getLedInstance().setData(Led.getLedBuffer());
   }
 
   /** Alternates between two colors, for a given length for each. */
@@ -191,6 +180,44 @@ public class LEDStrip extends SubsystemBase implements AutoCloseable {
 
   @Override
   public void close() throws Exception {
-    LED.close();
+    Led.closeLed();
+  }
+
+  /**
+   * This class holds the single instance of the AddressableLED and AddressableLEDBuffer used by all
+   * LEDStrips. This should NEVER be called outside of this file. Instead, use LEDStrip to
+   * manipulate sections of the LED strip.
+   */
+  private static final class Led implements AutoCloseable {
+    private static final Led INSTANCE = new Led();
+
+    private final AddressableLED ledInstance;
+    private final AddressableLEDBuffer ledBuffer;
+
+    private Led() {
+      ledInstance = new AddressableLED(LED_PORT);
+      ledBuffer = new AddressableLEDBuffer(LED_LENGTH);
+
+      ledInstance.setLength(LED_LENGTH);
+      ledInstance.setData(ledBuffer);
+      ledInstance.start();
+    }
+
+    private static AddressableLED getLedInstance() {
+      return INSTANCE.ledInstance;
+    }
+
+    private static AddressableLEDBuffer getLedBuffer() {
+      return INSTANCE.ledBuffer;
+    }
+
+    private static void closeLed() {
+      INSTANCE.close();
+    }
+
+    @Override
+    public void close() {
+      ledInstance.close();
+    }
   }
 }

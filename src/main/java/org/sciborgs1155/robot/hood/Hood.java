@@ -36,6 +36,24 @@ import org.sciborgs1155.robot.Robot;
 @Logged
 public final class Hood extends SubsystemBase implements AutoCloseable {
 
+  /**
+   * returns a new hood subsystem, which will have hardware if hood is real and sim if not
+   *
+   * @return a real or sim hood subsystem
+   */
+  public static Hood create() {
+    return new Hood(Robot.isReal() ? new RealHood() : new SimHood());
+  }
+
+  /**
+   * returns a hood with no interface
+   *
+   * @return
+   */
+  public static Hood none() {
+    return new Hood(new NoHood());
+  }
+
   private final HoodIO hardware;
 
   @Logged
@@ -66,24 +84,6 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
   /** Routine for recording and analyzing motor data. */
   private final SysIdRoutine sysIdRoutine;
 
-  /**
-   * returns a new hood subsystem, which will have hardware if hood is real and sim if not
-   *
-   * @return a real or sim hood subsystem
-   */
-  public static Hood create() {
-    return new Hood(Robot.isReal() ? new RealHood() : new SimHood());
-  }
-
-  /**
-   * returns a hood with no interface
-   *
-   * @return
-   */
-  public static Hood none() {
-    return new Hood(new NoHood());
-  }
-  
   /**
    * Constructor
    *
@@ -126,7 +126,6 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
             .withName("hood dynamic backward"));
   }
 
-
   /**
    * gets the current angle of the hood
    *
@@ -135,15 +134,6 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
   @Logged
   public double angle() {
     return hardware.angle();
-  }
-
-  /**
-   * sets the voltage of the motor
-   *
-   * @param v
-   */
-  public void setVoltage(double v) {
-    hardware.setVoltage(v);
   }
 
   /**
@@ -201,9 +191,7 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
     return goTo(() -> goal.in(Radians));
   }
 
-  /** makes hood go to a set goal position 
-   * 
-  */
+  /** makes hood go to a set goal position */
   public Command goTo(DoubleSupplier goal) {
     return run(() -> update(goal.getAsDouble())).withName("Hood GoTo");
   }

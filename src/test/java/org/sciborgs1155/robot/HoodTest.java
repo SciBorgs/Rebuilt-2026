@@ -31,7 +31,6 @@ public class HoodTest {
 
   /** test for hood to go to random angles */
   @Test
-  @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
   public void randAngle() {
     runUnitTest(
         hood.goToTest(

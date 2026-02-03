@@ -1,6 +1,8 @@
 package org.sciborgs1155.robot.hood;
 
 import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static org.sciborgs1155.robot.Ports.Hood.MOTOR_PORT;
 import static org.sciborgs1155.robot.hood.HoodConstants.GEARING;
 import static org.sciborgs1155.robot.hood.HoodConstants.STATOR_LIMIT;
@@ -31,15 +33,15 @@ public class RealHood implements HoodIO {
     config.Feedback.SensorToMechanismRatio = GEARING;
     config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
+    motor.getConfigurator().apply(config);
     TalonUtils.addMotor(motor);
     FaultLogger.register(motor);
-    motor.getConfigurator().apply(config);
   }
 
   /** gets the hood angle in rads */
   @Override
   public double angle() {
-    return motor.getPosition().getValueAsDouble();
+    return motor.getPosition().getValue().in(Radians);
   }
 
   /** sets the voltage of the hood motor */
@@ -51,7 +53,7 @@ public class RealHood implements HoodIO {
   /** rotational velocity of the hood in rads/sec */
   @Override
   public double velocity() {
-    return motor.getVelocity().getValueAsDouble();
+    return motor.getVelocity().getValue().in(RadiansPerSecond);
   }
 
   @Override

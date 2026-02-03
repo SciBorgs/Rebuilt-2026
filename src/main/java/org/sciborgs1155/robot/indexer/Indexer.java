@@ -33,7 +33,7 @@ public final class Indexer extends SubsystemBase implements AutoCloseable {
     return new Indexer(SimpleMotor.none(), Beambreak.none());
   }
 
-    /**
+  /**
    * @param hardware represents motor
    * @param beambreak represents beambreak
    */
@@ -45,7 +45,6 @@ public final class Indexer extends SubsystemBase implements AutoCloseable {
 
     setDefaultCommand(stop());
   }
-
 
   /**
    * @return simple motor with hardware config

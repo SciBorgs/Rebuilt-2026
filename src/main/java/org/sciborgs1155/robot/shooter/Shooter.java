@@ -46,7 +46,7 @@ public final class Shooter extends SubsystemBase implements AutoCloseable {
   public static Shooter none() {
     return new Shooter(new Wheel());
   }
-  
+
   /**
    * Sets the shooter's default command and PID tolerance.
    *
@@ -74,7 +74,6 @@ public final class Shooter extends SubsystemBase implements AutoCloseable {
 
     setDefaultCommand(runShooter(IDLE_VELOCITY.in(RadiansPerSecond)).withName("Idle"));
   }
-
 
   /**
    * Returns the velocity of the motor.

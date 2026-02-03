@@ -32,10 +32,10 @@ import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.lib.Tracer;
+import org.sciborgs1155.lib.projectiles.FuelVisualizer;
 import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
-import org.sciborgs1155.robot.commands.FuelVisualizer;
 import org.sciborgs1155.robot.drive.Drive;
 
 /**
@@ -59,6 +59,15 @@ public class Robot extends CommandRobot {
   private final Alignment align = new Alignment(drive);
 
   @NotLogged private final SendableChooser<Command> autos = Autos.configureAutos(drive);
+
+  @NotLogged
+  private final FuelVisualizer fuelVisualizer =
+      new FuelVisualizer(
+          () -> RPM.of(2000),
+          () -> Degrees.of(0),
+          () -> Degrees.of(60),
+          drive::pose3d,
+          drive::fieldRelativeChassisSpeeds);
 
   @Logged private double speedMultiplier = Constants.FULL_SPEED_MULTIPLIER;
 
@@ -92,13 +101,7 @@ public class Robot extends CommandRobot {
     SmartDashboard.putData("Auto Chooser", autos);
 
     // Configure pose estimation updates every tick
-    FuelVisualizer.init(
-        () -> RPM.of(2000),
-        () -> Degrees.of(0),
-        () -> Degrees.of(60),
-        drive::pose3d,
-        drive::fieldRelativeChassisSpeeds);
-    addPeriodic(FuelVisualizer::periodic, PERIOD);
+    addPeriodic(fuelVisualizer::periodic, PERIOD);
 
     RobotController.setBrownoutVoltage(6.0);
 
@@ -170,12 +173,8 @@ public class Robot extends CommandRobot {
         .onTrue(Commands.runOnce(() -> speedMultiplier = Constants.SLOW_SPEED_MULTIPLIER))
         .onFalse(Commands.runOnce(() -> speedMultiplier = Constants.FULL_SPEED_MULTIPLIER));
 
-    operator.a().onTrue(FuelVisualizer.launchFuel());
-    operator
-        .a()
-        .whileTrue(
-            Commands.repeatingSequence(
-                FuelVisualizer.launchFuel().andThen(Commands.waitSeconds(0.02))));
+    operator.a().onTrue(fuelVisualizer.launchProjectile());
+    operator.a().whileTrue(Commands.repeatingSequence(fuelVisualizer.launchProjectile()));
   }
 
   /**

@@ -15,8 +15,6 @@ import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.Vector;
-import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
@@ -28,8 +26,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-
-import java.util.Arrays;
 import java.util.Set;
 import org.littletonrobotics.urcl.URCL;
 import org.sciborgs1155.lib.CommandRobot;
@@ -96,8 +92,15 @@ public class Robot extends CommandRobot {
     SignalLogger.enableAutoLogging(true);
     addPeriodic(FaultLogger::update, 2);
     Epilogue.bind(this);
-    FuelVisualizer.init(() -> shootingAlgorithm.calculate(drive.pose().getTranslation(), VecBuilder.fill(drive.fieldRelativeChassisSpeeds().vxMetersPerSecond, drive.fieldRelativeChassisSpeeds().vyMetersPerSecond))
-    , drive::pose3d, drive::fieldRelativeChassisSpeeds);
+    FuelVisualizer.init(
+        () ->
+            shootingAlgorithm.calculate(
+                drive.pose().getTranslation(),
+                VecBuilder.fill(
+                    drive.fieldRelativeChassisSpeeds().vxMetersPerSecond,
+                    drive.fieldRelativeChassisSpeeds().vyMetersPerSecond)),
+        drive::pose3d,
+        drive::fieldRelativeChassisSpeeds);
 
     addPeriodic(FuelVisualizer::periodic, 0.02);
 

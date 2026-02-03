@@ -141,7 +141,6 @@ public final class FuelVisualizer {
     fuelSims.add(new FuelSim());
   }
 
-
   /** Publishes the Fuel display data to {@code NetworkTables}. */
   public static void periodic() {
     // UPDATING SIMULATIONS
@@ -263,7 +262,21 @@ public final class FuelVisualizer {
    * @return A vector representing the velocity of the Fuel at launch (METERS / FRAME).
    */
   private static Vector<N3> calculateFuelLaunchVelocity() {
-    if (vectorControl) return fuelLaunchVelocity.get().times(FRAME_LENGTH);
+
+    Vector<N3> rotationalVelocity =
+        fromSphericalCoords(
+            robotVelocity.get().omegaRadiansPerSecond * Robot.ROBOT_TO_SHOOTER.getNorm(),
+            robotPose.get().getRotation().plus(new Rotation3d(0, 0, Math.PI / 2)));
+    Vector<N3> translationalVelocity =
+        VecBuilder.fill(
+            robotVelocity.get().vxMetersPerSecond, robotVelocity.get().vyMetersPerSecond, 0);
+
+    if (vectorControl)
+      return fuelLaunchVelocity
+          .get()
+          .plus(translationalVelocity)
+          .plus(rotationalVelocity)
+          .times(FRAME_LENGTH);
 
     // CONVERT FUEL LAUNCH SPEED (SOURCE BELOW)
     // https://docs.carlmontrobotics.org/jupyter_notebooks/files/FlywheelShooter.html#Equation-1
@@ -278,13 +291,6 @@ public final class FuelVisualizer {
 
     // CALCULATE FUEL LAUNCH VELOCITY
     Vector<N3> stationaryVelocity = fromSphericalCoords(launchSpeed, shooterPose().getRotation());
-    Vector<N3> rotationalVelocity =
-        fromSphericalCoords(
-            robotVelocity.get().omegaRadiansPerSecond * Robot.ROBOT_TO_SHOOTER.getNorm(),
-            robotPose.get().getRotation().plus(new Rotation3d(0, 0, Math.PI / 2)));
-    Vector<N3> translationalVelocity =
-        VecBuilder.fill(
-            robotVelocity.get().vxMetersPerSecond, robotVelocity.get().vyMetersPerSecond, 0);
 
     return stationaryVelocity
         .plus(translationalVelocity)

@@ -18,6 +18,7 @@
     <exclude name="JUnit5TestShouldBePackagePrivate" /> <!-- Violated a lot but this isn't a big deal -->
     <exclude name="UnitTestAssertionsShouldIncludeMessage" /> <!-- Not our current style, but maybe it should -->
     <exclude name="UnitTestContainsTooManyAsserts" /> <!-- I personally think this is fine -->
+    <exclude name="UnitTestShouldIncludeAssert" /> <!-- Tests use built-in assertions. -->
     <exclude name="UnusedPrivateField" /> <!-- This is often used during work in progress. This is fine. -->
     <exclude name="UnusedPrivateMethod" /> <!-- This is often used during work in progress. This is fine. -->
     <exclude name="UseVarargs" /> <!-- Does not fit our use cases -->
@@ -76,8 +77,7 @@
 
 
   <rule ref="category/java/documentation.xml">
-    <exclude name="CommentRequired" /> <!-- Currently, our style doesn't require JavaDoc but we should. Let's enable
-      this later. -->
+    <exclude name="CommentRequired" /> <!-- Defined and configured above, so we should not duplicate it here. -->
     <exclude name="CommentSize" /> <!-- I'm fine with long comments as long as they maintain good information. -->
     <exclude name="UncommentedEmptyConstructor" /> <!-- Not necessary -->
     <exclude name="UncommentedEmptyMethodBody" /> <!-- Not necessary -->
@@ -86,7 +86,6 @@
   <rule ref="category/java/errorprone.xml">
     <exclude name="AvoidCatchingGenericException" /> <!-- Used a lot in lock context. I'll stay far away -->
     <exclude name="AvoidFieldNameMatchingMethodName" /> <!-- Violated often -->
-    <exclude name="AvoidLiteralsInIfCondition" /> <!-- I personally think this is fine and readable -->
     <exclude name="CloseResource" /> <!-- Many violations exist currently. We may want to do something about this
       to prevent resource leaks. -->
     <exclude name="ConstructorCallsOverridableMethod" /> <!-- This is used often in subsystem construction -->

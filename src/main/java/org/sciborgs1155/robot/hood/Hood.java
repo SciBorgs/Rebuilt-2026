@@ -36,24 +36,6 @@ import org.sciborgs1155.robot.Robot;
 @Logged
 public final class Hood extends SubsystemBase implements AutoCloseable {
 
-  /**
-   * returns a new hood subsystem, which will have hardware if hood is real and sim if not
-   *
-   * @return a real or sim hood subsystem
-   */
-  public static Hood create() {
-    return new Hood(Robot.isReal() ? new RealHood() : new SimHood());
-  }
-
-  /**
-   * returns a hood with no interface
-   *
-   * @return
-   */
-  public static Hood none() {
-    return new Hood(new NoHood());
-  }
-
   private final HoodIO hardware;
 
   @Logged
@@ -83,6 +65,24 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
 
   /** Routine for recording and analyzing motor data. */
   private final SysIdRoutine sysIdRoutine;
+
+  /**
+   * returns a new hood subsystem, which will have hardware if hood is real and sim if not
+   *
+   * @return a real or sim hood subsystem
+   */
+  public static Hood create() {
+    return new Hood(Robot.isReal() ? new RealHood() : new SimHood());
+  }
+
+  /**
+   * returns a hood with no interface
+   *
+   * @return
+   */
+  public static Hood none() {
+    return new Hood(new NoHood());
+  }
 
   /**
    * Constructor

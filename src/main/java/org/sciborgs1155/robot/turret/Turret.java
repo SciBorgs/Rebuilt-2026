@@ -140,13 +140,6 @@ public class Turret extends SubsystemBase implements AutoCloseable {
    */
   @NotLogged
   public Command sysIdTest(SysIdTestType type, Direction direction) {
-    /*
-    Angle startAngle = direction == Direction.kForward ? MIN_ANGLE : MAX_ANGLE;
-
-    Command goToStart =
-        Commands.runOnce(() -> setAngle(startAngle)).andThen(run().until(controller::atGoal));
-    */
-
     Command test =
         switch (type) {
           case QUASISTATIC -> sysIdRoutine.quasistatic(direction);
@@ -156,14 +149,11 @@ public class Turret extends SubsystemBase implements AutoCloseable {
     Angle stopAngle =
         direction == Direction.kForward ? MAX_ANGLE.minus(TOLERANCE) : MIN_ANGLE.plus(TOLERANCE);
 
-    double sign = direction == Direction.kForward ? 1.0 : -1.0;
-
-    /*
-    return goToStart.andThen(
-        test.until(() -> sign * motor.position().in(Radians) >= sign * stopAngle.in(Radians)));
-    */
-
-    return test.until(() -> sign * hardware.position() >= sign * stopAngle.in(Radians));
+    return test.until(
+        () ->
+            direction == Direction.kForward
+                ? hardware.position() >= stopAngle.in(Radians)
+                : hardware.position() <= stopAngle.in(Radians));
   }
 
   /**
@@ -175,7 +165,7 @@ public class Turret extends SubsystemBase implements AutoCloseable {
     controller.setGoal(positionSetpoint);
 
     double currentPosition = hardware.position();
-    double pidVolts = controller.calculate(currentPosition, positionSetpoint);
+    double pidVolts = controller.calculate(currentPosition);
 
     double targetVelocity = controller.getSetpoint().velocity;
     double ffdVolts = feedforward.calculateWithVelocities(hardware.velocity(), targetVelocity);
@@ -213,7 +203,7 @@ public class Turret extends SubsystemBase implements AutoCloseable {
     }
 
     // VISUALIZATION
-    visualizer.update(hardware.position(), controller.getSetpoint().position);
+    visualizer.update(hardware.position(), controller.getGoal().position);
   }
 
   @Override

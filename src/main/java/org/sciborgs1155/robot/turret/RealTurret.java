@@ -2,6 +2,7 @@ package org.sciborgs1155.robot.turret;
 
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Radians;
+import static org.sciborgs1155.robot.Constants.TURRET_CANIVORE;
 import static org.sciborgs1155.robot.Ports.Turret.*;
 import static org.sciborgs1155.robot.turret.TurretConstants.*;
 
@@ -17,7 +18,7 @@ import yams.units.EasyCRTConfig;
 /** Real hardware interface for the {@code Turret} subsystem. */
 public class RealTurret implements TurretIO {
   /** Motor controller that operates a motor which is used to rotate the turret. */
-  private final TalonFX hardware = new TalonFX(MOTOR, CAN_BUS);
+  private final TalonFX hardware = new TalonFX(MOTOR, TURRET_CANIVORE);
 
   private final CANcoder encoderA = new CANcoder(ENCODER_A);
   private final CANcoder encoderB = new CANcoder(ENCODER_B);

@@ -30,6 +30,24 @@ public final class Shooter extends SubsystemBase implements AutoCloseable {
   private final SysIdRoutine characterization;
 
   /**
+   * Returns the shooter subsystem
+   *
+   * @return Creates real or simulated shooter based on {@link Robot#isReal()}.
+   */
+  public static Shooter create() {
+    return Robot.isReal() ? new Shooter(new RealWheel()) : new Shooter(new SimWheel());
+  }
+
+  /**
+   * Returns the shooter subsystem
+   *
+   * @return A shooter that is blank.
+   */
+  public static Shooter none() {
+    return new Shooter(new Wheel());
+  }
+  
+  /**
    * Sets the shooter's default command and PID tolerance.
    *
    * @param hardware Takes in the WheelIO class.
@@ -57,23 +75,6 @@ public final class Shooter extends SubsystemBase implements AutoCloseable {
     setDefaultCommand(runShooter(IDLE_VELOCITY.in(RadiansPerSecond)).withName("Idle"));
   }
 
-  /**
-   * Returns the shooter subsystem
-   *
-   * @return Creates real or simulated shooter based on {@link Robot#isReal()}.
-   */
-  public static Shooter create() {
-    return Robot.isReal() ? new Shooter(new RealWheel()) : new Shooter(new SimWheel());
-  }
-
-  /**
-   * Returns the shooter subsystem
-   *
-   * @return A shooter that is blank.
-   */
-  public static Shooter none() {
-    return new Shooter(new Wheel());
-  }
 
   /**
    * Returns the velocity of the motor.

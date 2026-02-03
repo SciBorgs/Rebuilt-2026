@@ -27,23 +27,6 @@ import org.sciborgs1155.robot.Robot;
  */
 @Logged(name = "turret")
 public class Turret extends SubsystemBase implements AutoCloseable {
-  /** Creates real or simulated turret based on {@link Robot#isReal()}. */
-  @NotLogged
-  public static Turret create() {
-    return Robot.isReal() ? new Turret(new RealTurret()) : new Turret(new SimTurret());
-  }
-
-  /**
-   * Factory for a fake {@code Turret} subsystem.
-   *
-   * @return A newly instantiated instance of {@code Turret} using a {@code NoTurret} hardware
-   *     interface.
-   */
-  @NotLogged
-  public static Turret none() {
-    return new Turret(new NoTurret());
-  }
-
   /** Motor used to rotate the turret. */
   @NotLogged public final TurretIO hardware;
 
@@ -61,6 +44,23 @@ public class Turret extends SubsystemBase implements AutoCloseable {
 
   /** System identification routine object. */
   private final SysIdRoutine sysIdRoutine;
+
+  /** Creates real or simulated turret based on {@link Robot#isReal()}. */
+  @NotLogged
+  public static Turret create() {
+    return Robot.isReal() ? new Turret(new RealTurret()) : new Turret(new SimTurret());
+  }
+
+  /**
+   * Factory for a fake {@code Turret} subsystem.
+   *
+   * @return A newly instantiated instance of {@code Turret} using a {@code NoTurret} hardware
+   *     interface.
+   */
+  @NotLogged
+  public static Turret none() {
+    return new Turret(new NoTurret());
+  }
 
   /**
    * Constructs a new turret subsystem.
@@ -162,13 +162,9 @@ public class Turret extends SubsystemBase implements AutoCloseable {
    * @param double The position setpoint in radians.
    */
   public void update(double positionSetpoint) {
-    controller.setGoal(positionSetpoint);
-
-    double currentPosition = hardware.position();
-    double pidVolts = controller.calculate(currentPosition);
-
-    double targetVelocity = controller.getSetpoint().velocity;
-    double ffdVolts = feedforward.calculateWithVelocities(hardware.velocity(), targetVelocity);
+    double pidVolts = controller.calculate(hardware.position(), positionSetpoint);
+    double ffdVolts =
+        feedforward.calculateWithVelocities(hardware.velocity(), controller.getSetpoint().velocity);
 
     hardware.setVoltage(pidVolts + ffdVolts);
   }
@@ -185,9 +181,9 @@ public class Turret extends SubsystemBase implements AutoCloseable {
   /**
    * Sets controller setpoint and repeatively calls update to orient the turret.
    *
-   * @param Double The position.
+   * @param double The position.
    */
-  public Command goTo(Double position) {
+  public Command goTo(double position) {
     return goTo(() -> position).withName("goTo (Double)");
   }
 

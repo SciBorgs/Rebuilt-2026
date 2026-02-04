@@ -104,8 +104,8 @@ public class VisionConstants {
   public static final int WIDTH = 1280;
   public static final int HEIGHT = 720;
 
-  public static final Matrix<N3, N1> SINGLE_TAG_STD_DEVS = VecBuilder.fill(0.6, 0.6, 1.3);
-  public static final Matrix<N3, N1> MULTIPLE_TAG_STD_DEVS = VecBuilder.fill(0.3, 0.3, 1.1);
+  public static final Matrix<N3, N1> SINGLE_TAG_STD_DEVS = VecBuilder.fill(0.6, 0.6, 1155); //TODO decide these later when we test the bump
+  public static final Matrix<N3, N1> MULTIPLE_TAG_STD_DEVS = VecBuilder.fill(0.3, 0.3, 1155);
   public static final Matrix<N3, N1> SUPERTRUST_TAG_STD_DEVS = VecBuilder.fill(0.001, 0.001, 0.001);
 
   public static final double MAX_HEIGHT = 0.305;

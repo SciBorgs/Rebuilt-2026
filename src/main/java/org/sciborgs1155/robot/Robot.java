@@ -15,6 +15,7 @@ import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
@@ -33,12 +34,12 @@ import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.lib.Tracer;
+import org.sciborgs1155.lib.projectiles.FuelVisualizer;
+import org.sciborgs1155.lib.projectiles.FuelVisualizer.FuelVectorVisualizer;
 import org.sciborgs1155.lib.shooting.MovingShooting;
-import org.sciborgs1155.lib.shooting.ShootingAlgorithm;
 import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
-import org.sciborgs1155.robot.commands.FuelVisualizer;
 import org.sciborgs1155.robot.drive.Drive;
 
 /**
@@ -58,12 +59,19 @@ public class Robot extends CommandRobot {
   // SUBSYSTEMS
   private final Drive drive = Drive.create();
 
-  private final ShootingAlgorithm shootingAlgorithm = new MovingShooting();
-
   // COMMANDS
   private final Alignment align = new Alignment(drive);
 
   @NotLogged private final SendableChooser<Command> autos = Autos.configureAutos(drive);
+
+  private final MovingShooting movingShooting = new MovingShooting();
+
+  @NotLogged
+  private final FuelVectorVisualizer fuelVisualizer =
+      new FuelVectorVisualizer(
+          () ->  movingShooting.calculate(drive.pose().getTranslation(), FuelVectorVisualizer.shooterVelocity(drive.fieldRelativeChassisSpeeds())),
+          drive::pose3d,
+          drive::fieldRelativeChassisSpeeds);
 
   @Logged private double speedMultiplier = Constants.FULL_SPEED_MULTIPLIER;
 
@@ -92,17 +100,6 @@ public class Robot extends CommandRobot {
     SignalLogger.enableAutoLogging(true);
     addPeriodic(FaultLogger::update, 2);
     Epilogue.bind(this);
-    FuelVisualizer.init(
-        () ->
-            shootingAlgorithm.calculate(
-                drive.pose().getTranslation(),
-                VecBuilder.fill(
-                    drive.fieldRelativeChassisSpeeds().vxMetersPerSecond,
-                    drive.fieldRelativeChassisSpeeds().vyMetersPerSecond)),
-        drive::pose3d,
-        drive::fieldRelativeChassisSpeeds);
-
-    addPeriodic(FuelVisualizer::periodic, 0.02);
 
     FaultLogger.register(pdh);
     SmartDashboard.putData("Auto Chooser", autos);
@@ -129,7 +126,7 @@ public class Robot extends CommandRobot {
     // }
 
     // Configure pose estimation updates every tick
-    addPeriodic(FuelVisualizer::periodic, PERIOD);
+    addPeriodic(fuelVisualizer::periodic, PERIOD);
 
     RobotController.setBrownoutVoltage(6.0);
 
@@ -201,12 +198,8 @@ public class Robot extends CommandRobot {
         .onTrue(Commands.runOnce(() -> speedMultiplier = Constants.SLOW_SPEED_MULTIPLIER))
         .onFalse(Commands.runOnce(() -> speedMultiplier = Constants.FULL_SPEED_MULTIPLIER));
 
-    operator.a().onTrue(FuelVisualizer.launchFuel());
-    operator
-        .a()
-        .whileTrue(
-            Commands.repeatingSequence(
-                FuelVisualizer.launchFuel().andThen(Commands.waitSeconds(0.02))));
+    operator.a().onTrue(fuelVisualizer.launchProjectile());
+    operator.a().whileTrue(Commands.repeatingSequence(fuelVisualizer.launchProjectile()));
   }
 
   /**

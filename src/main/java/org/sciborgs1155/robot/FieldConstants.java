@@ -126,6 +126,8 @@ public final class FieldConstants {
 
   // List field constants below!
 
-  public static final double HUB_DIAMETER = 1.059942;
-  public static final Translation3d HUB = new Translation3d(4.611624, 4.021328, 1.8288);
+  public static final Distance HUB_DIAMETER = Meters.of(1.059942);
+  public static final Distance HUB_HEIGHT = Meters.of(1.8288);
+  public static final Translation3d BLUE_HUB = new Translation3d(4.611624, 4.021328, 1.8288);
+  public static final Translation2d RED_HUB = new Translation2d(11.901424, 4.021328);
 }

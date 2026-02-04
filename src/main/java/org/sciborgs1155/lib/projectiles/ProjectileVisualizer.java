@@ -1,5 +1,6 @@
 package org.sciborgs1155.lib.projectiles;
 
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -26,6 +27,9 @@ public abstract class ProjectileVisualizer {
   /** How fast the visualizer can launch projectiles (SECONDS / LAUNCH). */
   protected static final double COOLDOWN = 0.05;
 
+  /** The viscosity of the air (METER^2 / SECOND) */
+  protected static final double AIR_VISCOSITY = 0.0000151;
+
   /** The amount of times a projectile has been scored. */
   private int scores;
 
@@ -50,6 +54,12 @@ public abstract class ProjectileVisualizer {
   /** A supplier for the launch velocity of the projectile (METERS PER SECOND). */
   private final Supplier<Vector<N3>> projectileLaunchVelocity;
 
+  /** A supplier for the launch rotation of the projectile (RADIANS). */
+  private final Supplier<Vector<N3>> projectileLaunchRotation;
+
+  /** A supplier for the launch rotational velocity of the projectile (RADIANS PER SECOND). */
+  private final Supplier<Vector<N3>> projectileLaunchRotationalVelocity;
+
   /** A supplier for the pose of the robot (METERS). */
   protected final Supplier<Pose3d> robotPose;
 
@@ -72,6 +82,13 @@ public abstract class ProjectileVisualizer {
    * @return The launch speed of the projectile (METERS PER SECOND).
    */
   protected abstract double launchSpeed();
+
+  /**
+   * Calculates the launch rotational speed of the projectile.
+   *
+   * @return The launch rotational speed of the projectile (RADIANS PER SECOND).
+   */
+  protected abstract double launchRotationalSpeed();
 
   /**
    * Calculates the launch translation of the projectile.
@@ -118,12 +135,15 @@ public abstract class ProjectileVisualizer {
       Supplier<Pose3d> robotPoseSupplier, Supplier<ChassisSpeeds> robotVelocitySupplier) {
     robotPose = robotPoseSupplier;
     robotVelocity = robotVelocitySupplier;
+    projectileLaunchTranslation = () -> launchTranslation(robotPose.get());
     projectileLaunchVelocity =
         () ->
             launchDirection(robotPose.get())
                 .times(launchSpeed())
                 .plus(launcherVelocity(robotPose.get(), robotVelocity.get()));
-    projectileLaunchTranslation = () -> launchTranslation(robotPose.get());
+    projectileLaunchRotation = () -> VecBuilder.fill(0, 0, 0);
+    projectileLaunchRotationalVelocity = () -> VecBuilder.fill(0, 0, 0);
+
     projectiles = new ArrayList<>(1);
   }
 
@@ -139,7 +159,10 @@ public abstract class ProjectileVisualizer {
                     () ->
                         getLaunchableProjectile()
                             .launch(
-                                projectileLaunchTranslation.get(), projectileLaunchVelocity.get())))
+                                projectileLaunchTranslation.get(),
+                                projectileLaunchVelocity.get(),
+                                projectileLaunchRotation.get(),
+                                projectileLaunchRotationalVelocity.get())))
         .andThen(Commands.waitSeconds(COOLDOWN))
         .withName("LAUNCH PROJECTILE");
   }

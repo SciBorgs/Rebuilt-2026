@@ -82,13 +82,23 @@ public abstract class Projectile {
    *
    * @param launchTranslation The field-relative translation of the projectile at launch (METERS).
    * @param launchVelocity The field-relative velocity of the projectile at launch (METERS PER
-   *     SECOND)
+   *     SECOND).
+   * @param launchRotation The projectile-relative rotation of the projectile (RADIANS).
+   * @param launchRotationalVelocity The projectile-relative rotational velocity of the projectile
+   *     (RADIANS PER SECOND).
    */
-  public void launch(Vector<N3> launchTranslation, Vector<N3> launchVelocity) {
+  public void launch(
+      Vector<N3> launchTranslation,
+      Vector<N3> launchVelocity,
+      Vector<N3> launchRotation,
+      Vector<N3> launchRotationalVelocity) {
     if (isBeingLaunched) return;
 
     translation = launchTranslation;
     velocity = launchVelocity.times(FRAME_LENGTH);
+
+    rotation = launchRotation;
+    rotationalVelocity = launchRotationalVelocity.times(FRAME_LENGTH);
 
     // ALLOWS FRAMES TO BE RENDERED
     isBeingLaunched = true;

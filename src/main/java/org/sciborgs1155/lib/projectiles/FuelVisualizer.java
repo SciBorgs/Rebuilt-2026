@@ -88,6 +88,11 @@ public class FuelVisualizer extends ProjectileVisualizer {
   }
 
   @Override
+  protected double launchRotationalSpeed() {
+    return 0;
+  }
+
+  @Override
   protected Vector<N3> launcherVelocity(Pose3d robotPose, ChassisSpeeds robotVelocity) {
     Vector<N2> rotationalVelocity =
         fromPolarCoords(
@@ -176,14 +181,22 @@ public class FuelVisualizer extends ProjectileVisualizer {
 
     /**
      * Utility method for calculating velocity vector. <br>
-     * </br> NOTE: Does not account for robot rotational velocity.
+     * </br> NOTE: Rotational velocity calculation does not account for turret orientation.
      *
      * @param robotPose The current pose of the robot.
      * @param robotVelocity The robot-relative velocity of the robot.
      * @return The field-relative translation of the shooter.
      */
-    public static Vector<N2> shooterVelocity(ChassisSpeeds robotVelocity) {
-      return VecBuilder.fill(robotVelocity.vxMetersPerSecond, robotVelocity.vyMetersPerSecond);
+    public static Vector<N2> shooterVelocity(Pose3d robotPose, ChassisSpeeds robotVelocity) {
+      Vector<N2> rotationalVelocity =
+          fromPolarCoords(
+              robotVelocity.omegaRadiansPerSecond * ROBOT_TO_SHOOTER.toVector().norm(),
+              robotPose.toPose2d().getRotation().plus(Rotation2d.kCCW_90deg));
+      Vector<N2> translationalVelocity =
+          VecBuilder.fill(robotVelocity.vxMetersPerSecond, robotVelocity.vyMetersPerSecond);
+      Vector<N2> shooter2DVelocity = translationalVelocity.plus(rotationalVelocity);
+
+      return VecBuilder.fill(shooter2DVelocity.get(0), shooter2DVelocity.get(1));
     }
   }
 }

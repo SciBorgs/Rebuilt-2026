@@ -2,6 +2,9 @@ package org.sciborgs1155.lib.projectiles;
 
 import static edu.wpi.first.units.Units.Meters;
 import static org.sciborgs1155.lib.projectiles.FuelVisualizer.*;
+import static org.sciborgs1155.lib.projectiles.ProjectileVisualizer.AIR_DENSITY;
+import static org.sciborgs1155.lib.projectiles.ProjectileVisualizer.FRAME_LENGTH;
+import static org.sciborgs1155.lib.projectiles.ProjectileVisualizer.GRAVITY;
 import static org.sciborgs1155.robot.FieldConstants.BLUE_HUB;
 import static org.sciborgs1155.robot.FieldConstants.HUB_DIAMETER;
 import static org.sciborgs1155.robot.FieldConstants.HUB_HEIGHT;
@@ -23,16 +26,16 @@ public class Fuel extends Projectile {
     double speedSquared = Math.pow(velocity.norm(), 2); // MAGNITUDE OF VELOCITY^2
     double dragCoefficient = 0.47; // SPECIFIC TO SPHERICAL OBJECTS
     double referenceArea = Math.PI * Math.pow(FUEL_RADIUS, 2); // CROSS SECTION
-    double dragFactor = 0.5 * AIR_DENSITY * speedSquared * dragCoefficient * referenceArea;
-    Vector<N3> drag = velocity.unit().times(dragFactor).div(FUEL_MASS).times(-1);
+    double magnitude = 0.5 * AIR_DENSITY * speedSquared * dragCoefficient * referenceArea;
+    Vector<N3> drag = velocity.unit().times(magnitude).div(FUEL_MASS).times(-1);
 
     return gravity.plus(drag);
   }
 
-  // TODO: Implement.
   @Override
   protected Vector<N3> rotationalAcceleration() {
-    return VecBuilder.fill(0, 0, 0);
+    double magnitude = -8 * Math.PI * Math.pow(FUEL_RADIUS, 3) * AIR_VISCOSITY * FRAME_LENGTH;
+    return rotationalVelocity.times(magnitude).div(FUEL_MASS).times(-1);
   }
 
   @Override

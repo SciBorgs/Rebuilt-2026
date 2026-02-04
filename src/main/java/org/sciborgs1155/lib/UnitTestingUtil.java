@@ -33,7 +33,6 @@ public final class UnitTestingUtil {
    *
    * @param subsystems All subsystems that need to be closed
    */
-  @SuppressWarnings("PMD.SignatureDeclareThrowsException")
   public static void reset(AutoCloseable... subsystems) throws Exception {
     CommandScheduler.getInstance().unregisterAllSubsystems();
     CommandScheduler.getInstance().cancelAll();
@@ -106,3 +105,5 @@ public final class UnitTestingUtil {
     }
   }
 }
+
+// never goon

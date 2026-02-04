@@ -47,17 +47,22 @@ public final class Ports {
     public static final int REAR_RIGHT_CANCODER = 8;
   }
 
+  public static final class Hopper {
+    public static final int MOTOR = 0;
+    public static final int BEAMBREAK = 0;
+  }
+
   public static final class LEDs {
     public static final int LED_PORT = 9;
   }
 
   public static final class Climb {
-    public static final int LEFT_MOTOR_ID = 260;
-    public static final int RIGHT_MOTOR_ID = 16231;
+    public static final int LEFT_MOTOR_ID = 123;
+    public static final int RIGHT_MOTOR_ID = 234;
   }
-
-  public static final class Hopper {
-    public static final int BEAMBREAK = 6789;
-    public static final int MOTOR = 234;
+  
+  public static final class Indexer {
+    public static final int MOTOR = 0;
+    public static final int BEAMBREAK = 0;
   }
 }

@@ -23,11 +23,16 @@
       "/Robot/drive/rearRight/turnFeedback": "PIDController",
       "/Robot/drive/rotationController": "PIDController",
       "/Robot/drive/translationController": "ProfiledPIDController",
-      "/Shuffleboard/Sim/Turret": "Mechanism2d",
+      "/SmartDashboard//Robot/hood/measurement": "Mechanism2d",
+      "/SmartDashboard//Robot/hood/setpoint": "Mechanism2d",
       "/SmartDashboard/Auto Chooser": "String Chooser",
       "/SmartDashboard/Drive Field": "Field2d",
       "/SmartDashboard/PathPlanner": "Alerts",
       "/SmartDashboard/PhotonAlerts": "Alerts",
+      "/SmartDashboard/Robot/hood/dynamic backward": "Command",
+      "/SmartDashboard/Robot/hood/dynamic forward": "Command",
+      "/SmartDashboard/Robot/hood/quasistatic backward": "Command",
+      "/SmartDashboard/Robot/hood/quasistatic forward": "Command",
       "/SmartDashboard/Scheduler": "Scheduler",
       "/SmartDashboard/Turret PID Controller": "ProfiledPIDController",
       "/SmartDashboard/Turret dynamic clockwise": "Command",
@@ -54,7 +59,8 @@
       "/SmartDashboard/turn quasistatic forward": "Command",
       "Robot/autos": "String Chooser",
       "Robot/drive/rotationController": "PIDController",
-      "Robot/drive/translationController": "ProfiledPIDController"
+      "Robot/drive/translationController": "ProfiledPIDController",
+      "Robot/hood/fb": "ProfiledPIDController"
     },
     "windows": {
       "/Robot/drive/field2d": {
@@ -80,12 +86,18 @@
           "visible": true
         }
       },
-      "/Shuffleboard/Sim/Turret": {
+      "/SmartDashboard//Robot/hood/measurement": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard//Robot/hood/setpoint": {
         "window": {
           "visible": true
         }
       },
       "/SmartDashboard/Auto Chooser": {
+        "width": 17.54825210571289,
         "window": {
           "visible": true
         }
@@ -200,6 +212,13 @@
             },
             "open": true
           }
+        },
+        "open": true,
+        "tuning": {
+          "hood": {
+            "open": true
+          },
+          "open": true
         }
       }
     }
@@ -215,11 +234,6 @@
   },
   "Plot": {
     "Plot <0>": {
-      "window": {
-        "visible": false
-      }
-    },
-    "Plot <1>": {
       "plots": [
         {
           "backgroundColor": [
@@ -228,12 +242,29 @@
             0.0,
             0.8500000238418579
           ],
-          "height": 332
+          "height": 283,
+          "series": [
+            {
+              "color": [
+                0.2980392277240753,
+                0.44705885648727417,
+                0.6901960968971252,
+                1.0
+              ],
+              "id": "NT:Robot/hood/angle"
+            },
+            {
+              "color": [
+                0.8666667342185974,
+                0.5176470875740051,
+                0.32156863808631897,
+                1.0
+              ],
+              "id": "NT:Robot/hood/angleSetpoint"
+            }
+          ]
         }
-      ],
-      "window": {
-        "visible": false
-      }
+      ]
     }
   }
 }

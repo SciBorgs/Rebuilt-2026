@@ -36,7 +36,7 @@ public class FuelVisualizer extends ProjectileVisualizer {
 
   /** The robot-relative translation of the shooter (METERS). */
   protected static final Translation3d ROBOT_TO_SHOOTER =
-      new Translation3d(0.5, 0.5, 0.5); // TODO: UPDATE.
+      new Translation3d(-0.14006, 0.13983, 0.3286252);
 
   /**
    * The distance between the shooter origin and the point where the Fuel is in free-fall. (METERS).

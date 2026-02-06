@@ -45,7 +45,7 @@ public final class TalonUtils {
   }
 
   /** Runs the selected song. */
-  public static Command getSelected() {
+  public static Command playSelected() {
     return Commands.runOnce(songChooser.getSelected());
   }
 

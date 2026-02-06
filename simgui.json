@@ -43,6 +43,10 @@
       "/SmartDashboard/rotation dynamic forward": "Command",
       "/SmartDashboard/rotation quasistatic backward": "Command",
       "/SmartDashboard/rotation quasistatic forward": "Command",
+      "/SmartDashboard/shooter top dynamic backward": "Command",
+      "/SmartDashboard/shooter top dynamic forward": "Command",
+      "/SmartDashboard/shooter top quasistatic backward": "Command",
+      "/SmartDashboard/shooter top quasistatic forward": "Command",
       "/SmartDashboard/translation dynamic backward": "Command",
       "/SmartDashboard/translation dynamic forward": "Command",
       "/SmartDashboard/translation quasistatic backward": "Command",
@@ -54,7 +58,7 @@
       "Robot/autos": "String Chooser",
       "Robot/drive/rotationController": "PIDController",
       "Robot/drive/translationController": "ProfiledPIDController",
-      "Robot/hood/fb": "ProfiledPIDController"
+      "Robot/shooter/controller": "PIDController"
     },
     "windows": {
       "/Robot/drive/field2d": {
@@ -191,13 +195,7 @@
             "open": true
           }
         },
-        "open": true,
-        "tuning": {
-          "hood": {
-            "open": true
-          },
-          "open": true
-        }
+        "open": true
       }
     }
   },
@@ -214,7 +212,7 @@
             0.0,
             0.8500000238418579
           ],
-          "height": 283,
+          "height": 429,
           "series": [
             {
               "color": [
@@ -223,7 +221,7 @@
                 0.6901960968971252,
                 1.0
               ],
-              "id": "NT:Robot/hood/angle"
+              "id": "NT:Robot/shooter/setpoint"
             },
             {
               "color": [
@@ -232,7 +230,7 @@
                 0.32156863808631897,
                 1.0
               ],
-              "id": "NT:Robot/hood/angleSetpoint"
+              "id": "NT:Robot/shooter/velocity"
             }
           ]
         }

@@ -209,15 +209,6 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
     return new Test(testCommand, assertions);
   }
 
-  /**
-   * Sets controller setpoint and repeatively calls update to orient the turret.
-   *
-   * @param double The position.
-   */
-  public Command goTo(double position) {
-    return goTo(() -> position).withName("goTo (Double)");
-  }
-
   @Override
   public void periodic() {
     var command = getCurrentCommand();

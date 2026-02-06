@@ -21,6 +21,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+
+import org.ejml.simple.SimpleMatrix;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
@@ -53,7 +55,7 @@ public class Vision {
 
   /** A factory to create new vision classes with our cameras. */
   public static Vision create() {
-    return new Vision(CAMERA_0, CAMERA_1, CAMERA_2, CAMERA_3, CAMERA_4, CAMERA_5);
+    return new Vision(CAMERA_0, CAMERA_1);//, CAMERA_2, CAMERA_3, CAMERA_4, CAMERA_5);
   }
 
   /**
@@ -138,7 +140,7 @@ public class Vision {
    * @return An {@link EstimatedRobotPose} with an estimated pose, estimate timestamp, and targets
    *     used for estimation.
    */
-  public PoseEstimate[] estimatedGlobalPoses(Rotation2d rotation) {
+  public PoseEstimate[] estimatedGlobalPoses(Rotation2d rotation, boolean overtrust) {
     Tracer.startTrace("vision estimatedGlobalPoses");
     List<PoseEstimate> estimates = new ArrayList<>();
     filteredEstimates.clear();
@@ -205,7 +207,7 @@ public class Vision {
                   e ->
                       estimates.add(
                           new PoseEstimate(
-                              e, estimationStdDevs(e.estimatedPose.toPose2d(), change))));
+                              e, overtrust?SUPERTRUST_TAG_STD_DEVS:estimationStdDevs(e.estimatedPose.toPose2d(), change))));
         }
       }
     }

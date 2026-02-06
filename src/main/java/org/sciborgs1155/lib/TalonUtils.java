@@ -5,9 +5,13 @@ import com.ctre.phoenix6.Orchestra;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.AudioConfigs;
 import com.ctre.phoenix6.hardware.TalonFX;
-import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import java.util.ArrayList;
 import java.util.List;
+import org.sciborgs1155.lib.FaultLogger.FaultType;
 
 public final class TalonUtils {
   private static final Orchestra ORCHESTRA = new Orchestra();
@@ -15,6 +19,18 @@ public final class TalonUtils {
   private static BaseStatusSignal[] talonSignals = new BaseStatusSignal[0];
 
   private static boolean fileLoaded;
+
+  private static List<String> files = List.of("popseeko.chrp");
+  private static SendableChooser<Runnable> songChooser = new SendableChooser<>();
+
+  static {
+    for (String file : files) {
+      songChooser.addOption(file, () -> loadOrchestraFile(file));
+    }
+
+    SmartDashboard.putData("Song", songChooser);
+    songChooser.onChange(s -> s.run());
+  }
 
   // Prevents instantiation
   private TalonUtils() {}
@@ -26,6 +42,11 @@ public final class TalonUtils {
    */
   public static void addMotor(TalonFX talon) {
     TALONS.add(talon);
+  }
+
+  /** Runs the selected song. */
+  public static Command getSelected() {
+    return Commands.runOnce(songChooser.getSelected());
   }
 
   /**
@@ -56,9 +77,11 @@ public final class TalonUtils {
    */
   public static boolean configureOrchestra(String fileName) {
     AudioConfigs audioCfg = new AudioConfigs().withAllowMusicDurDisable(true);
+    int i = 0;
     for (TalonFX talon : TALONS) {
       talon.getConfigurator().apply(audioCfg);
-      ORCHESTRA.addInstrument(talon);
+      ORCHESTRA.addInstrument(talon, i % 4);
+      i++;
     }
     return loadOrchestraFile(fileName);
   }
@@ -119,8 +142,9 @@ public final class TalonUtils {
 
   private static void fileNotFound() {
     fileLoaded = false;
-    DriverStation.reportError(
+    FaultLogger.report(
+        "Orchestra",
         "CHRP file not loaded. Check that it is in the deploy directory & includes file extension.",
-        true);
+        FaultType.WARNING);
   }
 }

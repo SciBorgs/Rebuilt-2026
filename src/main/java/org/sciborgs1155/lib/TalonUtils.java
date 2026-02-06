@@ -20,7 +20,7 @@ public final class TalonUtils {
 
   private static boolean fileLoaded;
 
-  private static List<String> files = List.of("popseeko.chrp");
+  private static List<String> files = List.of("Blizzard (xrc) - Earthlin9.chrp");
   private static SendableChooser<Runnable> songChooser = new SendableChooser<>();
 
   static {

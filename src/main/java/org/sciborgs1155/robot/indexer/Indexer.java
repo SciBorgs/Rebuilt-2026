@@ -20,19 +20,6 @@ public final class Indexer extends SubsystemBase implements AutoCloseable {
   public final Trigger blocked;
 
   /**
-   * @param hardware represents motor
-   * @param beambreak represents beambreak
-   */
-  private Indexer(SimpleMotor hardware, Beambreak beambreak) {
-    this.hardware = hardware;
-    this.beambreak = beambreak;
-
-    this.blocked = new Trigger(() -> !beambreak.getState());
-
-    setDefaultCommand(stop());
-  }
-
-  /**
    * @return Creates a real indexer or no indexer based on Robot.isReal()
    */
   public static Indexer create() {
@@ -44,6 +31,19 @@ public final class Indexer extends SubsystemBase implements AutoCloseable {
    */
   public static Indexer none() {
     return new Indexer(SimpleMotor.none(), Beambreak.none());
+  }
+
+  /**
+   * @param hardware represents motor
+   * @param beambreak represents beambreak
+   */
+  private Indexer(SimpleMotor hardware, Beambreak beambreak) {
+    this.hardware = hardware;
+    this.beambreak = beambreak;
+
+    this.blocked = new Trigger(() -> !beambreak.getState());
+
+    setDefaultCommand(stop());
   }
 
   /**

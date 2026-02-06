@@ -2,6 +2,7 @@ package org.sciborgs1155.robot.turret;
 
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.Rotations;
 import static org.sciborgs1155.robot.Constants.TURRET_CANIVORE;
 import static org.sciborgs1155.robot.Ports.Turret.*;
 import static org.sciborgs1155.robot.turret.TurretConstants.*;
@@ -26,9 +27,7 @@ public class RealTurret implements TurretIO {
   private double lastGoodPositionRad;
 
   private final EasyCRTConfig crtConfig =
-      new EasyCRTConfig(
-              () -> encoderA.getAbsolutePosition().getValue(),
-              () -> encoderB.getAbsolutePosition().getValue())
+      new EasyCRTConfig(() -> Rotations.of(encoderA()), () -> Rotations.of(encoderB()))
           .withEncoderRatios(
               (double) TURRET_GEARING / ENCODER_A_GEARING,
               (double) TURRET_GEARING / ENCODER_B_GEARING)
@@ -43,7 +42,7 @@ public class RealTurret implements TurretIO {
     final TalonFXConfiguration configuration = new TalonFXConfiguration();
 
     configuration.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    configuration.Feedback.SensorToMechanismRatio = SENSOR_TO_MECHANISM_RATIO;
+    configuration.Feedback.SensorToMechanismRatio = GEAR_RATIO;
     configuration.CurrentLimits.SupplyCurrentLimit = CURRENT_LIMIT.in(Amps);
 
     hardware.getConfigurator().apply(configuration);
@@ -53,6 +52,16 @@ public class RealTurret implements TurretIO {
 
     // FAULT LOGGER
     FaultLogger.register(hardware);
+  }
+
+  @Override
+  public double encoderA() {
+    return (encoderA.getAbsolutePosition().getValueAsDouble() + 1) / 2;
+  }
+
+  @Override
+  public double encoderB() {
+    return (encoderB.getAbsolutePosition().getValueAsDouble() + 1) / 2;
   }
 
   @Override

@@ -22,4 +22,18 @@ public interface TurretIO extends AutoCloseable {
    * @return The angular velocity of the motor in radians per second.
    */
   double velocity();
+
+  /**
+   * Returns the angular position of encoder A in rotations.
+   *
+   * @return The angular position of encoder A in rotations.
+   */
+  double encoderA();
+
+  /**
+   * Returns the angular position of encoder B in rotations.
+   *
+   * @return The angular position of encoder B in rotations.
+   */
+  double encoderB();
 }

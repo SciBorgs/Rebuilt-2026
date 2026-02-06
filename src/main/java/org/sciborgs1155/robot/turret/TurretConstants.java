@@ -3,6 +3,7 @@ package org.sciborgs1155.robot.turret;
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degree;
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Second;
@@ -13,6 +14,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Velocity;
@@ -22,14 +24,15 @@ import edu.wpi.first.units.measure.Voltage;
 public class TurretConstants {
   public static final Current CURRENT_LIMIT = Amps.of(60);
 
-  public static final double GEAR_RATIO = 686 / 15; // TODO: Update.
-  public static final double SENSOR_TO_MECHANISM_RATIO = 2 * Math.PI / GEAR_RATIO;
+  public static final double GEAR_RATIO = 686 / 15;
   public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.0872);
   public static final Constraints CONSTRAINTS = new Constraints(16, 16); // TODO: Update.
 
   public static final Angle MAX_ANGLE = Degrees.of(175);
   public static final Angle MIN_ANGLE = Degrees.of(-175);
   public static final Angle START_ANGLE = Radians.of(0);
+
+  public static final Distance TURRET_RADIUS = Inches.of(6.91);
 
   public static final int VISUALIZER_WIDTH = 6;
   public static final int VISUALIZER_HEIGHT = 6;

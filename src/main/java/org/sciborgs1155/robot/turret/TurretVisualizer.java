@@ -27,6 +27,9 @@ public class TurretVisualizer {
   private final MechanismLigament2d target =
       root.append(new MechanismLigament2d("Target", 3, 0, 2, new Color8Bit(255, 0, 0)));
 
+  private final MechanismLigament2d setpoint =
+      root.append(new MechanismLigament2d("Setpoint", 3, 0, 2, new Color8Bit(0, 0, 255)));
+
   private final MechanismLigament2d blindspotA =
       root.append(new MechanismLigament2d("Blindspot A", 3, 0, 2, new Color8Bit(255, 255, 0)));
 
@@ -44,10 +47,12 @@ public class TurretVisualizer {
    * Updates the visualizer. To be called periodically.
    *
    * @param positionRadians The angular position of the turret.
+   * @param targetRadians The angular target of the turret (radians).
    * @param setpointRadians The angular setpoint of the turret (radians).
    */
-  public void update(double positionRadians, double targetRadians) {
+  public void update(double positionRadians, double targetRadians, double setpointRadians) {
     position.setAngle(Units.radiansToDegrees(positionRadians));
     target.setAngle(Units.radiansToDegrees(targetRadians));
+    setpoint.setAngle(Units.radiansToDegrees(setpointRadians));
   }
 }

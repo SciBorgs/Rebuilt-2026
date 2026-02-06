@@ -1,6 +1,7 @@
 package org.sciborgs1155.robot.turret;
 
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
+import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Seconds;
@@ -9,7 +10,6 @@ import static org.sciborgs1155.robot.turret.TurretConstants.*;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import yams.units.EasyCRT;
 import yams.units.EasyCRTConfig;
@@ -22,7 +22,7 @@ public class SimTurret implements TurretIO {
           DCMotor.getKrakenX60(1), // GEARBOX
           GEAR_RATIO, // GEARING
           MOI.in(KilogramSquareMeters), // MOMENT OF INERTIA
-          0.1, // ARM LENGTH
+          TURRET_RADIUS.in(Meters), // TURRET RADIUS
           MIN_ANGLE.in(Radians), // MINIMUM ANGLE
           MAX_ANGLE.in(Radians), // MAXIMUM ANGLE
           false, // GRAVITY DISBLAED
@@ -33,7 +33,7 @@ public class SimTurret implements TurretIO {
 
   /** EasyCRT solver */
   private final EasyCRTConfig crtConfig =
-      new EasyCRTConfig(this::encoderARotations, this::encoderBRotations)
+      new EasyCRTConfig(() -> Rotations.of(encoderA()), () -> Rotations.of(encoderB()))
           .withEncoderRatios(
               (double) TURRET_GEARING / ENCODER_A_GEARING,
               (double) TURRET_GEARING / ENCODER_B_GEARING)
@@ -47,20 +47,20 @@ public class SimTurret implements TurretIO {
     return simulation.getAngleRads();
   }
 
-  /** Absolute encoder A output as Angle [0,1) rotations. */
-  public Angle encoderARotations() {
+  @Override
+  public double encoderA() {
     double turretRot = trueAngleRad() / (2.0 * Math.PI);
     double encoderRot = turretRot * ((double) TURRET_GEARING / ENCODER_A_GEARING);
 
-    return Rotations.of(MathUtil.inputModulus(encoderRot, 0.0, 1.0));
+    return MathUtil.inputModulus(encoderRot, 0.0, 1.0);
   }
 
-  /** Absolute encoder B output as Angle [0,1) rotations. */
-  public Angle encoderBRotations() {
+  @Override
+  public double encoderB() {
     double turretRot = trueAngleRad() / (2.0 * Math.PI);
     double encoderRot = turretRot * ((double) TURRET_GEARING / ENCODER_B_GEARING);
 
-    return Rotations.of(MathUtil.inputModulus(encoderRot, 0.0, 1.0));
+    return MathUtil.inputModulus(encoderRot, 0.0, 1.0);
   }
 
   @Override

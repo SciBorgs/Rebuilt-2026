@@ -129,4 +129,7 @@ public final class FieldConstants {
   public static final Distance HUB_HEIGHT = Meters.of(1.8288);
   public static final Translation2d BLUE_HUB = new Translation2d(4.611624, 4.021328);
   public static final Translation2d RED_HUB = new Translation2d(11.901424, 4.021328);
+
+  public static final double FUEL_MASS = 0.225;
+  public static final double FUEL_RADIUS = 0.075;
 }

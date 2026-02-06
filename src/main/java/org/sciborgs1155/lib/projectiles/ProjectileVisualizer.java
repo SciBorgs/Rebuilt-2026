@@ -48,18 +48,6 @@ public abstract class ProjectileVisualizer {
   /** All projectiles currently being simulated. */
   private final List<Projectile> projectiles;
 
-  /** A supplier for the current pose of the shooter (METERS). */
-  private final Supplier<Vector<N3>> projectileLaunchTranslation;
-
-  /** A supplier for the launch velocity of the projectile (METERS PER SECOND). */
-  private final Supplier<Vector<N3>> projectileLaunchVelocity;
-
-  /** A supplier for the launch rotation of the projectile (RADIANS). */
-  private final Supplier<Vector<N3>> projectileLaunchRotation;
-
-  /** A supplier for the launch rotational velocity of the projectile (RADIANS PER SECOND). */
-  private final Supplier<Vector<N3>> projectileLaunchRotationalVelocity;
-
   /** A supplier for the pose of the robot (METERS). */
   protected final Supplier<Pose3d> robotPose;
 
@@ -91,6 +79,14 @@ public abstract class ProjectileVisualizer {
   protected abstract double launchRotationalSpeed();
 
   /**
+   * Calculates the launch direction of the projectile.
+   *
+   * @param robotPose The current pose of the robot (METERS).
+   * @return The field-relative launch direction of the projectile (X, Y, and Z UNIT VECTOR).
+   */
+  protected abstract Vector<N3> launchDirection(Pose3d robotPose);
+
+  /**
    * Calculates the launch translation of the projectile.
    *
    * @param robotPose The current pose of the robot.
@@ -99,12 +95,12 @@ public abstract class ProjectileVisualizer {
   protected abstract Vector<N3> launchTranslation(Pose3d robotPose);
 
   /**
-   * Calculates the launch direction of the projectile.
+   * Calculates the launch rotation of the projectile.
    *
    * @param robotPose The current pose of the robot (METERS).
-   * @return The field-relative launch direction of the projectile (X, Y, and Z UNIT VECTOR).
+   * @return The projectile-relative launch rotation of the projectile (X, Y, and Z RADIANS).
    */
-  protected abstract Vector<N3> launchDirection(Pose3d robotPose);
+  protected abstract Vector<N3> launchRotation(Pose3d robotPose);
 
   /**
    * Calculates the velocity of the launch translation on the field (accounting for the velocity of
@@ -135,15 +131,6 @@ public abstract class ProjectileVisualizer {
       Supplier<Pose3d> robotPoseSupplier, Supplier<ChassisSpeeds> robotVelocitySupplier) {
     robotPose = robotPoseSupplier;
     robotVelocity = robotVelocitySupplier;
-    projectileLaunchTranslation = () -> launchTranslation(robotPose.get());
-    projectileLaunchVelocity =
-        () ->
-            launchDirection(robotPose.get())
-                .times(launchSpeed())
-                .plus(launcherVelocity(robotPose.get(), robotVelocity.get()));
-    projectileLaunchRotation = () -> VecBuilder.fill(0, 0, 0);
-    projectileLaunchRotationalVelocity = () -> VecBuilder.fill(0, 0, 0);
-
     projectiles = new ArrayList<>(1);
   }
 
@@ -159,10 +146,12 @@ public abstract class ProjectileVisualizer {
                     () ->
                         getLaunchableProjectile()
                             .launch(
-                                projectileLaunchTranslation.get(),
-                                projectileLaunchVelocity.get(),
-                                projectileLaunchRotation.get(),
-                                projectileLaunchRotationalVelocity.get())))
+                                launchTranslation(robotPose.get()),
+                                launchDirection(robotPose.get())
+                                    .times(launchSpeed())
+                                    .plus(launcherVelocity(robotPose.get(), robotVelocity.get())),
+                                launchRotation(robotPose.get()),
+                                VecBuilder.fill(0, 0, 0))))
         .andThen(Commands.waitSeconds(COOLDOWN))
         .withName("LAUNCH PROJECTILE");
   }

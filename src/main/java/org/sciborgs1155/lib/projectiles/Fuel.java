@@ -6,6 +6,8 @@ import static org.sciborgs1155.lib.projectiles.ProjectileVisualizer.AIR_DENSITY;
 import static org.sciborgs1155.lib.projectiles.ProjectileVisualizer.FRAME_LENGTH;
 import static org.sciborgs1155.lib.projectiles.ProjectileVisualizer.GRAVITY;
 import static org.sciborgs1155.robot.FieldConstants.BLUE_HUB;
+import static org.sciborgs1155.robot.FieldConstants.FUEL_MASS;
+import static org.sciborgs1155.robot.FieldConstants.FUEL_RADIUS;
 import static org.sciborgs1155.robot.FieldConstants.HUB_DIAMETER;
 import static org.sciborgs1155.robot.FieldConstants.HUB_HEIGHT;
 import static org.sciborgs1155.robot.FieldConstants.RED_HUB;

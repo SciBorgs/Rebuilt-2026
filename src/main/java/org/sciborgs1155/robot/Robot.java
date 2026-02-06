@@ -10,7 +10,6 @@ import static org.sciborgs1155.robot.Constants.DEADBAND;
 import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.Constants.TUNING;
 import static org.sciborgs1155.robot.drive.DriveConstants.*;
-import static org.sciborgs1155.robot.shooter.ShooterConstants.MAX_VELOCITY;
 
 import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.epilogue.Epilogue;
@@ -40,8 +39,8 @@ import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
 import org.sciborgs1155.robot.drive.Drive;
-import org.sciborgs1155.robot.shooter.Shooter;
 import org.sciborgs1155.robot.hood.Hood;
+import org.sciborgs1155.robot.shooter.Shooter;
 import org.sciborgs1155.robot.vision.Vision;
 
 /**

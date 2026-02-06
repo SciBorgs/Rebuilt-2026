@@ -39,11 +39,11 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
   @NotLogged public final TurretIO hardware;
 
   /** {@code PIDController} used to orient the turret to a specified angle. */
-  @NotLogged
+  @Logged
   private final ProfiledPIDController controller = new ProfiledPIDController(P, I, D, CONSTRAINTS);
 
   /** {@code Feedforward} used to aid in orienting the turret to a specified angle. */
-  @NotLogged
+  @Logged
   private final SimpleMotorFeedforward feedforward =
       new SimpleMotorFeedforward(S, V, A, PERIOD.in(Seconds));
 
@@ -53,12 +53,12 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
   /** System identification routine object. */
   private final SysIdRoutine sysIdRoutine;
 
-  @NotLogged private final DoubleEntry tuningP = Tuning.entry("Robot/tuning/hood/K_P", P);
-  @NotLogged private final DoubleEntry tuningI = Tuning.entry("Robot/tuning/hood/K_I", I);
-  @NotLogged private final DoubleEntry tuningD = Tuning.entry("Robot/tuning/hood/K_D", D);
-  @NotLogged private final DoubleEntry tuningS = Tuning.entry("Robot/tuning/hood/S", S);
-  @NotLogged private final DoubleEntry tuningV = Tuning.entry("Robot/tuning/hood/V", V);
-  @NotLogged private final DoubleEntry tuningA = Tuning.entry("Robot/tuning/hood/A", A);
+  @NotLogged private final DoubleEntry tuningP = Tuning.entry("Robot/tuning/turret/K_P", P);
+  @NotLogged private final DoubleEntry tuningI = Tuning.entry("Robot/tuning/turret/K_I", I);
+  @NotLogged private final DoubleEntry tuningD = Tuning.entry("Robot/tuning/turret/K_D", D);
+  @NotLogged private final DoubleEntry tuningS = Tuning.entry("Robot/tuning/turret/S", S);
+  @NotLogged private final DoubleEntry tuningV = Tuning.entry("Robot/tuning/turret/V", V);
+  @NotLogged private final DoubleEntry tuningA = Tuning.entry("Robot/tuning/turret/A", A);
 
   /** Creates real or simulated turret based on {@link Robot#isReal()}. */
   @NotLogged
@@ -106,8 +106,6 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
         "Turret dynamic clockwise", sysIdTest(SysIdTestType.DYNAMIC, Direction.kForward));
     SmartDashboard.putData(
         "Turret dynamic counterclockwise", sysIdTest(SysIdTestType.DYNAMIC, Direction.kReverse));
-
-    SmartDashboard.putData("Turret PID Controller", controller);
   }
 
   /**

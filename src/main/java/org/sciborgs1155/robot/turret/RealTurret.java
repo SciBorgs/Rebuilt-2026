@@ -83,7 +83,7 @@ public class RealTurret implements TurretIO {
 
   @Override
   public double velocity() {
-    return hardware.getVelocity().getValueAsDouble();
+    return hardware.getVelocity().getValueAsDouble() * 2 * Math.PI;
   }
 
   @Override

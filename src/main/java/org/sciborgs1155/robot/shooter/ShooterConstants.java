@@ -24,7 +24,7 @@ public class ShooterConstants {
   public static final Current SUPPLY_CURRENT_LIMIT = Amps.of(30);
 
   public static final Transform3d CENTER_TO_SHOOTER =
-      new Transform3d(5.975, -5.975, -13.375, new Rotation3d());
+      new Transform3d(Inches.of(5.975), Inches.of(-5.975), Inches.of(-13.375), new Rotation3d());
 
   public static final class ControlConstants {
     public static final double P = 0.03;

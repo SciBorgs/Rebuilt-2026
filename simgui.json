@@ -23,7 +23,8 @@
       "/Robot/drive/rearRight/turnFeedback": "PIDController",
       "/Robot/drive/rotationController": "PIDController",
       "/Robot/drive/translationController": "ProfiledPIDController",
-      "/Shuffleboard/Sim/Turret": "Mechanism2d",
+      "/SmartDashboard//Robot/hood/measurement": "Mechanism2d",
+      "/SmartDashboard//Robot/hood/setpoint": "Mechanism2d",
       "/SmartDashboard/Auto Chooser": "String Chooser",
       "/SmartDashboard/Drive Field": "Field2d",
       "/SmartDashboard/PathPlanner": "Alerts",
@@ -63,7 +64,9 @@
       "Robot/autos": "String Chooser",
       "Robot/drive/rotationController": "PIDController",
       "Robot/drive/translationController": "ProfiledPIDController",
-      "Robot/shooter/controller": "PIDController"
+      "Robot/hood/fb": "ProfiledPIDController",
+      "Robot/shooter/controller": "PIDController",
+      "Robot/turret/controller": "ProfiledPIDController"
     },
     "windows": {
       "/Robot/drive/field2d": {
@@ -106,22 +109,6 @@
         }
       },
       "/SmartDashboard/Drive Field": {
-        "bottom": 1914,
-        "height": 8.069275856018066,
-        "left": 245,
-        "right": 3942,
-        "top": 118,
-        "width": 16.54119300842285,
-        "window": {
-          "visible": true
-        }
-      },
-      "/SmartDashboard/TurretVisualizer": {
-        "window": {
-          "visible": true
-        }
-      },
-      "/SmartDashboard/VisionSystemSim-main/Sim Field": {
         "bottom": 1914,
         "height": 8.069275856018066,
         "left": 245,
@@ -215,25 +202,18 @@
             },
             "open": true
           }
+        },
+        "open": true,
+        "shooter": {
+          "open": true
         }
       }
     }
   },
   "NetworkTables Info": {
-    "Connections": {
-      "open": true
-    },
-    "Server": {
-      "open": true
-    },
     "visible": true
   },
   "Plot": {
-    "Plot <0>": {
-      "window": {
-        "visible": false
-      }
-    },
     "Plot <1>": {
       "plots": [
         {
@@ -243,12 +223,29 @@
             0.0,
             0.8500000238418579
           ],
-          "height": 332
+          "height": 349,
+          "series": [
+            {
+              "color": [
+                0.2980392277240753,
+                0.44705885648727417,
+                0.6901960968971252,
+                1.0
+              ],
+              "id": "NT:Robot/shooter/setpoint"
+            },
+            {
+              "color": [
+                0.8666667342185974,
+                0.5176470875740051,
+                0.32156863808631897,
+                1.0
+              ],
+              "id": "NT:Robot/shooter/velocity"
+            }
+          ]
         }
-      ],
-      "window": {
-        "visible": false
-      }
+      ]
     }
   }
 }

@@ -4,7 +4,9 @@ import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.CANBus;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.Mass;
 import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.units.measure.Time;
@@ -57,6 +59,12 @@ public final class Constants {
   public static class Robot {
     public static final Mass MASS = Kilograms.of(25);
     public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.2);
+
+    public static final double SHOOTER_WHEEL_RADIUS = 0.1016;
+    public static final double SHOOTER_WHEEL_MASS = 0.27215542;
+    public static final Distance SHOOTER_LENGTH = Meters.of(0.1); // TODO: UPDATE.
+    public static final Translation3d ROBOT_TO_SHOOTER =
+        new Translation3d(-0.14006, 0.13983, 0.3286252);
   }
 
   public static final Time PERIOD = Seconds.of(0.02); // roborio tickrate (s)

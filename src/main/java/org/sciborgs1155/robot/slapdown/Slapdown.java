@@ -93,6 +93,16 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
   }
 
   /**
+   * @param angle set the Slapdown to be at said angle
+   */
+  public void update(double angle) {
+    double rads = MathUtil.clamp(angle, MIN_ANGLE.in(Radians), MAX_ANGLE.in(Radians));
+    double pidVoltage = pid.calculate(hardware.position(), rads);
+    double ffVoltage = ff.calculate(pid.getSetpoint().position, pid.getSetpoint().velocity);
+    hardware.setVoltage(pidVoltage + ffVoltage);
+  }
+
+  /**
    * @param angle test if the Slapdown will go to the angle
    * @return the test
    */
@@ -106,14 +116,4 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
 
   @Override
   public void close() throws Exception {}
-
-  /**
-   * @param angle set the Slapdown to be at said angle
-   */
-  public void update(double angle) {
-    double rads = MathUtil.clamp(angle, MIN_ANGLE.in(Radians), MAX_ANGLE.in(Radians));
-    double pidVoltage = pid.calculate(hardware.position(), rads);
-    double ffVoltage = ff.calculate(pid.getSetpoint().position, pid.getSetpoint().velocity);
-    hardware.setVoltage(pidVoltage + ffVoltage);
-  }
 }

@@ -72,6 +72,11 @@ public final class Ports {
     public static final int CANCODER = 19;
   }
 
+  public static final class Climb {
+    public static final int LEFT_MOTOR_ID = 123;
+    public static final int RIGHT_MOTOR_ID = 234;
+  }
+
   public static final class Indexer {
     public static final int MOTOR = 0;
     public static final int BEAMBREAK = 0;

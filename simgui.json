@@ -34,6 +34,12 @@
       "/SmartDashboard/Robot/hood/quasistatic backward": "Command",
       "/SmartDashboard/Robot/hood/quasistatic forward": "Command",
       "/SmartDashboard/Scheduler": "Scheduler",
+      "/SmartDashboard/Turret PID Controller": "ProfiledPIDController",
+      "/SmartDashboard/Turret dynamic clockwise": "Command",
+      "/SmartDashboard/Turret dynamic counterclockwise": "Command",
+      "/SmartDashboard/Turret quasistatic clockwise": "Command",
+      "/SmartDashboard/Turret quasistatic counterclockwise": "Command",
+      "/SmartDashboard/TurretVisualizer": "Mechanism2d",
       "/SmartDashboard/VisionSystemSim-main/Sim Field": "Field2d",
       "/SmartDashboard/drive dynamic backward": "Command",
       "/SmartDashboard/drive dynamic forward": "Command",
@@ -101,6 +107,22 @@
         }
       },
       "/SmartDashboard/Drive Field": {
+        "bottom": 1914,
+        "height": 8.069275856018066,
+        "left": 245,
+        "right": 3942,
+        "top": 118,
+        "width": 16.54119300842285,
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/TurretVisualizer": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/VisionSystemSim-main/Sim Field": {
         "bottom": 1914,
         "height": 8.069275856018066,
         "left": 245,
@@ -200,6 +222,12 @@
     }
   },
   "NetworkTables Info": {
+    "Connections": {
+      "open": true
+    },
+    "Server": {
+      "open": true
+    },
     "visible": true
   },
   "Plot": {

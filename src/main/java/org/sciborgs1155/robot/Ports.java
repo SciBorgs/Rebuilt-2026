@@ -21,7 +21,8 @@ public final class Ports {
           entry(Drive.FRONT_LEFT_CANCODER, "FL cancoder"),
           entry(Drive.REAR_LEFT_CANCODER, "RL cancoder"),
           entry(Drive.FRONT_RIGHT_CANCODER, "FR cancoder"),
-          entry(Drive.REAR_RIGHT_CANCODER, "RR cancoder"));
+          entry(Drive.REAR_RIGHT_CANCODER, "RR cancoder"),
+          entry(Turret.MOTOR, "Turret motor"));
 
   public static final class OI {
     public static final int OPERATOR = 0;
@@ -54,6 +55,12 @@ public final class Ports {
 
   public static final class LEDs {
     public static final int LED_PORT = 9;
+  }
+
+  public static final class Turret {
+    public static final int MOTOR = 67;
+    public static final int ENCODER_A = 68;
+    public static final int ENCODER_B = 69;
   }
 
   public static final class Shooter {

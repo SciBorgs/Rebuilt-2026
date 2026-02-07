@@ -1,14 +1,13 @@
 package org.sciborgs1155.robot.commands;
 
 import static edu.wpi.first.units.Units.Meters;
+import static org.sciborgs1155.robot.shooter.ShooterConstants.CENTER_TO_SHOOTER;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
@@ -25,6 +24,8 @@ import org.sciborgs1155.lib.Tuning;
 import org.sciborgs1155.robot.FieldConstants;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.hood.Hood;
+import org.sciborgs1155.robot.hopper.Hopper;
+import org.sciborgs1155.robot.indexer.Indexer;
 import org.sciborgs1155.robot.shooter.Shooter;
 import org.sciborgs1155.robot.turret.Turret;
 
@@ -38,8 +39,6 @@ public class Shooting {
 
   public static final DoubleEntry RPM_TEST = Tuning.entry("/ShootingData/RPM", 100.0);
   public static final DoubleEntry HOOD_ANGLE_TEST = Tuning.entry("/ShootingData/Hood Angle", 30.0);
-  public static final DoubleEntry TURRET_ANGLE_TEST =
-      Tuning.entry("/ShootingData/Turret Angle", 0.0);
 
   public static final Distance MAX_DISTANCE = Meters.of(7);
   public static final Distance MIN_DISTANCE = Meters.of(.2);
@@ -62,24 +61,28 @@ public class Shooting {
   private final Turret turret;
   private final Hood hood;
   private final Drive drive;
+  private final Hopper hopper;
+  private final Indexer indexer;
 
   /**
    * Creates the shooting command factory with all subsystems passed in. Subsystems provide
    * information by composition, and are passed to make sure they aren't made in more than one
    * place.
    */
-  public Shooting(Shooter shooter, Turret turret, Hood hood, Drive drive) {
+  public Shooting(
+      Shooter shooter, Turret turret, Hood hood, Drive drive, Hopper hopper, Indexer indexer) {
     this.shooter = shooter;
     this.turret = turret;
     this.hood = hood;
     this.drive = drive;
+    this.hopper = hopper;
+    this.indexer = indexer;
   }
 
   // Constants I want somewhere else
 
   public record ShooterParams(double rpm, double hoodAngle, double turretAngle) {}
 
-  private static final Transform3d TURRET_FROM_ROBOT = new Transform3d(0, 0, 0, new Rotation3d());
   private static final Translation2d HUB_TARGET =
       FieldConstants.Hub.TOP_CENTER_POINT.toTranslation2d();
 
@@ -89,8 +92,8 @@ public class Shooting {
    * @return
    */
   public Command shootHub() {
-    return Commands.waitUntil(() -> shooter.atSetpoint() && hood.atGoal() && true)
-        .andThen(Commands.idle())
+    return Commands.waitUntil(() -> shooter.atSetpoint() && hood.atGoal() && turret.atGoal())
+        .andThen(hopper.intake().alongWith(indexer.forward()))
         .deadlineFor(runShooterSuperstructure(() -> calculateShot(HUB_TARGET)));
   }
 
@@ -98,23 +101,25 @@ public class Shooting {
     return Commands.parallel(
         shooter.runShooter(() -> params.get().rpm),
         hood.goTo(() -> params.get().hoodAngle),
-        turret.runTurret(() -> params.get().turretAngle));
+        turret.goTo(() -> params.get().turretAngle));
   }
 
   /**
    * Lets you drive around while the turret aims at the hub. Should be doing this most of the match.
    */
   public Command faceHub() {
-    return turret.runTurret(() -> calculateShot(HUB_TARGET).turretAngle);
+    return turret.goTo(() -> calculateShot(HUB_TARGET).turretAngle);
   }
 
   /**
    * This lets us set parameters manually when we're gathering data to shoot. For each distance, we
-   * adjust the 3 parameters until it goes in an record it in the lookup tables.
+   * adjust the velocity and angle until it goes in, and record it in the lookup tables.
    */
   public Command shootWithTestData() {
     return runShooterSuperstructure(
-        () -> new ShooterParams(RPM_TEST.get(), HOOD_ANGLE_TEST.get(), TURRET_ANGLE_TEST.get()));
+        () ->
+            new ShooterParams(
+                RPM_TEST.get(), HOOD_ANGLE_TEST.get(), calculateShot(HUB_TARGET).turretAngle));
   }
 
   /**
@@ -154,16 +159,16 @@ public class Shooting {
     Pose2d turretPose =
         latencyPose.transformBy(
             new Transform2d(
-                TURRET_FROM_ROBOT.getX(),
-                TURRET_FROM_ROBOT.getY(),
-                TURRET_FROM_ROBOT.getRotation().toRotation2d()));
+                CENTER_TO_SHOOTER.getX(),
+                CENTER_TO_SHOOTER.getY(),
+                CENTER_TO_SHOOTER.getRotation().toRotation2d()));
 
     ChassisSpeeds speeds = drive.fieldRelativeChassisSpeeds();
 
     Vector<N2> translationSpeeds =
         VecBuilder.fill(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
     Vector<N2> rotationSpeeds =
-        TURRET_FROM_ROBOT
+        CENTER_TO_SHOOTER
             .getTranslation()
             .toTranslation2d()
             .rotateBy(Rotation2d.kCCW_90deg.plus(drive.heading()))

@@ -78,4 +78,5 @@ public final class Constants {
 
   // The name of seperate canivore, set to rio if no seperate canivore
   public static final CANBus DRIVE_CANIVORE = new CANBus("drivetrain");
+  public static final CANBus TURRET_CANIVORE = new CANBus("turret");
 }

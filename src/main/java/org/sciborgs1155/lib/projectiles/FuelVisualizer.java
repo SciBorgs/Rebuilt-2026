@@ -91,7 +91,8 @@ public class FuelVisualizer extends ProjectileVisualizer {
   protected Vector<N3> launchDirection(Pose3d robotPose) {
     return fromSphericalCoords(
         1,
-        new Rotation3d(0, hoodAngle.getAsDouble(), turretAngle.getAsDouble())
+        new Rotation3d(
+                robotPose.getRotation().getY(), hoodAngle.getAsDouble(), turretAngle.getAsDouble())
             .rotateBy(robotPose.getRotation()));
   }
 
@@ -141,12 +142,15 @@ public class FuelVisualizer extends ProjectileVisualizer {
 
   @Override
   protected Vector<N3> launchRotation(Pose3d robotPose) {
-    return VecBuilder.fill(0, 0, 0);
+    Rotation3d rotation =
+        new Rotation3d(VecBuilder.fill(0, 1, 0), 0.1).plus(robotPose.getRotation());
+    return VecBuilder.fill(rotation.getX(), rotation.getY(), rotation.getZ());
   }
 
   @Override
   protected Vector<N3> launchRotationalVelocity(Pose3d robotPose) {
-    return VecBuilder.fill(0, 0, 0);
+    Rotation3d rotation = new Rotation3d(VecBuilder.fill(0, 1, 0), 1);
+    return VecBuilder.fill(rotation.getX(), rotation.getY(), rotation.getZ()).times(20);
   }
 
   @Override

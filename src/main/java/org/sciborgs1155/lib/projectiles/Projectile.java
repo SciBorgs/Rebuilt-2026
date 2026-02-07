@@ -64,7 +64,7 @@ public abstract class Projectile {
   protected abstract Vector<N3> acceleration();
 
   /**
-   * The current rotational acceleration of the projectile (YAW AND PITCH)
+   * The current rotational acceleration of the projectile.
    *
    * @return The acceleration (RADIANS / FRAME^2).
    */

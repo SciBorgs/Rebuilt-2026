@@ -51,7 +51,7 @@ public final class FieldConstants {
    * @return A Vector from the given spherical coordinates.
    */
   public static Vector<N3> fromSphericalCoords(double magnitude, Rotation3d direction) {
-    double theta = direction.toRotation2d().getRadians();
+    double theta = direction.getZ();
     double alpha = direction.getY();
 
     return VecBuilder.fill(

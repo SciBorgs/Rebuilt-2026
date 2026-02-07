@@ -53,7 +53,7 @@ public abstract class ProjectileVisualizer {
 
   /** A rotation vector is arranged in the order [ROLL PITCH YAW]. */
   @SuppressWarnings("PMD.OneDeclarationPerLine")
-  protected static final int ROLL = 0, YAW = 1, PITCH = 2;
+  protected static final int ROLL = 0, PITCH = 1, YAW = 2;
 
   /**
    * Calculates the launch translation of the projectile.
@@ -77,7 +77,7 @@ public abstract class ProjectileVisualizer {
    * Calculates the launch rotation of the projectile.
    *
    * @param robotPose The current pose of the robot (METERS).
-   * @return The projectile-relative launch rotation of the projectile (RADIANS).
+   * @return The field-relative launch rotation of the projectile (RADIANS).
    */
   protected abstract Vector<N3> launchRotation(Pose3d robotPose);
 
@@ -85,8 +85,7 @@ public abstract class ProjectileVisualizer {
    * Calculates the launch rotational velocity of the projectile.
    *
    * @param robotPose The current pose of the robot (METERS).
-   * @return The projectile-relative launch rotational velocity of the projectile (RADIANS /
-   *     SECOND).
+   * @return The field-relative launch rotational velocity of the projectile (RADIANS / SECOND).
    */
   protected abstract Vector<N3> launchRotationalVelocity(Pose3d robotPose);
 

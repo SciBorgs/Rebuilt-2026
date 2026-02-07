@@ -92,16 +92,6 @@
           "visible": true
         }
       },
-      "/SmartDashboard//Robot/hood/measurement": {
-        "window": {
-          "visible": true
-        }
-      },
-      "/SmartDashboard//Robot/hood/setpoint": {
-        "window": {
-          "visible": true
-        }
-      },
       "/SmartDashboard/Auto Chooser": {
         "width": 17.54825210571289,
         "window": {
@@ -114,15 +104,7 @@
         "left": 245,
         "right": 3942,
         "top": 118,
-        "width": 16.54119300842285,
-        "window": {
-          "visible": true
-        }
-      },
-      "/SmartDashboard/TurretVisualizer": {
-        "window": {
-          "visible": true
-        }
+        "width": 16.54119300842285
       },
       "/SmartDashboard/VisionSystemSim-main/Sim Field": {
         "bottom": 1914,
@@ -130,10 +112,7 @@
         "left": 245,
         "right": 3942,
         "top": 118,
-        "width": 16.54119300842285,
-        "window": {
-          "visible": true
-        }
+        "width": 16.54119300842285
       }
     }
   },
@@ -225,6 +204,9 @@
   },
   "NetworkTables Info": {
     "visible": true
+  },
+  "NetworkTables View": {
+    "visible": false
   },
   "Plot": {
     "Plot <0>": {

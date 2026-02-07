@@ -23,10 +23,16 @@
       "/Robot/drive/rearRight/turnFeedback": "PIDController",
       "/Robot/drive/rotationController": "PIDController",
       "/Robot/drive/translationController": "ProfiledPIDController",
+      "/SmartDashboard//Robot/hood/measurement": "Mechanism2d",
+      "/SmartDashboard//Robot/hood/setpoint": "Mechanism2d",
       "/SmartDashboard/Auto Chooser": "String Chooser",
       "/SmartDashboard/Drive Field": "Field2d",
       "/SmartDashboard/PathPlanner": "Alerts",
       "/SmartDashboard/PhotonAlerts": "Alerts",
+      "/SmartDashboard/Robot/hood/dynamic backward": "Command",
+      "/SmartDashboard/Robot/hood/dynamic forward": "Command",
+      "/SmartDashboard/Robot/hood/quasistatic backward": "Command",
+      "/SmartDashboard/Robot/hood/quasistatic forward": "Command",
       "/SmartDashboard/Robot/climb/measurement visualizer": "Mechanism2d",
       "/SmartDashboard/Robot/climb/setpoint visualizer": "Mechanism2d",
       "/SmartDashboard/Robot/elevator/dynamic backward": "Command",
@@ -34,6 +40,12 @@
       "/SmartDashboard/Robot/elevator/quasistatic backward": "Command",
       "/SmartDashboard/Robot/elevator/quasistatic forward": "Command",
       "/SmartDashboard/Scheduler": "Scheduler",
+      "/SmartDashboard/Turret PID Controller": "ProfiledPIDController",
+      "/SmartDashboard/Turret dynamic clockwise": "Command",
+      "/SmartDashboard/Turret dynamic counterclockwise": "Command",
+      "/SmartDashboard/Turret quasistatic clockwise": "Command",
+      "/SmartDashboard/Turret quasistatic counterclockwise": "Command",
+      "/SmartDashboard/TurretVisualizer": "Mechanism2d",
       "/SmartDashboard/VisionSystemSim-main/Sim Field": "Field2d",
       "/SmartDashboard/drive dynamic backward": "Command",
       "/SmartDashboard/drive dynamic forward": "Command",
@@ -43,6 +55,10 @@
       "/SmartDashboard/rotation dynamic forward": "Command",
       "/SmartDashboard/rotation quasistatic backward": "Command",
       "/SmartDashboard/rotation quasistatic forward": "Command",
+      "/SmartDashboard/shooter top dynamic backward": "Command",
+      "/SmartDashboard/shooter top dynamic forward": "Command",
+      "/SmartDashboard/shooter top quasistatic backward": "Command",
+      "/SmartDashboard/shooter top quasistatic forward": "Command",
       "/SmartDashboard/translation dynamic backward": "Command",
       "/SmartDashboard/translation dynamic forward": "Command",
       "/SmartDashboard/translation quasistatic backward": "Command",
@@ -54,7 +70,8 @@
       "Robot/autos": "String Chooser",
       "Robot/climb/pid": "ProfiledPIDController",
       "Robot/drive/rotationController": "PIDController",
-      "Robot/drive/translationController": "ProfiledPIDController"
+      "Robot/drive/translationController": "ProfiledPIDController",
+      "Robot/shooter/controller": "PIDController"
     },
     "windows": {
       "/Robot/drive/field2d": {
@@ -80,12 +97,39 @@
           "visible": true
         }
       },
+      "/SmartDashboard//Robot/hood/measurement": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard//Robot/hood/setpoint": {
+        "window": {
+          "visible": true
+        }
+      },
       "/SmartDashboard/Auto Chooser": {
+        "width": 17.54825210571289,
         "window": {
           "visible": true
         }
       },
       "/SmartDashboard/Drive Field": {
+        "bottom": 1914,
+        "height": 8.069275856018066,
+        "left": 245,
+        "right": 3942,
+        "top": 118,
+        "width": 16.54119300842285,
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/TurretVisualizer": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/VisionSystemSim-main/Sim Field": {
         "bottom": 1914,
         "height": 8.069275856018066,
         "left": 245,
@@ -195,13 +239,55 @@
             },
             "open": true
           }
+          }
         },
         "open": true
       }
     }
   },
   "NetworkTables Info": {
+    "Connections": {
+      "open": true
+    },
+    "Server": {
+      "open": true
+    },
     "visible": true
+  },
+  "Plot": {
+    "Plot <0>": {
+      "plots": [
+        {
+          "backgroundColor": [
+            0.0,
+            0.0,
+            0.0,
+            0.8500000238418579
+          ],
+          "height": 429,
+          "series": [
+            {
+              "color": [
+                0.2980392277240753,
+                0.44705885648727417,
+                0.6901960968971252,
+                1.0
+              ],
+              "id": "NT:Robot/shooter/setpoint"
+            },
+            {
+              "color": [
+                0.8666667342185974,
+                0.5176470875740051,
+                0.32156863808631897,
+                1.0
+              ],
+              "id": "NT:Robot/shooter/velocity"
+            }
+          ]
+        }
+      ]
+    }
   },
   "Plot": {
     "Plot <0>": {

@@ -20,15 +20,20 @@ public final class TalonUtils {
 
   private static boolean fileLoaded;
 
-  private static List<String> files = List.of("Blizzard (xrc) - Earthlin9.chrp");
+  private static List<String> files =
+      List.of(
+          "Tidal Wave (balanced).chrp", // Shiawase VIP (Dion Timmer), 7 tracks
+          "Tidal Wave (simple).chrp" // Shiawase VIP (Dion Timmer), 7 tracks
+          );
   private static SendableChooser<Runnable> songChooser = new SendableChooser<>();
 
   static {
+    songChooser.setDefaultOption(files.get(0), () -> loadOrchestraFile(files.get(0)));
     for (String file : files) {
       songChooser.addOption(file, () -> loadOrchestraFile(file));
     }
 
-    SmartDashboard.putData("Song", songChooser);
+    SmartDashboard.putData("Song Chooser", songChooser);
     songChooser.onChange(s -> s.run());
   }
 
@@ -80,7 +85,7 @@ public final class TalonUtils {
     int i = 0;
     for (TalonFX talon : TALONS) {
       talon.getConfigurator().apply(audioCfg);
-      ORCHESTRA.addInstrument(talon, i % 4);
+      ORCHESTRA.addInstrument(talon, i % 7);
       i++;
     }
     return loadOrchestraFile(fileName);

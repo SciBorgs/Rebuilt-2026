@@ -3,19 +3,6 @@ package org.sciborgs1155.robot.commands;
 import static edu.wpi.first.units.Units.Meters;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.CENTER_TO_SHOOTER;
 
-import java.util.function.Supplier;
-
-import org.sciborgs1155.lib.LoggingUtils;
-import org.sciborgs1155.lib.Tuning;
-import org.sciborgs1155.lib.projectiles.FuelVisualizer;
-import org.sciborgs1155.robot.FieldConstants;
-import org.sciborgs1155.robot.drive.Drive;
-import org.sciborgs1155.robot.hood.Hood;
-import org.sciborgs1155.robot.hopper.Hopper;
-import org.sciborgs1155.robot.indexer.Indexer;
-import org.sciborgs1155.robot.shooter.Shooter;
-import org.sciborgs1155.robot.turret.Turret;
-
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -32,6 +19,17 @@ import edu.wpi.first.networktables.DoubleEntry;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import java.util.function.Supplier;
+import org.sciborgs1155.lib.LoggingUtils;
+import org.sciborgs1155.lib.Tuning;
+import org.sciborgs1155.lib.projectiles.FuelVisualizer;
+import org.sciborgs1155.robot.FieldConstants;
+import org.sciborgs1155.robot.drive.Drive;
+import org.sciborgs1155.robot.hood.Hood;
+import org.sciborgs1155.robot.hopper.Hopper;
+import org.sciborgs1155.robot.indexer.Indexer;
+import org.sciborgs1155.robot.shooter.Shooter;
+import org.sciborgs1155.robot.turret.Turret;
 
 public class Shooting {
   /**
@@ -42,7 +40,8 @@ public class Shooting {
   public static final DoubleEntry LATENCY_TIME = Tuning.entry("/ShootingData/Latency Time", .1);
 
   public static final DoubleEntry RADS_TEST = Tuning.entry("/ShootingData/RADS", 100.0);
-  public static final DoubleEntry HOOD_DEGREES_TEST = Tuning.entry("/ShootingData/Hood Angle", 30.0);
+  public static final DoubleEntry HOOD_DEGREES_TEST =
+      Tuning.entry("/ShootingData/Hood Angle", 30.0);
 
   public static final Distance MAX_DISTANCE = Meters.of(7);
   public static final Distance MIN_DISTANCE = Meters.of(.2);
@@ -115,7 +114,8 @@ public class Shooting {
   public Command shootHub() {
     return Commands.waitUntil(() -> shooter.atSetpoint() && hood.atGoal() && turret.atGoal())
         .andThen(hopper.intake().alongWith(indexer.forward()))
-        .deadlineFor(runShooterSuperstructure(() -> calculateShot(HUB_TARGET))).alongWith(Commands.repeatingSequence(fuelVisualizer.launchProjectile()));
+        .deadlineFor(runShooterSuperstructure(() -> calculateShot(HUB_TARGET)))
+        .alongWith(Commands.repeatingSequence(fuelVisualizer.launchProjectile()));
   }
 
   private Command runShooterSuperstructure(Supplier<ShooterParams> params) {
@@ -140,7 +140,9 @@ public class Shooting {
     return runShooterSuperstructure(
             () ->
                 new ShooterParams(
-                    RADS_TEST.get(), HOOD_DEGREES_TEST.get() * Math.PI / 180, calculateShot(HUB_TARGET).turretAngle))
+                    RADS_TEST.get(),
+                    HOOD_DEGREES_TEST.get() * Math.PI / 180,
+                    calculateShot(HUB_TARGET).turretAngle))
         .alongWith(Commands.repeatingSequence(fuelVisualizer.launchProjectile()));
   }
 
@@ -160,9 +162,9 @@ public class Shooting {
     double turretAngle = turretPose.getRotation().getRadians();
     LoggingUtils.log("/ShootingData/Turret Angle", turretAngle * 180 / Math.PI);
     double hoodAngle = DISTANCE_TO_HOOD_ANGLE.get(distance).getRadians();
-    double RADS = DISTANCE_TO_RADS.get(distance);
+    double rads = DISTANCE_TO_RADS.get(distance);
 
-    return new ShooterParams(RADS, hoodAngle, turretAngle);
+    return new ShooterParams(rads, hoodAngle, turretAngle);
   }
 
   /**
@@ -207,11 +209,13 @@ public class Shooting {
     for (int i = 0; i < 25; i++) {
       double distance = target.getDistance(lookAhead.getTranslation());
       double tof = DISTANCE_TO_TOF.get(distance);
-      Translation2d projection = turretPose.getTranslation().plus(new Translation2d(tof * turretSpeeds.get(0), tof * turretSpeeds.get(1)));
+      Translation2d projection =
+          turretPose
+              .getTranslation()
+              .plus(new Translation2d(tof * turretSpeeds.get(0), tof * turretSpeeds.get(1)));
       lookAhead =
           new Pose2d(
-              projection,
-              target.minus(projection).getAngle().minus(drive.pose().getRotation()));
+              projection, target.minus(projection).getAngle().minus(drive.pose().getRotation()));
     }
 
     return lookAhead;

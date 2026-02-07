@@ -1,15 +1,13 @@
 package org.sciborgs1155.lib.projectiles;
 
+import static org.sciborgs1155.robot.shooter.ShooterConstants.CENTER_TO_SHOOTER;
+
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-
-import static org.sciborgs1155.robot.shooter.ShooterConstants.CENTER_TO_SHOOTER;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -51,6 +49,14 @@ public abstract class ProjectileVisualizer {
   /** A supplier for the pose of the robot (METERS). */
   protected final Supplier<ChassisSpeeds> robotVelocity;
 
+  /** A 3D vector is arranged in the order [X Y Z]. */
+  @SuppressWarnings("PMD.OneDeclarationPerLine")
+  protected static final int X = 0, Y = 1, Z = 2;
+
+  /** A rotation vector is arranged in the order [ROLL PITCH YAW]. */
+  @SuppressWarnings("PMD.OneDeclarationPerLine")
+  protected static final int ROLL = 0, YAW = 1, PITCH = 2;
+
   /**
    * Calculates the launch translation of the projectile.
    *
@@ -70,21 +76,21 @@ public abstract class ProjectileVisualizer {
   protected abstract Vector<N3> launchVelocity(Pose3d robotPose, ChassisSpeeds robotVelocity);
 
   /**
-   * Calculates the launch rotation of the projectile (YAW AND PITCH).
+   * Calculates the launch rotation of the projectile.
    *
    * @param robotPose The current pose of the robot (METERS).
    * @return The projectile-relative launch rotation of the projectile (RADIANS).
    */
-  protected abstract Vector<N2> launchRotation(Pose3d robotPose);
+  protected abstract Vector<N3> launchRotation(Pose3d robotPose);
 
   /**
-   * Calculates the launch rotational velocity of the projectile (YAW AND PITCH).
+   * Calculates the launch rotational velocity of the projectile.
    *
    * @param robotPose The current pose of the robot (METERS).
    * @return The projectile-relative launch rotational velocity of the projectile (RADIANS /
    *     SECOND).
    */
-  protected abstract Vector<N2> launchRotationalVelocity(Pose3d robotPose);
+  protected abstract Vector<N3> launchRotationalVelocity(Pose3d robotPose);
 
   /**
    * Creates and returns a new projectile instance.

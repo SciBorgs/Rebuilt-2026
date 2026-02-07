@@ -24,7 +24,7 @@ public class FuelVisualizer extends ProjectileVisualizer {
    * @see {@link #launchVelocity(Pose3d, ChassisSpeeds) The Usage.}
    */
   protected static final double SPEED_CONSTANT =
-      SHOOTER_WHEEL_RADIUS / (2 + (7 / 5) * (FUEL_MASS / SHOOTER_WHEEL_MASS));
+      SHOOTER_WHEEL_RADIUS / (2 + 7 / 5 * (FUEL_MASS / SHOOTER_WHEEL_MASS));
 
   /** A supplier for the angular velocity of the wheel in the {@code Shooter}. */
   protected final Supplier<AngularVelocity> wheelVelocity;

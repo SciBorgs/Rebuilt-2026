@@ -11,7 +11,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.sciborgs1155.robot.hood.Hood;
-import org.sciborgs1155.robot.hood.SimHood;
 
 public class HoodTest {
 
@@ -21,7 +20,7 @@ public class HoodTest {
   @BeforeEach
   public void initialize() {
     setupTests();
-    hood = new Hood(new SimHood());
+    hood = Hood.create();
   }
 
   /** resets the sim hood */
@@ -32,7 +31,6 @@ public class HoodTest {
 
   /** test for hood to go to random angles */
   @Test
-  @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
   public void randAngle() {
     runUnitTest(
         hood.goToTest(

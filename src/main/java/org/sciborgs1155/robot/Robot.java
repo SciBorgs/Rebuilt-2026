@@ -40,7 +40,6 @@ import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.hood.Hood;
-import org.sciborgs1155.robot.hood.HoodConstants;
 import org.sciborgs1155.robot.turret.Turret;
 import org.sciborgs1155.robot.vision.Vision;
 
@@ -195,20 +194,6 @@ public class Robot extends CommandRobot {
         .or(driver.rightBumper())
         .onTrue(Commands.runOnce(() -> speedMultiplier = Constants.SLOW_SPEED_MULTIPLIER))
         .onFalse(Commands.runOnce(() -> speedMultiplier = Constants.FULL_SPEED_MULTIPLIER));
-
-    operator
-        .a()
-        .whileTrue(
-            Commands.defer(
-                () ->
-                    hood.goTo(
-                        Radians.of(
-                                Math.random()
-                                    * HoodConstants.MAX_ANGLE
-                                        .minus(HoodConstants.MIN_ANGLE)
-                                        .in(Radians))
-                            .plus(HoodConstants.MIN_ANGLE)),
-                Set.of(hood)));
 
     // TODO: Add any additional bindings.
   }

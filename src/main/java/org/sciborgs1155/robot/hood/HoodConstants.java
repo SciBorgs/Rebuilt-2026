@@ -23,20 +23,23 @@ public class HoodConstants {
   public static final Current STATOR_LIMIT = Amps.of(30);
   public static final AngularAcceleration MAX_ACCEL = RadiansPerSecondPerSecond.of(1);
   public static final AngularVelocity MAX_VELOCITY = RadiansPerSecond.of(1);
+  public static final Angle POSITION_TOLERANCE = Radians.of(0.01);
+  public static final Angle SHOOTING_ANGLE_OFFSET = Degrees.of(90);
 
-  public static final Angle POS_TOLERANCE = Radians.of(0.01);
-
+  // Sysid constants
   public static final Velocity<VoltageUnit> RAMP_RATE = Volts.of(0.5).per(Second);
   public static final Voltage STEP_VOLTAGE = Volts.of(0.3);
   public static final Time TIME_OUT = Seconds.of(3);
 
-  public static final double K_P = 10;
-  public static final double K_I = 0;
-  public static final double K_D = .2;
-  public static final double K_S = 0;
-  public static final double K_V = 0;
-  public static final double K_G = .1;
-  public static final double K_A = 0;
+  public class PID {
+    public static final double P = 10;
+    public static final double I = 0;
+    public static final double D = .2;
+    public static final double S = 0;
+    public static final double V = 0;
+    public static final double G = .1;
+    public static final double A = 0;
+  }
 
   public static final Distance HOOD_RADIUS = Inches.of(9.29);
   public static final double MOI = 0.0045821517; // kg*m^2

@@ -5,6 +5,7 @@ import com.ctre.phoenix6.Orchestra;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.AudioConfigs;
 import com.ctre.phoenix6.hardware.TalonFX;
+import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -18,12 +19,12 @@ public final class TalonUtils {
   private static final List<TalonFX> TALONS = new ArrayList<>(4);
   private static BaseStatusSignal[] talonSignals = new BaseStatusSignal[0];
 
-  private static boolean fileLoaded;
+  @Logged private static boolean fileLoaded;
 
   private static List<String> files =
       List.of(
-          "Tidal Wave (balanced).chrp", // Shiawase VIP (Dion Timmer), 7 tracks
-          "Tidal Wave (simple).chrp" // Shiawase VIP (Dion Timmer), 7 tracks
+          "Tidal Wave (simple).chrp", // Shiawase VIP (Dion Timmer), 7 tracks
+          "Tidal Wave (balanced).chrp" // Shiawase VIP (Dion Timmer), 7 tracks
           );
   private static SendableChooser<Runnable> songChooser = new SendableChooser<>();
 
@@ -51,7 +52,8 @@ public final class TalonUtils {
 
   /** Runs the selected song. */
   public static Command playSelected() {
-    return Commands.runOnce(songChooser.getSelected());
+    return Commands.runOnce(songChooser.getSelected())
+        .andThen(Commands.runOnce(() -> TalonUtils.play()));
   }
 
   /**
@@ -77,10 +79,9 @@ public final class TalonUtils {
    *
    * <p>Use {@code loadOrchestraFile()} after configuration to change the played file.
    *
-   * @param fileName The path of the file to play.
    * @return Whether loading the file was successful.
    */
-  public static boolean configureOrchestra(String fileName) {
+  public static void configureOrchestra() {
     AudioConfigs audioCfg = new AudioConfigs().withAllowMusicDurDisable(true);
     int i = 0;
     for (TalonFX talon : TALONS) {
@@ -88,7 +89,6 @@ public final class TalonUtils {
       ORCHESTRA.addInstrument(talon, i % 7);
       i++;
     }
-    return loadOrchestraFile(fileName);
   }
 
   /**

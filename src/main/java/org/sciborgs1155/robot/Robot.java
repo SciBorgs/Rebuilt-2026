@@ -59,7 +59,7 @@ public class Robot extends CommandRobot {
 
   // SUBSYSTEMS
   private final Drive drive = Drive.create();
-  private final Hood hood = Hood.create();
+  private final Hood hood = Hood.none();
   private final Vision vision = Vision.create();
 
   // COMMANDS
@@ -133,6 +133,8 @@ public class Robot extends CommandRobot {
       DriverStation.silenceJoystickConnectionWarning(true);
       addPeriodic(() -> vision.simulationPeriodic(drive.pose()), PERIOD.in(Seconds));
     }
+
+    TalonUtils.configureOrchestra();
   }
 
   /** Configures trigger -> command bindings. */
@@ -196,6 +198,7 @@ public class Robot extends CommandRobot {
 
     // for testing playing music
     driver.x().onTrue(TalonUtils.playSelected());
+    driver.y().onTrue(Commands.runOnce(() -> TalonUtils.play()));
     // TODO: Add any additional bindings.
   }
 

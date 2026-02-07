@@ -63,7 +63,9 @@ public final class DriveConstants {
   public static final Time SENSOR_PERIOD = Seconds.of(0.02);
 
   // Distance between centers of right and left wheels on robot
-  public static final Distance TRACK_WIDTH = Inches.of(22); //TODO may be different on complete chassis (right now we're using the test chassis)
+  public static final Distance TRACK_WIDTH =
+      Inches.of(
+          22); // TODO may be different on complete chassis (right now we're using the test chassis)
   // Distance between front and back wheels on robot
   public static final Distance WHEEL_BASE = Inches.of(22);
   // The radius of any swerve wheel

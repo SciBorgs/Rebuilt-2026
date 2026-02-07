@@ -30,7 +30,6 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import java.util.Arrays;
 import java.util.Set;
 import org.littletonrobotics.urcl.URCL;
-import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.sciborgs1155.lib.CommandRobot;
 import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.lib.InputStream;
@@ -121,7 +120,10 @@ public class Robot extends CommandRobot {
 
     // Configure pose estimation updates every tick
     addPeriodic(
-        () -> drive.updateEstimates(vision.estimatedGlobalPoses(drive.gyroHeading(), disabled().getAsBoolean())), PERIOD);
+        () ->
+            drive.updateEstimates(
+                vision.estimatedGlobalPoses(drive.gyroHeading(), disabled().getAsBoolean())),
+        PERIOD);
 
     RobotController.setBrownoutVoltage(6.0);
 

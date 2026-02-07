@@ -21,8 +21,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-
-import org.ejml.simple.SimpleMatrix;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
@@ -55,7 +53,7 @@ public class Vision {
 
   /** A factory to create new vision classes with our cameras. */
   public static Vision create() {
-    return new Vision(CAMERA_0, CAMERA_1);//, CAMERA_2, CAMERA_3, CAMERA_4, CAMERA_5);
+    return new Vision(CAMERA_0, CAMERA_1); // , CAMERA_2, CAMERA_3, CAMERA_4, CAMERA_5);
   }
 
   /**
@@ -195,11 +193,11 @@ public class Vision {
                             && Math.abs(f.estimatedPose.getZ()) < MAX_HEIGHT
                             && Math.abs(f.estimatedPose.getRotation().getX()) < MAX_ANGLE
                             && Math.abs(f.estimatedPose.getRotation().getY()) < MAX_ANGLE;
-                    if (!valid) {
+                    if (valid) {
+                      log("Robot/vision/valid poses/ " + name, f.estimatedPose, Pose3d.struct);
+                    } else {
                       filteredEstimates.add(f.estimatedPose);
                       log("Robot/vision/filtered poses/ " + name, f.estimatedPose, Pose3d.struct);
-                    } else {
-                      log("Robot/vision/valid poses/ " + name, f.estimatedPose, Pose3d.struct);
                     }
                     return valid;
                   })
@@ -207,7 +205,10 @@ public class Vision {
                   e ->
                       estimates.add(
                           new PoseEstimate(
-                              e, overtrust?SUPERTRUST_TAG_STD_DEVS:estimationStdDevs(e.estimatedPose.toPose2d(), change))));
+                              e,
+                              overtrust
+                                  ? SUPERTRUST_TAG_STD_DEVS
+                                  : estimationStdDevs(e.estimatedPose.toPose2d(), change))));
         }
       }
     }

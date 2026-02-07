@@ -15,10 +15,18 @@ import java.util.Set;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.sciborgs1155.robot.vision.Vision.CameraConfig;
 
-public class VisionConstants {
+public final class VisionConstants {
+
+  // Prevents instantiation
+  private VisionConstants() {}
+
+  /**
+   * Returns a {@link Rotation3d} that represents a camera rotation, given the yaw, pitch, and roll.
+   */
   public static Rotation3d yawPitchRoll(
       double yawDegrees, double pitchDegrees, double rollDegrees) {
-    return new Rotation3d(Degrees.of(rollDegrees), Degrees.of(pitchDegrees), Degrees.of(yawDegrees));
+    return new Rotation3d(
+        Degrees.of(rollDegrees), Degrees.of(pitchDegrees), Degrees.of(yawDegrees));
   }
 
   public static final AprilTagFieldLayout TAG_LAYOUT =
@@ -104,7 +112,8 @@ public class VisionConstants {
   public static final int WIDTH = 1280;
   public static final int HEIGHT = 720;
 
-  public static final Matrix<N3, N1> SINGLE_TAG_STD_DEVS = VecBuilder.fill(0.6, 0.6, 1155); //TODO decide these later when we test the bump
+  public static final Matrix<N3, N1> SINGLE_TAG_STD_DEVS =
+      VecBuilder.fill(0.6, 0.6, 1155); // TODO decide these later when we test the bump
   public static final Matrix<N3, N1> MULTIPLE_TAG_STD_DEVS = VecBuilder.fill(0.3, 0.3, 1155);
   public static final Matrix<N3, N1> SUPERTRUST_TAG_STD_DEVS = VecBuilder.fill(0.001, 0.001, 0.001);
 

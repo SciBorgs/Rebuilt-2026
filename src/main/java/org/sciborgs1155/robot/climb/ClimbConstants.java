@@ -13,7 +13,7 @@ import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Mass;
 
-public class ClimbConstants {
+public final class ClimbConstants {
 
   public static final double P = 100;
   public static final double I = 0;

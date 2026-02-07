@@ -27,17 +27,12 @@ public class ClimbTest {
 
   /** resets the sim climb */
   @AfterEach
-  public void destroy() {
-    try {
-      reset(climb);
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
+  public void destroy() throws Exception {
+    reset(climb);
   }
 
   /** test for climb to go to minimum height */
   @Test
-  @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
   public void goDown() {
     CommandScheduler.getInstance()
         .schedule(climb.goTo(MIN_HEIGHT.in(Meters)).withDeadline(Commands.waitSeconds(3)));
@@ -47,7 +42,6 @@ public class ClimbTest {
 
   /** test for climb to go to minimum height */
   @Test
-  @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
   public void goUp() {
     climb.goTo(MAX_HEIGHT.in(Meters)).withDeadline(Commands.waitSeconds(3)).execute();
     assert climb.atPosition(MAX_HEIGHT.in(Meters));

@@ -1,8 +1,8 @@
 package org.sciborgs1155.lib.projectiles;
 
 import static edu.wpi.first.units.Units.Meters;
-import static org.sciborgs1155.lib.projectiles.FuelVisualizer.*;
 import static org.sciborgs1155.lib.projectiles.ProjectileVisualizer.AIR_DENSITY;
+import static org.sciborgs1155.lib.projectiles.ProjectileVisualizer.AIR_VISCOSITY;
 import static org.sciborgs1155.lib.projectiles.ProjectileVisualizer.FRAME_LENGTH;
 import static org.sciborgs1155.lib.projectiles.ProjectileVisualizer.GRAVITY;
 import static org.sciborgs1155.robot.FieldConstants.BLUE_HUB;
@@ -14,7 +14,9 @@ import static org.sciborgs1155.robot.FieldConstants.RED_HUB;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
 
 /** The Fuel projectile from REBUILT® 2026. */
@@ -22,20 +24,36 @@ public class Fuel extends Projectile {
   @Override
   protected Vector<N3> acceleration() {
     // GRAVITY CALCULATIONS (METERS / FRAME^2)
+    // SOURCE: https://spaceplace.nasa.gov/what-is-gravity/en/
     Vector<N3> gravity = VecBuilder.fill(0, 0, GRAVITY).times(Math.pow(FRAME_LENGTH, 2));
 
     // DRAG CALCULATIONS (METERS / FRAME^2)
+    // SOURCE: https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/drag-of-a-sphere/
     double speedSquared = Math.pow(velocity.norm(), 2); // MAGNITUDE OF VELOCITY^2
     double dragCoefficient = 0.47; // SPECIFIC TO SPHERICAL OBJECTS
     double referenceArea = Math.PI * Math.pow(FUEL_RADIUS, 2); // CROSS SECTION
-    double magnitude = 0.5 * AIR_DENSITY * speedSquared * dragCoefficient * referenceArea;
-    Vector<N3> drag = velocity.unit().times(magnitude).div(FUEL_MASS).times(-1);
+    double dragNorm = 0.5 * AIR_DENSITY * speedSquared * dragCoefficient * referenceArea;
+    Vector<N3> drag = velocity.unit().times(dragNorm).div(FUEL_MASS).times(-1);
 
-    return gravity.plus(drag);
+    // MAGNUS LIFT CALCULATIONS (METERS / FRAME^2) // TODO: Fix.
+    // SOURCE:
+    // https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/ideal-lift-of-a-spinning-ball/
+    double airSpeed = velocity.norm(); // RELATIVE TO FUEL
+    double angularSpeed = rotationalVelocity.norm();
+    Vector<N3> direction = new Rotation3d(velocity, Math.PI / 2).toVector();
+    double magnusNorm =
+        airSpeed * 4 * Math.pow(Math.PI, 2) * Math.pow(FUEL_RADIUS, 3) * angularSpeed * AIR_DENSITY;
+    Vector<N3> magnusLift = direction.unit().times(magnusNorm).div(FUEL_MASS).times(-1);
+
+    return gravity.plus(drag).plus(magnusLift);
   }
 
   @Override
-  protected Vector<N3> rotationalAcceleration() {
+  protected Vector<N2> rotationalAcceleration() {
+    // VISCOUS TORQUE CALCULATIONS (METERS / FRAME^2)
+    // SOURCE:
+    // https://physics.wooster.edu/wp-content/uploads/2021/08/Junior-IS-Thesis-Web_1998_Grugel.pdf
+
     double magnitude = -8 * Math.PI * Math.pow(FUEL_RADIUS, 3) * AIR_VISCOSITY * FRAME_LENGTH;
     return rotationalVelocity.times(magnitude).div(FUEL_MASS).times(-1);
   }

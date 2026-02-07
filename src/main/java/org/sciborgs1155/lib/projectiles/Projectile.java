@@ -1,6 +1,8 @@
 package org.sciborgs1155.lib.projectiles;
 
 import static org.sciborgs1155.lib.projectiles.ProjectileVisualizer.FRAME_LENGTH;
+import static org.sciborgs1155.lib.projectiles.ProjectileVisualizer.PITCH;
+import static org.sciborgs1155.lib.projectiles.ProjectileVisualizer.YAW;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
@@ -74,8 +76,8 @@ public abstract class Projectile {
    * @return The current field-relative pose of the projectile (METERS).
    */
   public Pose3d pose() {
-    if (translation == null || rotation == null) return new Pose3d();
-    return new Pose3d(new Translation3d(translation), new Rotation3d(0, 0, rotation.get(1)));
+    return new Pose3d(
+        new Translation3d(translation), new Rotation3d(0, rotation.get(PITCH), rotation.get(YAW)));
   }
 
   /**

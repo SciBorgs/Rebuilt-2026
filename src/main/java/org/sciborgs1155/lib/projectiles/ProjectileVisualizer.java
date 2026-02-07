@@ -48,6 +48,14 @@ public abstract class ProjectileVisualizer {
   /** A supplier for the pose of the robot (METERS). */
   protected final Supplier<ChassisSpeeds> robotVelocity;
 
+  /** A 3D vector is arranged in the order [X Y Z]. */
+  @SuppressWarnings("PMD.OneDeclarationPerLine")
+  protected static final int X = 0, Y = 1, Z = 2;
+
+  /** A rotation vector is arranged in the order [YAW PITCH]. */
+  @SuppressWarnings("PMD.OneDeclarationPerLine")
+  protected static final int YAW = 0, PITCH = 1;
+
   /**
    * Calculates the launch translation of the projectile.
    *

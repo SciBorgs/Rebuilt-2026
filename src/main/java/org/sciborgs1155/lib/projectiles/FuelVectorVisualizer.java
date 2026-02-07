@@ -75,6 +75,6 @@ public class FuelVectorVisualizer extends FuelVisualizer {
         VecBuilder.fill(robotVelocity.vxMetersPerSecond, robotVelocity.vyMetersPerSecond);
     Vector<N2> shooter2DVelocity = translationalVelocity.plus(rotationalVelocity);
 
-    return VecBuilder.fill(shooter2DVelocity.get(0), shooter2DVelocity.get(1));
+    return VecBuilder.fill(shooter2DVelocity.get(X), shooter2DVelocity.get(Y));
   }
 }

@@ -58,6 +58,12 @@ public class FuelVisualizer extends ProjectileVisualizer {
     hoodAngle = hoodAngleSupplier;
   }
 
+  /**
+   * Calculates the launch direction of the projectile.
+   *
+   * @param robotPose The current pose of the robot.
+   * @return The field-relative launch direction of the projectile (UNIT VECTOR).
+   */
   protected Vector<N3> launchDirection(Pose3d robotPose) {
     return fromSphericalCoords(
         1,
@@ -82,21 +88,21 @@ public class FuelVisualizer extends ProjectileVisualizer {
 
     double launchSpeed = SPEED_CONSTANT * wheelVelocity.get().in(RadiansPerSecond);
 
-    // ROBOT VELOCITY CALCULATIONS
-    Vector<N3> robotToFuel =
+    // SHOOTER ROTATIONAL VELOCITY
+    double robotToFuel =
         ROBOT_TO_SHOOTER
             .toVector()
-            .plus(launchDirection(robotPose).times(SHOOTER_LENGTH.in(Meters)));
+            .plus(launchDirection(robotPose).times(SHOOTER_LENGTH.in(Meters)))
+            .norm();
     Vector<N2> rotationalVelocity =
         fromPolarCoords(
-            robotVelocity.omegaRadiansPerSecond * robotToFuel.norm(),
+            robotVelocity.omegaRadiansPerSecond * robotToFuel,
             robotPose.toPose2d().getRotation().plus(Rotation2d.kCCW_90deg));
-    Vector<N2> translationalVelocity =
-        VecBuilder.fill(robotVelocity.vxMetersPerSecond, robotVelocity.vyMetersPerSecond);
-    Vector<N2> shooter2DVelocity = translationalVelocity.plus(rotationalVelocity);
-
     Vector<N3> shooterVelocity =
-        VecBuilder.fill(shooter2DVelocity.get(0), shooter2DVelocity.get(1), 0);
+        VecBuilder.fill(
+            robotVelocity.vxMetersPerSecond + rotationalVelocity.get(X),
+            robotVelocity.vyMetersPerSecond + rotationalVelocity.get(Y),
+            0);
 
     return launchDirection(robotPose).times(launchSpeed).plus(shooterVelocity);
   }

@@ -5,6 +5,8 @@ import static org.sciborgs1155.lib.projectiles.ProjectileVisualizer.AIR_DENSITY;
 import static org.sciborgs1155.lib.projectiles.ProjectileVisualizer.AIR_VISCOSITY;
 import static org.sciborgs1155.lib.projectiles.ProjectileVisualizer.FRAME_LENGTH;
 import static org.sciborgs1155.lib.projectiles.ProjectileVisualizer.GRAVITY;
+import static org.sciborgs1155.lib.projectiles.ProjectileVisualizer.X;
+import static org.sciborgs1155.lib.projectiles.ProjectileVisualizer.Y;
 import static org.sciborgs1155.robot.FieldConstants.BLUE_HUB;
 import static org.sciborgs1155.robot.FieldConstants.FUEL_MASS;
 import static org.sciborgs1155.robot.FieldConstants.FUEL_RADIUS;
@@ -21,19 +23,32 @@ import edu.wpi.first.math.numbers.N3;
 
 /** The Fuel projectile from REBUILT® 2026. */
 public class Fuel extends Projectile {
+  /**
+   * @see {@link #acceleration() The Usage.}
+   */
+  private static final double DRAG_CONSTANT =
+      -0.5 * AIR_DENSITY * 0.47 * Math.PI * Math.pow(FUEL_RADIUS, 2) / FUEL_MASS;
+
+  /**
+   * @see {@link #acceleration() The Usage.}
+   */
+  private static final double GRAVITY_CONSTANT = GRAVITY * Math.pow(FRAME_LENGTH, 2);
+
+  /**
+   * @see {@link #rotationalAcceleration() The Usage.}
+   */
+  private static final double VISCOUS_DRAG_CONSTANT =
+      -8 * Math.PI * Math.pow(FUEL_RADIUS, 3) * AIR_VISCOSITY * FRAME_LENGTH / FUEL_MASS;
+
   @Override
   protected Vector<N3> acceleration() {
     // GRAVITY CALCULATIONS (METERS / FRAME^2)
     // SOURCE: https://spaceplace.nasa.gov/what-is-gravity/en/
-    Vector<N3> gravity = VecBuilder.fill(0, 0, GRAVITY).times(Math.pow(FRAME_LENGTH, 2));
+    Vector<N3> gravity = VecBuilder.fill(0, 0, GRAVITY_CONSTANT);
 
     // DRAG CALCULATIONS (METERS / FRAME^2)
     // SOURCE: https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/drag-of-a-sphere/
-    double speedSquared = Math.pow(velocity.norm(), 2); // MAGNITUDE OF VELOCITY^2
-    double dragCoefficient = 0.47; // SPECIFIC TO SPHERICAL OBJECTS
-    double referenceArea = Math.PI * Math.pow(FUEL_RADIUS, 2); // CROSS SECTION
-    double dragNorm = 0.5 * AIR_DENSITY * speedSquared * dragCoefficient * referenceArea;
-    Vector<N3> drag = velocity.unit().times(dragNorm).div(FUEL_MASS).times(-1);
+    Vector<N3> drag = velocity.unit().times(Math.pow(velocity.norm(), 2) * DRAG_CONSTANT);
 
     // MAGNUS LIFT CALCULATIONS (METERS / FRAME^2) // TODO: Fix.
     // SOURCE:
@@ -53,14 +68,12 @@ public class Fuel extends Projectile {
     // VISCOUS TORQUE CALCULATIONS (METERS / FRAME^2)
     // SOURCE:
     // https://physics.wooster.edu/wp-content/uploads/2021/08/Junior-IS-Thesis-Web_1998_Grugel.pdf
-
-    double magnitude = -8 * Math.PI * Math.pow(FUEL_RADIUS, 3) * AIR_VISCOSITY * FRAME_LENGTH;
-    return rotationalVelocity.times(magnitude).div(FUEL_MASS).times(-1);
+    return rotationalVelocity.times(VISCOUS_DRAG_CONSTANT);
   }
 
   @Override
   protected boolean isScoring() {
-    Translation2d fuelTranslation = new Translation2d(translation.get(0), translation.get(1));
+    Translation2d fuelTranslation = new Translation2d(translation.get(X), translation.get(Y));
 
     double distanceFromBlueHub = fuelTranslation.getDistance(BLUE_HUB);
     double distanceFromRedHub = fuelTranslation.getDistance(RED_HUB);

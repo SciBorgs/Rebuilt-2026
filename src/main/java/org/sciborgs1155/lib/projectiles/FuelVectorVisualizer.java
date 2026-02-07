@@ -67,14 +67,14 @@ public class FuelVectorVisualizer extends FuelVisualizer {
    * @return The field-relative translation of the shooter.
    */
   public static Vector<N2> shooterVelocity(Pose3d robotPose, ChassisSpeeds robotVelocity) {
+    // SHOOTER ROTATIONAL VELOCITY
     Vector<N2> rotationalVelocity =
         fromPolarCoords(
-            robotVelocity.omegaRadiansPerSecond * ROBOT_TO_SHOOTER.toVector().norm(),
+            robotVelocity.omegaRadiansPerSecond * ROBOT_TO_SHOOTER.getNorm(),
             robotPose.toPose2d().getRotation().plus(Rotation2d.kCCW_90deg));
-    Vector<N2> translationalVelocity =
-        VecBuilder.fill(robotVelocity.vxMetersPerSecond, robotVelocity.vyMetersPerSecond);
-    Vector<N2> shooter2DVelocity = translationalVelocity.plus(rotationalVelocity);
 
-    return VecBuilder.fill(shooter2DVelocity.get(X), shooter2DVelocity.get(Y));
+    return VecBuilder.fill(
+      robotVelocity.vxMetersPerSecond + rotationalVelocity.get(X),
+      robotVelocity.vyMetersPerSecond + rotationalVelocity.get(Y));
   }
 }

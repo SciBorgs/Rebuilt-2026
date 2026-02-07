@@ -71,6 +71,18 @@ public class FuelVisualizer extends ProjectileVisualizer {
             .rotateBy(robotPose.getRotation()));
   }
 
+  /**
+   * Calculates the robot-relative launch translation of the projectile.
+   *
+   * @param robotPose The current pose of the robot.
+   * @return The robot-relative launch translation of the projectile (METERS).
+   */
+  protected Vector<N3> robotToFuel(Pose3d robotPose) {
+    return ROBOT_TO_SHOOTER
+        .toVector()
+        .plus(launchDirection(robotPose).times(SHOOTER_LENGTH.in(Meters)));
+  }
+
   @Override
   protected Vector<N3> launchTranslation(Pose3d robotPose) {
     return ROBOT_TO_SHOOTER
@@ -89,22 +101,18 @@ public class FuelVisualizer extends ProjectileVisualizer {
     double launchSpeed = SPEED_CONSTANT * wheelVelocity.get().in(RadiansPerSecond);
 
     // SHOOTER ROTATIONAL VELOCITY
-    double robotToFuel =
-        ROBOT_TO_SHOOTER
-            .toVector()
-            .plus(launchDirection(robotPose).times(SHOOTER_LENGTH.in(Meters)))
-            .norm();
     Vector<N2> rotationalVelocity =
         fromPolarCoords(
-            robotVelocity.omegaRadiansPerSecond * robotToFuel,
+            robotVelocity.omegaRadiansPerSecond * robotToFuel(robotPose).norm(),
             robotPose.toPose2d().getRotation().plus(Rotation2d.kCCW_90deg));
-    Vector<N3> shooterVelocity =
-        VecBuilder.fill(
-            robotVelocity.vxMetersPerSecond + rotationalVelocity.get(X),
-            robotVelocity.vyMetersPerSecond + rotationalVelocity.get(Y),
-            0);
 
-    return launchDirection(robotPose).times(launchSpeed).plus(shooterVelocity);
+    return launchDirection(robotPose)
+        .times(launchSpeed)
+        .plus(
+            VecBuilder.fill(
+                robotVelocity.vxMetersPerSecond + rotationalVelocity.get(X),
+                robotVelocity.vyMetersPerSecond + rotationalVelocity.get(Y),
+                0)); // THE ROBOT ISN'T LIFTING OFF THE GROUND (FOR NOW)
   }
 
   @Override

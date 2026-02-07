@@ -71,9 +71,9 @@ public class Robot extends CommandRobot {
   @NotLogged
   private final FuelVisualizer fuelVisualizer =
       new FuelVisualizer(
-          () -> RPM.of(2000),
-          () -> Degrees.of(0),
-          () -> Degrees.of(60),
+          shooter::velocity,
+          turret::position,
+          hood::angle,
           drive::pose3d,
           drive::fieldRelativeChassisSpeeds);
 
@@ -182,6 +182,10 @@ public class Robot extends CommandRobot {
         .onFalse(Commands.runOnce(() -> speedMultiplier = Constants.FULL_SPEED_MULTIPLIER));
 
     operator.a().onTrue(fuelVisualizer.launchProjectile());
+    operator
+        .a()
+        .whileTrue(
+            shooter.runShooter(250).alongWith(turret.goTo(() -> 0)).alongWith(hood.goTo(() -> 1)));
     operator.a().whileTrue(Commands.repeatingSequence(fuelVisualizer.launchProjectile()));
   }
 

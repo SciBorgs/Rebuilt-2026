@@ -18,7 +18,6 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
 
 /** The Fuel projectile from REBUILT® 2026. */
@@ -64,7 +63,7 @@ public class Fuel extends Projectile {
   }
 
   @Override
-  protected Vector<N2> rotationalAcceleration() {
+  protected Vector<N3> rotationalAcceleration() {
     // VISCOUS TORQUE CALCULATIONS (METERS / FRAME^2)
     // SOURCE:
     // https://physics.wooster.edu/wp-content/uploads/2021/08/Junior-IS-Thesis-Web_1998_Grugel.pdf

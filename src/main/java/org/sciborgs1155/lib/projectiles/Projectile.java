@@ -2,6 +2,7 @@ package org.sciborgs1155.lib.projectiles;
 
 import static org.sciborgs1155.lib.projectiles.ProjectileVisualizer.FRAME_LENGTH;
 import static org.sciborgs1155.lib.projectiles.ProjectileVisualizer.PITCH;
+import static org.sciborgs1155.lib.projectiles.ProjectileVisualizer.ROLL;
 import static org.sciborgs1155.lib.projectiles.ProjectileVisualizer.YAW;
 
 import edu.wpi.first.math.VecBuilder;
@@ -9,7 +10,6 @@ import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
 
 /** An interface for a projectile to be visualized by the {@code ProjectileVisualizer}. */
@@ -50,11 +50,11 @@ public abstract class Projectile {
   /** The field-relative velocity of the projectile (METERS / FRAME). */
   protected Vector<N3> velocity = VecBuilder.fill(0, 0, 0);
 
-  /** The rotation of the projectile (YAW AND PITCH | RADIANS). */
-  protected Vector<N2> rotation = VecBuilder.fill(0, 0);
+  /** The rotation of the projectile (RADIANS). */
+  protected Vector<N3> rotation = VecBuilder.fill(0, 0, 0);
 
-  /** The rotational velocity of the projectile (YAW AND PITCH | RADIANS / FRAME). */
-  protected Vector<N2> rotationalVelocity = VecBuilder.fill(0, 0);
+  /** The rotational velocity of the projectile (RADIANS / FRAME). */
+  protected Vector<N3> rotationalVelocity = VecBuilder.fill(0, 0, 0);
 
   /**
    * The current acceleration of the projectile.
@@ -68,7 +68,7 @@ public abstract class Projectile {
    *
    * @return The acceleration (RADIANS / FRAME^2).
    */
-  protected abstract Vector<N2> rotationalAcceleration();
+  protected abstract Vector<N3> rotationalAcceleration();
 
   /**
    * Displays the current pose of the projectile.
@@ -77,7 +77,8 @@ public abstract class Projectile {
    */
   public Pose3d pose() {
     return new Pose3d(
-        new Translation3d(translation), new Rotation3d(0, rotation.get(PITCH), rotation.get(YAW)));
+        new Translation3d(translation),
+        new Rotation3d(rotation.get(ROLL), rotation.get(PITCH), rotation.get(YAW)));
   }
 
   /**
@@ -93,8 +94,8 @@ public abstract class Projectile {
   public void launch(
       Vector<N3> launchTranslation,
       Vector<N3> launchVelocity,
-      Vector<N2> launchRotation,
-      Vector<N2> launchRotationalVelocity) {
+      Vector<N3> launchRotation,
+      Vector<N3> launchRotationalVelocity) {
     if (isBeingLaunched) return;
 
     translation = launchTranslation;
@@ -138,8 +139,8 @@ public abstract class Projectile {
     translation = VecBuilder.fill(0, 0, 0);
     velocity = VecBuilder.fill(0, 0, 0);
 
-    rotation = VecBuilder.fill(0, 0);
-    rotationalVelocity = VecBuilder.fill(0, 0);
+    rotation = VecBuilder.fill(0, 0, 0);
+    rotationalVelocity = VecBuilder.fill(0, 0, 0);
 
     // PREVENTS FRAMES FROM BEING RENDERED
     isBeingLaunched = false;

@@ -74,7 +74,7 @@ public class FuelVectorVisualizer extends FuelVisualizer {
             robotPose.toPose2d().getRotation().plus(Rotation2d.kCCW_90deg));
 
     return VecBuilder.fill(
-      robotVelocity.vxMetersPerSecond + rotationalVelocity.get(X),
-      robotVelocity.vyMetersPerSecond + rotationalVelocity.get(Y));
+        robotVelocity.vxMetersPerSecond + rotationalVelocity.get(X),
+        robotVelocity.vyMetersPerSecond + rotationalVelocity.get(Y));
   }
 }

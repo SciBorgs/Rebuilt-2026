@@ -16,6 +16,7 @@ import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 /** Simulates the behavior of multiple Fuel projectiles using {@code FuelSim}. */
@@ -26,14 +27,14 @@ public class FuelVisualizer extends ProjectileVisualizer {
   protected static final double SPEED_CONSTANT =
       SHOOTER_WHEEL_RADIUS / (2 + 7 / 5 * (FUEL_MASS / SHOOTER_WHEEL_MASS));
 
-  /** A supplier for the angular velocity of the wheel in the {@code Shooter}. */
-  protected final Supplier<AngularVelocity> wheelVelocity;
+  /** A supplier for the angular velocity of the wheel in the {@code Shooter}. (RADIANS / SECOND) */
+  protected final DoubleSupplier wheelVelocity;
 
-  /** A supplier for the angle of the {@code Hood}. */
-  protected final Supplier<Angle> hoodAngle;
+  /** A supplier for the angle of the {@code Hood} (RADIANS). */
+  protected final DoubleSupplier hoodAngle;
 
-  /** A supplier for the angle of the {@code Turret}. */
-  protected final Supplier<Angle> turretAngle;
+  /** A supplier for the angle of the {@code Turret} (RADIANS). */
+  protected final DoubleSupplier turretAngle;
 
   /**
    * Simulates the behavior of multiple {@code Fuel} projectiles. Parameters used to calculate Fuel
@@ -53,6 +54,29 @@ public class FuelVisualizer extends ProjectileVisualizer {
       Supplier<Pose3d> robotPoseSupplier,
       Supplier<ChassisSpeeds> robotVelocitySupplier) {
     super(robotPoseSupplier, robotVelocitySupplier);
+    wheelVelocity = () -> wheelVelocitySupplier.get().in(RadiansPerSecond);
+    turretAngle = () -> turretAngleSupplier.get().in(Radians);
+    hoodAngle = () -> hoodAngleSupplier.get().in(Radians);
+  }
+
+  /**
+   * Simulates the behavior of multiple {@code Fuel} projectiles. Parameters used to calculate Fuel
+   * trajectory after launch.
+   *
+   * @param wheelVelocitySupplier A supplier for the angular velocity of the wheel in the {@code
+   *     Shooter}. (RADIANS / SECOND)
+   * @param turretAngleSupplier A supplier for the angle of the {@code Turret}. (RADIANS)
+   * @param hoodAngleSupplier A supplier for the angle of the {@code Hood}. (RADIANS)
+   * @param robotPoseSupplier A supplier for the pose of the {@code Drive}.
+   * @param robotVelocitySupplier A supplier for the velocity of the {@code Drive}.
+   */
+  public FuelVisualizer(
+      DoubleSupplier wheelVelocitySupplier,
+      DoubleSupplier turretAngleSupplier,
+      DoubleSupplier hoodAngleSupplier,
+      Supplier<Pose3d> robotPoseSupplier,
+      Supplier<ChassisSpeeds> robotVelocitySupplier) {
+    super(robotPoseSupplier, robotVelocitySupplier);
     wheelVelocity = wheelVelocitySupplier;
     turretAngle = turretAngleSupplier;
     hoodAngle = hoodAngleSupplier;
@@ -67,7 +91,7 @@ public class FuelVisualizer extends ProjectileVisualizer {
   protected Vector<N3> launchDirection(Pose3d robotPose) {
     return fromSphericalCoords(
         1,
-        new Rotation3d(Radians.zero(), hoodAngle.get(), turretAngle.get())
+        new Rotation3d(0, hoodAngle.getAsDouble(), turretAngle.getAsDouble())
             .rotateBy(robotPose.getRotation()));
   }
 
@@ -98,7 +122,7 @@ public class FuelVisualizer extends ProjectileVisualizer {
     // Used "Wheel Velocity with Shape Factors" equation from below source.
     // https://www.chiefdelphi.com/t/new-flywheel-shooter-analysis/439111/4
 
-    double launchSpeed = SPEED_CONSTANT * wheelVelocity.get().in(RadiansPerSecond);
+    double launchSpeed = SPEED_CONSTANT * wheelVelocity.getAsDouble();
 
     // SHOOTER ROTATIONAL VELOCITY
     Vector<N2> rotationalVelocity =
@@ -116,13 +140,13 @@ public class FuelVisualizer extends ProjectileVisualizer {
   }
 
   @Override
-  protected Vector<N2> launchRotation(Pose3d robotPose) {
-    return VecBuilder.fill(0, 0);
+  protected Vector<N3> launchRotation(Pose3d robotPose) {
+    return VecBuilder.fill(0, 0, 0);
   }
 
   @Override
-  protected Vector<N2> launchRotationalVelocity(Pose3d robotPose) {
-    return VecBuilder.fill(0, 0);
+  protected Vector<N3> launchRotationalVelocity(Pose3d robotPose) {
+    return VecBuilder.fill(0, 0, 0);
   }
 
   @Override

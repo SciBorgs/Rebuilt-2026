@@ -1,44 +1,64 @@
 package org.sciborgs1155.robot.turret;
 
 import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
+import static org.sciborgs1155.lib.Assertion.eAssert;
 import static org.sciborgs1155.robot.Constants.PERIOD;
+import static org.sciborgs1155.robot.Constants.TUNING;
 import static org.sciborgs1155.robot.turret.TurretConstants.*;
 import static org.sciborgs1155.robot.turret.TurretConstants.ControlConstants.*;
 
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.networktables.DoubleEntry;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import java.util.Set;
 import java.util.function.DoubleSupplier;
+import org.sciborgs1155.lib.Assertion;
 import org.sciborgs1155.lib.LoggingUtils;
+import org.sciborgs1155.lib.Test;
+import org.sciborgs1155.lib.Tuning;
 import org.sciborgs1155.robot.Robot;
 
 /**
  * The {@code Turret} subsystem consists of a single motor that is used to aim a variable hood
  * shooter at a specific target.
  */
-public class Turret extends SubsystemBase implements AutoCloseable {
-  /**
-   * Factory for the {@code Turret} subsystem. The hardware interface is varied depending on the
-   * type of robot being operated on.
-   *
-   * @return A newly instantiated instance of {@code Turret} using a {@code RealTurret} hardware
-   *     interface if the robot is real and a {@code SimTurret} hardware interface is the robot is
-   *     simulated.
-   */
-  @Logged private double setpoint;
+@Logged(name = "turret")
+public final class Turret extends SubsystemBase implements AutoCloseable {
+  /** Motor used to rotate the turret. */
+  @NotLogged public final TurretIO hardware;
 
-  // * Logs previous velocity. */
-  @Logged private double lastVelocity;
+  /** {@code PIDController} used to orient the turret to a specified angle. */
+  @Logged
+  private final ProfiledPIDController controller = new ProfiledPIDController(P, I, D, CONSTRAINTS);
+
+  /** {@code Feedforward} used to aid in orienting the turret to a specified angle. */
+  @Logged
+  private final SimpleMotorFeedforward feedforward =
+      new SimpleMotorFeedforward(S, V, A, PERIOD.in(Seconds));
+
+  /** Visualization. Green = Position, Red = Setpoint. */
+  private final TurretVisualizer visualizer = new TurretVisualizer(6, 7);
+
+  /** System identification routine object. */
+  private final SysIdRoutine sysIdRoutine;
+
+  @NotLogged private final DoubleEntry tuningP = Tuning.entry("Robot/tuning/turret/K_P", P);
+  @NotLogged private final DoubleEntry tuningI = Tuning.entry("Robot/tuning/turret/K_I", I);
+  @NotLogged private final DoubleEntry tuningD = Tuning.entry("Robot/tuning/turret/K_D", D);
+  @NotLogged private final DoubleEntry tuningS = Tuning.entry("Robot/tuning/turret/S", S);
+  @NotLogged private final DoubleEntry tuningV = Tuning.entry("Robot/tuning/turret/V", V);
+  @NotLogged private final DoubleEntry tuningA = Tuning.entry("Robot/tuning/turret/A", A);
 
   /** Creates real or simulated turret based on {@link Robot#isReal()}. */
   @NotLogged
@@ -57,30 +77,12 @@ public class Turret extends SubsystemBase implements AutoCloseable {
     return new Turret(new NoTurret());
   }
 
-  /** Motor used to rotate the turret. */
-  @NotLogged private final TurretIO hardware;
-
-  /** {@code PIDController} used to orient the turret to a specified angle. */
-  @NotLogged
-  private final ProfiledPIDController controller = new ProfiledPIDController(P, I, D, CONSTRAINTS);
-
-  /** {@code Feedforward} used to aid in orienting the turret to a specified angle. */
-  @NotLogged
-  private final SimpleMotorFeedforward feedforward =
-      new SimpleMotorFeedforward(S, V, A, PERIOD.in(Seconds));
-
-  /** Visualization. Green = Position, Red = Setpoint. */
-  private final TurretVisualizer visualizer = new TurretVisualizer(6, 7);
-
-  /** System identification routine object. */
-  private final SysIdRoutine sysIdRoutine;
-
   /**
    * Constructs a new turret subsystem.
    *
    * @param pivot The hardware implementation to use.
    */
-  public Turret(TurretIO turretIO) {
+  private Turret(TurretIO turretIO) {
     hardware = turretIO;
 
     controller.setTolerance(TOLERANCE.in(Radians));
@@ -91,9 +93,7 @@ public class Turret extends SubsystemBase implements AutoCloseable {
             new SysIdRoutine.Mechanism(
                 v -> hardware.setVoltage(v.in(Volts)),
                 log -> {
-                  log.motor("turret")
-                      .angularPosition(Radians.of(hardware.position()))
-                      .angularVelocity(RadiansPerSecond.of(hardware.velocity()));
+                  log.motor("turret");
                 },
                 this));
 
@@ -113,17 +113,29 @@ public class Turret extends SubsystemBase implements AutoCloseable {
    *
    * @return The angular position of the turret.
    */
+  @Logged
   public double position() {
     return hardware.position();
   }
 
   /**
-   * Returns the angular setpoint of the turret specified by the {@code setAngle} method.
+   * Returns the setpoint of the turret.
    *
-   * @return The angular setpoint of the turret.
+   * @return The setpoint of the turret.
    */
-  public Angle setpoint() {
-    return Radians.of(controller.getSetpoint().position);
+  @Logged
+  public double setpoint() {
+    return controller.getSetpoint().position;
+  }
+
+  /**
+   * Returns whether the turret is at its goal or not.
+   *
+   * @return whether the turret is at its goal or not.
+   */
+  @Logged
+  public boolean atGoal() {
+    return controller.atGoal();
   }
 
   /** Enum used to specify the type of sysId test. */
@@ -139,14 +151,8 @@ public class Turret extends SubsystemBase implements AutoCloseable {
    * @param direction Direction of the motor. Forward is clockwise while reverse is
    *     counterclockwise.
    */
+  @NotLogged
   public Command sysIdTest(SysIdTestType type, Direction direction) {
-    /*
-    Angle startAngle = direction == Direction.kForward ? MIN_ANGLE : MAX_ANGLE;
-
-    Command goToStart =
-        Commands.runOnce(() -> setAngle(startAngle)).andThen(run().until(controller::atGoal));
-    */
-
     Command test =
         switch (type) {
           case QUASISTATIC -> sysIdRoutine.quasistatic(direction);
@@ -156,14 +162,11 @@ public class Turret extends SubsystemBase implements AutoCloseable {
     Angle stopAngle =
         direction == Direction.kForward ? MAX_ANGLE.minus(TOLERANCE) : MIN_ANGLE.plus(TOLERANCE);
 
-    double sign = direction == Direction.kForward ? 1.0 : -1.0;
-
-    /*
-    return goToStart.andThen(
-        test.until(() -> sign * motor.position().in(Radians) >= sign * stopAngle.in(Radians)));
-    */
-
-    return test.until(() -> sign * hardware.position() >= sign * stopAngle.in(Radians));
+    return test.until(
+        () ->
+            direction == Direction.kForward
+                ? hardware.position() >= stopAngle.in(Radians)
+                : hardware.position() <= stopAngle.in(Radians));
   }
 
   /**
@@ -172,16 +175,15 @@ public class Turret extends SubsystemBase implements AutoCloseable {
    * @param double The position setpoint in radians.
    */
   public void update(double positionSetpoint) {
-    double currentPosition = hardware.position();
-    double pidVolts = controller.calculate(currentPosition, positionSetpoint);
-
-    double targetVelocity = controller.getSetpoint().velocity;
-    double ffdVolts = feedforward.calculate(lastVelocity, targetVelocity);
+    double lastVelocity = controller.getSetpoint().velocity;
+    double pidVolts =
+        controller.calculate(
+            hardware.position(),
+            MathUtil.clamp(positionSetpoint, MIN_ANGLE.in(Radians), MAX_ANGLE.in(Radians)));
+    double ffdVolts =
+        feedforward.calculateWithVelocities(lastVelocity, controller.getSetpoint().velocity);
 
     hardware.setVoltage(pidVolts + ffdVolts);
-
-    lastVelocity = targetVelocity;
-    setpoint = positionSetpoint;
   }
 
   /**
@@ -189,30 +191,41 @@ public class Turret extends SubsystemBase implements AutoCloseable {
    *
    * @param DoubleSupplier The position supplier.
    */
-  public Command runTurret(DoubleSupplier position) {
-    return runOnce(() -> controller.setGoal(position.getAsDouble()))
-        .andThen(run(() -> update(position.getAsDouble())));
+  public Command goTo(DoubleSupplier position) {
+    return run(() -> update(position.getAsDouble())).withName("goTo (DoubleSupplier)");
   }
 
   /**
-   * Sets controller setpoint and repeatively calls update to orient the turret.
+   * Test for turret to go to a set goal angle.
    *
-   * @param Double The position.
+   * @param goal The goal in radians.
    */
-  public Command runTurret(Double position) {
-    return runTurret(() -> position);
+  public Test goToTest(DoubleSupplier goal) {
+    Command testCommand = goTo(goal).until(this::atGoal).withTimeout(5);
+    Set<Assertion> assertions =
+        Set.of(eAssert("Hood system check", goal, this::position, TOLERANCE.in(Radians)));
+    return new Test(testCommand, assertions);
   }
 
   @Override
   public void periodic() {
-    // LOGGING
-    LoggingUtils.log("Robot/Turret/POSITION", hardware.position());
-    LoggingUtils.log("Robot/Turret/VELOCITY", hardware.velocity());
-    LoggingUtils.log("Robot/Turret/VOLTAGE", hardware.voltage());
-    LoggingUtils.log("Robot/Turret/SETPOINT", controller.getSetpoint().position);
+    var command = getCurrentCommand();
+    LoggingUtils.log("Robot/turret/current command", command != null ? command.getName() : "None");
+    LoggingUtils.log("Robot/turret/encoder A position", hardware.encoderA());
+    LoggingUtils.log("Robot/turret/encoder B position", hardware.encoderB());
+
+    if (TUNING.get()) {
+      controller.setP(tuningP.get());
+      controller.setI(tuningI.get());
+      controller.setD(tuningD.get());
+      feedforward.setKs(tuningS.get());
+      feedforward.setKv(tuningV.get());
+      feedforward.setKa(tuningA.get());
+    }
 
     // VISUALIZATION
-    visualizer.update(hardware.position(), controller.getSetpoint().position);
+    visualizer.update(
+        hardware.position(), controller.getGoal().position, controller.getSetpoint().position);
   }
 
   @Override

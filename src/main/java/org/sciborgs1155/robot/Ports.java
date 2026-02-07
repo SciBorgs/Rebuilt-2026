@@ -57,12 +57,14 @@ public final class Ports {
     public static final int LED_PORT = 9;
   }
 
-  public static final class Shooter {
-    public static final int SHOOTER_MOTOR = 30; // placeholder
-  }
-
   public static final class Turret {
     public static final int MOTOR = 67;
+    public static final int ENCODER_A = 68;
+    public static final int ENCODER_B = 69;
+  }
+
+  public static final class Shooter {
+    public static final int SHOOTER_MOTOR = 30;
   }
 
   public static final class Hood {

@@ -23,23 +23,36 @@ public class TurretVisualizer {
   private final MechanismLigament2d position =
       root.append(new MechanismLigament2d("Position", 3, 0, 4, new Color8Bit(0, 255, 0)));
 
-  /** Visualizes the angular position of the {@code Turret}'s setpoint. */
+  /** Visualizes the angular position of the {@code Turret}'s target. */
+  private final MechanismLigament2d target =
+      root.append(new MechanismLigament2d("Target", 3, 0, 2, new Color8Bit(255, 0, 0)));
+
   private final MechanismLigament2d setpoint =
-      root.append(new MechanismLigament2d("Setpoint", 3, 0, 2, new Color8Bit(255, 0, 0)));
+      root.append(new MechanismLigament2d("Setpoint", 3, 0, 2, new Color8Bit(0, 0, 255)));
+
+  private final MechanismLigament2d blindspotA =
+      root.append(new MechanismLigament2d("Blindspot A", 3, 0, 2, new Color8Bit(255, 255, 0)));
+
+  private final MechanismLigament2d blindspotB =
+      root.append(new MechanismLigament2d("Blindspot B", 3, 0, 2, new Color8Bit(255, 255, 0)));
 
   /** Visualizes the {@code Turret} subsystem using {@code Mechanism2d}. */
   public TurretVisualizer(int width, int height) {
     SmartDashboard.putData("TurretVisualizer", mechanism);
+    blindspotA.setAngle(175);
+    blindspotB.setAngle(-175);
   }
 
   /**
    * Updates the visualizer. To be called periodically.
    *
    * @param positionRadians The angular position of the turret.
+   * @param targetRadians The angular target of the turret (radians).
    * @param setpointRadians The angular setpoint of the turret (radians).
    */
-  public void update(double positionRadians, double setpointRadians) {
+  public void update(double positionRadians, double targetRadians, double setpointRadians) {
     position.setAngle(Units.radiansToDegrees(positionRadians));
+    target.setAngle(Units.radiansToDegrees(targetRadians));
     setpoint.setAngle(Units.radiansToDegrees(setpointRadians));
   }
 }

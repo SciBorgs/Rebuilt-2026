@@ -1,6 +1,6 @@
 package org.sciborgs1155.robot.shooter;
 
-public class NoWheel implements WheelIO {
+public class Wheel implements WheelIO {
 
   @Override
   public void close() throws Exception {}

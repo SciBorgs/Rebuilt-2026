@@ -19,7 +19,12 @@ public class NoTurret implements TurretIO {
   }
 
   @Override
-  public double voltage() {
+  public double encoderA() {
+    return 0;
+  }
+
+  @Override
+  public double encoderB() {
     return 0;
   }
 

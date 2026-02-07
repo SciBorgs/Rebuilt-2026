@@ -21,7 +21,7 @@ public class RealWheel implements WheelIO {
     config.CurrentLimits.StatorCurrentLimit = STATOR_CURRENT_LIMIT.in(Amps);
     config.CurrentLimits.SupplyCurrentLimit = SUPPLY_CURRENT_LIMIT.in(Amps);
 
-    config.Feedback.SensorToMechanismRatio = GEARING;
+    config.Feedback.SensorToMechanismRatio = SENSOR_MECHANISM_RATIO;
 
     config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
 
@@ -37,7 +37,7 @@ public class RealWheel implements WheelIO {
 
   @Override
   public double velocity() {
-    return motor.getVelocity().getValueAsDouble() * 60;
+    return motor.getVelocity().getValueAsDouble();
   }
 
   @Override

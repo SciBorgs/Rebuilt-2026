@@ -2,7 +2,6 @@ package org.sciborgs1155.robot.shooter;
 
 import static edu.wpi.first.units.Units.Seconds;
 import static org.sciborgs1155.robot.Constants.PERIOD;
-import static org.sciborgs1155.robot.shooter.ShooterConstants.*;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.ControlConstants.*;
 
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -15,8 +14,7 @@ public class SimWheel implements WheelIO {
   /** Creates an instance of the flywheel motor. */
   public SimWheel() {
     flywheel =
-        new FlywheelSim(
-            LinearSystemId.identifyVelocitySystem(V, A), DCMotor.getKrakenX60(1), GEARING);
+        new FlywheelSim(LinearSystemId.identifyVelocitySystem(V, A), DCMotor.getKrakenX60(1));
   }
 
   /**

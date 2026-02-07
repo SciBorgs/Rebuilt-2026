@@ -69,7 +69,7 @@ public class Robot extends CommandRobot {
   @NotLogged
   private final FuelVectorVisualizer fuelVisualizer =
       new FuelVectorVisualizer(
-          () ->  movingShooting.calculate(drive.pose().getTranslation(), FuelVectorVisualizer.shooterVelocity(drive.fieldRelativeChassisSpeeds())),
+          () ->  movingShooting.calculate(FuelVectorVisualizer.shooterTranslation(drive.pose3d()), FuelVectorVisualizer.shooterVelocity(drive.fieldRelativeChassisSpeeds())),
           drive::pose3d,
           drive::fieldRelativeChassisSpeeds);
 

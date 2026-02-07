@@ -167,11 +167,10 @@ public class FuelVisualizer extends ProjectileVisualizer {
      * @param robotPose The current pose of the robot.
      * @return The field-relative translation of the shooter.
      */
-    public static Translation2d shooterTranslation(Pose3d robotPose) {
+    public static Translation3d shooterTranslation(Pose3d robotPose) {
       return ROBOT_TO_SHOOTER
           .rotateBy(robotPose.getRotation())
-          .plus(robotPose.getTranslation())
-          .toTranslation2d();
+          .plus(robotPose.getTranslation());
     }
 
     /**

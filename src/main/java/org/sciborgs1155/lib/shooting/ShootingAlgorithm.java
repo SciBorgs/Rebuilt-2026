@@ -2,6 +2,7 @@ package org.sciborgs1155.lib.shooting;
 
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
 
@@ -17,5 +18,5 @@ public interface ShootingAlgorithm {
    * @param velocity The current translational velocity of the shooter.
    * @return The direction and speed to run the shooter to shoot accurately towards the goal.
    */
-  Vector<N3> calculate(Translation2d pose, Vector<N2> velocity);
+  Vector<N3> calculate(Translation3d pose, Vector<N2> velocity);
 }

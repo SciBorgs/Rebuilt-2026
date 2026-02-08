@@ -61,7 +61,7 @@ public class Robot extends CommandRobot {
 
   // SUBSYSTEMS
   private final Drive drive = Drive.create();
-  private final Hood hood = Hood.none();
+  private final Hood hood = Hood.create();
   private final Vision vision = Vision.create();
   private final Shooter shooter = Shooter.create();
   private final Turret turret = Turret.create();
@@ -190,6 +190,7 @@ public class Robot extends CommandRobot {
     }
 
     autonomous().whileTrue(Commands.defer(autos::getSelected, Set.of(drive)).asProxy());
+    disabled().onTrue(TalonUtils.playSelected());
 
     test().whileTrue(systemsCheck());
 
@@ -200,9 +201,6 @@ public class Robot extends CommandRobot {
         .onTrue(Commands.runOnce(() -> speedMultiplier = Constants.SLOW_SPEED_MULTIPLIER))
         .onFalse(Commands.runOnce(() -> speedMultiplier = Constants.FULL_SPEED_MULTIPLIER));
 
-    // for testing playing music
-    driver.x().onTrue(TalonUtils.playSelected());
-    driver.y().onTrue(Commands.runOnce(() -> TalonUtils.play()));
     // TODO: Add any additional bindings.
   }
 

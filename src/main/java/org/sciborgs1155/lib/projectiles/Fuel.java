@@ -49,7 +49,7 @@ public class Fuel extends Projectile {
     // SOURCE: https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/drag-of-a-sphere/
     Vector<N3> drag = velocity.unit().times(Math.pow(velocity.norm(), 2) * DRAG_CONSTANT);
 
-    // MAGNUS LIFT CALCULATIONS (METERS / FRAME^2) // TODO: Fix.
+    // MAGNUS LIFT CALCULATIONS (METERS / FRAME^2)
     // SOURCE:
     // https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/ideal-lift-of-a-spinning-ball/
     double airSpeed = velocity.norm(); // RELATIVE TO FUEL

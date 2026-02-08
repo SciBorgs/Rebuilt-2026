@@ -37,7 +37,7 @@ public class Fuel extends Projectile {
    * @see {@link #rotationalAcceleration() The Usage.}
    */
   private static final double VISCOUS_DRAG_CONSTANT =
-      -8 * Math.PI * Math.pow(FUEL_RADIUS, 3) * AIR_VISCOSITY * FRAME_LENGTH / FUEL_MASS;
+      -8 * Math.PI * Math.pow(FUEL_RADIUS, 3) * AIR_VISCOSITY / FUEL_MASS;
 
   @Override
   protected Vector<N3> acceleration() {
@@ -57,9 +57,9 @@ public class Fuel extends Projectile {
     Vector<N3> direction = new Rotation3d(velocity, Math.PI / 2).toVector();
     double magnusNorm =
         airSpeed * 4 * Math.pow(Math.PI, 2) * Math.pow(FUEL_RADIUS, 3) * angularSpeed * AIR_DENSITY;
-    Vector<N3> magnusLift = direction.unit().times(magnusNorm).div(FUEL_MASS).times(-1);
+    Vector<N3> magnusLift = direction.unit().times(magnusNorm).div(FUEL_MASS);
 
-    return gravity.plus(drag).minus(magnusLift);
+    return gravity.plus(drag).plus(magnusLift);
   }
 
   @Override

@@ -33,6 +33,12 @@
       "/SmartDashboard/Robot/hood/dynamic forward": "Command",
       "/SmartDashboard/Robot/hood/quasistatic backward": "Command",
       "/SmartDashboard/Robot/hood/quasistatic forward": "Command",
+      "/SmartDashboard/Robot/climb/measurement visualizer": "Mechanism2d",
+      "/SmartDashboard/Robot/climb/setpoint visualizer": "Mechanism2d",
+      "/SmartDashboard/Robot/elevator/dynamic backward": "Command",
+      "/SmartDashboard/Robot/elevator/dynamic forward": "Command",
+      "/SmartDashboard/Robot/elevator/quasistatic backward": "Command",
+      "/SmartDashboard/Robot/elevator/quasistatic forward": "Command",
       "/SmartDashboard/Scheduler": "Scheduler",
       "/SmartDashboard/Turret PID Controller": "ProfiledPIDController",
       "/SmartDashboard/Turret dynamic clockwise": "Command",
@@ -62,6 +68,7 @@
       "/SmartDashboard/turn quasistatic backward": "Command",
       "/SmartDashboard/turn quasistatic forward": "Command",
       "Robot/autos": "String Chooser",
+      "Robot/climb/pid": "ProfiledPIDController",
       "Robot/drive/rotationController": "PIDController",
       "Robot/drive/translationController": "ProfiledPIDController",
       "Robot/hood/fb": "ProfiledPIDController",
@@ -134,6 +141,16 @@
         "window": {
           "visible": true
         }
+      },
+      "/SmartDashboard/Robot/climb/measurement visualizer": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/Robot/climb/setpoint visualizer": {
+        "window": {
+          "visible": true
+        }
       }
     }
   },
@@ -148,6 +165,12 @@
         }
       },
       "Robot": {
+        "climb": {
+          "open": true,
+          "pid": {
+            "open": true
+          }
+        },
         "drive": {
           "Pose2d##v_/Robot/drive/getPose": {
             "Rotation2d##v_rotation": {
@@ -218,6 +241,7 @@
             },
             "open": true
           }
+          }
         },
         "open": true
       }
@@ -255,6 +279,41 @@
                 1.0
               ],
               "id": "NT:Robot/shooter/velocity"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "Plot": {
+    "Plot <0>": {
+      "plots": [
+        {
+          "backgroundColor": [
+            0.0,
+            0.0,
+            0.0,
+            0.8500000238418579
+          ],
+          "height": 326,
+          "series": [
+            {
+              "color": [
+                0.2980392277240753,
+                0.44705885648727417,
+                0.6901960968971252,
+                1.0
+              ],
+              "id": "NT:Robot/climb/position"
+            },
+            {
+              "color": [
+                0.8666667342185974,
+                0.5176470875740051,
+                0.32156863808631897,
+                1.0
+              ],
+              "id": "NT:Robot/climb/positionSetpoint"
             }
           ]
         }

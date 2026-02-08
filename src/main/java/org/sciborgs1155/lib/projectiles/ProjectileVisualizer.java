@@ -146,19 +146,18 @@ public abstract class ProjectileVisualizer {
    * @return A command to launch projectiles.
    */
   public Command launchProjectile() {
-    return Commands.deferredProxy(() -> Commands.runOnce(this::launch))
+    return Commands.deferredProxy(() -> Commands.runOnce(() -> launch(getLaunchableProjectile())))
         .andThen(Commands.waitSeconds(COOLDOWN))
         .withName("LAUNCH PROJECTILE");
   }
 
   /** Launches a single projectile from the robot. */
-  private void launch() {
-    getLaunchableProjectile()
-        .launch(
-            launchTranslation(robotPose.get()),
-            launchVelocity(robotPose.get(), robotVelocity.get()),
-            launchRotation(robotPose.get()),
-            launchRotationalVelocity(robotPose.get()));
+  private void launch(Projectile projectile) {
+    projectile.launch(
+        launchTranslation(robotPose.get()),
+        launchVelocity(robotPose.get(), robotVelocity.get()),
+        launchRotation(robotPose.get()),
+        launchRotationalVelocity(robotPose.get()));
   }
 
   /**
@@ -202,5 +201,24 @@ public abstract class ProjectileVisualizer {
     for (int index = 0; index < projectilePoses.length; index++)
       projectilePoses[index] = projectiles.get(index).pose();
     return projectilePoses;
+  }
+
+  /**
+   * Generates a list of poses that represent the trajectory of the projectile.
+   *
+   * @return The trajectory of the projectile (METERS).
+   */
+  public Pose3d[] trajectory() {
+    List<Pose3d> trajectory = new ArrayList<>();
+
+    Projectile projectile = createProjectile();
+    launch(projectile);
+
+    while (projectile.isBeingLaunched()) {
+      trajectory.add(projectile.pose());
+      projectile.nextFrame();
+    }
+
+    return trajectory.toArray(new Pose3d[0]);
   }
 }

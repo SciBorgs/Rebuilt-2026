@@ -17,58 +17,66 @@ public abstract class Projectile {
   /**
    * @see {@link #scored() The Usage. }
    */
-  protected boolean scored;
+  private boolean scored;
 
   /**
    * @see {@link #missed() The Usage. }
    */
-  protected boolean missed;
+  private boolean missed;
 
   /**
    * @see {@link #isBeingLaunched() The Usage. }
    */
-  protected boolean isBeingLaunched;
+  private boolean isBeingLaunched;
 
   /**
    * @see {@link #hasBeenLaunched() The Usage. }
    */
-  protected boolean hasBeenLaunched;
+  private boolean hasBeenLaunched;
 
   /**
    * @see {@link #scores() The Usage. }
    */
-  protected int scores;
+  private int scores;
 
   /**
    * @see {@link #misses() The Usage. }
    */
-  protected int misses;
+  private int misses;
 
-  /** The field-relative translation of the projectile (METERS). */
-  protected Vector<N3> translation = VecBuilder.fill(0, 0, 0);
+  /**
+   * @see {@link #translation() The Usage. }
+   */
+  private Vector<N3> translation = VecBuilder.fill(0, 0, 0);
 
-  /** The field-relative velocity of the projectile (METERS / FRAME). */
-  protected Vector<N3> velocity = VecBuilder.fill(0, 0, 0);
+  /**
+   * @see {@link #velocity() The Usage. }
+   */
+  private Vector<N3> velocity = VecBuilder.fill(0, 0, 0);
 
-  /** The rotation of the projectile (RADIANS). */
-  protected Vector<N3> rotation = VecBuilder.fill(0, 0, 0);
+  /**
+   * @see {@link #rotation() The Usage. }
+   */
+  private Vector<N3> rotation = VecBuilder.fill(0, 0, 0);
 
-  /** The rotational velocity of the projectile (RADIANS / FRAME). */
-  protected Vector<N3> rotationalVelocity = VecBuilder.fill(0, 0, 0);
+  /**
+   * @see {@link #rotationalVelocity() The Usage. }
+   */
+  private Vector<N3> rotationalVelocity = VecBuilder.fill(0, 0, 0);
 
   /**
    * The current acceleration of the projectile.
    *
    * @return The field-relative acceleration (METERS / FRAME^2).
    */
-  protected abstract Vector<N3> acceleration();
+  public abstract Vector<N3> acceleration();
 
   /**
    * The current rotational acceleration of the projectile.
    *
    * @return The acceleration (RADIANS / FRAME^2).
    */
-  protected abstract Vector<N3> rotationalAcceleration();
+  public abstract Vector<N3> rotationalAcceleration();
 
   /**
    * Displays the current pose of the projectile.
@@ -153,7 +161,7 @@ public abstract class Projectile {
    * @return If the projectile is destined to score, returns True. If not, or it is not
    *     determinable, return False.
    */
-  protected abstract boolean isScoring();
+  public abstract boolean isScoring();
 
   /**
    * True if the projectile scored it's latest shot.
@@ -179,7 +187,7 @@ public abstract class Projectile {
    * @return If the projectile is destined to miss, returns True. If not, or it is not determinable,
    *     return False.
    */
-  protected abstract boolean isMissing();
+  public abstract boolean isMissing();
 
   /**
    * True if the projectile missed it's latest shot.
@@ -215,5 +223,41 @@ public abstract class Projectile {
    */
   public boolean isBeingLaunched() {
     return isBeingLaunched;
+  }
+
+  /**
+   * The field-relative translation of the projectile.
+   *
+   * @return The field-relative translation of the projectile (METERS).
+   */
+  public Vector<N3> translation() {
+    return translation;
+  }
+
+  /**
+   * The field-relative velocity of the projectile.
+   *
+   * @return The field-relative velocity of the projectile (METERS / FRAME).
+   */
+  public Vector<N3> velocity() {
+    return velocity;
+  }
+
+  /**
+   * The field-relative rotation of the projectile.
+   *
+   * @return The field-relative rotation of the projectile (RADIANS).
+   */
+  public Vector<N3> rotation() {
+    return rotation;
+  }
+
+  /**
+   * The field-relative rotational velocity of the projectile.
+   *
+   * @return The field-relative rotational velocity of the projectile (RADIANS / FRAME).
+   */
+  public Vector<N3> rotationalVelocity() {
+    return rotationalVelocity;
   }
 }

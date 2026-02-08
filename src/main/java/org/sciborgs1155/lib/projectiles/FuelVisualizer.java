@@ -142,7 +142,10 @@ public class FuelVisualizer extends ProjectileVisualizer {
 
   @Override
   protected Vector<N3> launchRotation(Pose3d robotPose) {
-    return VecBuilder.fill(robotPose.getRotation().getX(),robotPose.getRotation().getY(),robotPose.getRotation().getZ());
+    return VecBuilder.fill(
+        robotPose.getRotation().getX(),
+        robotPose.getRotation().getY(),
+        robotPose.getRotation().getZ());
   }
 
   @Override

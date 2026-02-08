@@ -64,48 +64,28 @@ public final class VisionConstants {
       new CameraConfig(
           "cam 2 RENAME",
           78,
-          new Transform3d(
-              Inches.of(1),
-              Inches.of(1),
-              Inches.of(1),
-              new Rotation3d(Degrees.zero(), Degrees.of(-45), Degrees.zero())
-                  .rotateBy(new Rotation3d(Degrees.zero(), Degrees.zero(), Degrees.of(45)))),
+          new Transform3d(Inches.of(1), Inches.of(1), Inches.of(1), yawPitchRoll(0, 0, 180)),
           PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
 
   public static final CameraConfig CAMERA_3 =
       new CameraConfig(
           "cam 3 RENAME",
-          148,
-          new Transform3d(
-              Inches.of(1),
-              Inches.of(1),
-              Inches.of(1),
-              new Rotation3d(Degrees.zero(), Degrees.of(-45), Degrees.zero())
-                  .rotateBy(new Rotation3d(Degrees.zero(), Degrees.zero(), Degrees.of(45)))),
+          78,
+          new Transform3d(Inches.of(1), Inches.of(1), Inches.of(1), yawPitchRoll(0, 0, 180)),
           PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
 
   public static final CameraConfig CAMERA_4 =
       new CameraConfig(
           "cam 4 RENAME",
-          148,
-          new Transform3d(
-              Inches.of(1),
-              Inches.of(1),
-              Inches.of(1),
-              new Rotation3d(Degrees.zero(), Degrees.of(-45), Degrees.zero())
-                  .rotateBy(new Rotation3d(Degrees.zero(), Degrees.zero(), Degrees.of(45)))),
+          78,
+          new Transform3d(Inches.of(1), Inches.of(1), Inches.of(1), yawPitchRoll(0, 0, 180)),
           PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
 
   public static final CameraConfig CAMERA_5 =
       new CameraConfig(
           "cam 5 RENAME",
-          148,
-          new Transform3d(
-              Inches.of(1),
-              Inches.of(1),
-              Inches.of(1),
-              new Rotation3d(Degrees.zero(), Degrees.of(-45), Degrees.zero())
-                  .rotateBy(new Rotation3d(Degrees.zero(), Degrees.zero(), Degrees.of(45)))),
+          78,
+          new Transform3d(Inches.of(1), Inches.of(1), Inches.of(1), yawPitchRoll(0, 0, 180)),
           PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
 
   // Camera constants for our configuration

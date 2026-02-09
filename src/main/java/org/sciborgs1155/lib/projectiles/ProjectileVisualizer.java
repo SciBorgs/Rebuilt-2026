@@ -26,11 +26,8 @@ public abstract class ProjectileVisualizer {
   /** How fast the visualizer can launch projectiles (SECONDS / LAUNCH). */
   protected static final double COOLDOWN = 0.05;
 
-  /** The amount of times a projectile has been scored. */
-  private int scores;
-
-  /** The amount of times a projectile has not scored. */
-  private int misses;
+  /** The viscosity of the air (METER^2 / SECOND) */
+  protected static final double AIR_VISCOSITY = 0.0000151;
 
   /** When deleting projectiles, their points are stored here. */
   private int deletedScores;
@@ -44,34 +41,19 @@ public abstract class ProjectileVisualizer {
   /** All projectiles currently being simulated. */
   private final List<Projectile> projectiles;
 
-  /** A supplier for the current pose of the shooter (METERS). */
-  private final Supplier<Vector<N3>> projectileLaunchTranslation;
-
-  /** A supplier for the launch velocity of the projectile (METERS PER SECOND). */
-  private final Supplier<Vector<N3>> projectileLaunchVelocity;
-
   /** A supplier for the pose of the robot (METERS). */
   protected final Supplier<Pose3d> robotPose;
 
   /** A supplier for the pose of the robot (METERS). */
   protected final Supplier<ChassisSpeeds> robotVelocity;
 
-  /** The amount of times a projectile has been scored. */
-  protected int scores() {
-    return scores;
-  }
+  /** A 3D vector is arranged in the order [X Y Z]. */
+  @SuppressWarnings("PMD.OneDeclarationPerLine")
+  protected static final int X = 0, Y = 1, Z = 2;
 
-  /** The amount of times a projectile has not scored. */
-  protected int misses() {
-    return misses;
-  }
-
-  /**
-   * Calculates the launch speed of the projectile.
-   *
-   * @return The launch speed of the projectile (METERS PER SECOND).
-   */
-  protected abstract double launchSpeed();
+  /** A rotation vector is arranged in the order [ROLL PITCH YAW]. */
+  @SuppressWarnings("PMD.OneDeclarationPerLine")
+  protected static final int ROLL = 0, PITCH = 1, YAW = 2;
 
   /**
    * Calculates the launch translation of the projectile.
@@ -82,23 +64,30 @@ public abstract class ProjectileVisualizer {
   protected abstract Vector<N3> launchTranslation(Pose3d robotPose);
 
   /**
-   * Calculates the launch direction of the projectile.
-   *
-   * @param robotPose The current pose of the robot (METERS).
-   * @return The field-relative launch direction of the projectile (X, Y, and Z UNIT VECTOR).
-   */
-  protected abstract Vector<N3> launchDirection(Pose3d robotPose);
-
-  /**
-   * Calculates the velocity of the launch translation on the field (accounting for the velocity of
-   * the robot).
+   * Calculates the launch velocity of the projectile.
    *
    * @param robotPose The current pose of the robot (METERS). Necessary for calculation regarding
    *     rotational velocity.
    * @param robotVelocity The current velocity of the robot.
-   * @return The field-relative velocity of the launch translation origin (METERS PER SECOND).
+   * @return The field-relative launch velocity of the projectile (METERS / SECOND).
    */
-  protected abstract Vector<N3> launcherVelocity(Pose3d robotPose, ChassisSpeeds robotVelocity);
+  protected abstract Vector<N3> launchVelocity(Pose3d robotPose, ChassisSpeeds robotVelocity);
+
+  /**
+   * Calculates the launch rotation of the projectile.
+   *
+   * @param robotPose The current pose of the robot (METERS).
+   * @return The field-relative launch rotation of the projectile (RADIANS).
+   */
+  protected abstract Vector<N3> launchRotation(Pose3d robotPose);
+
+  /**
+   * Calculates the launch rotational velocity of the projectile.
+   *
+   * @param robotPose The current pose of the robot (METERS).
+   * @return The field-relative launch rotational velocity of the projectile (RADIANS / SECOND).
+   */
+  protected abstract Vector<N3> launchRotationalVelocity(Pose3d robotPose);
 
   /**
    * Creates and returns a new projectile instance.
@@ -118,38 +107,15 @@ public abstract class ProjectileVisualizer {
       Supplier<Pose3d> robotPoseSupplier, Supplier<ChassisSpeeds> robotVelocitySupplier) {
     robotPose = robotPoseSupplier;
     robotVelocity = robotVelocitySupplier;
-    projectileLaunchVelocity =
-        () ->
-            launchDirection(robotPose.get())
-                .times(launchSpeed())
-                .plus(launcherVelocity(robotPose.get(), robotVelocity.get()));
-    projectileLaunchTranslation = () -> launchTranslation(robotPose.get());
     projectiles = new ArrayList<>(1);
-  }
-
-  /**
-   * Launches a single projectile from the robot.
-   *
-   * @return A command to launch a projectile.
-   */
-  public Command launchProjectile() {
-    return Commands.deferredProxy(
-            () ->
-                Commands.runOnce(
-                    () ->
-                        getLaunchableProjectile()
-                            .launch(
-                                projectileLaunchTranslation.get(), projectileLaunchVelocity.get())))
-        .andThen(Commands.waitSeconds(COOLDOWN))
-        .withName("LAUNCH PROJECTILE");
   }
 
   /** Publishes the projectile display data to {@code NetworkTables}. */
   public void periodic() {
     Tracer.startTrace("Projectile Visualizer");
 
-    scores = deletedScores;
-    misses = deletedMisses;
+    int scores = deletedScores;
+    int misses = deletedMisses;
 
     for (int index = 0; index < projectiles.size(); index++) {
       // UPDATING SIMULATIONS
@@ -169,9 +135,29 @@ public abstract class ProjectileVisualizer {
 
     Tracer.endTrace();
 
-    LoggingUtils.log("Projectile Visualizer/Scores", scores());
-    LoggingUtils.log("Projectile Visualizer/Misses", misses());
+    LoggingUtils.log("Projectile Visualizer/Scores", scores);
+    LoggingUtils.log("Projectile Visualizer/Misses", misses);
     LoggingUtils.log("Projectile Visualizer/Projectile Poses", projectilePoses(), Pose3d.struct);
+  }
+
+  /**
+   * Launches projectiles from the robot for the duration of the command.
+   *
+   * @return A command to launch projectiles.
+   */
+  public Command launchProjectile() {
+    return Commands.deferredProxy(() -> Commands.runOnce(() -> launch(getLaunchableProjectile())))
+        .andThen(Commands.waitSeconds(COOLDOWN))
+        .withName("LAUNCH PROJECTILE");
+  }
+
+  /** Launches a single projectile from the robot. */
+  private void launch(Projectile projectile) {
+    projectile.launch(
+        launchTranslation(robotPose.get()),
+        launchVelocity(robotPose.get(), robotVelocity.get()),
+        launchRotation(robotPose.get()),
+        launchRotationalVelocity(robotPose.get()));
   }
 
   /**
@@ -215,5 +201,24 @@ public abstract class ProjectileVisualizer {
     for (int index = 0; index < projectilePoses.length; index++)
       projectilePoses[index] = projectiles.get(index).pose();
     return projectilePoses;
+  }
+
+  /**
+   * Generates a list of poses that represent the trajectory of the projectile.
+   *
+   * @return The trajectory of the projectile (METERS).
+   */
+  public Pose3d[] trajectory() {
+    List<Pose3d> trajectory = new ArrayList<>();
+
+    Projectile projectile = createProjectile();
+    launch(projectile);
+
+    while (projectile.isBeingLaunched()) {
+      trajectory.add(projectile.pose());
+      projectile.nextFrame();
+    }
+
+    return trajectory.toArray(new Pose3d[0]);
   }
 }

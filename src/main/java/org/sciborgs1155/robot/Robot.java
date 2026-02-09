@@ -41,6 +41,10 @@ import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
 import org.sciborgs1155.robot.drive.Drive;
+import org.sciborgs1155.robot.hood.Hood;
+import org.sciborgs1155.robot.shooter.Shooter;
+import org.sciborgs1155.robot.turret.Turret;
+import org.sciborgs1155.robot.vision.Vision;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -58,6 +62,10 @@ public class Robot extends CommandRobot {
 
   // SUBSYSTEMS
   private final Drive drive = Drive.create();
+  private final Hood hood = Hood.create();
+  private final Vision vision = Vision.create();
+  private final Shooter shooter = Shooter.create();
+  private final Turret turret = Turret.create();
 
   // COMMANDS
   private final Alignment align = new Alignment(drive);
@@ -67,9 +75,11 @@ public class Robot extends CommandRobot {
   private final MovingShooting movingShooting = new MovingShooting();
 
   @NotLogged
-  private final FuelVectorVisualizer fuelVisualizer =
-      new FuelVectorVisualizer(
-          () ->  movingShooting.calculate(FuelVectorVisualizer.shooterTranslation(drive.pose3d()), FuelVectorVisualizer.shooterVelocity(drive.fieldRelativeChassisSpeeds())),
+  private final FuelVisualizer fuelVisualizer =
+      new FuelVisualizer(
+          () -> RPM.of(2000),
+          () -> Degrees.zero(),
+          () -> Degrees.of(60),
           drive::pose3d,
           drive::fieldRelativeChassisSpeeds);
 

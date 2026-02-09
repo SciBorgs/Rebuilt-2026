@@ -52,7 +52,7 @@ public final class FieldConstants {
    * @return A Vector from the given spherical coordinates.
    */
   public static Vector<N3> fromSphericalCoords(double magnitude, Rotation3d direction) {
-    double theta = direction.toRotation2d().getRadians();
+    double theta = direction.getZ();
     double alpha = direction.getY();
 
     return VecBuilder.fill(
@@ -130,4 +130,7 @@ public final class FieldConstants {
   public static final Distance HUB_HEIGHT = Meters.of(1.8288);
   public static final Translation3d BLUE_HUB = new Translation3d(4.611624, 4.021328, 1.8288);
   public static final Translation2d RED_HUB = new Translation2d(11.901424, 4.021328);
+
+  public static final double FUEL_MASS = 0.225;
+  public static final double FUEL_RADIUS = 0.075;
 }

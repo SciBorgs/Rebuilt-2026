@@ -24,7 +24,11 @@ public final class TalonUtils {
   private static List<String> files =
       List.of(
           "Tidal Wave (simple).chrp", // Shiawase VIP (Dion Timmer), 7 tracks
-          "Tidal Wave (balanced).chrp" // Shiawase VIP (Dion Timmer), 7 tracks
+          "Tidal Wave (balanced).chrp", // Shiawase VIP (Dion Timmer), 7 tracks
+          "Grief (simple).chrp", // Stalemate (KzX), 8 tracks
+          "Grief (balanced).chrp", // Stalemate (KzX), 8 tracks
+          "Limbo (simple).chrp", // Isolation (NightHawk22), 8 tracks
+          "Limbo (balanced).chrp" // Isolation (NightHawk22), 8 tracks
           );
   private static SendableChooser<Runnable> songChooser = new SendableChooser<>();
 
@@ -86,7 +90,7 @@ public final class TalonUtils {
     int i = 0;
     for (TalonFX talon : TALONS) {
       talon.getConfigurator().apply(audioCfg);
-      ORCHESTRA.addInstrument(talon, i % 7);
+      ORCHESTRA.addInstrument(talon, i % 8);
       i++;
     }
   }

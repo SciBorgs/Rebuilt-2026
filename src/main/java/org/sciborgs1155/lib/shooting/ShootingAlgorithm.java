@@ -1,7 +1,6 @@
 package org.sciborgs1155.lib.shooting;
 
 import edu.wpi.first.math.Vector;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;

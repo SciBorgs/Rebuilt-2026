@@ -3,17 +3,12 @@ package org.sciborgs1155.lib.shooting;
 import static java.lang.Math.PI;
 import static java.lang.Math.atan;
 import static java.lang.Math.pow;
-import static java.lang.Math.sin;
 import static java.lang.Math.sqrt;
 import static org.sciborgs1155.robot.FieldConstants.BLUE_HUB;
-
-import java.util.function.DoubleBinaryOperator;
-
 import org.sciborgs1155.lib.LoggingUtils;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
@@ -21,7 +16,7 @@ import edu.wpi.first.math.numbers.N3;
 public class MovingShooting implements ShootingAlgorithm {
 
   // constants
-  final double launchSpeed = 10;
+  final double launchSpeed = 7;
 
   @Override
   public Vector<N3> calculate(Translation3d pose, Vector<N2> velocity) {

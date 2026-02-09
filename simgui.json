@@ -22,16 +22,16 @@
       "/SmartDashboard/Drive Field": "Field2d",
       "/SmartDashboard/PathPlanner": "Alerts",
       "/SmartDashboard/PhotonAlerts": "Alerts",
-      "/SmartDashboard/Robot/hood/dynamic backward": "Command",
-      "/SmartDashboard/Robot/hood/dynamic forward": "Command",
-      "/SmartDashboard/Robot/hood/quasistatic backward": "Command",
-      "/SmartDashboard/Robot/hood/quasistatic forward": "Command",
       "/SmartDashboard/Robot/climb/measurement visualizer": "Mechanism2d",
       "/SmartDashboard/Robot/climb/setpoint visualizer": "Mechanism2d",
       "/SmartDashboard/Robot/elevator/dynamic backward": "Command",
       "/SmartDashboard/Robot/elevator/dynamic forward": "Command",
       "/SmartDashboard/Robot/elevator/quasistatic backward": "Command",
       "/SmartDashboard/Robot/elevator/quasistatic forward": "Command",
+      "/SmartDashboard/Robot/hood/dynamic backward": "Command",
+      "/SmartDashboard/Robot/hood/dynamic forward": "Command",
+      "/SmartDashboard/Robot/hood/quasistatic backward": "Command",
+      "/SmartDashboard/Robot/hood/quasistatic forward": "Command",
       "/SmartDashboard/Scheduler": "Scheduler",
       "/SmartDashboard/Turret PID Controller": "ProfiledPIDController",
       "/SmartDashboard/Turret dynamic clockwise": "Command",
@@ -64,7 +64,9 @@
       "Robot/climb/pid": "ProfiledPIDController",
       "Robot/drive/rotationController": "PIDController",
       "Robot/drive/translationController": "ProfiledPIDController",
-      "Robot/hood/fb": "ProfiledPIDController"
+      "Robot/hood/fb": "ProfiledPIDController",
+      "Robot/shooter/controller": "PIDController",
+      "Robot/turret/controller": "ProfiledPIDController"
     },
     "windows": {
       "/Robot/drive/field2d": {

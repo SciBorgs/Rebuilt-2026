@@ -34,8 +34,8 @@ import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.lib.Tracer;
+import org.sciborgs1155.lib.projectiles.FuelVectorVisualizer;
 import org.sciborgs1155.lib.projectiles.FuelVisualizer;
-import org.sciborgs1155.lib.projectiles.FuelVisualizer.FuelVectorVisualizer;
 import org.sciborgs1155.lib.shooting.MovingShooting;
 import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.commands.Alignment;
@@ -75,13 +75,11 @@ public class Robot extends CommandRobot {
   private final MovingShooting movingShooting = new MovingShooting();
 
   @NotLogged
-  private final FuelVisualizer fuelVisualizer =
-      new FuelVisualizer(
-          () -> RPM.of(2000),
-          () -> Degrees.zero(),
-          () -> Degrees.of(60),
-          drive::pose3d,
-          drive::fieldRelativeChassisSpeeds);
+  private final FuelVectorVisualizer fuelVisualizer =
+      new FuelVectorVisualizer(
+      () -> movingShooting.calculate(FuelVectorVisualizer.shooterTranslation(drive.pose3d()), FuelVectorVisualizer.shooterVelocity(drive.pose3d(), drive.fieldRelativeChassisSpeeds())),
+      drive::pose3d,
+      drive::fieldRelativeChassisSpeeds);
 
   @Logged private double speedMultiplier = Constants.FULL_SPEED_MULTIPLIER;
 

@@ -13,7 +13,8 @@ import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.lib.TalonUtils;
 
 public class RealWheel implements WheelIO {
-  private final TalonFX leader, follower;
+  private final TalonFX leader;
+  private final TalonFX follower;
 
   /** Sets the TalonFX motor configurations */
   public RealWheel() {

@@ -35,11 +35,12 @@ public class Intake extends SubsystemBase implements AutoCloseable {
   /**
    * @return a simple motor that will run the rollers
    */
-  public static SimpleMotor realMotor() {
+  private static SimpleMotor realMotor() {
     final TalonFX motor = new TalonFX(ROLLERS);
     TalonFXConfiguration config = new TalonFXConfiguration();
     config.CurrentLimits.SupplyCurrentLimit = CURRENT_LIMIT.in(Amps);
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    config.Feedback.SensorToMechanismRatio = GEARING;
     return SimpleMotor.talon(motor, config);
   }
 

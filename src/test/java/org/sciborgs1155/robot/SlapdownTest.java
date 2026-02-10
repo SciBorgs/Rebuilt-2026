@@ -15,8 +15,6 @@ import org.sciborgs1155.robot.slapdown.Slapdown;
 public class SlapdownTest {
   private Slapdown slapdown;
 
-  private static final double TOLERANCE = 0.1;
-
   /** make the slapdown */
   @BeforeEach
   public void setup() {

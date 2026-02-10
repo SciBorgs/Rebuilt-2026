@@ -77,8 +77,8 @@ public class Robot extends CommandRobot {
 
   @Logged
   private final Slapdown slapdown =
-      switch (ROBOT_TYPE.get()) {
-        case FULL, CHASSIS -> Slapdown.create();
+      switch (ROBOT_TYPE) {
+        case FULL -> Slapdown.create();
         default -> Slapdown.none();
       };
 

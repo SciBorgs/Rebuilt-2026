@@ -2,7 +2,9 @@ package org.sciborgs1155.robot.slapdown;
 
 import static edu.wpi.first.units.Units.Radians;
 import static org.sciborgs1155.robot.slapdown.SlapdownConstants.*;
+import org.sciborgs1155.lib.Tuning;
 
+import edu.wpi.first.networktables.DoubleEntry;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
@@ -14,6 +16,7 @@ import org.sciborgs1155.lib.Assertion;
 import org.sciborgs1155.lib.Assertion.EqualityAssertion;
 import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.robot.Robot;
+import static org.sciborgs1155.robot.Constants.*;
 
 @Logged
 public class Slapdown extends SubsystemBase implements AutoCloseable {
@@ -23,6 +26,15 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
   private final ProfiledPIDController pid = new ProfiledPIDController(P, I, D, CONSTRAINTS);
 
   private final ArmFeedforward ff = new ArmFeedforward(S, G, V, A);
+
+  private final DoubleEntry tuningP = Tuning.entry("Robot/tuning/tuningP", P);
+  private final DoubleEntry tuningI = Tuning.entry("Robot/tuning/tuningI", I);
+  private final DoubleEntry tuningD = Tuning.entry("Robot/tuning/tuningD", D);
+  
+  private final DoubleEntry tuningS = Tuning.entry("Robot/tuning/tuningS", S);
+  private final DoubleEntry tuningG = Tuning.entry("Robot/tuning/tuningG", G);
+  private final DoubleEntry tuningV = Tuning.entry("Robot/tuning/tuningV", V);
+  private final DoubleEntry tuningA = Tuning.entry("Robot/tuning/tuningA", A);
 
   /**
    * @param hardware the hardware is the object that will be operated on
@@ -115,5 +127,20 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
   }
 
   @Override
-  public void close() throws Exception {}
+  public void periodic(){
+    if (TUNING.get()){
+      pid.setP(tuningP.get());
+      pid.setI(tuningI.get());
+      pid.setD(tuningD.get());
+      ff.setKg(tuningG.get());
+      ff.setKa(tuningA.get());
+      ff.setKv(tuningV.get());
+      ff.setKs(tuningS.get());
+    }
+  }
+
+  @Override
+  public void close() throws Exception {
+    hardware.close();
+  }
 }

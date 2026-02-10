@@ -7,7 +7,7 @@ import static org.sciborgs1155.robot.slapdown.SlapdownConstants.*;
 
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 
-public class SimSlapdown implements SlapdownIO, AutoCloseable {
+public class SimSlapdown implements SlapdownIO{
   private final SingleJointedArmSim sim =
       new SingleJointedArmSim(
           GEARBOX,
@@ -17,8 +17,7 @@ public class SimSlapdown implements SlapdownIO, AutoCloseable {
           MIN_ANGLE.in(Radians),
           MAX_ANGLE.in(Radians),
           true,
-          START_ANGLE.in(Radians),
-          MEASUREMENT_STDEVS);
+          START_ANGLE.in(Radians));
 
   // set the voltage of the slapdown
   @Override

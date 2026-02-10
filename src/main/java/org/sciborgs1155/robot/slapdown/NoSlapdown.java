@@ -9,4 +9,7 @@ public class NoSlapdown implements SlapdownIO {
   public double position() {
     return 0;
   }
+
+  @Override
+  public void close() throws Exception{}
 }

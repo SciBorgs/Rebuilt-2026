@@ -23,7 +23,6 @@ public class RealSlapdown implements SlapdownIO, AutoCloseable {
 
     TalonFXConfiguration motorConfig = new TalonFXConfiguration();
 
-    // TODO Define confi
     motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     motorConfig.CurrentLimits.SupplyCurrentLimit = CURRENT_LIMIT.in(Amps);
 
@@ -31,14 +30,14 @@ public class RealSlapdown implements SlapdownIO, AutoCloseable {
     FaultLogger.register(motor);
   }
 
-  @Override
   // extending/retracting the intake
+  @Override
   public void setVoltage(double voltage) {
     motor.setVoltage(voltage);
   }
 
-  @Override
   // getting position of the intake (extended or retracted)
+  @Override
   public double position() {
     return motor.getPosition().getValue().in(Radians);
   }

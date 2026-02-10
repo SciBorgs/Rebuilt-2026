@@ -29,7 +29,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
    *     simulate the arm
    */
   public static Intake create() {
-    return Robot.isReal() ? new Intake(realMotor()) : new Intake(SimpleMotor.none());
+    return Robot.isReal() ? new Intake(realMotor()) : none();
   }
 
   /**

@@ -32,6 +32,7 @@ import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.lib.Tracer;
+import org.sciborgs1155.lib.projectiles.FuelTrajectoryVisualizer;
 import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
@@ -64,6 +65,9 @@ public class Robot extends CommandRobot {
 
   // COMMANDS
   private final Alignment align = new Alignment(drive);
+  private final FuelTrajectoryVisualizer visualizer =
+      new FuelTrajectoryVisualizer(
+          () -> new double[] {5, 0, 5}, drive::pose3d, drive::fieldRelativeChassisSpeeds);
 
   @NotLogged private final SendableChooser<Command> autos = Autos.configureAutos(drive);
 
@@ -99,7 +103,7 @@ public class Robot extends CommandRobot {
     SmartDashboard.putData("Auto Chooser", autos);
 
     // Configure pose estimation updates every tick
-
+    addPeriodic(visualizer::periodic, PERIOD);
     RobotController.setBrownoutVoltage(6.0);
 
     if (isReal()) {

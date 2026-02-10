@@ -53,12 +53,21 @@ public class FuelTrajectoryVisualizer extends TrajectoryVisualizer {
   }
 
   @Override
-  protected void logToNetworkTables() {
+  public void periodic() {
     Tracer.startTrace("Fuel Trajectory Generation");
+    super.periodic();
+    Tracer.endTrace();
+  }
+
+  @Override
+  protected void logToNetworkTables() {
     LoggingUtils.log("Fuel Visualizer/Score", scores());
     LoggingUtils.log("Fuel Visualizer/Miss", misses());
     LoggingUtils.log(
-        "Fuel Visualizer/Trajectory", trajectory(true, false, false, false), Pose3d.struct);
-    Tracer.endTrace();
+        "Fuel Visualizer/Trajectory(No Drag)",
+        trajectory(true, false, false, false),
+        Pose3d.struct);
+    LoggingUtils.log(
+        "Fuel Visualizer/Trajectory(Drag)", trajectory(true, true, false, false), Pose3d.struct);
   }
 }

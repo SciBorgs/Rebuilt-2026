@@ -5,7 +5,9 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 
 public abstract class Projectile {
-  public static final int RESOLUTION = 50;
+  protected static final int RESOLUTION = 50;
+  protected static final double AIR_DENSITY = 1.225;
+
   public static final int X = 0, Y = 1, Z = 2;
   protected boolean gravityEnabled, dragEnabled, torqueEnabled, liftEnabled;
   protected double[] translation, velocity, acceleration;

@@ -18,6 +18,9 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 
 public class Fuel extends Projectile {
+  public static final double DRAG_CONSTANT =
+      0.5 * 0.47 * AIR_DENSITY * Math.PI * FUEL_RADIUS * FUEL_RADIUS;
+
   private static double launchSpeed(double wheelVelocity) {
     // SOURCE: https://www.chiefdelphi.com/t/new-flywheel-shooter-analysis/439111/4
     return wheelVelocity / 500; // TODO: Implement.
@@ -120,9 +123,13 @@ public class Fuel extends Projectile {
   }
 
   @Override
-  protected double[] drag() { // TODO: Implement.
+  protected double[] drag() {
     // SOURCE: https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/drag-of-a-sphere/
-    return new double[] {0, 0, 0};
+    return new double[] {
+      velocity[X] * velocity[X] * DRAG_CONSTANT,
+      velocity[Y] * velocity[Y] * DRAG_CONSTANT,
+      velocity[Z] * velocity[Z] * DRAG_CONSTANT
+    };
   }
 
   @Override

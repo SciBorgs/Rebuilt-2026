@@ -34,7 +34,10 @@ import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.lib.Tracer;
+import org.sciborgs1155.lib.projectiles.Fuel;
+import org.sciborgs1155.lib.projectiles.FuelLaunchVisualizer;
 import org.sciborgs1155.lib.projectiles.FuelTrajectoryVisualizer;
+import org.sciborgs1155.lib.shooting.MovingShooting;
 import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
@@ -74,6 +77,14 @@ public class Robot extends CommandRobot {
   @NotLogged private final SendableChooser<Command> autos = Autos.configureAutos(drive);
 
   private final MovingShooting movingShooting = new MovingShooting();
+
+  // @NotLogged
+  // private final FuelLaunchVisualizer fuelVisualizer =
+  //     new FuelLaunchVisualizer(
+  //     () -> movingShooting.calculate(Fuel.
+  //     drive::pose3d,
+  //     drive::fieldRelativeChassisSpeeds);
+
 
   @Logged private double speedMultiplier = Constants.FULL_SPEED_MULTIPLIER;
 

@@ -64,7 +64,7 @@
       <property name="classCommentRequirement" value="ignored" />
       <property name="fieldCommentRequirement" value="ignored" />
       <property name="publicMethodCommentRequirement"
-        value="Required" />
+        value="required" />
       <property name="protectedMethodCommentRequirement"
         value="ignored" />
       <property name="enumCommentRequirement" value="ignored" />

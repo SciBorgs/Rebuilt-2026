@@ -12,7 +12,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.lib.TalonUtils;
 
-public class RealSlapdown implements SlapdownIO{
+public class RealSlapdown implements SlapdownIO {
   private final TalonFX motor;
 
   /** Configures the motors */

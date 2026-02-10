@@ -11,5 +11,5 @@ public class NoSlapdown implements SlapdownIO {
   }
 
   @Override
-  public void close() throws Exception{}
+  public void close() throws Exception {}
 }

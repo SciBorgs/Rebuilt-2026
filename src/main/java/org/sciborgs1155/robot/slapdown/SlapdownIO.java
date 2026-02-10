@@ -1,6 +1,6 @@
 package org.sciborgs1155.robot.slapdown;
 
-public interface SlapdownIO extends AutoCloseable{
+public interface SlapdownIO extends AutoCloseable {
 
   /**
    * @param voltage of the intake extending (which is an arm)
@@ -13,5 +13,6 @@ public interface SlapdownIO extends AutoCloseable{
   double position();
 
   /** close the motors */
+  @Override
   void close() throws Exception;
 }

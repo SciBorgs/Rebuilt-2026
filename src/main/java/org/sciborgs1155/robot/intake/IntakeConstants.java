@@ -11,8 +11,8 @@ public class IntakeConstants {
    * <p>You probably what the angular to linear scaling factors in here based on the dimensions
    * later
    */
-  public static final Current CURRENT_LIMIT = Amps.of(5);
+  public static final Current CURRENT_LIMIT = Amps.of(30);
 
   public static final double INTAKE_POWER = 0.5;
-  public static final double GEARING = 5;
+  public static final double GEARING = 2;
 }

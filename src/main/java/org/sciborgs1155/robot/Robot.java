@@ -49,8 +49,8 @@ import org.sciborgs1155.robot.commands.Autos;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.hood.Hood;
 import org.sciborgs1155.robot.shooter.Shooter;
-import org.sciborgs1155.robot.turret.Turret;
 import org.sciborgs1155.robot.slapdown.Slapdown;
+import org.sciborgs1155.robot.turret.Turret;
 import org.sciborgs1155.robot.vision.Vision;
 
 /**
@@ -82,6 +82,7 @@ public class Robot extends CommandRobot {
   @Logged private double speedMultiplier = FULL_SPEED_MULTIPLIER;
 
   @Logged
+  @SuppressWarnings("PMD.TooFewBranchesForSwitch") // will be more values in the future
   private final Slapdown slapdown =
       switch (ROBOT_TYPE) {
         case FULL -> Slapdown.create();

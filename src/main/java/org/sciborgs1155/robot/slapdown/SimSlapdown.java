@@ -1,5 +1,6 @@
 package org.sciborgs1155.robot.slapdown;
 
+import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Seconds;
 import static org.sciborgs1155.robot.Constants.PERIOD;
@@ -7,13 +8,13 @@ import static org.sciborgs1155.robot.slapdown.SlapdownConstants.*;
 
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 
-public class SimSlapdown implements SlapdownIO{
+public class SimSlapdown implements SlapdownIO {
   private final SingleJointedArmSim sim =
       new SingleJointedArmSim(
           GEARBOX,
           GEARING,
           MOI,
-          LENGTH,
+          LENGTH.in(Meters),
           MIN_ANGLE.in(Radians),
           MAX_ANGLE.in(Radians),
           true,

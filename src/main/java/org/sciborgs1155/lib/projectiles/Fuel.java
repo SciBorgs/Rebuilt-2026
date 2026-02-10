@@ -60,7 +60,7 @@ public class Fuel extends Projectile {
         airSpeed * 4 * Math.pow(Math.PI, 2) * Math.pow(FUEL_RADIUS, 3) * angularSpeed * AIR_DENSITY;
     Vector<N3> magnusLift = direction.unit().times(magnusNorm).div(FUEL_MASS);
 
-    return gravity.plus(drag).plus(magnusLift);
+    return gravity.plus(drag);
   }
 
   @Override

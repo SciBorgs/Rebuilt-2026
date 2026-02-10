@@ -57,7 +57,8 @@ public final class Ports {
   }
 
   public static final class Shooter {
-    public static final int SHOOTER_MOTOR = 30; // placeholder
+    public static final int LEADER = 30; // placeholder
+    public static final int FOLLOWER = 31; // placeholder
   }
 
   public static final class Hood {

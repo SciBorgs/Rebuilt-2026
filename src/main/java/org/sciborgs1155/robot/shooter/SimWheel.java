@@ -14,7 +14,7 @@ public class SimWheel implements WheelIO {
   /** Creates an instance of the flywheel motor. */
   public SimWheel() {
     flywheel =
-        new FlywheelSim(LinearSystemId.identifyVelocitySystem(V, A), DCMotor.getKrakenX60(1));
+        new FlywheelSim(LinearSystemId.identifyVelocitySystem(V, A), DCMotor.getKrakenX60(2));
   }
 
   /**

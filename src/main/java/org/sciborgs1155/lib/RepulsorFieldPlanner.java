@@ -24,7 +24,7 @@ import org.sciborgs1155.robot.FieldConstants;
  * <p>Taken directly from 6995's code. Big thanks! :D
  */
 public class RepulsorFieldPlanner {
-  abstract static class Obstacle {
+  public abstract static class Obstacle {
     double strength;
     boolean positive;
 
@@ -69,7 +69,7 @@ public class RepulsorFieldPlanner {
     }
   }
 
-  static class PointObstacle extends Obstacle {
+  public static class PointObstacle extends Obstacle {
     Translation2d loc;
     double radius = 0.5;
     static final int MAX_DIST = 4;
@@ -113,7 +113,7 @@ public class RepulsorFieldPlanner {
     }
   }
 
-  static class CircleObstacle extends Obstacle {
+  public static class CircleObstacle extends Obstacle {
     Translation2d loc;
     double radius;
 
@@ -169,7 +169,7 @@ public class RepulsorFieldPlanner {
     }
   }
 
-  static class HorizontalObstacle extends Obstacle {
+  public static class HorizontalObstacle extends Obstacle {
     double y;
 
     /**
@@ -190,7 +190,7 @@ public class RepulsorFieldPlanner {
     }
   }
 
-  static class VerticalObstacle extends Obstacle {
+  public static class VerticalObstacle extends Obstacle {
     double x;
 
     /**

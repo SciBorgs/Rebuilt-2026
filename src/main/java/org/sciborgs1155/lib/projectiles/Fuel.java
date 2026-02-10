@@ -158,7 +158,7 @@ public class Fuel extends Projectile {
     double verticalDisplacement = HUB_HEIGHT.in(Meters) - translation[Z];
 
     // FUEL MUST BE CLOSE TO THE HUB ON THE 2D PLANE
-    double scoreRadius = FUEL_RADIUS + HUB_DIAMETER.in(Meters) / 2;
+    double scoreRadius = (FUEL_RADIUS + HUB_DIAMETER.in(Meters) / 2) + 0.5;
 
     return (verticalDisplacement < 0)
         && (verticalDisplacement > -FUEL_RADIUS)

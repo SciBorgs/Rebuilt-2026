@@ -27,6 +27,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+
+import java.lang.constant.DirectMethodHandleDesc;
 import java.util.Set;
 import org.littletonrobotics.urcl.URCL;
 import org.sciborgs1155.lib.CommandRobot;
@@ -37,6 +39,7 @@ import org.sciborgs1155.lib.Tracer;
 import org.sciborgs1155.lib.projectiles.Fuel;
 import org.sciborgs1155.lib.projectiles.FuelLaunchVisualizer;
 import org.sciborgs1155.lib.projectiles.FuelTrajectoryVisualizer;
+import org.sciborgs1155.lib.projectiles.LaunchVisualizer;
 import org.sciborgs1155.lib.shooting.MovingShooting;
 import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.commands.Alignment;
@@ -70,20 +73,17 @@ public class Robot extends CommandRobot {
 
   // COMMANDS
   private final Alignment align = new Alignment(drive);
-  private final FuelTrajectoryVisualizer visualizer =
-      new FuelTrajectoryVisualizer(
-          () -> new double[] {5, 0, 5}, drive::pose3d, drive::fieldRelativeChassisSpeeds);
 
   @NotLogged private final SendableChooser<Command> autos = Autos.configureAutos(drive);
 
   private final MovingShooting movingShooting = new MovingShooting();
 
-  // @NotLogged
-  // private final FuelLaunchVisualizer fuelVisualizer =
-  //     new FuelLaunchVisualizer(
-  //     () -> movingShooting.calculate(Fuel.
-  //     drive::pose3d,
-  //     drive::fieldRelativeChassisSpeeds);
+  @NotLogged
+  private final LaunchVisualizer visualizer =
+      new FuelLaunchVisualizer(movingShooting, drive).config(true, false
+        , false, false);
+
+  
 
 
   @Logged private double speedMultiplier = Constants.FULL_SPEED_MULTIPLIER;
@@ -209,6 +209,9 @@ public class Robot extends CommandRobot {
         .or(driver.rightBumper())
         .onTrue(Commands.runOnce(() -> speedMultiplier = Constants.SLOW_SPEED_MULTIPLIER))
         .onFalse(Commands.runOnce(() -> speedMultiplier = Constants.FULL_SPEED_MULTIPLIER));
+
+    operator.a().whileTrue(visualizer.launchProjectile());
+    
   }
 
   /**

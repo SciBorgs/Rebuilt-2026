@@ -50,7 +50,7 @@ public class MovingShooting implements ShootingAlgorithm {
     LoggingUtils.log("Height", H);
 
     Vector<N3> directShotVelocity = VecBuilder.fill(finalX, finalY, finalZ);
-    Vector<N3> shotVelocity = directShotVelocity;
+    Vector<N3> shotVelocity = directShotVelocity.minus(VecBuilder.fill(velocity.get(0), velocity.get(1), 0));
 
     return shotVelocity;
   }

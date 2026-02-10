@@ -32,7 +32,6 @@ import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.lib.Tracer;
-import org.sciborgs1155.lib.projectiles.FuelVisualizer;
 import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
@@ -68,15 +67,6 @@ public class Robot extends CommandRobot {
 
   @NotLogged private final SendableChooser<Command> autos = Autos.configureAutos(drive);
 
-  @NotLogged
-  private final FuelVisualizer fuelVisualizer =
-      new FuelVisualizer(
-          () -> RPM.of(2000),
-          () -> Degrees.zero(),
-          () -> Degrees.of(60),
-          drive::pose3d,
-          drive::fieldRelativeChassisSpeeds);
-
   @Logged private double speedMultiplier = Constants.FULL_SPEED_MULTIPLIER;
 
   /** The robot contains subsystems, OI devices, and commands. */
@@ -109,7 +99,6 @@ public class Robot extends CommandRobot {
     SmartDashboard.putData("Auto Chooser", autos);
 
     // Configure pose estimation updates every tick
-    addPeriodic(fuelVisualizer::periodic, PERIOD);
 
     RobotController.setBrownoutVoltage(6.0);
 
@@ -180,9 +169,6 @@ public class Robot extends CommandRobot {
         .or(driver.rightBumper())
         .onTrue(Commands.runOnce(() -> speedMultiplier = Constants.SLOW_SPEED_MULTIPLIER))
         .onFalse(Commands.runOnce(() -> speedMultiplier = Constants.FULL_SPEED_MULTIPLIER));
-
-    operator.a().onTrue(fuelVisualizer.launchProjectile());
-    operator.a().whileTrue(Commands.repeatingSequence(fuelVisualizer.launchProjectile()));
   }
 
   /**

@@ -9,6 +9,7 @@ import static org.sciborgs1155.robot.shooter.ShooterConstants.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.Timeout;
 import org.sciborgs1155.robot.shooter.Shooter;
 
 public class ShooterTest {
@@ -36,6 +37,7 @@ public class ShooterTest {
    *
    * @throws Exception
    */
+  @Timeout(5)
   @RepeatedTest(5)
   public void randVelocity() throws Exception {
     double val = Math.random();

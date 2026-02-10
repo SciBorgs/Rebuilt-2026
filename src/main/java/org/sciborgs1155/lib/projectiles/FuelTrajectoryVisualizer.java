@@ -6,6 +6,8 @@ import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.lib.Tracer;
+import org.sciborgs1155.lib.shooting.ShootingAlgorithm;
+import org.sciborgs1155.robot.drive.Drive;
 
 public class FuelTrajectoryVisualizer extends TrajectoryVisualizer {
   public FuelTrajectoryVisualizer(
@@ -25,6 +27,16 @@ public class FuelTrajectoryVisualizer extends TrajectoryVisualizer {
         () -> Fuel.launchVelocity(launchVelocity.get(), robotPose.get(), robotVelocity.get()),
         () -> Fuel.launchRotation(robotPose.get()),
         () -> Fuel.launchRotationalVelocity(robotPose.get()));
+  }
+
+  public FuelTrajectoryVisualizer(
+      ShootingAlgorithm shootingAlgorithm,
+      Drive drivetrain) {
+    super(
+        () -> Fuel.launchTranslation(shootingAlgorithm.calculateToDoubleArray(drivetrain.pose3d(), drivetrain.fieldRelativeChassisSpeeds()), drivetrain.pose3d()),
+        () -> Fuel.launchVelocity(shootingAlgorithm.calculateToDoubleArray(drivetrain.pose3d(), drivetrain.fieldRelativeChassisSpeeds()), drivetrain.pose3d(),drivetrain.fieldRelativeChassisSpeeds()),
+        () -> Fuel.launchRotation(drivetrain.pose3d()),
+        () -> Fuel.launchRotationalVelocity(drivetrain.pose3d()));
   }
 
   public FuelTrajectoryVisualizer(

@@ -18,7 +18,9 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 
 public class Fuel extends Projectile {
-  public static final double DRAG_CONSTANT =
+  private static final double SCORE_TOLERANCE = 0;
+
+  private static final double DRAG_CONSTANT =
       0.5 * 0.47 * AIR_DENSITY * Math.PI * FUEL_RADIUS * FUEL_RADIUS;
 
   private static double launchSpeed(double wheelVelocity) {
@@ -154,16 +156,12 @@ public class Fuel extends Projectile {
     double distanceFromRedHub =
         Math.hypot(translation[X] - RED_HUB.getX(), translation[Y] - RED_HUB.getY());
 
-    // FUEL MUST BE DIRECTLY ABOVE THE HUB
     double verticalDisplacement = HUB_HEIGHT.in(Meters) - translation[Z];
-
-    // FUEL MUST BE CLOSE TO THE HUB ON THE 2D PLANE
-    double scoreRadius = FUEL_RADIUS + HUB_DIAMETER.in(Meters) / 2;
+    double scoreRadius = SCORE_TOLERANCE + FUEL_RADIUS + HUB_DIAMETER.in(Meters) / 2;
 
     return (verticalDisplacement < 0)
         && (verticalDisplacement > -FUEL_RADIUS)
-        && (distanceFromBlueHub < scoreRadius || distanceFromRedHub < scoreRadius)
-        // FUEL MUST HAVE A DOWNWARD VELOCITY
+        && (distanceFromBlueHub <= scoreRadius || distanceFromRedHub <= scoreRadius)
         && velocity[Z] < 0;
   }
 

@@ -130,6 +130,17 @@ public final class FieldConstants {
   public static final Translation2d BLUE_HUB = new Translation2d(4.611624, 4.021328);
   public static final Translation2d RED_HUB = new Translation2d(11.901424, 4.021328);
 
+  /**
+   * Determines the closest Hub to the specified pose.
+   * 
+   * @param pose The pose to check.
+   * @return The translation of the nearest Hub.
+   */
+  public static Translation2d nearestHub(Pose2d pose) {
+    if (pose.getTranslation().getDistance(BLUE_HUB) < pose.getTranslation().getDistance(BLUE_HUB)) return BLUE_HUB;
+    return RED_HUB;
+  }
+
   public static final double FUEL_MASS = 0.225;
   public static final double FUEL_RADIUS = 0.075;
 }

@@ -20,6 +20,7 @@ import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import java.util.function.Supplier;
+import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.lib.Tuning;
 import org.sciborgs1155.lib.projectiles.FuelVisualizer;
@@ -111,11 +112,17 @@ public class Shooting {
    *
    * @return
    */
-  public Command shootHub() {
+  public Command shootHubDriving(InputStream vx, InputStream vy) {
     return Commands.waitUntil(() -> shooter.atSetpoint() && hood.atGoal() && turret.atGoal())
-        .andThen(hopper.intake().alongWith(indexer.forward()))
-        .deadlineFor(runShooterSuperstructure(() -> calculateShot(HUB_TARGET)))
-        .alongWith(Commands.repeatingSequence(fuelVisualizer.launchProjectile()));
+        .andThen(
+            hopper
+                .intake()
+                .alongWith(indexer.forward())
+                .alongWith(fuelVisualizer.launchProjectile()))
+        .withTimeout(.2)
+        .deadlineFor(
+            runShooterSuperstructure(() -> calculateShot(HUB_TARGET))
+                .alongWith(drive.drive(vx.scale(.25), vy.scale(.5), () -> 0)));
   }
 
   private Command runShooterSuperstructure(Supplier<ShooterParams> params) {
@@ -155,12 +162,11 @@ public class Shooting {
    */
   private ShooterParams calculateShot(Translation2d target) {
     Pose2d turretPose = projectTurretPose(target);
-    LoggingUtils.log("/ShootingData/Turret Pose", turretPose, Pose2d.struct);
+    LoggingUtils.log("/ShootingData/Projected Turret Pose", turretPose, Pose2d.struct);
     double distance = turretPose.getTranslation().getDistance(target);
     LoggingUtils.log("/ShootingData/Distance", distance);
 
     double turretAngle = turretPose.getRotation().getRadians();
-    LoggingUtils.log("/ShootingData/Turret Angle", turretAngle * 180 / Math.PI);
     double hoodAngle = DISTANCE_TO_HOOD_ANGLE.get(distance).getRadians();
     double rads = DISTANCE_TO_RADS.get(distance);
 

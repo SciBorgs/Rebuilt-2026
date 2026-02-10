@@ -129,13 +129,23 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
   }
 
   /**
+   * Returns the goal of the turret trapezoidal profile.
+   *
+   * @return The goal of the turret.
+   */
+  @Logged
+  public double goal() {
+    return controller.getGoal().position;
+  }
+
+  /**
    * Returns whether the turret is at its goal or not.
    *
    * @return whether the turret is at its goal or not.
    */
   @Logged
   public boolean atGoal() {
-    return controller.atGoal();
+    return Math.abs(controller.getGoal().position - position()) < TOLERANCE.in(Radians);
   }
 
   /** Enum used to specify the type of sysId test. */

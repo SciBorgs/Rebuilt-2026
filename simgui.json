@@ -41,7 +41,78 @@
       "Robot/hood/fb": "ProfiledPIDController",
       "Robot/shooter/controller": "PIDController",
       "Robot/slapdown/pid": "ProfiledPIDController",
-      "Robot/turret/controller": "ProfiledPIDController"
+      "Robot/shooter/controller": "PIDController"
+    },
+    "windows": {
+      "/Robot/drive/field2d": {
+        "bottom": 1914,
+        "height": 8.069275856018066,
+        "left": 245,
+        "bottom": 1914,
+        "height": 8.069275856018066,
+        "left": 245,
+        "module- FL": {
+          "style": "Line"
+        },
+        "module- RR": {
+          "style": "Line"
+        },
+        "module-FR": {
+          "style": "Line"
+        },
+        "module-RL": {
+          "style": "Line"
+        },
+        "right": 3942,
+        "top": 118,
+        "width": 16.54119300842285,
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/Auto Chooser": {
+        "width": 17.54825210571289,
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/Drive Field": {
+        "bottom": 1914,
+        "height": 8.069275856018066,
+        "left": 245,
+        "right": 3942,
+        "top": 118,
+        "width": 16.54119300842285,
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/TurretVisualizer": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/VisionSystemSim-main/Sim Field": {
+        "bottom": 1914,
+        "height": 8.069275856018066,
+        "left": 245,
+        "right": 3942,
+        "top": 118,
+        "width": 16.54119300842285,
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/Robot/climb/measurement visualizer": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/Robot/climb/setpoint visualizer": {
+        "window": {
+          "visible": true
+        }
+      }
     }
   },
   "NetworkTables": {

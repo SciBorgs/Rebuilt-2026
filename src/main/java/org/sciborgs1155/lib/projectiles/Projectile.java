@@ -5,10 +5,10 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 
 public abstract class Projectile {
-  protected static final int RESOLUTION = 50;
-  protected static final double AIR_DENSITY = 1.225;
-
+  public static final double DEFAULT_RESOLUTION = 80;
   public static final int X = 0, Y = 1, Z = 2;
+
+  protected double resolution;
   protected boolean gravityEnabled, dragEnabled, torqueEnabled, liftEnabled;
   protected double[] translation, velocity, acceleration;
   protected double[] rotation, rotationalVelocity, rotationalAcceleration;
@@ -38,6 +38,8 @@ public abstract class Projectile {
     dragEnabled = true;
     torqueEnabled = true;
     liftEnabled = true;
+
+    resolution = DEFAULT_RESOLUTION;
   }
 
   public void launch(
@@ -54,7 +56,9 @@ public abstract class Projectile {
     rotationalAcceleration = new double[3];
   }
 
-  public Projectile config(boolean gravity, boolean drag, boolean torque, boolean lift) {
+  public Projectile config(
+      double fps, boolean gravity, boolean drag, boolean torque, boolean lift) {
+    resolution = fps;
     gravityEnabled = gravity;
     dragEnabled = drag;
     torqueEnabled = torque;
@@ -64,13 +68,13 @@ public abstract class Projectile {
   }
 
   public void periodic() {
-    translation[X] += velocity[X] / RESOLUTION;
-    translation[Y] += velocity[Y] / RESOLUTION;
-    translation[Z] += velocity[Z] / RESOLUTION;
+    translation[X] += velocity[X] / resolution;
+    translation[Y] += velocity[Y] / resolution;
+    translation[Z] += velocity[Z] / resolution;
 
-    velocity[X] += acceleration[X] / RESOLUTION;
-    velocity[Y] += acceleration[Y] / RESOLUTION;
-    velocity[Z] += acceleration[Z] / RESOLUTION;
+    velocity[X] += acceleration[X] / resolution;
+    velocity[Y] += acceleration[Y] / resolution;
+    velocity[Z] += acceleration[Z] / resolution;
 
     acceleration[X] = 0;
     acceleration[Y] = 0;
@@ -100,13 +104,13 @@ public abstract class Projectile {
       acceleration[Z] += lift[Z];
     }
 
-    rotation[X] += rotationalVelocity[X] / RESOLUTION;
-    rotation[Y] += rotationalVelocity[Y] / RESOLUTION;
-    rotation[Z] += rotationalVelocity[Z] / RESOLUTION;
+    rotation[X] += rotationalVelocity[X] / resolution;
+    rotation[Y] += rotationalVelocity[Y] / resolution;
+    rotation[Z] += rotationalVelocity[Z] / resolution;
 
-    rotationalVelocity[X] += rotationalAcceleration[X] / RESOLUTION;
-    rotationalVelocity[Y] += rotationalAcceleration[Y] / RESOLUTION;
-    rotationalVelocity[Z] += rotationalAcceleration[Z] / RESOLUTION;
+    rotationalVelocity[X] += rotationalAcceleration[X] / resolution;
+    rotationalVelocity[Y] += rotationalAcceleration[Y] / resolution;
+    rotationalVelocity[Z] += rotationalAcceleration[Z] / resolution;
 
     rotationalAcceleration[X] = 0;
     rotationalAcceleration[Y] = 0;

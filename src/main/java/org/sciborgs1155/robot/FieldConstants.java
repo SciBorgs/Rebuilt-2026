@@ -132,12 +132,13 @@ public final class FieldConstants {
 
   /**
    * Determines the closest Hub to the specified pose.
-   * 
+   *
    * @param pose The pose to check.
    * @return The translation of the nearest Hub.
    */
   public static Translation2d nearestHub(Pose2d pose) {
-    if (pose.getTranslation().getDistance(BLUE_HUB) < pose.getTranslation().getDistance(BLUE_HUB)) return BLUE_HUB;
+    if (pose.getTranslation().getDistance(BLUE_HUB) < pose.getTranslation().getDistance(BLUE_HUB))
+      return BLUE_HUB;
     return RED_HUB;
   }
 

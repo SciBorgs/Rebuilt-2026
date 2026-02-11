@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.function.Supplier;
 
 public abstract class TrajectoryVisualizer {
+  private double airTime;
   private boolean scores, misses;
   private final Supplier<double[]> launchTranslation,
       launchVelocity,
@@ -13,7 +14,11 @@ public abstract class TrajectoryVisualizer {
       launchRotationalVelocity;
 
   protected abstract Projectile createProjectile(
-      boolean gravityEnabled, boolean dragEnabled, boolean torqueEnabled, boolean liftEnabled);
+      double resolution,
+      boolean gravityEnabled,
+      boolean dragEnabled,
+      boolean torqueEnabled,
+      boolean liftEnabled);
 
   public TrajectoryVisualizer(
       Supplier<double[]> launchTranslation,
@@ -32,9 +37,11 @@ public abstract class TrajectoryVisualizer {
 
   protected abstract void logToNetworkTables();
 
-  public Pose3d[] trajectory(boolean gravity, boolean drag, boolean torque, boolean lift) {
+  public Pose3d[] trajectory(
+      double resolution, boolean gravity, boolean drag, boolean torque, boolean lift) {
+    int frames = 0;
     List<Pose3d> trajectory = new ArrayList<>();
-    Projectile projectile = createProjectile(gravity, drag, torque, lift);
+    Projectile projectile = createProjectile(resolution, gravity, drag, torque, lift);
 
     projectile.launch(
         launchTranslation.get(),
@@ -44,10 +51,12 @@ public abstract class TrajectoryVisualizer {
     while (!projectile.checkIfMissed() && !projectile.checkIfScored()) {
       trajectory.add(projectile.pose());
       projectile.periodic();
+      frames++;
     }
 
     misses = projectile.checkIfMissed();
     scores = projectile.checkIfScored();
+    airTime = (double) frames / resolution;
 
     return trajectory.toArray(new Pose3d[0]);
   }
@@ -58,5 +67,9 @@ public abstract class TrajectoryVisualizer {
 
   public boolean misses() {
     return misses;
+  }
+
+  public double airTime() {
+    return airTime;
   }
 }

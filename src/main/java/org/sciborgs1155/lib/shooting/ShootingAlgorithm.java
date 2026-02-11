@@ -23,13 +23,17 @@ public interface ShootingAlgorithm {
   Vector<N3> calculate(Translation3d pose, Vector<N2> velocity);
 
   /**
-   * Converts a shooting algorithm output to a double[] of launch velocity (X, Y, and Z) which is compatible with visualizers.
-   * 
+   * Converts a shooting algorithm output to a double[] of launch velocity (X, Y, and Z) which is
+   * compatible with visualizers.
+   *
    * @param robotPose The pose of the drivetrain.
    * @param robotVelocity The velocity of the drivetrain.
    * @return A double[] that can be passed into the constructor of a visualizer.
    */
   default double[] calculateToDoubleArray(Pose3d robotPose, ChassisSpeeds robotVelocity) {
-    return calculate(robotPose.getTranslation(), VecBuilder.fill(robotVelocity.vxMetersPerSecond, robotVelocity.vyMetersPerSecond)).getData();
+    return calculate(
+            robotPose.getTranslation(),
+            VecBuilder.fill(robotVelocity.vxMetersPerSecond, robotVelocity.vyMetersPerSecond))
+        .getData();
   }
 }

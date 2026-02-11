@@ -2,14 +2,19 @@ package org.sciborgs1155.lib.projectiles;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.networktables.DoubleEntry;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.lib.Tracer;
+import org.sciborgs1155.lib.Tuning;
 import org.sciborgs1155.lib.shooting.ShootingAlgorithm;
 import org.sciborgs1155.robot.drive.Drive;
 
 public class FuelTrajectoryVisualizer extends TrajectoryVisualizer {
+  private DoubleEntry resolution =
+      Tuning.entry("Fuel Visualizer/Resolution", Projectile.DEFAULT_RESOLUTION);
+
   public FuelTrajectoryVisualizer(
       Supplier<double[]> launchTranslation,
       Supplier<double[]> launchVelocity,
@@ -29,12 +34,19 @@ public class FuelTrajectoryVisualizer extends TrajectoryVisualizer {
         () -> Fuel.launchRotationalVelocity(robotPose.get()));
   }
 
-  public FuelTrajectoryVisualizer(
-      ShootingAlgorithm shootingAlgorithm,
-      Drive drivetrain) {
+  public FuelTrajectoryVisualizer(ShootingAlgorithm shootingAlgorithm, Drive drivetrain) {
     super(
-        () -> Fuel.launchTranslation(shootingAlgorithm.calculateToDoubleArray(drivetrain.pose3d(), drivetrain.fieldRelativeChassisSpeeds()), drivetrain.pose3d()),
-        () -> Fuel.launchVelocity(shootingAlgorithm.calculateToDoubleArray(drivetrain.pose3d(), drivetrain.fieldRelativeChassisSpeeds()), drivetrain.pose3d(),drivetrain.fieldRelativeChassisSpeeds()),
+        () ->
+            Fuel.launchTranslation(
+                shootingAlgorithm.calculateToDoubleArray(
+                    drivetrain.pose3d(), drivetrain.fieldRelativeChassisSpeeds()),
+                drivetrain.pose3d()),
+        () ->
+            Fuel.launchVelocity(
+                shootingAlgorithm.calculateToDoubleArray(
+                    drivetrain.pose3d(), drivetrain.fieldRelativeChassisSpeeds()),
+                drivetrain.pose3d(),
+                drivetrain.fieldRelativeChassisSpeeds()),
         () -> Fuel.launchRotation(drivetrain.pose3d()),
         () -> Fuel.launchRotationalVelocity(drivetrain.pose3d()));
   }
@@ -60,8 +72,12 @@ public class FuelTrajectoryVisualizer extends TrajectoryVisualizer {
 
   @Override
   protected Projectile createProjectile(
-      boolean gravityEnabled, boolean dragEnabled, boolean torqueEnabled, boolean liftEnabled) {
-    return new Fuel().config(gravityEnabled, dragEnabled, torqueEnabled, liftEnabled);
+      double resolution,
+      boolean gravityEnabled,
+      boolean dragEnabled,
+      boolean torqueEnabled,
+      boolean liftEnabled) {
+    return new Fuel().config(resolution, gravityEnabled, dragEnabled, torqueEnabled, liftEnabled);
   }
 
   @Override
@@ -75,11 +91,10 @@ public class FuelTrajectoryVisualizer extends TrajectoryVisualizer {
   protected void logToNetworkTables() {
     LoggingUtils.log("Fuel Visualizer/Score", scores());
     LoggingUtils.log("Fuel Visualizer/Miss", misses());
+    LoggingUtils.log("Fuel Visualizer/Air Time", airTime());
     LoggingUtils.log(
-        "Fuel Visualizer/Trajectory(No Drag)",
-        trajectory(true, false, false, false),
+        "Fuel Visualizer/Trajectory",
+        trajectory(resolution.get(), true, true, false, false),
         Pose3d.struct);
-    LoggingUtils.log(
-        "Fuel Visualizer/Trajectory(Drag)", trajectory(true, true, false, false), Pose3d.struct);
   }
 }

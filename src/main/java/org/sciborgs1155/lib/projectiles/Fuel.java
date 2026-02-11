@@ -19,6 +19,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 
 public class Fuel extends Projectile {
   private static final double SCORE_TOLERANCE = 0;
+  private static final double AIR_DENSITY = 1.225;
 
   private static final double DRAG_CONSTANT =
       0.5 * 0.47 * AIR_DENSITY * Math.PI * FUEL_RADIUS * FUEL_RADIUS;

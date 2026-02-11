@@ -9,6 +9,7 @@ import java.util.function.Supplier;
 
 public abstract class LaunchVisualizer {
   private int scores, misses;
+  protected double resolution;
   private boolean gravityEnabled, dragEnabled, torqueEnabled, liftEnabled;
   private final Supplier<double[]> launchTranslation,
       launchVelocity,
@@ -19,7 +20,11 @@ public abstract class LaunchVisualizer {
   private static final double COOLDOWN = 0.05;
 
   protected abstract Projectile createProjectile(
-      boolean gravityEnabled, boolean dragEnabled, boolean torqueEnabled, boolean liftEnabled);
+      double resolution,
+      boolean gravityEnabled,
+      boolean dragEnabled,
+      boolean torqueEnabled,
+      boolean liftEnabled);
 
   public LaunchVisualizer(
       Supplier<double[]> launchTranslation,
@@ -35,9 +40,13 @@ public abstract class LaunchVisualizer {
     dragEnabled = true;
     torqueEnabled = true;
     liftEnabled = true;
+
+    resolution = Projectile.DEFAULT_RESOLUTION;
   }
 
-  public LaunchVisualizer config(boolean gravity, boolean drag, boolean torque, boolean lift) {
+  public LaunchVisualizer config(
+      int fps, boolean gravity, boolean drag, boolean torque, boolean lift) {
+    resolution = fps;
     gravityEnabled = gravity;
     dragEnabled = drag;
     torqueEnabled = torque;
@@ -51,7 +60,8 @@ public abstract class LaunchVisualizer {
         Commands.run(
                 () -> {
                   Projectile projectile =
-                      createProjectile(gravityEnabled, dragEnabled, torqueEnabled, liftEnabled);
+                      createProjectile(
+                          resolution, gravityEnabled, dragEnabled, torqueEnabled, liftEnabled);
                   projectiles.add(projectile);
 
                   projectile.launch(

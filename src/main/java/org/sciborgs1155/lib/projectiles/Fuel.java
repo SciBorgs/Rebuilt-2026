@@ -49,7 +49,7 @@ public class Fuel extends Projectile {
         .getData();
   }
 
-  protected static double[] launchTranslation(double[] directionVector, Pose3d robotPose) {
+  public static double[] launchTranslation(double[] directionVector, Pose3d robotPose) {
     return ROBOT_TO_SHOOTER
         .rotateBy(robotPose.getRotation())
         .plus(robotPose.getTranslation())

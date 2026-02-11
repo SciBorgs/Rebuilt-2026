@@ -78,6 +78,9 @@
         "bottom": 1914,
         "height": 8.069275856018066,
         "left": 245,
+        "bottom": 1914,
+        "height": 8.069275856018066,
+        "left": 245,
         "module- FL": {
           "style": "Line"
         },
@@ -93,16 +96,6 @@
         "right": 3942,
         "top": 118,
         "width": 16.54119300842285,
-        "window": {
-          "visible": true
-        }
-      },
-      "/SmartDashboard//Robot/hood/measurement": {
-        "window": {
-          "visible": true
-        }
-      },
-      "/SmartDashboard//Robot/hood/setpoint": {
         "window": {
           "visible": true
         }

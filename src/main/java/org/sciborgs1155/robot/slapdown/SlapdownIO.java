@@ -11,8 +11,4 @@ public interface SlapdownIO extends AutoCloseable {
    * @return the position of the intake when it is extended
    */
   double position();
-
-  /** close the motors */
-  @Override
-  void close() throws Exception;
 }

@@ -28,7 +28,7 @@ public class ReduxGyro implements GyroIO {
             .setAngularPositionFramePeriod(ODOMETRY_PERIOD.in(Seconds))
             .setAngularVelocityFramePeriod(ODOMETRY_PERIOD.in(Seconds));
     canandgyro.setSettings(settings, 0.25, 5);
-    canandgyro.setYaw(0.0, 0.1, 10);
+    canandgyro.setYaw(0, 0.1, 10);
     canandgyro.clearStickyFaults();
 
     FaultLogger.register(canandgyro);

@@ -1,28 +1,9 @@
 {
-  "HALProvider": {
-    "Other Devices": {
-      "window": {
-        "visible": false
-      }
-    }
-  },
   "NTProvider": {
     "types": {
       "/FMSInfo": "FMSInfo",
       "/Faults/Active Faults": "Alerts",
       "/Faults/Total Faults": "Alerts",
-      "/Robot/autos": "String Chooser",
-      "/Robot/drive/field2d": "Field2d",
-      "/Robot/drive/frontLeft/driveFeedback": "PIDController",
-      "/Robot/drive/frontLeft/turnFeedback": "PIDController",
-      "/Robot/drive/frontRight/driveFeedback": "PIDController",
-      "/Robot/drive/frontRight/turnFeedback": "PIDController",
-      "/Robot/drive/rearLeft/driveFeedback": "PIDController",
-      "/Robot/drive/rearLeft/turnFeedback": "PIDController",
-      "/Robot/drive/rearRight/driveFeedback": "PIDController",
-      "/Robot/drive/rearRight/turnFeedback": "PIDController",
-      "/Robot/drive/rotationController": "PIDController",
-      "/Robot/drive/translationController": "ProfiledPIDController",
       "/SmartDashboard//Robot/hood/measurement": "Mechanism2d",
       "/SmartDashboard//Robot/hood/setpoint": "Mechanism2d",
       "/SmartDashboard/Auto Chooser": "String Chooser",
@@ -33,35 +14,16 @@
       "/SmartDashboard/Robot/hood/dynamic forward": "Command",
       "/SmartDashboard/Robot/hood/quasistatic backward": "Command",
       "/SmartDashboard/Robot/hood/quasistatic forward": "Command",
-      "/SmartDashboard/Scheduler": "Scheduler",
-      "/SmartDashboard/Turret PID Controller": "ProfiledPIDController",
       "/SmartDashboard/Turret dynamic clockwise": "Command",
       "/SmartDashboard/Turret dynamic counterclockwise": "Command",
       "/SmartDashboard/Turret quasistatic clockwise": "Command",
       "/SmartDashboard/Turret quasistatic counterclockwise": "Command",
       "/SmartDashboard/TurretVisualizer": "Mechanism2d",
       "/SmartDashboard/VisionSystemSim-main/Sim Field": "Field2d",
-      "/SmartDashboard/drive dynamic backward": "Command",
-      "/SmartDashboard/drive dynamic forward": "Command",
-      "/SmartDashboard/drive quasistatic backward": "Command",
-      "/SmartDashboard/drive quasistatic forward": "Command",
-      "/SmartDashboard/rotation dynamic backward": "Command",
-      "/SmartDashboard/rotation dynamic forward": "Command",
-      "/SmartDashboard/rotation quasistatic backward": "Command",
-      "/SmartDashboard/rotation quasistatic forward": "Command",
       "/SmartDashboard/shooter top dynamic backward": "Command",
       "/SmartDashboard/shooter top dynamic forward": "Command",
       "/SmartDashboard/shooter top quasistatic backward": "Command",
       "/SmartDashboard/shooter top quasistatic forward": "Command",
-      "/SmartDashboard/translation dynamic backward": "Command",
-      "/SmartDashboard/translation dynamic forward": "Command",
-      "/SmartDashboard/translation quasistatic backward": "Command",
-      "/SmartDashboard/translation quasistatic forward": "Command",
-      "/SmartDashboard/turn dynamic backward": "Command",
-      "/SmartDashboard/turn dynamic forward": "Command",
-      "/SmartDashboard/turn quasistatic backward": "Command",
-      "/SmartDashboard/turn quasistatic forward": "Command",
-      "Robot/autos": "String Chooser",
       "Robot/drive/rotationController": "PIDController",
       "Robot/drive/translationController": "ProfiledPIDController",
       "Robot/hood/fb": "ProfiledPIDController",
@@ -92,6 +54,16 @@
           "visible": true
         }
       },
+      "/SmartDashboard//Robot/hood/measurement": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard//Robot/hood/setpoint": {
+        "window": {
+          "visible": true
+        }
+      },
       "/SmartDashboard/Auto Chooser": {
         "width": 17.54825210571289,
         "window": {
@@ -104,7 +76,15 @@
         "left": 245,
         "right": 3942,
         "top": 118,
-        "width": 16.54119300842285
+        "width": 16.54119300842285,
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/TurretVisualizer": {
+        "window": {
+          "visible": true
+        }
       },
       "/SmartDashboard/VisionSystemSim-main/Sim Field": {
         "bottom": 1914,
@@ -112,7 +92,10 @@
         "left": 245,
         "right": 3942,
         "top": 118,
-        "width": 16.54119300842285
+        "width": 16.54119300842285,
+        "window": {
+          "visible": true
+        }
       }
     }
   },
@@ -204,9 +187,6 @@
   },
   "NetworkTables Info": {
     "visible": true
-  },
-  "NetworkTables View": {
-    "visible": false
   },
   "Plot": {
     "Plot <0>": {

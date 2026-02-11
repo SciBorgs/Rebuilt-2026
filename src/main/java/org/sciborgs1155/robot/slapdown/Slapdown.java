@@ -6,6 +6,7 @@ import static org.sciborgs1155.robot.Constants.*;
 import static org.sciborgs1155.robot.slapdown.SlapdownConstants.*;
 
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -33,14 +34,13 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
 
   private final ArmFeedforward ff = new ArmFeedforward(S, G, V, A);
 
-  private final DoubleEntry tuningP = Tuning.entry("Robot/tuning/tuningP", P);
-  private final DoubleEntry tuningI = Tuning.entry("Robot/tuning/tuningI", I);
-  private final DoubleEntry tuningD = Tuning.entry("Robot/tuning/tuningD", D);
-
-  private final DoubleEntry tuningS = Tuning.entry("Robot/tuning/tuningS", S);
-  private final DoubleEntry tuningG = Tuning.entry("Robot/tuning/tuningG", G);
-  private final DoubleEntry tuningV = Tuning.entry("Robot/tuning/tuningV", V);
-  private final DoubleEntry tuningA = Tuning.entry("Robot/tuning/tuningA", A);
+  @NotLogged private final DoubleEntry tuningP = Tuning.entry("Robot/tuning/slapdown/tuningP", P);
+  @NotLogged private final DoubleEntry tuningI = Tuning.entry("Robot/tuning/slapdown/tuningI", I);
+  @NotLogged private final DoubleEntry tuningD = Tuning.entry("Robot/tuning/slapdown/tuningD", D);
+  @NotLogged private final DoubleEntry tuningS = Tuning.entry("Robot/tuning/slapdown/tuningS", S);
+  @NotLogged private final DoubleEntry tuningG = Tuning.entry("Robot/tuning/slapdown/tuningG", G);
+  @NotLogged private final DoubleEntry tuningV = Tuning.entry("Robot/tuning/slapdown/tuningV", V);
+  @NotLogged private final DoubleEntry tuningA = Tuning.entry("Robot/tuning/slapdown/tuningA", A);
 
   /** Routine for recording and analyzing motor data. */
   private final SysIdRoutine sysIdRoutine;
@@ -92,7 +92,7 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
    *     simulate the arm
    */
   public static Slapdown create() {
-    return Robot.isReal() ? new Slapdown(new RealSlapdown()) : new Slapdown(new SimSlapdown());
+    return new Slapdown(Robot.isReal() ? new RealSlapdown() : new SimSlapdown());
   }
 
   /**
@@ -116,14 +116,14 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
    * @return slap down the intake
    */
   public Command extend() {
-    return goTo(MAX_ANGLE.in(Radians));
+    return goTo(MIN_ANGLE.in(Radians));
   }
 
   /**
    * @return bring up the intake
    */
   public Command retract() {
-    return goTo(MIN_ANGLE.in(Radians));
+    return goTo(MAX_ANGLE.in(Radians));
   }
 
   /**

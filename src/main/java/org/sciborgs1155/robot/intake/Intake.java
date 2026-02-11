@@ -62,21 +62,21 @@ public class Intake extends SubsystemBase implements AutoCloseable {
    * @return make the motors spin to intake the fuel
    */
   public Command intake() {
-    return run(() -> spin(INTAKE_POWER));
+    return spin(INTAKE_POWER);
   }
 
   /**
    * @return make the motors spin outwards to outtake the fuel
    */
   public Command outtake() {
-    return run(() -> spin(-INTAKE_POWER));
+    return spin(-INTAKE_POWER);
   }
 
   /**
    * @return stop the motors
    */
   public Command stop() {
-    return run(() -> spin(0));
+    return spin(0);
   }
 
   /** close the hardware */

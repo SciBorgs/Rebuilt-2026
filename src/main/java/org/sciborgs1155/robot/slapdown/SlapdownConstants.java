@@ -22,8 +22,8 @@ public class SlapdownConstants {
   public static final double D = 0;
 
   public static final double S = 0;
-  public static final double V = 1;
-  public static final double G = 0;
+  public static final double V = 0;
+  public static final double G = 0.7;
   public static final double A = 0;
 
   public static final Velocity<VoltageUnit> RAMP_RATE = Volts.of(0.5).per(Second);

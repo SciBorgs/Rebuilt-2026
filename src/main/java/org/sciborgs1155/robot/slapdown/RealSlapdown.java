@@ -3,7 +3,7 @@ package org.sciborgs1155.robot.slapdown;
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Radians;
 import static org.sciborgs1155.robot.Ports.Slapdown.*;
-import static org.sciborgs1155.robot.slapdown.SlapdownConstants.CURRENT_LIMIT;
+import static org.sciborgs1155.robot.slapdown.SlapdownConstants.*;
 import static org.sciborgs1155.robot.slapdown.SlapdownConstants.GEARING;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -27,6 +27,9 @@ public class RealSlapdown implements SlapdownIO {
     motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     motorConfig.CurrentLimits.SupplyCurrentLimit = CURRENT_LIMIT.in(Amps);
     motorConfig.Feedback.SensorToMechanismRatio = GEARING;
+
+    motor.getConfigurator().apply(motorConfig);
+    motor.setPosition(MAX_ANGLE);
 
     TalonUtils.addMotor(motor);
     FaultLogger.register(motor);

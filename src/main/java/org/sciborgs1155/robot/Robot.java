@@ -214,7 +214,6 @@ public class Robot extends CommandRobot {
         .onTrue(Commands.runOnce(() -> speedMultiplier = SLOW_SPEED_MULTIPLIER))
         .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
 
-    operator.a().whileTrue(slapdown.extend());
     // TODO: Add any additional bindings.
   }
 

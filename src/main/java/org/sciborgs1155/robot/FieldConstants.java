@@ -18,8 +18,8 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
 public final class FieldConstants {
   // Origin at corner of blue alliance side of field
-  public static final Distance LENGTH = Centimeters.of(1755);
-  public static final Distance WIDTH = Centimeters.of(805); // TODO these are not right
+  public static final Distance LENGTH = Inches.of(651.22);
+  public static final Distance WIDTH = Inches.of(317.69);
 
   // Prevents instantiation
   private FieldConstants() {}

@@ -103,7 +103,12 @@ public class Robot extends CommandRobot {
     SmartDashboard.putData("Auto Chooser", autos);
 
     // Configure pose estimation updates every tick
-    addPeriodic(visualizer::periodic, PERIOD);
+    addPeriodic(
+        () ->
+            drive.updateEstimates(
+                vision.estimatedGlobalPoses(drive.gyroHeading(), disabled().getAsBoolean())),
+        PERIOD);
+
     RobotController.setBrownoutVoltage(6.0);
 
     if (isReal()) {
@@ -112,6 +117,7 @@ public class Robot extends CommandRobot {
       pdh.setSwitchableChannel(true);
     } else {
       DriverStation.silenceJoystickConnectionWarning(true);
+      addPeriodic(visualizer::periodic, PERIOD);
     }
   }
 
@@ -170,7 +176,6 @@ public class Robot extends CommandRobot {
     driver.b().whileTrue(drive.zeroHeading());
     driver
         .leftBumper()
-        .or(driver.rightBumper())
         .onTrue(Commands.runOnce(() -> speedMultiplier = Constants.SLOW_SPEED_MULTIPLIER))
         .onFalse(Commands.runOnce(() -> speedMultiplier = Constants.FULL_SPEED_MULTIPLIER));
   }

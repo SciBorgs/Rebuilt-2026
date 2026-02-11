@@ -1,19 +1,17 @@
 package org.sciborgs1155.lib.shooting;
 
 import static java.lang.Math.PI;
-import static java.lang.Math.asin;
-import static java.lang.Math.atan;
 import static java.lang.Math.atan2;
 import static java.lang.Math.pow;
 import static java.lang.Math.sqrt;
 import static org.sciborgs1155.robot.FieldConstants.BLUE_HUB;
-import org.sciborgs1155.lib.LoggingUtils;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
+import org.sciborgs1155.lib.LoggingUtils;
 
 public class MovingShooting implements ShootingAlgorithm {
 
@@ -35,7 +33,7 @@ public class MovingShooting implements ShootingAlgorithm {
     double d2 = pow(d, 2);
 
     double radicand = V4 - (G * (G * d2 + (2 * H * V2)));
-    double pitch = atan2((V2 + sqrt(radicand)) , (G * d));
+    double pitch = atan2((V2 + sqrt(radicand)), (G * d));
 
     // final X, Y, and Z
     double horizontalVelocity = Math.cos(pitch) * launchSpeed;
@@ -50,7 +48,8 @@ public class MovingShooting implements ShootingAlgorithm {
     LoggingUtils.log("Height", H);
 
     Vector<N3> directShotVelocity = VecBuilder.fill(finalX, finalY, finalZ);
-    Vector<N3> shotVelocity = directShotVelocity.minus(VecBuilder.fill(velocity.get(0), velocity.get(1), 0));
+    Vector<N3> shotVelocity =
+        directShotVelocity.minus(VecBuilder.fill(velocity.get(0), velocity.get(1), 0));
 
     return shotVelocity;
   }

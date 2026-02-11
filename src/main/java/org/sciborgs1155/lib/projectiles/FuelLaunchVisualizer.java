@@ -29,12 +29,19 @@ public class FuelLaunchVisualizer extends LaunchVisualizer {
         () -> Fuel.launchRotationalVelocity(robotPose.get()));
   }
 
-  public FuelLaunchVisualizer(
-      ShootingAlgorithm shootingAlgorithm,
-      Drive drivetrain) {
+  public FuelLaunchVisualizer(ShootingAlgorithm shootingAlgorithm, Drive drivetrain) {
     super(
-        () -> Fuel.launchTranslation(shootingAlgorithm.calculateToDoubleArray(drivetrain.pose3d(), drivetrain.fieldRelativeChassisSpeeds()), drivetrain.pose3d()),
-        () -> Fuel.launchVelocity(shootingAlgorithm.calculateToDoubleArray(drivetrain.pose3d(), drivetrain.fieldRelativeChassisSpeeds()), drivetrain.pose3d(),drivetrain.fieldRelativeChassisSpeeds()),
+        () ->
+            Fuel.launchTranslation(
+                shootingAlgorithm.calculateToDoubleArray(
+                    drivetrain.pose3d(), drivetrain.fieldRelativeChassisSpeeds()),
+                drivetrain.pose3d()),
+        () ->
+            Fuel.launchVelocity(
+                shootingAlgorithm.calculateToDoubleArray(
+                    drivetrain.pose3d(), drivetrain.fieldRelativeChassisSpeeds()),
+                drivetrain.pose3d(),
+                drivetrain.fieldRelativeChassisSpeeds()),
         () -> Fuel.launchRotation(drivetrain.pose3d()),
         () -> Fuel.launchRotationalVelocity(drivetrain.pose3d()));
   }

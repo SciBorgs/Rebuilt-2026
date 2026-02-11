@@ -14,8 +14,6 @@ import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
-import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
@@ -27,8 +25,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-
-import java.lang.constant.DirectMethodHandleDesc;
 import java.util.Set;
 import org.littletonrobotics.urcl.URCL;
 import org.sciborgs1155.lib.CommandRobot;
@@ -36,9 +32,7 @@ import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.lib.Tracer;
-import org.sciborgs1155.lib.projectiles.Fuel;
 import org.sciborgs1155.lib.projectiles.FuelLaunchVisualizer;
-import org.sciborgs1155.lib.projectiles.FuelTrajectoryVisualizer;
 import org.sciborgs1155.lib.projectiles.LaunchVisualizer;
 import org.sciborgs1155.lib.shooting.MovingShooting;
 import org.sciborgs1155.robot.Ports.OI;
@@ -80,11 +74,7 @@ public class Robot extends CommandRobot {
 
   @NotLogged
   private final LaunchVisualizer visualizer =
-      new FuelLaunchVisualizer(movingShooting, drive).config(true, false
-        , false, false);
-
-  
-
+      new FuelLaunchVisualizer(movingShooting, drive).config(true, false, false, false);
 
   @Logged private double speedMultiplier = Constants.FULL_SPEED_MULTIPLIER;
 
@@ -211,7 +201,6 @@ public class Robot extends CommandRobot {
         .onFalse(Commands.runOnce(() -> speedMultiplier = Constants.FULL_SPEED_MULTIPLIER));
 
     operator.a().whileTrue(visualizer.launchProjectile());
-    
   }
 
   /**

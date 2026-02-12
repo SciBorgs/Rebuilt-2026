@@ -11,7 +11,6 @@ import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 import org.sciborgs1155.robot.drive.DriveConstants;
 
 /**
@@ -47,7 +46,7 @@ public final class Constants {
   }
 
   /** The current robot state, as in the type. Remember to update! */
-  public static final AtomicReference<RobotType> ROBOT_TYPE = new AtomicReference<>(RobotType.FULL);
+  public static final RobotType ROBOT_TYPE = RobotType.FULL;
 
   /** States if we are in tuning mode. Ideally, keep it at false when not used. */
   public static final AtomicBoolean TUNING = new AtomicBoolean(false);

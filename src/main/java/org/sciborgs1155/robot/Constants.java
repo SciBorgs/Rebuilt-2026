@@ -49,7 +49,7 @@ public final class Constants {
   public static final RobotType ROBOT_TYPE = RobotType.FULL;
 
   /** States if we are in tuning mode. Ideally, keep it at false when not used. */
-  public static final AtomicBoolean TUNING = new AtomicBoolean(true);
+  public static final AtomicBoolean TUNING = new AtomicBoolean(false);
 
   // TODO: UPDATE ALL OF THESE VALUES.
   /** Describes physical properites of the robot. */

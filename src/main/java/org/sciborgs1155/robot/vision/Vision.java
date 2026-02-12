@@ -37,12 +37,13 @@ import org.sciborgs1155.robot.Robot;
 
 @Logged
 public class Vision {
-  public record CameraConfig(String name, Transform3d robotToCam) {}
+  public record CameraConfig(String name, int FOV, Transform3d robotToCam, PoseStrategy strategy) {}
 
   public record PoseEstimate(EstimatedRobotPose estimatedPose, Matrix<N3, N1> standardDev) {}
 
   private final PhotonCamera[] cameras;
   private final PhotonPoseEstimator[] estimators;
+  private final PoseStrategy[] estimatorStrategies;
   private final PhotonCameraSim[] simCameras;
   private final PhotonPipelineResult[] lastResults;
   private final Map<String, Boolean> camerasEnabled;
@@ -52,7 +53,7 @@ public class Vision {
 
   /** A factory to create new vision classes with our cameras. */
   public static Vision create() {
-    return new Vision(BACK_LEFT_CAMERA, BACK_RIGHT_CAMERA);
+    return new Vision(CAMERA_0, CAMERA_1); // , CAMERA_2, CAMERA_3, CAMERA_4, CAMERA_5);
   }
 
   /**
@@ -72,6 +73,7 @@ public class Vision {
   public Vision(CameraConfig... configs) {
     cameras = new PhotonCamera[configs.length];
     estimators = new PhotonPoseEstimator[configs.length];
+    estimatorStrategies = new PoseStrategy[configs.length];
     simCameras = new PhotonCameraSim[configs.length];
     lastResults = new PhotonPipelineResult[configs.length];
     filteredEstimates = new ArrayList<>();
@@ -79,13 +81,11 @@ public class Vision {
 
     for (int i = 0; i < configs.length; i++) {
       PhotonCamera camera = new PhotonCamera(configs[i].name());
-      PhotonPoseEstimator estimator =
-          new PhotonPoseEstimator(
-              TAG_LAYOUT, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, configs[i].robotToCam());
+      PhotonPoseEstimator estimator = new PhotonPoseEstimator(TAG_LAYOUT, configs[i].robotToCam());
 
-      estimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
       cameras[i] = camera;
       estimators[i] = estimator;
+      estimatorStrategies[i] = configs[i].strategy();
       lastResults[i] = new PhotonPipelineResult();
       camerasEnabled.put(camera.getName(), true);
 
@@ -98,7 +98,7 @@ public class Vision {
 
       for (int i = 0; i < cameras.length; i++) {
         var prop = new SimCameraProperties();
-        prop.setCalibration(WIDTH, HEIGHT, FOV);
+        prop.setCalibration(WIDTH, HEIGHT, Rotation2d.fromDegrees(configs[i].FOV));
         prop.setCalibError(0.15, 0.05);
         prop.setFPS(45);
         prop.setAvgLatencyMs(12);
@@ -138,7 +138,7 @@ public class Vision {
    * @return An {@link EstimatedRobotPose} with an estimated pose, estimate timestamp, and targets
    *     used for estimation.
    */
-  public PoseEstimate[] estimatedGlobalPoses(Rotation2d rotation) {
+  public PoseEstimate[] estimatedGlobalPoses(Rotation2d rotation, boolean overtrust) {
     Tracer.startTrace("vision estimatedGlobalPoses");
     List<PoseEstimate> estimates = new ArrayList<>();
     filteredEstimates.clear();
@@ -153,7 +153,7 @@ public class Vision {
 
         int unreadLength = unreadChanges.size();
 
-        if (estimators[i].getPrimaryStrategy() == PoseStrategy.PNP_DISTANCE_TRIG_SOLVE) {
+        if (estimatorStrategies[i] == PoseStrategy.PNP_DISTANCE_TRIG_SOLVE) {
           estimators[i].addHeadingData(Timer.getFPGATimestamp(), rotation);
         }
 
@@ -172,7 +172,7 @@ public class Vision {
                 change.multitagResult.filter(
                     r ->
                         r.fiducialIDsUsed.stream()
-                            .map(id -> REPUTABLE_TAGS.contains((int) id))
+                            .map(id -> !UNREPUTABLE_TAGS.contains((int) id))
                             .reduce(true, (a, b) -> a && b));
           }
           // remove ambiguity
@@ -181,8 +181,10 @@ public class Vision {
           change.multitagResult =
               change.multitagResult.filter(r -> r.estimatedPose.ambiguity < MAX_AMBIGUITY);
 
-          estimate = estimators[i].update(change);
+          estimate = updateEstimate(estimators[i], change, estimatorStrategies[i]);
+
           log("Robot/vision/ " + name + " estimates present", estimate.isPresent());
+
           estimate
               .filter(
                   f -> {
@@ -191,7 +193,9 @@ public class Vision {
                             && Math.abs(f.estimatedPose.getZ()) < MAX_HEIGHT
                             && Math.abs(f.estimatedPose.getRotation().getX()) < MAX_ANGLE
                             && Math.abs(f.estimatedPose.getRotation().getY()) < MAX_ANGLE;
-                    if (!valid) {
+                    if (valid) {
+                      log("Robot/vision/valid poses/ " + name, f.estimatedPose, Pose3d.struct);
+                    } else {
                       filteredEstimates.add(f.estimatedPose);
                       log("Robot/vision/filtered poses/ " + name, f.estimatedPose, Pose3d.struct);
                     }
@@ -201,12 +205,36 @@ public class Vision {
                   e ->
                       estimates.add(
                           new PoseEstimate(
-                              e, estimationStdDevs(e.estimatedPose.toPose2d(), change))));
+                              e,
+                              overtrust
+                                  ? SUPERTRUST_TAG_STD_DEVS
+                                  : estimationStdDevs(e.estimatedPose.toPose2d(), change))));
         }
       }
     }
     Tracer.endTrace();
     return estimates.toArray(PoseEstimate[]::new);
+  }
+
+  /**
+   * Updates an estimator given the pipeline result and default strategy.
+   *
+   * @param estimator The PhotonPoseEstimator.
+   * @param change The pipleline result from the camera.
+   * @param strategy The default strategy to use. Falls back to {@code SINGLE_TAG_FALLBACK} when
+   *     only one tag is seen.
+   * @return
+   */
+  private Optional<EstimatedRobotPose> updateEstimate(
+      PhotonPoseEstimator estimator, PhotonPipelineResult change, PoseStrategy strategy) {
+    return switch (change.targets.size() == 1 ? SINGLE_TAG_FALLBACK : strategy) {
+      case LOWEST_AMBIGUITY -> estimator.estimateLowestAmbiguityPose(change);
+      case CLOSEST_TO_CAMERA_HEIGHT -> estimator.estimateClosestToCameraHeightPose(change);
+      case AVERAGE_BEST_TARGETS -> estimator.estimateAverageBestTargetsPose(change);
+      case MULTI_TAG_PNP_ON_COPROCESSOR -> estimator.estimateCoprocMultiTagPose(change);
+      case PNP_DISTANCE_TRIG_SOLVE -> estimator.estimatePnpDistanceTrigSolvePose(change);
+      default -> estimator.estimateLowestAmbiguityPose(change);
+    };
   }
 
   /**
@@ -244,7 +272,7 @@ public class Vision {
   public void setPoseStrategy(PoseStrategy strategy) {
     for (int i = 0; i < estimators.length; i++) {
       if (Set.of("example camera").contains(cameras[i].getName())) {
-        estimators[i].setPrimaryStrategy(strategy);
+        estimatorStrategies[i] = strategy;
       }
     }
   }
@@ -303,7 +331,14 @@ public class Vision {
   /** Returns all camera transforms from the robot. TODO: update this! */
   @Logged
   public Transform3d[] cameraTransforms() {
-    return new Transform3d[] {BACK_LEFT_CAMERA.robotToCam(), BACK_RIGHT_CAMERA.robotToCam()};
+    return new Transform3d[] {
+      CAMERA_0.robotToCam(),
+      CAMERA_1.robotToCam(),
+      CAMERA_2.robotToCam(),
+      CAMERA_3.robotToCam(),
+      CAMERA_4.robotToCam(),
+      CAMERA_5.robotToCam()
+    };
   }
 
   /**

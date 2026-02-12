@@ -59,19 +59,19 @@
       it BEFORE the full `documentation` suite or else defaults are applied. -->
     <properties>
       <property name="methodWithOverrideCommentRequirement"
-        value="Ignored" />
-      <property name="accessorCommentRequirement" value="Ignored" />
-      <property name="classCommentRequirement" value="Ignored" />
-      <property name="fieldCommentRequirement" value="Ignored" />
+        value="ignored" />
+      <property name="accessorCommentRequirement" value="ignored" />
+      <property name="classCommentRequirement" value="ignored" />
+      <property name="fieldCommentRequirement" value="ignored" />
       <property name="publicMethodCommentRequirement"
         value="Required" />
       <property name="protectedMethodCommentRequirement"
-        value="Ignored" />
-      <property name="enumCommentRequirement" value="Ignored" />
+        value="ignored" />
+      <property name="enumCommentRequirement" value="ignored" />
       <property name="serialVersionUIDCommentRequired"
-        value="Ignored" />
+        value="ignored" />
       <property name="serialPersistentFieldsCommentRequired"
-        value="Ignored" />
+        value="ignored" />
     </properties>
   </rule>
 

@@ -1,11 +1,16 @@
 package org.sciborgs1155.lib.projectiles;
 
+import static edu.wpi.first.units.Units.Seconds;
+import static org.sciborgs1155.robot.Constants.PERIOD;
+
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 
 public abstract class Projectile {
-  public static final double DEFAULT_RESOLUTION = 80;
+  public static final double RESOLUTION = 80;
+  public static final double SIMULATION_PERIOD = 1 / RESOLUTION;
+  public static final double LOGGING_PERIOD = PERIOD.in(Seconds);
   public static final int X = 0, Y = 1, Z = 2;
 
   protected double resolution;
@@ -39,7 +44,7 @@ public abstract class Projectile {
     torqueEnabled = true;
     liftEnabled = true;
 
-    resolution = DEFAULT_RESOLUTION;
+    resolution = RESOLUTION;
   }
 
   public void launch(

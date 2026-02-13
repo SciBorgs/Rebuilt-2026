@@ -4,6 +4,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
+import org.sciborgs1155.lib.LoggingUtils;
 
 public abstract class TrajectoryVisualizer {
   private double airTime;
@@ -31,11 +32,15 @@ public abstract class TrajectoryVisualizer {
     this.launchRotationalVelocity = launchRotationalVelocity;
   }
 
-  public void periodic() {
-    logToNetworkTables();
+  public void updateLogging() {
+    LoggingUtils.log(
+        "Trajectory Visualizer/Trajectory",
+        trajectory(Projectile.RESOLUTION, true, true, true, true),
+        Pose3d.struct);
+    LoggingUtils.log("Trajectory Visualizer/Scores", scores());
+    LoggingUtils.log("Trajectory Visualizer/Misses", misses());
+    LoggingUtils.log("Trajectory Visualizer/Air Time", airTime());
   }
-
-  protected abstract void logToNetworkTables();
 
   public Pose3d[] trajectory(
       double resolution, boolean gravity, boolean drag, boolean torque, boolean lift) {
@@ -56,7 +61,7 @@ public abstract class TrajectoryVisualizer {
 
     misses = projectile.checkIfMissed();
     scores = projectile.checkIfScored();
-    airTime = (double) frames / resolution;
+    airTime = frames / resolution;
 
     return trajectory.toArray(new Pose3d[0]);
   }

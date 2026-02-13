@@ -6,10 +6,10 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
+import org.sciborgs1155.lib.LoggingUtils;
 
 public abstract class LaunchVisualizer {
   private int scores, misses;
-  protected double resolution;
   private boolean gravityEnabled, dragEnabled, torqueEnabled, liftEnabled;
   private final Supplier<double[]> launchTranslation,
       launchVelocity,
@@ -40,13 +40,9 @@ public abstract class LaunchVisualizer {
     dragEnabled = true;
     torqueEnabled = true;
     liftEnabled = true;
-
-    resolution = Projectile.DEFAULT_RESOLUTION;
   }
 
-  public LaunchVisualizer config(
-      int fps, boolean gravity, boolean drag, boolean torque, boolean lift) {
-    resolution = fps;
+  public LaunchVisualizer config(boolean gravity, boolean drag, boolean torque, boolean lift) {
     gravityEnabled = gravity;
     dragEnabled = drag;
     torqueEnabled = torque;
@@ -57,11 +53,15 @@ public abstract class LaunchVisualizer {
 
   public Command launchProjectile() {
     return Commands.repeatingSequence(
-        Commands.run(
+        Commands.runOnce(
                 () -> {
                   Projectile projectile =
                       createProjectile(
-                          resolution, gravityEnabled, dragEnabled, torqueEnabled, liftEnabled);
+                          Projectile.RESOLUTION,
+                          gravityEnabled,
+                          dragEnabled,
+                          torqueEnabled,
+                          liftEnabled);
                   projectiles.add(projectile);
 
                   projectile.launch(
@@ -73,7 +73,7 @@ public abstract class LaunchVisualizer {
             .andThen(Commands.waitSeconds(COOLDOWN)));
   }
 
-  public void periodic() {
+  public void updateSimulation() {
     for (int index = 0; index < projectiles.size(); index++) {
       Projectile projectile = projectiles.get(index);
 
@@ -81,6 +81,7 @@ public abstract class LaunchVisualizer {
         misses++;
         projectiles.remove(index);
       }
+
       if (projectile.checkIfScored()) {
         scores++;
         projectiles.remove(index);
@@ -88,11 +89,13 @@ public abstract class LaunchVisualizer {
 
       projectile.periodic();
     }
-
-    logToNetworkTables();
   }
 
-  protected abstract void logToNetworkTables();
+  public void updateLogging() {
+    LoggingUtils.log("Launch Visualizer/Scores", scores());
+    LoggingUtils.log("Launch Visualizer/Misses", misses());
+    LoggingUtils.log("Launch Visualizer/Projectile Poses", poses(), Pose3d.struct);
+  }
 
   public Pose3d[] poses() {
     Pose3d[] poses = new Pose3d[projectiles.size()];

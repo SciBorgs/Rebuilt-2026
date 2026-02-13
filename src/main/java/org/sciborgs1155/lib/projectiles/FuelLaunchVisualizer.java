@@ -76,14 +76,14 @@ public class FuelLaunchVisualizer extends LaunchVisualizer {
   }
 
   @Override
-  public void periodic() {
+  public void updateSimulation() {
     Tracer.startTrace("Fuel Launcher Frame Generation");
-    super.periodic();
+    super.updateSimulation();
     Tracer.endTrace();
   }
 
   @Override
-  protected void logToNetworkTables() {
+  public void updateLogging() {
     LoggingUtils.log("Fuel Visualizer/Scores", scores());
     LoggingUtils.log("Fuel Visualizer/Misses", misses());
     LoggingUtils.log("Fuel Visualizer/Fuel Poses", poses(), Pose3d.struct);

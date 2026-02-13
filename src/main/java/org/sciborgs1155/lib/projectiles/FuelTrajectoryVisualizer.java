@@ -12,8 +12,8 @@ import org.sciborgs1155.lib.shooting.ShootingAlgorithm;
 import org.sciborgs1155.robot.drive.Drive;
 
 public class FuelTrajectoryVisualizer extends TrajectoryVisualizer {
-  private DoubleEntry resolution =
-      Tuning.entry("Fuel Visualizer/Resolution", Projectile.DEFAULT_RESOLUTION);
+  private final DoubleEntry resolutionEntry =
+      Tuning.entry("Fuel Visualizer/Resolution", Projectile.RESOLUTION);
 
   public FuelTrajectoryVisualizer(
       Supplier<double[]> launchTranslation,
@@ -81,20 +81,15 @@ public class FuelTrajectoryVisualizer extends TrajectoryVisualizer {
   }
 
   @Override
-  public void periodic() {
+  public void updateLogging() {
     Tracer.startTrace("Fuel Trajectory Generation");
-    super.periodic();
-    Tracer.endTrace();
-  }
-
-  @Override
-  protected void logToNetworkTables() {
     LoggingUtils.log("Fuel Visualizer/Score", scores());
     LoggingUtils.log("Fuel Visualizer/Miss", misses());
     LoggingUtils.log("Fuel Visualizer/Air Time", airTime());
     LoggingUtils.log(
         "Fuel Visualizer/Trajectory",
-        trajectory(resolution.get(), true, true, false, false),
+        trajectory(resolutionEntry.get(), true, true, false, false),
         Pose3d.struct);
+    Tracer.endTrace();
   }
 }

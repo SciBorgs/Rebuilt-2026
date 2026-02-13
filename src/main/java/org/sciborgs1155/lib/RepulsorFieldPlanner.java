@@ -24,6 +24,41 @@ import org.sciborgs1155.robot.FieldConstants;
  * <p>Taken directly from 6995's code. Big thanks! :D
  */
 public class RepulsorFieldPlanner {
+  public static final double GOAL_STRENGTH = 0.65;
+
+  /** TODO: Update this yearly to define the physcial field for pathing! */
+  public static final List<Obstacle> FIELD_OBSTACLES =
+      List.of(
+          new CircleObstacle(
+              new Translation2d(4.49, 4), 0.6, Units.inchesToMeters(65.5 / 2.0), true),
+          new CircleObstacle(
+              new Translation2d(13.08, 4), 0.6, Units.inchesToMeters(65.5 / 2.0), true));
+
+  public static final List<Obstacle> WALLS =
+      List.of(
+          new HorizontalObstacle(0.0, 0.5, true),
+          new HorizontalObstacle(FieldConstants.WIDTH.in(Meters), 0.5, false),
+          new VerticalObstacle(0.0, 0.5, true),
+          new VerticalObstacle(FieldConstants.LENGTH.in(Meters), 0.5, false));
+
+  private final List<Obstacle> fixedObstacles = new ArrayList<>();
+  private Optional<Translation2d> goalOpt = Optional.empty();
+
+  @SuppressWarnings("PMD.SingularField")
+  private SwerveSample prevSample;
+
+  @NotLogged private boolean useGoalInArrows;
+
+  @SuppressWarnings("PMD.ImmutableField")
+  @NotLogged
+  private boolean useObstaclesInArrows = true;
+
+  @SuppressWarnings("PMD.ImmutableField")
+  @NotLogged
+  private boolean useWallsInArrows = true;
+
+  public double pathLength;
+
   public abstract static class Obstacle {
     double strength;
     boolean positive;
@@ -211,26 +246,6 @@ public class RepulsorFieldPlanner {
     }
   }
 
-  public static final double GOAL_STRENGTH = 0.65;
-
-  /** TODO: Update this yearly to define the physcial field for pathing! */
-  public static final List<Obstacle> FIELD_OBSTACLES =
-      List.of(
-          new CircleObstacle(
-              new Translation2d(4.49, 4), 0.6, Units.inchesToMeters(65.5 / 2.0), true),
-          new CircleObstacle(
-              new Translation2d(13.08, 4), 0.6, Units.inchesToMeters(65.5 / 2.0), true));
-
-  public static final List<Obstacle> WALLS =
-      List.of(
-          new HorizontalObstacle(0.0, 0.5, true),
-          new HorizontalObstacle(FieldConstants.WIDTH.in(Meters), 0.5, false),
-          new VerticalObstacle(0.0, 0.5, true),
-          new VerticalObstacle(FieldConstants.LENGTH.in(Meters), 0.5, false));
-
-  private final List<Obstacle> fixedObstacles = new ArrayList<>();
-  private Optional<Translation2d> goalOpt = Optional.empty();
-
   /**
    * Returns the current goal position as a Pose2d.
    *
@@ -247,9 +262,6 @@ public class RepulsorFieldPlanner {
   // private static final int ARROWS_SIZE = (ARROWS_X + 1) * (ARROWS_Y + 1);
   // private ArrayList<Pose2d> arrows = new ArrayList<>(ARROWS_SIZE);
 
-  @SuppressWarnings("PMD.SingularField")
-  private SwerveSample prevSample;
-
   /** Creates a new RepulsorFieldPlanner with default field obstacles and walls. */
   public RepulsorFieldPlanner() {
     fixedObstacles.addAll(FIELD_OBSTACLES);
@@ -259,16 +271,6 @@ public class RepulsorFieldPlanner {
     // }
     this.prevSample = sample(Translation2d.kZero, Rotation2d.kZero, 0, 0, 0);
   }
-
-  @NotLogged private boolean useGoalInArrows;
-
-  @SuppressWarnings("PMD.ImmutableField")
-  @NotLogged
-  private boolean useObstaclesInArrows = true;
-
-  @SuppressWarnings("PMD.ImmutableField")
-  @NotLogged
-  private boolean useWallsInArrows = true;
 
   // private Pose2d arrowBackstage = new Pose2d(-10, -10, Rotation2d.kZero);
 
@@ -470,8 +472,6 @@ public class RepulsorFieldPlanner {
       }
     }
   }
-
-  public double pathLength;
 
   /**
    * Generates a trajectory from the current position to the goal.

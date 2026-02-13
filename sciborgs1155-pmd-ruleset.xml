@@ -29,7 +29,6 @@
     <exclude name="CallSuperInConstructor" /> <!-- Compiler will catch this automatically if needed -->
     <exclude name="CommentDefaultAccessModifier" /> <!-- Annoying and confusing -->
     <exclude name="ControlStatementBraces" /> <!-- Violated a lot -->
-    <exclude name="FieldDeclarationsShouldBeAtStartOfClass" /> <!-- Violated a lot -->
     <exclude name="LambdaCanBeMethodReference" /> <!-- I like doing this but some people can find this confusing -->
     <exclude name="LocalVariableCouldBeFinal" /> <!-- Too verbose -->
     <exclude name="LongVariable" /> <!-- Too sensitive -->
@@ -64,7 +63,7 @@
       <property name="classCommentRequirement" value="ignored" />
       <property name="fieldCommentRequirement" value="ignored" />
       <property name="publicMethodCommentRequirement"
-        value="Required" />
+        value="required" />
       <property name="protectedMethodCommentRequirement"
         value="ignored" />
       <property name="enumCommentRequirement" value="ignored" />

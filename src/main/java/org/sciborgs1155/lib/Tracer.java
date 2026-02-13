@@ -44,6 +44,10 @@ import java.util.function.Supplier;
  */
 @SuppressWarnings("PMD.UseConcurrentHashMap") // Not sure if concurrent access
 public final class Tracer {
+  private static final AtomicBoolean SINGLE_THREADED_MODE = new AtomicBoolean(false);
+  private static final AtomicBoolean ANY_TRACES_STARTED = new AtomicBoolean(false);
+  private static final ThreadLocal<TracerState> THREAD_LOCAL_STATE =
+      ThreadLocal.withInitial(() -> new TracerState(Thread.currentThread().getName(), true));
 
   // Prevents instantiation
   private Tracer() {}
@@ -206,11 +210,6 @@ public final class Tracer {
       mDisabled = mDisableNextCycle;
     }
   }
-
-  private static final AtomicBoolean SINGLE_THREADED_MODE = new AtomicBoolean(false);
-  private static final AtomicBoolean ANY_TRACES_STARTED = new AtomicBoolean(false);
-  private static final ThreadLocal<TracerState> THREAD_LOCAL_STATE =
-      ThreadLocal.withInitial(() -> new TracerState(Thread.currentThread().getName(), true));
 
   private static void startTraceInner(final String name, final TracerState state) {
     String stack = state.appendTraceStack(name);

@@ -37,10 +37,6 @@ import org.sciborgs1155.robot.Robot;
 
 @Logged
 public class Vision {
-  public record CameraConfig(String name, int FOV, Transform3d robotToCam, PoseStrategy strategy) {}
-
-  public record PoseEstimate(EstimatedRobotPose estimatedPose, Matrix<N3, N1> standardDev) {}
-
   private final PhotonCamera[] cameras;
   private final PhotonPoseEstimator[] estimators;
   private final PoseStrategy[] estimatorStrategies;
@@ -50,6 +46,10 @@ public class Vision {
   @Logged private final List<Pose3d> filteredEstimates;
 
   private VisionSystemSim visionSim;
+
+  public record CameraConfig(String name, int FOV, Transform3d robotToCam, PoseStrategy strategy) {}
+
+  public record PoseEstimate(EstimatedRobotPose estimatedPose, Matrix<N3, N1> standardDev) {}
 
   /** A factory to create new vision classes with our cameras. */
   public static Vision create() {

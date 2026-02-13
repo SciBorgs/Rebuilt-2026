@@ -16,19 +16,6 @@ import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.sciborgs1155.robot.vision.Vision.CameraConfig;
 
 public final class VisionConstants {
-
-  // Prevents instantiation
-  private VisionConstants() {}
-
-  /**
-   * Returns a {@link Rotation3d} that represents a camera rotation, given the yaw, pitch, and roll.
-   */
-  public static Rotation3d yawPitchRoll(
-      double yawDegrees, double pitchDegrees, double rollDegrees) {
-    return new Rotation3d(
-        Degrees.of(rollDegrees), Degrees.of(pitchDegrees), Degrees.of(yawDegrees));
-  }
-
   public static final AprilTagFieldLayout TAG_LAYOUT =
       AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
 
@@ -118,4 +105,16 @@ public final class VisionConstants {
   };
 
   public static final Set<Integer> UNREPUTABLE_TAGS = Set.of();
+
+  // Prevents instantiation
+  private VisionConstants() {}
+
+  /**
+   * Returns a {@link Rotation3d} that represents a camera rotation, given the yaw, pitch, and roll.
+   */
+  public static Rotation3d yawPitchRoll(
+      double yawDegrees, double pitchDegrees, double rollDegrees) {
+    return new Rotation3d(
+        Degrees.of(rollDegrees), Degrees.of(pitchDegrees), Degrees.of(yawDegrees));
+  }
 }

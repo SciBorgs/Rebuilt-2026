@@ -61,5 +61,4 @@ public class TurretConstants {
     // TOLERANCES
     public static final Angle TOLERANCE = Degree.of(3);
   }
-
 }

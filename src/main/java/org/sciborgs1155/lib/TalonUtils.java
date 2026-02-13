@@ -23,8 +23,8 @@ public final class TalonUtils {
 
   private static List<String> files =
       List.of(
-          "Tidal Wave (simple).chrp", // Shiawase VIP (Dion Timmer), 7 tracks
-          "Tidal Wave (balanced).chrp", // Shiawase VIP (Dion Timmer), 7 tracks
+          "Tidal Wave (simple).chrp", // Shiawase VIP (Dion Timmer), 8 tracks
+          "Tidal Wave (balanced).chrp", // Shiawase VIP (Dion Timmer), 8 tracks
           "Grief (simple).chrp", // Stalemate (KzX), 8 tracks
           "Grief (balanced).chrp", // Stalemate (KzX), 8 tracks
           "Limbo (simple).chrp", // Isolation (NightHawk22), 8 tracks

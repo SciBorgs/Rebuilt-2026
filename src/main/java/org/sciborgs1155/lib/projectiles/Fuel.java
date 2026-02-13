@@ -14,6 +14,7 @@ public class Fuel extends Projectile {
   public static final double FUEL_RADIUS = 0.075;
 
   private static final double SCORE_TOLERANCE = 0;
+  private static final double GRAVITY = -9.80665;
   private static final double AIR_DENSITY = 1.225;
   private static final double AIR_VISCOSITY = 15.24 * Math.pow(10, -6);
 
@@ -137,7 +138,7 @@ public class Fuel extends Projectile {
   @Override
   protected double[] gravity() {
     // SOURCE: https://spaceplace.nasa.gov/what-is-gravity/en/
-    return new double[] {0, 0, -9.80665};
+    return new double[] {0, 0, GRAVITY};
   }
 
   @Override

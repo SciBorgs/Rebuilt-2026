@@ -76,12 +76,12 @@ public class Robot extends CommandRobot {
   @NotLogged
   private final FuelTrajectoryVisualizer trajectoryVisualizer =
       new FuelTrajectoryVisualizer(
-          () -> new double[] {5, 0, 8}, drive::pose3d, drive::fieldRelativeChassisSpeeds);
+          () -> 4000, () -> 1, () -> 0, drive::pose3d, drive::fieldRelativeChassisSpeeds);
 
   @NotLogged
   private final FuelLaunchVisualizer launchVisualizer =
       new FuelLaunchVisualizer(
-          () -> new double[] {5, 0, 8}, drive::pose3d, drive::fieldRelativeChassisSpeeds);
+          () -> 4000, () -> 1, () -> 0, drive::pose3d, drive::fieldRelativeChassisSpeeds);
 
   @Logged private double speedMultiplier = Constants.FULL_SPEED_MULTIPLIER;
 

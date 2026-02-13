@@ -60,10 +60,10 @@ public class Robot extends CommandRobot {
 
   // SUBSYSTEMS
   private final Drive drive = Drive.create();
-  private final Hood hood = Hood.create();
+  private final Hood hood = Hood.none();
   private final Vision vision = Vision.create();
-  private final Shooter shooter = Shooter.create();
-  private final Turret turret = Turret.create();
+  private final Shooter shooter = Shooter.none();
+  private final Turret turret = Turret.none();
 
   // COMMANDS
   private final Alignment align = new Alignment(drive);

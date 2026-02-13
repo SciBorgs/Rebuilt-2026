@@ -43,10 +43,10 @@ public final class VisionConstants {
           "cam 0 RENAME",
           78,
           new Transform3d(
-              Inches.of(11.935943),
-              Inches.of(12.493204),
-              Inches.of(5.176840 + 4.6),
-              yawPitchRoll(65, -20, 180)),
+              Inches.of(11.265),
+              Inches.of(12.617898),
+              Inches.of(9.232183),
+              yawPitchRoll(90, -20, 180)),
           PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
 
   public static final CameraConfig CAMERA_1 =
@@ -54,10 +54,10 @@ public final class VisionConstants {
           "cam 1 RENAME",
           78,
           new Transform3d(
-              Inches.of(11.935943),
-              Inches.of(-12.493204),
-              Inches.of(5.176840 + 4.6),
-              yawPitchRoll(-65, -20, 180)),
+              Inches.of(11.265),
+              Inches.of(-12.617898),
+              Inches.of(9.232183),
+              yawPitchRoll(-90, -20, 180)),
           PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
 
   public static final CameraConfig CAMERA_2 =

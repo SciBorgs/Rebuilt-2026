@@ -49,8 +49,8 @@ public final class Ports {
   }
 
   public static final class Hopper {
-    public static final int MOTOR = 0;
-    public static final int BEAMBREAK = 0;
+    public static final int MOTOR = 60;
+    public static final int BEAMBREAK = 8;
   }
 
   public static final class LEDs {
@@ -68,17 +68,17 @@ public final class Ports {
   }
 
   public static final class Hood {
-    public static final int MOTOR_PORT = 18;
-    public static final int CANCODER = 19;
+    public static final int MOTOR_PORT = 30;
+    public static final int CANCODER = 31;
   }
 
   public static final class Climb {
-    public static final int LEFT_MOTOR_ID = 123;
-    public static final int RIGHT_MOTOR_ID = 234;
+    public static final int LEFT_MOTOR_ID = 40;
+    public static final int RIGHT_MOTOR_ID = 41;
   }
 
   public static final class Indexer {
-    public static final int MOTOR = 0;
-    public static final int BEAMBREAK = 0;
+    public static final int MOTOR = 51;
+    public static final int BEAMBREAK = 7;
   }
 }

@@ -80,7 +80,7 @@ dependencies {
     annotationProcessor wpi.java.deps.wpilibAnnotations()
     implementation wpi.java.deps.wpilib()
     implementation wpi.java.vendor.java()
-    implementation 'org.junit.jupiter:junit-jupiter-api:5.11.4'
+    //implementation 'org.junit.jupiter:junit-jupiter-api:5.11.4'
 
     roborioDebug wpi.java.deps.wpilibJniDebug(wpi.platforms.roborio)
     roborioDebug wpi.java.vendor.jniDebug(wpi.platforms.roborio)
@@ -100,7 +100,7 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.4'
     testImplementation 'org.junit.jupiter:junit-jupiter-params:5.11.4'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.11.4'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.4'
 
     // Gson
     // Remove this once choreolib changes get upstreamed

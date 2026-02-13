@@ -28,7 +28,11 @@ public final class TalonUtils {
           "Grief (simple).chrp", // Stalemate (KzX), 8 tracks
           "Grief (balanced).chrp", // Stalemate (KzX), 8 tracks
           "Limbo (simple).chrp", // Isolation (NightHawk22), 8 tracks
-          "Limbo (balanced).chrp" // Isolation (NightHawk22), 8 tracks
+          "Limbo (balanced).chrp", // Isolation (NightHawk22), 8 tracks
+          "Idols (simple).chrp", // Idols (EDM Mashup) (Virtual Riot), 8 tracks
+          "Idols (balanced).chrp", // Idols (EDM Mashup) (Virtual Riot), 8 tracks
+          "Bloodbath (simple).chrp", // At The Speed of Light (Dimrain47), 7 tracks
+          "Bloodbath (balanced).chrp" // At The Speed of Light (Dimrain47), 7 tracks
           );
   private static SendableChooser<Runnable> songChooser = new SendableChooser<>();
 

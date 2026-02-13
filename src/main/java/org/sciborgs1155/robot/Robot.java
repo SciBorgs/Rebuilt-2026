@@ -32,7 +32,9 @@ import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.lib.Tracer;
+import org.sciborgs1155.lib.projectiles.FuelLaunchVisualizer;
 import org.sciborgs1155.lib.projectiles.FuelTrajectoryVisualizer;
+import org.sciborgs1155.lib.shooting.MovingShooter;
 import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
@@ -64,10 +66,14 @@ public class Robot extends CommandRobot {
   private final Turret turret = Turret.create();
 
   // COMMANDS
+  private final MovingShooter shootingAlgorithm = new MovingShooter();
+
   private final Alignment align = new Alignment(drive);
   private final FuelTrajectoryVisualizer visualizer =
-      new FuelTrajectoryVisualizer(
-          () -> new double[] {5, 0, 5}, drive::pose3d, drive::fieldRelativeChassisSpeeds);
+      new FuelTrajectoryVisualizer(shootingAlgorithm, drive);
+
+  private final FuelLaunchVisualizer launchVisualizer =
+      new FuelLaunchVisualizer(shootingAlgorithm, drive);
 
   @NotLogged private final SendableChooser<Command> autos = Autos.configureAutos(drive);
 
@@ -104,6 +110,7 @@ public class Robot extends CommandRobot {
 
     // Configure pose estimation updates every tick
     addPeriodic(visualizer::periodic, PERIOD);
+    addPeriodic(launchVisualizer::periodic, PERIOD);
     RobotController.setBrownoutVoltage(6.0);
 
     if (isReal()) {
@@ -173,6 +180,8 @@ public class Robot extends CommandRobot {
         .or(driver.rightBumper())
         .onTrue(Commands.runOnce(() -> speedMultiplier = Constants.SLOW_SPEED_MULTIPLIER))
         .onFalse(Commands.runOnce(() -> speedMultiplier = Constants.FULL_SPEED_MULTIPLIER));
+
+    operator.a().whileTrue(launchVisualizer.launchProjectile());
   }
 
   /**

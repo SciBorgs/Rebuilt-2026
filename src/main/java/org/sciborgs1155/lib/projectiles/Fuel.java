@@ -72,7 +72,7 @@ public class Fuel extends Projectile {
     };
   }
 
-  protected static double[] launchVelocity(
+  public static double[] launchVelocity(
       double wheelVelocity,
       double pitch,
       double yaw,
@@ -87,7 +87,7 @@ public class Fuel extends Projectile {
     return launchVelocity(shotVelocity, robotPose, robotVelocity);
   }
 
-  protected static double[] launchVelocity(double[] fieldRelativeShotVelocity, Pose3d robotPose, ChassisSpeeds robotVelocity) {
+  public static double[] launchVelocity(double[] fieldRelativeShotVelocity, Pose3d robotPose, ChassisSpeeds robotVelocity) {
     double heading = robotPose.getRotation().getZ();
 
     double[] robotRelativeLaunchVector = new double[] {fieldRelativeShotVelocity[X] * Math.cos(heading) + fieldRelativeShotVelocity[Y] * Math.sin(heading), -fieldRelativeShotVelocity[X] * Math.sin(heading) + fieldRelativeShotVelocity[Y] * Math.cos(heading), fieldRelativeShotVelocity[Z]};
@@ -105,7 +105,7 @@ public class Fuel extends Projectile {
     };
   }
 
-  protected static double[] launchRotation(Pose3d robotPose) {
+  public static double[] launchRotation(Pose3d robotPose) {
     return new double[] {
       robotPose.getRotation().getX(), 
       robotPose.getRotation().getY(), 
@@ -113,7 +113,7 @@ public class Fuel extends Projectile {
     };
   }
 
-  protected static double[] launchRotationalVelocity(Pose3d robotPose) {
+  public static double[] launchRotationalVelocity(Pose3d robotPose) {
     return new double[3]; // TODO: Implement.
   }
 

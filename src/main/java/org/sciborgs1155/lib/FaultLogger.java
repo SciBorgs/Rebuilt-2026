@@ -38,11 +38,21 @@ import org.sciborgs1155.robot.Ports;
 @SuppressWarnings("PMD.AvoidDuplicateLiterals")
 public final class FaultLogger {
 
-  // Prevents instantiation
-  private FaultLogger() {}
-
   /** Whether to suppress console output (useful for tests). Defaults to false. */
   private static boolean suppressConsoleOutput;
+
+  // DATA
+  private static final List<Supplier<Optional<Fault>>> FAULT_REPORTERS = new ArrayList<>();
+  private static final Set<Fault> ACTIVE_FAULTS = new HashSet<>();
+  private static final Set<Fault> TOTAL_FAULTS = new HashSet<>();
+
+  // NETWORK TABLES
+  private static final NetworkTable BASE = NetworkTableInstance.getDefault().getTable("Faults");
+  private static final Alerts ACTIVE_ALERTS = new Alerts(BASE, "Active Faults");
+  private static final Alerts TOTAL_ALERTS = new Alerts(BASE, "Total Faults");
+
+  // Prevents instantiation
+  private FaultLogger() {}
 
   /** Enables or disables console output for faults. */
   public static void setSuppressConsoleOutput(boolean suppress) {
@@ -110,16 +120,6 @@ public final class FaultLogger {
       infos = table.getStringArrayTopic("infos").publish();
     }
   }
-
-  // DATA
-  private static final List<Supplier<Optional<Fault>>> FAULT_REPORTERS = new ArrayList<>();
-  private static final Set<Fault> ACTIVE_FAULTS = new HashSet<>();
-  private static final Set<Fault> TOTAL_FAULTS = new HashSet<>();
-
-  // NETWORK TABLES
-  private static final NetworkTable BASE = NetworkTableInstance.getDefault().getTable("Faults");
-  private static final Alerts ACTIVE_ALERTS = new Alerts(BASE, "Active Faults");
-  private static final Alerts TOTAL_ALERTS = new Alerts(BASE, "Total Faults");
 
   /** Polls registered fallibles. This method should be called periodically. */
   public static void update() {

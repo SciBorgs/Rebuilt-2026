@@ -31,6 +31,12 @@ public class HoodConstants {
   public static final Voltage STEP_VOLTAGE = Volts.of(0.3);
   public static final Time TIME_OUT = Seconds.of(3);
 
+  public static final Distance HOOD_RADIUS = Inches.of(9.29);
+  public static final double MOI = 0.0045821517; // kg*m^2
+
+  public static final Angle DEFAULT_ANGLE = STARTING_ANGLE;
+  public static final double GEARING = 12.0 / 44.0 * 18.0 / 14.0 * 182.0 / 10.0;
+
   public class PID {
     public static final double P = 10;
     public static final double I = 0;
@@ -41,9 +47,4 @@ public class HoodConstants {
     public static final double A = 0;
   }
 
-  public static final Distance HOOD_RADIUS = Inches.of(9.29);
-  public static final double MOI = 0.0045821517; // kg*m^2
-
-  public static final Angle DEFAULT_ANGLE = STARTING_ANGLE;
-  public static final double GEARING = 12.0 / 44.0 * 18.0 / 14.0 * 182.0 / 10.0;
 }

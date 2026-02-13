@@ -88,7 +88,7 @@ public class FuelTrajectoryVisualizer extends TrajectoryVisualizer {
     LoggingUtils.log("Fuel Visualizer/Air Time", airTime());
     LoggingUtils.log(
         "Fuel Visualizer/Trajectory",
-        trajectory(resolutionEntry.get(), true, true, false, false),
+        trajectory(resolutionEntry.get(), true, true, true, true),
         Pose3d.struct);
     Tracer.endTrace();
   }

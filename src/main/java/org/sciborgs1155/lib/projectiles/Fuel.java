@@ -15,9 +15,18 @@ public class Fuel extends Projectile {
 
   private static final double SCORE_TOLERANCE = 0;
   private static final double AIR_DENSITY = 1.225;
+  private static final double AIR_VISCOSITY = 15.24 * Math.pow(10, -6);
 
+  // MULTIPLY BY VElOCITY SQUARED
   private static final double DRAG_CONSTANT =
-      0.5 * 0.47 * AIR_DENSITY * Math.PI * FUEL_RADIUS * FUEL_RADIUS;
+    0.5 * 0.47 * AIR_DENSITY * Math.PI * FUEL_RADIUS * FUEL_RADIUS;
+
+  // MULTIPLY BY VELOCITY SQUARED * ANGULAR SPEED
+  private static final double LIFT_CONSTANT = 
+    (4/3) * 4 * Math.pow(Math.PI,2)* Math.pow(FUEL_RADIUS,3) * AIR_DENSITY;
+  
+  // MULTIPLY BY ANGULAR SPEED
+  private static final double TORQUE_CONSTANT = -8 * Math.PI * AIR_VISCOSITY * Math.pow(FUEL_RADIUS, 3);
 
   private static double launchSpeed(double wheelVelocity) {
     // SOURCE: https://www.chiefdelphi.com/t/new-flywheel-shooter-analysis/439111/4
@@ -30,6 +39,14 @@ public class Fuel extends Projectile {
 
   private static double[] applyYaw(double[] vector, double yaw) {
     return new double[]{vector[X] * Math.cos(yaw) - vector[Y] * Math.sin(yaw), vector[X] * Math.sin(yaw) + vector[Y] * Math.cos(yaw), vector[Z]};
+  }
+
+  private static double norm(double[] vector) {
+    return Math.sqrt(vector[X] * vector[X] + vector[Y] * vector[Y] + vector[Z] * vector[Z]);
+  }
+
+  private static double sum(double[] vector) {
+    return vector[X] + vector[Y] + vector[Z];
   }
 
   public static double[] shooterVelocity(double[] robotRelativeLaunchDirection, Pose3d robotPose, ChassisSpeeds robotVelocity) {
@@ -91,11 +108,11 @@ public class Fuel extends Projectile {
     double heading = robotPose.getRotation().getZ();
 
     double[] robotRelativeLaunchVector = new double[] {fieldRelativeShotVelocity[X] * Math.cos(heading) + fieldRelativeShotVelocity[Y] * Math.sin(heading), -fieldRelativeShotVelocity[X] * Math.sin(heading) + fieldRelativeShotVelocity[Y] * Math.cos(heading), fieldRelativeShotVelocity[Z]};
-    double robotRelativeLaunchVectorMagnitude = Math.sqrt(robotRelativeLaunchVector[X] * robotRelativeLaunchVector[X] + robotRelativeLaunchVector[Y] * robotRelativeLaunchVector[Y] + robotRelativeLaunchVector[Z] * robotRelativeLaunchVector[Z]);
+    double robotRelativeLaunchVectorNorm = norm(robotRelativeLaunchVector);
 
-    if (robotRelativeLaunchVectorMagnitude == 0.0) return fieldRelativeShotVelocity; // No direction, so no shooter velocity contribution.
+    if (robotRelativeLaunchVectorNorm == 0.0) return fieldRelativeShotVelocity; // No direction, so no shooter velocity contribution.
 
-    double[] robotRelativeLaunchDirection = {robotRelativeLaunchVector[X] / robotRelativeLaunchVectorMagnitude, robotRelativeLaunchVector[Y] / robotRelativeLaunchVectorMagnitude, robotRelativeLaunchVector[Z] / robotRelativeLaunchVectorMagnitude};
+    double[] robotRelativeLaunchDirection = {robotRelativeLaunchVector[X] / robotRelativeLaunchVectorNorm, robotRelativeLaunchVector[Y] / robotRelativeLaunchVectorNorm, robotRelativeLaunchVector[Z] / robotRelativeLaunchVectorNorm};
     double[] shooterVelocity = shooterVelocity(robotRelativeLaunchDirection, robotPose, robotVelocity);
 
     return new double[] {
@@ -114,7 +131,7 @@ public class Fuel extends Projectile {
   }
 
   public static double[] launchRotationalVelocity(Pose3d robotPose) {
-    return new double[3]; // TODO: Implement.
+    return new double[]{0,0,0}; // TODO: Implement.
   }
 
   @Override
@@ -134,18 +151,18 @@ public class Fuel extends Projectile {
   }
 
   @Override
-  protected double[] torque() { // TODO: Implement.
+  protected double[] torque() {
     // TORQUE CALCULATIONS (METERS / FRAME^2)
     // SOURCE:
     // https://physics.wooster.edu/wp-content/uploads/2021/08/Junior-IS-Thesis-Web_1998_Grugel.pdf
-    return new double[] {0, 0, 0};
+    return new double[] {rotationalVelocity[X] * TORQUE_CONSTANT, rotationalVelocity[Y] * TORQUE_CONSTANT, rotationalVelocity[Z] * TORQUE_CONSTANT};
   }
 
   @Override
-  protected double[] lift() { // TODO: Implement.
+  protected double[] lift() {
     // SOURCE:
     // https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/ideal-lift-of-a-spinning-ball/
-    return new double[] {0, 0, 0};
+    return new double[] {0, 0, LIFT_CONSTANT * Math.pow(norm(velocity),2) * sum(rotationalVelocity)};
   }
 
   @Override

@@ -32,9 +32,11 @@ public class RealWheel implements WheelIO {
 
     leader.getConfigurator().apply(config);
     follower.getConfigurator().apply(config);
+    
     FaultLogger.register(leader);
-    TalonUtils.addMotor(leader);
     FaultLogger.register(follower);
+    
+    TalonUtils.addMotor(leader);
     TalonUtils.addMotor(follower);
   }
 
@@ -51,5 +53,6 @@ public class RealWheel implements WheelIO {
   @Override
   public void close() throws Exception {
     leader.close();
+    follower.close();
   }
 }

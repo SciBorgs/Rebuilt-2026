@@ -27,13 +27,6 @@ public final class Constants {
   /** The current robot state, as in the type. Remember to update! */
   public static final AtomicReference<RobotType> ROBOT_TYPE = new AtomicReference<>(RobotType.FULL);
 
-  /** Defines the various types the robot can be. Useful for only using select subsystems. */
-  public enum RobotType {
-    FULL,
-    CHASSIS,
-    NONE
-  }
-
   /** States if we are in tuning mode. Ideally, keep it at false when not used. */
   public static final AtomicBoolean TUNING = new AtomicBoolean(false);
 
@@ -49,6 +42,13 @@ public final class Constants {
   // The name of seperate canivore, set to rio if no seperate canivore
   public static final CANBus DRIVE_CANIVORE = new CANBus("drivetrain");
   public static final CANBus TURRET_CANIVORE = new CANBus("turret");
+
+  /** Defines the various types the robot can be. Useful for only using select subsystems. */
+  public enum RobotType {
+    FULL,
+    CHASSIS,
+    NONE
+  }
 
   // Prevents instantiation
   private Constants() {}

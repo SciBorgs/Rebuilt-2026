@@ -1,15 +1,23 @@
 package org.sciborgs1155.robot;
 
-import static edu.wpi.first.units.Units.*;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.Second;
+import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.wpilibj2.command.button.RobotModeTriggers.autonomous;
 import static edu.wpi.first.wpilibj2.command.button.RobotModeTriggers.disabled;
 import static edu.wpi.first.wpilibj2.command.button.RobotModeTriggers.teleop;
 import static edu.wpi.first.wpilibj2.command.button.RobotModeTriggers.test;
 import static org.sciborgs1155.lib.LoggingUtils.log;
 import static org.sciborgs1155.robot.Constants.DEADBAND;
+import static org.sciborgs1155.robot.Constants.FULL_SPEED_MULTIPLIER;
 import static org.sciborgs1155.robot.Constants.PERIOD;
+import static org.sciborgs1155.robot.Constants.ROBOT_TYPE;
+import static org.sciborgs1155.robot.Constants.SLOW_SPEED_MULTIPLIER;
 import static org.sciborgs1155.robot.Constants.TUNING;
-import static org.sciborgs1155.robot.drive.DriveConstants.*;
+import static org.sciborgs1155.robot.drive.DriveConstants.MAX_ANGULAR_ACCEL;
+import static org.sciborgs1155.robot.drive.DriveConstants.MAX_SPEED;
+import static org.sciborgs1155.robot.drive.DriveConstants.TELEOP_ANGULAR_SPEED;
 
 import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.epilogue.Epilogue;
@@ -41,6 +49,7 @@ import org.sciborgs1155.robot.commands.Autos;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.hood.Hood;
 import org.sciborgs1155.robot.shooter.Shooter;
+import org.sciborgs1155.robot.slapdown.Slapdown;
 import org.sciborgs1155.robot.turret.Turret;
 import org.sciborgs1155.robot.vision.Vision;
 
@@ -70,7 +79,15 @@ public class Robot extends CommandRobot {
 
   @NotLogged private final SendableChooser<Command> autos = Autos.configureAutos(drive);
 
-  @Logged private double speedMultiplier = Constants.FULL_SPEED_MULTIPLIER;
+  @Logged private double speedMultiplier = FULL_SPEED_MULTIPLIER;
+
+  @Logged
+  @SuppressWarnings("PMD.TooFewBranchesForSwitch") // will be more values in the future
+  private final Slapdown slapdown =
+      switch (ROBOT_TYPE) {
+        case FULL -> Slapdown.create();
+        default -> Slapdown.none();
+      };
 
   /** The robot contains subsystems, OI devices, and commands. */
   public Robot() {
@@ -196,8 +213,9 @@ public class Robot extends CommandRobot {
     driver.b().whileTrue(drive.zeroHeading());
     driver
         .leftBumper()
-        .onTrue(Commands.runOnce(() -> speedMultiplier = Constants.SLOW_SPEED_MULTIPLIER))
-        .onFalse(Commands.runOnce(() -> speedMultiplier = Constants.FULL_SPEED_MULTIPLIER));
+        .or(driver.rightBumper())
+        .onTrue(Commands.runOnce(() -> speedMultiplier = SLOW_SPEED_MULTIPLIER))
+        .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
 
     // TODO: Add any additional bindings.
   }

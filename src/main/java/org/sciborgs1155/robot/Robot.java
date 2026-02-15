@@ -84,7 +84,7 @@ public class Robot extends CommandRobot {
   @Logged
   @SuppressWarnings("PMD.TooFewBranchesForSwitch") // will be more values in the future
   private final Slapdown slapdown =
-      switch (ROBOT_TYPE) {
+      switch (ROBOT_TYPE.get()) {
         case FULL -> Slapdown.create();
         default -> Slapdown.none();
       };

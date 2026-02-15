@@ -24,15 +24,15 @@ import org.sciborgs1155.robot.drive.DriveConstants;
  * @see Units
  */
 public final class Constants {
+  /** The current robot state, as in the type. Remember to update! */
+  public static final AtomicReference<RobotType> ROBOT_TYPE = new AtomicReference<>(RobotType.FULL);
+
   /** Defines the various types the robot can be. Useful for only using select subsystems. */
   public enum RobotType {
     FULL,
     CHASSIS,
     NONE
   }
-
-  /** The current robot state, as in the type. Remember to update! */
-  public static final AtomicReference<RobotType> ROBOT_TYPE = new AtomicReference<>(RobotType.FULL);
 
   /** States if we are in tuning mode. Ideally, keep it at false when not used. */
   public static final AtomicBoolean TUNING = new AtomicBoolean(false);

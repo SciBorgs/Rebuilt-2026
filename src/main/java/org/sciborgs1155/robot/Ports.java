@@ -53,14 +53,6 @@ public final class Ports {
     public static final int BEAMBREAK = 0;
   }
 
-  public static final class Slapdown {
-    public static final int EXTENSION = 25;
-  }
-
-  public static final class Intake {
-    public static final int ROLLERS = 26;
-  }
-
   public static final class LEDs {
     public static final int LED_PORT = 9;
   }

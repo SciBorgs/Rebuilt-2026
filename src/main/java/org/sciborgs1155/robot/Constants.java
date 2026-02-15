@@ -24,6 +24,13 @@ import org.sciborgs1155.robot.drive.DriveConstants;
  * @see Units
  */
 public final class Constants {
+  /** Defines the various types the robot can be. Useful for only using select subsystems. */
+  public enum RobotType {
+    FULL,
+    CHASSIS,
+    NONE
+  }
+
   /** The current robot state, as in the type. Remember to update! */
   public static final AtomicReference<RobotType> ROBOT_TYPE = new AtomicReference<>(RobotType.FULL);
 
@@ -55,13 +62,6 @@ public final class Constants {
   /** Returns the rotation of the robot's alliance with respect to the origin. */
   public static Rotation2d allianceRotation() {
     return Rotation2d.fromRotations(alliance() == Alliance.Blue ? 0 : 0.5);
-  }
-
-  /** Defines the various types the robot can be. Useful for only using select subsystems. */
-  public enum RobotType {
-    FULL,
-    CHASSIS,
-    NONE
   }
 
   // TODO: UPDATE ALL OF THESE VALUES.

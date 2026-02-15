@@ -34,6 +34,11 @@ public class Fuel extends Projectile {
     return wheelVelocity / 500; // TODO: Implement.
   }
 
+  private static double launchRotationalSpeed(double wheelVelocity) {
+    // SOURCE: https://www.chiefdelphi.com/t/new-flywheel-shooter-analysis/439111/4
+    return 0; // TODO: Implement.
+  }
+
   private static double[] toLaunchDirectionVector(double pitch, double yaw) {
     return new double[]{Math.cos(pitch) * Math.cos(yaw), Math.cos(pitch) * Math.sin(yaw), Math.sin(pitch)};
   }
@@ -50,7 +55,7 @@ public class Fuel extends Projectile {
     return vector[X] + vector[Y] + vector[Z];
   }
 
-  public static double[] shooterVelocity(double[] robotRelativeLaunchDirection, Pose3d robotPose, ChassisSpeeds robotVelocity) {
+  private static double[] shooterVelocity(double[] robotRelativeLaunchDirection, Pose3d robotPose, ChassisSpeeds robotVelocity) {
     // CALCULATE LAUNCH TRANSLATION (ROBOT RELATIVE)
     double shooterLength = SHOOTER_LENGTH.in(Meters);
 
@@ -132,7 +137,7 @@ public class Fuel extends Projectile {
   }
 
   public static double[] launchRotationalVelocity(Pose3d robotPose) {
-    return new double[]{0,0,0}; // TODO: Implement.
+    return new double[]{0, 0, 0}; // TODO: Implement.
   }
 
   @Override

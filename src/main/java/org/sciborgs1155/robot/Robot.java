@@ -37,7 +37,9 @@ import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.lib.Tracer;
 import org.sciborgs1155.lib.projectiles.FuelLaunchVisualizer;
 import org.sciborgs1155.lib.projectiles.FuelTrajectoryVisualizer;
+import org.sciborgs1155.lib.projectiles.LaunchVisualizer;
 import org.sciborgs1155.lib.projectiles.Projectile;
+import org.sciborgs1155.lib.projectiles.TrajectoryVisualizer;
 import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
@@ -74,14 +76,15 @@ public class Robot extends CommandRobot {
   @NotLogged private final SendableChooser<Command> autos = Autos.configureAutos(drive);
 
   @NotLogged
-  private final FuelTrajectoryVisualizer trajectoryVisualizer =
+  private final TrajectoryVisualizer trajectoryVisualizer =
       new FuelTrajectoryVisualizer(
-          () -> 4000, () -> 1, () -> 0, drive::pose3d, drive::fieldRelativeChassisSpeeds);
+          () -> 10, () -> 1, () -> 0, drive::pose3d, drive::fieldRelativeChassisSpeeds);
 
   @NotLogged
-  private final FuelLaunchVisualizer launchVisualizer =
+  private final LaunchVisualizer launchVisualizer =
       new FuelLaunchVisualizer(
-          () -> 4000, () -> 1, () -> 0, drive::pose3d, drive::fieldRelativeChassisSpeeds);
+              () -> 10, () -> 1, () -> 0, drive::pose3d, drive::fieldRelativeChassisSpeeds)
+          .config(true, true, false, false);
 
   @Logged private double speedMultiplier = Constants.FULL_SPEED_MULTIPLIER;
 

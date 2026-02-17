@@ -84,6 +84,17 @@ public class Robot extends CommandRobot {
 
   @NotLogged private final SendableChooser<Command> autos = Autos.configureAutos(drive);
 
+  @NotLogged
+  private final TrajectoryVisualizer trajectoryVisualizer =
+      new FuelTrajectoryVisualizer(
+          () -> 10, () -> 1, () -> 0, drive::pose3d, drive::fieldRelativeChassisSpeeds);
+
+  @NotLogged
+  private final LaunchVisualizer launchVisualizer =
+      new FuelLaunchVisualizer(
+              () -> 10, () -> 1, () -> 0, drive::pose3d, drive::fieldRelativeChassisSpeeds)
+          .config(true, true, false, false);
+
   @Logged private double speedMultiplier = FULL_SPEED_MULTIPLIER;
 
   @Logged

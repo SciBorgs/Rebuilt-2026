@@ -14,6 +14,7 @@ import org.sciborgs1155.lib.LoggingUtils;
  */
 public abstract class TrajectoryVisualizer {
   private double airTime;
+  private static final int MAXIMUM_FRAMES = 250;
 
   @SuppressWarnings("PMD.OneDeclarationPerLine")
   private boolean scores, misses;
@@ -87,6 +88,7 @@ public abstract class TrajectoryVisualizer {
         launchRotation.get(),
         launchRotationalVelocity.getAsDouble());
     while (!projectile.willMiss() && !projectile.willScore()) {
+      if (frames >= MAXIMUM_FRAMES) break;
       trajectory.add(projectile.pose());
       projectile.periodic();
       frames++;

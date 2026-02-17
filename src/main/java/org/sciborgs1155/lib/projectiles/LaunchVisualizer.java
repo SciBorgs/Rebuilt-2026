@@ -73,8 +73,8 @@ public abstract class LaunchVisualizer {
 
     weightEnabled = true;
     dragEnabled = true;
-    torqueEnabled = true;
-    liftEnabled = true;
+    torqueEnabled = false;
+    liftEnabled = false;
   }
 
   /**

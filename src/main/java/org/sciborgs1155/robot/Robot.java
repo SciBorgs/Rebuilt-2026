@@ -48,6 +48,8 @@ import org.sciborgs1155.lib.projectiles.FuelTrajectoryVisualizer;
 import org.sciborgs1155.lib.projectiles.LaunchVisualizer;
 import org.sciborgs1155.lib.projectiles.Projectile;
 import org.sciborgs1155.lib.projectiles.TrajectoryVisualizer;
+import org.sciborgs1155.lib.shooting.BasedShootingAlgorithm;
+import org.sciborgs1155.lib.shooting.ShootingAlgorithm;
 import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
@@ -81,19 +83,17 @@ public class Robot extends CommandRobot {
 
   // COMMANDS
   private final Alignment align = new Alignment(drive);
+  private final ShootingAlgorithm shootingAlgorithm = new BasedShootingAlgorithm();
 
   @NotLogged private final SendableChooser<Command> autos = Autos.configureAutos(drive);
 
   @NotLogged
   private final TrajectoryVisualizer trajectoryVisualizer =
-      new FuelTrajectoryVisualizer(
-          () -> 10, () -> 1, () -> 0, drive::pose3d, drive::fieldRelativeChassisSpeeds);
+      new FuelTrajectoryVisualizer(shootingAlgorithm, drive);
 
   @NotLogged
   private final LaunchVisualizer launchVisualizer =
-      new FuelLaunchVisualizer(
-              () -> 10, () -> 1, () -> 0, drive::pose3d, drive::fieldRelativeChassisSpeeds)
-          .config(true, true, false, false);
+      new FuelLaunchVisualizer(shootingAlgorithm, drive);
 
   @Logged private double speedMultiplier = FULL_SPEED_MULTIPLIER;
 

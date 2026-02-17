@@ -339,7 +339,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
 
     OdometryThread.getInstance().start();
 
-    if (TUNING.get()) {
+    if (TUNING) {
       SmartDashboard.putData(
           "Robot/translation/quasistatic forward",
           translationCharacterization
@@ -959,7 +959,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
       modules2d[i].setPose(pose().transformBy(transform));
     }
 
-    if (TUNING.get()) {
+    if (TUNING) {
       translationController.setPID(translationP.get(), translationI.get(), translationD.get());
       rotationController.setPID(rotationP.get(), rotationI.get(), rotationD.get());
     }

@@ -68,7 +68,7 @@ public final class Tuning {
    */
   public static Trigger changes(DoubleEntry entry) {
     return new Trigger(
-        Constants.TUNING.get()
+        Constants.TUNING
             ? () -> System.currentTimeMillis() - entry.getLastChange() <= PERIOD.in(Milliseconds)
             : () -> false);
   }

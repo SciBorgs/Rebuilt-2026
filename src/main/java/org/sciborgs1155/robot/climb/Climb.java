@@ -99,7 +99,7 @@ public final class Climb extends SubsystemBase implements AutoCloseable {
                 (state) -> SignalLogger.writeString("elevator state", state.toString())),
             new SysIdRoutine.Mechanism(v -> hardware.setVoltage(v.in(Volts)), null, this));
 
-    if (TUNING.get()) {
+    if (TUNING) {
       SmartDashboard.putData(
           "Robot/elevator/quasistatic forward",
           sysIdRoutine
@@ -180,7 +180,7 @@ public final class Climb extends SubsystemBase implements AutoCloseable {
     setpoint.setLength(positionSetpoint());
     measurement.setLength(position());
 
-    if (TUNING.get()) {
+    if (TUNING) {
       ff.setKs(kS.get());
       ff.setKg(kG.get());
       ff.setKv(kV.get());

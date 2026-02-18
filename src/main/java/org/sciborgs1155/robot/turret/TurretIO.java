@@ -36,4 +36,7 @@ public interface TurretIO extends AutoCloseable {
    * @return The angular position of encoder B in rotations.
    */
   double encoderB();
+
+  /** Called once per robot loop. Override to update internal state. */
+  default void periodic() {}
 }

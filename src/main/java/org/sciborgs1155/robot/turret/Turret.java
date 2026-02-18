@@ -3,7 +3,6 @@ package org.sciborgs1155.robot.turret;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
-import static org.sciborgs1155.lib.Assertion.eAssert;
 import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.Constants.TUNING;
 import static org.sciborgs1155.robot.turret.TurretConstants.*;
@@ -21,11 +20,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import java.util.Set;
 import java.util.function.DoubleSupplier;
-import org.sciborgs1155.lib.Assertion;
 import org.sciborgs1155.lib.LoggingUtils;
-import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.lib.Tuning;
 import org.sciborgs1155.robot.Robot;
 
@@ -193,18 +189,6 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
    */
   public Command goTo(DoubleSupplier position) {
     return run(() -> update(position.getAsDouble())).withName("goTo (DoubleSupplier)");
-  }
-
-  /**
-   * Test for turret to go to a set goal angle.
-   *
-   * @param goal The goal in radians.
-   */
-  public Test goToTest(DoubleSupplier goal) {
-    Command testCommand = goTo(goal).until(this::atGoal).withTimeout(5);
-    Set<Assertion> assertions =
-        Set.of(eAssert("Hood system check", goal, this::position, TOLERANCE.in(Radians)));
-    return new Test(testCommand, assertions);
   }
 
   @Override

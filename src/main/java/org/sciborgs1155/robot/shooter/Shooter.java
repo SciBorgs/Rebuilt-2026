@@ -1,7 +1,6 @@
 package org.sciborgs1155.robot.shooter;
 
 import static edu.wpi.first.units.Units.*;
-import static org.sciborgs1155.lib.Assertion.eAssert;
 import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.*;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.ControlConstants.*;
@@ -15,10 +14,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import java.util.Set;
 import java.util.function.DoubleSupplier;
-import org.sciborgs1155.lib.Assertion.EqualityAssertion;
-import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.robot.Robot;
 
 public final class Shooter extends SubsystemBase implements AutoCloseable {
@@ -154,22 +150,6 @@ public final class Shooter extends SubsystemBase implements AutoCloseable {
    */
   public Command runShooter(double velocity) {
     return runShooter(() -> velocity);
-  }
-
-  /**
-   * Does a test command to check if the subsystem works.
-   *
-   * @param goal The velocity goal.
-   */
-  public Test goToTest(DoubleSupplier goal) {
-    Command testCommand = runShooter(goal).until(() -> atSetpoint());
-    EqualityAssertion atGoal =
-        eAssert(
-            "Shooter Syst Check Speed",
-            () -> goal.getAsDouble(),
-            this::getVelocity,
-            VELOCITY_TOLERANCE.in(RadiansPerSecond));
-    return new Test(testCommand.withTimeout(5), Set.of(atGoal));
   }
 
   /** Closes the shooter motor. */

@@ -1,7 +1,6 @@
 package org.sciborgs1155.robot.hood;
 
 import static edu.wpi.first.units.Units.*;
-import static org.sciborgs1155.lib.Assertion.eAssert;
 import static org.sciborgs1155.robot.Constants.TUNING;
 import static org.sciborgs1155.robot.hood.HoodConstants.*;
 import static org.sciborgs1155.robot.hood.HoodConstants.PID.*;
@@ -24,11 +23,8 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.DoubleSupplier;
-import org.sciborgs1155.lib.Assertion;
 import org.sciborgs1155.lib.LoggingUtils;
-import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.lib.Tuning;
 import org.sciborgs1155.robot.Robot;
 
@@ -228,19 +224,6 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
     double feedback = fb.calculate(angle(), goal);
     double feedforward = ff.calculate(fb.getSetpoint().position, fb.getSetpoint().velocity);
     hardware.setVoltage(feedback + feedforward);
-  }
-
-  /** test for hood to go to a set goal angle */
-  public Test goToTest(Angle goal) {
-    Command testCommand = goTo(goal).until(this::atGoal).withTimeout(5);
-    Set<Assertion> assertions =
-        Set.of(
-            eAssert(
-                "Hood system check",
-                () -> goal.in(Radians),
-                this::angle,
-                POSITION_TOLERANCE.in(Radians)));
-    return new Test(testCommand, assertions);
   }
 
   /** closes the hood */

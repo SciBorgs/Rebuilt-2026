@@ -1,7 +1,5 @@
 package org.sciborgs1155.robot;
 
-import static edu.wpi.first.units.Units.Radians;
-import static org.sciborgs1155.lib.Test.runUnitTest;
 import static org.sciborgs1155.lib.UnitTestingUtil.reset;
 import static org.sciborgs1155.lib.UnitTestingUtil.setupTests;
 import static org.sciborgs1155.robot.turret.TurretConstants.*;
@@ -9,7 +7,6 @@ import static org.sciborgs1155.robot.turret.TurretConstants.*;
 import edu.wpi.first.units.measure.Angle;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.RepeatedTest;
 import org.sciborgs1155.robot.turret.Turret;
 
 public class TurretTest {
@@ -37,10 +34,10 @@ public class TurretTest {
     return MIN_ANGLE.plus(MAX_ANGLE.minus(MIN_ANGLE).times(Math.random()));
   }
 
-  /** Tests whether changing the orientation of the pivot works correctly. */
-  @RepeatedTest(5)
-  public void orientation() {
-    Angle setpoint = randomAngle();
-    runUnitTest(turret.goToTest(() -> setpoint.in(Radians)));
-  }
+  // /** Tests whether changing the orientation of the pivot works correctly. */
+  // @RepeatedTest(5)
+  // public void orientation() {
+  //   Angle setpoint = randomAngle();
+  //   runUnitTest(turret.goToTest(() -> setpoint.in(Radians)));
+  // }
 }

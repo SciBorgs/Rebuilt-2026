@@ -22,9 +22,9 @@ import edu.wpi.first.units.measure.Voltage;
 
 /** Constants used in the {@code Turret} subsystem. */
 public class TurretConstants {
-  public static final Current CURRENT_LIMIT = Amps.of(60);
+  public static final Current CURRENT_LIMIT = Amps.of(30);
 
-  public static final double GEAR_RATIO = 686 / 15;
+  public static final double GEAR_RATIO = 1.; // 686 / 15
   public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.0872);
   public static final Constraints CONSTRAINTS = new Constraints(16, 16); // TODO: Update.
 
@@ -49,13 +49,13 @@ public class TurretConstants {
 
   public static final class ControlConstants {
     // PID CONSTANTS
-    public static final double P = 10;
-    public static final double I = 0;
-    public static final double D = 0;
+    public static final double P = 1.4;
+    public static final double I = 0.05;
+    public static final double D = .7;
 
     // FEEDFORWARD CONSTANTS (VELOCITY IN RAD/SEC)
-    public static final double S = 0; // TODO: Update.
-    public static final double V = 0; // TODO: Update.
+    public static final double S = 1.8; // TODO: Update.
+    public static final double V = 0.2; // TODO: Update.
     public static final double A = 0; // TODO: Update.
 
     // TOLERANCES

@@ -1,6 +1,8 @@
 package org.sciborgs1155.robot.turret;
 
 import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.Seconds;
+import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.Constants.TURRET_CANIVORE;
 import static org.sciborgs1155.robot.Ports.Turret.*;
 import static org.sciborgs1155.robot.turret.TurretConstants.*;
@@ -16,11 +18,9 @@ import org.sciborgs1155.lib.TalonUtils;
 /** Real hardware interface for the {@code Turret} subsystem. */
 public class SingleMotorRealTurret implements TurretIO {
   /** Motor controller that operates a motor which is used to rotate the turret. */
-  private final TalonFX hardware = new TalonFX(MOTOR, TURRET_CANIVORE);
+  private final TalonFX hardware = new TalonFX(MOTOR);
 
   private final CANcoder encoderA = new CANcoder(ENCODER_A);
-
-  private double lastReading;
 
   private double position;
 
@@ -40,21 +40,15 @@ public class SingleMotorRealTurret implements TurretIO {
 
     // FAULT LOGGER
     FaultLogger.register(hardware);
-    lastReading = encoderA();
   }
 
-  private void update(double encoderPosition) {
-    Rotation2d encoderDisplacement =
-        Rotation2d.fromRotations(encoderPosition).minus(Rotation2d.fromRotations(lastReading));
-    double displacement =
-        encoderDisplacement.getRadians() * ENCODER_A_GEARING / (double) TURRET_GEARING;
-    lastReading = encoderPosition;
-    position += displacement;
+  private void update(double encoderVelocity) {
+    position += velocity() * PERIOD.in(Seconds) * ENCODER_A_GEARING / (double) TURRET_GEARING;
   }
 
   @Override
   public double encoderA() {
-    return encoderA.getAbsolutePosition().getValueAsDouble();
+    return encoderA.getAbsolutePosition().getValueAsDouble() / 1.72 * Math.PI / 2;
   }
 
   @Override
@@ -64,9 +58,9 @@ public class SingleMotorRealTurret implements TurretIO {
 
   @Override
   public void setVoltage(double voltage) {
-    hardware.setVoltage(voltage);
+    hardware.setVoltage(voltage); // negated because it went the wrong way
   }
-
+  
   @Override
   public double position() {
     return position;
@@ -74,7 +68,7 @@ public class SingleMotorRealTurret implements TurretIO {
 
   @Override
   public double velocity() {
-    return hardware.getVelocity().getValueAsDouble();
+    return hardware.getVelocity().getValueAsDouble() / 1.72 * Math.PI / 2;
   }
 
   @Override
@@ -84,6 +78,11 @@ public class SingleMotorRealTurret implements TurretIO {
 
   @Override
   public void periodic() {
-    update(hardware.getPosition().getValueAsDouble() * Math.PI * 2);
+    update(velocity());
+  }
+
+  @Override
+  public double rawA() {
+    return encoderA.getAbsolutePosition().getValueAsDouble();
   }
 }

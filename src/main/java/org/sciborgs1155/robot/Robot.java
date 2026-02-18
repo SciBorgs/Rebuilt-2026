@@ -1,5 +1,6 @@
 package org.sciborgs1155.robot;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Second;
@@ -70,10 +71,11 @@ public class Robot extends CommandRobot {
 
   // SUBSYSTEMS
   private final Drive drive = Drive.none();
-  private final Hood hood = Hood.create();
+  private final Hood hood = Hood.none();
   private final Vision vision = Vision.none();
   private final Shooter shooter = Shooter.none();
   private final Turret turret = Turret.create();
+  private final Slapdown slapdown = Slapdown.none();
 
   // COMMANDS
   private final Alignment align = new Alignment(drive);
@@ -81,14 +83,6 @@ public class Robot extends CommandRobot {
   @NotLogged private final SendableChooser<Command> autos = Autos.configureAutos(drive);
 
   @Logged private double speedMultiplier = FULL_SPEED_MULTIPLIER;
-
-  @Logged
-  @SuppressWarnings("PMD.TooFewBranchesForSwitch") // will be more values in the future
-  private final Slapdown slapdown =
-      switch (ROBOT_TYPE) {
-        case FULL -> Slapdown.create();
-        default -> Slapdown.none();
-      };
 
   /** The robot contains subsystems, OI devices, and commands. */
   public Robot() {
@@ -219,11 +213,12 @@ public class Robot extends CommandRobot {
         .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
 
     // TODO: Add any additional bindings.
-    driver.a().whileTrue(hood.goTo(HoodConstants.MIN_ANGLE));
     driver.y().whileTrue(hood.goTo(HoodConstants.MAX_ANGLE));
-    driver.x().whileTrue(turret.goTo(() -> Math.PI/4));
-    driver.b().whileTrue(turret.goTo(() -> -Math.PI/4));
-
+    driver.leftTrigger().whileTrue(turret.goLeft());
+    driver.rightTrigger().whileTrue(turret.goRight());
+    driver.a().whileTrue(hood.goTo(Degrees.of(0)));
+    driver.x().whileTrue(turret.goTo(() -> Math.PI / 4));
+    driver.b().whileTrue(turret.goTo(() -> -Math.PI / 4));
   }
 
   /**

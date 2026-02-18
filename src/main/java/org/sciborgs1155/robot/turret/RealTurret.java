@@ -90,4 +90,10 @@ public class RealTurret implements TurretIO {
   public void close() throws Exception {
     hardware.close();
   }
+
+  @Override
+  public double rawA() {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'rawA'");
+  }
 }

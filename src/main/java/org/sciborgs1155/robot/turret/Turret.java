@@ -97,6 +97,8 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
                 },
                 this));
 
+    setDefaultCommand(run(() -> hardware.setVoltage(0)).withName("stop"));
+
     SmartDashboard.putData(
         "Turret quasistatic clockwise", sysIdTest(SysIdTestType.QUASISTATIC, Direction.kForward));
     SmartDashboard.putData(
@@ -106,6 +108,19 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
         "Turret dynamic clockwise", sysIdTest(SysIdTestType.DYNAMIC, Direction.kForward));
     SmartDashboard.putData(
         "Turret dynamic counterclockwise", sysIdTest(SysIdTestType.DYNAMIC, Direction.kReverse));
+  }
+
+  public Command goLeft() {
+    return run(() -> hardware.setVoltage(1));
+  }
+
+  public Command goRight() {
+    return run(() -> hardware.setVoltage(-1));
+  }
+
+  @Logged
+  public double rawA() {
+    return hardware.rawA();
   }
 
   /**
@@ -175,13 +190,12 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
    * @param double The position setpoint in radians.
    */
   public void update(double positionSetpoint) {
-    double lastVelocity = controller.getSetpoint().velocity;
     double pidVolts =
         controller.calculate(
             hardware.position(),
             MathUtil.clamp(positionSetpoint, MIN_ANGLE.in(Radians), MAX_ANGLE.in(Radians)));
     double ffdVolts =
-        feedforward.calculateWithVelocities(lastVelocity, controller.getSetpoint().velocity);
+        feedforward.calculate(controller.getSetpoint().velocity);
 
     hardware.setVoltage(pidVolts + ffdVolts);
   }
@@ -213,6 +227,8 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
     LoggingUtils.log("Robot/turret/current command", command != null ? command.getName() : "None");
     LoggingUtils.log("Robot/turret/encoder A position", hardware.encoderA());
     LoggingUtils.log("Robot/turret/encoder B position", hardware.encoderB());
+
+    hardware.periodic();
 
     if (TUNING) {
       controller.setP(tuningP.get());

@@ -32,10 +32,10 @@ public class RealWheel implements WheelIO {
 
     leader.getConfigurator().apply(config);
     follower.getConfigurator().apply(config);
-    
+
     FaultLogger.register(leader);
     FaultLogger.register(follower);
-    
+
     TalonUtils.addMotor(leader);
     TalonUtils.addMotor(follower);
   }

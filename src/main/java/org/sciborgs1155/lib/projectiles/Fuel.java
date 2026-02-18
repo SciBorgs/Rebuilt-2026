@@ -121,12 +121,12 @@ public class Fuel extends Projectile {
    * Computes the field-relative launch position of the projectile given a robot-relative launch
    * direction.
    *
-   * @param robotRelativeLaunchDirection robot-relative unit direction vector
+   * @param fieldRelativeShotDirection field-relative unit direction vector
    * @param robotPose robot pose on the field
    * @return field-relative 3-element translation [x, y, z] of the launch point
    */
   protected static double[] launchTranslation(
-      double[] robotRelativeLaunchDirection, Pose3d robotPose) {
+      double[] fieldRelativeShotDirection, Pose3d robotPose) {
     double[] robotRelativeShooterTranslation =
         applyYaw(ROBOT_TO_SHOOTER.toVector().getData(), robotPose.getRotation().getZ());
     double[] fieldRelativeShooterTranslation = {
@@ -134,14 +134,12 @@ public class Fuel extends Projectile {
       robotRelativeShooterTranslation[Y] + robotPose.getTranslation().getY(),
       robotRelativeShooterTranslation[Z] + robotPose.getTranslation().getZ()
     };
-    double[] fieldRelativeLaunchDirection =
-        applyYaw(robotRelativeLaunchDirection, robotPose.getRotation().getZ());
 
     double shooterLength = SHOOTER_LENGTH.in(Meters);
     return new double[] {
-      fieldRelativeShooterTranslation[X] + fieldRelativeLaunchDirection[X] * shooterLength,
-      fieldRelativeShooterTranslation[Y] + fieldRelativeLaunchDirection[Y] * shooterLength,
-      fieldRelativeShooterTranslation[Z] + fieldRelativeLaunchDirection[Z] * shooterLength
+      fieldRelativeShooterTranslation[X] + fieldRelativeShotDirection[X] * shooterLength,
+      fieldRelativeShooterTranslation[Y] + fieldRelativeShotDirection[Y] * shooterLength,
+      fieldRelativeShooterTranslation[Z] + fieldRelativeShotDirection[Z] * shooterLength
     };
   }
 
@@ -317,5 +315,10 @@ public class Fuel extends Projectile {
   @Override
   protected boolean willMiss() {
     return translation[Z] <= FUEL_RADIUS;
+  }
+
+  @Override
+  protected double[] distanceFromGoal() {
+    return new double[]{Hub.TOP_CENTER_POINT.getX() - translation[X], Hub.TOP_CENTER_POINT.getY() - translation[Y], Hub.TOP_CENTER_POINT.getZ() - translation[Z]};
   }
 }

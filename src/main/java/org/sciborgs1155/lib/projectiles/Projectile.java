@@ -72,6 +72,13 @@ public abstract class Projectile {
    */
   protected abstract boolean willMiss();
 
+  /**
+   * Returns the distance from the projectile to it's goal.
+   *
+   * @return field-relative 3-element translation [x, y, z] between the projectile and it's goal
+   */
+  protected abstract double[] distanceFromGoal();
+
   /** A class that models the physics of a projectile. */
   public Projectile() {
     translation = new double[3];

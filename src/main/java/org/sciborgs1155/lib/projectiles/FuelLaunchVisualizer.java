@@ -6,6 +6,7 @@ import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.lib.Tracer;
+import org.sciborgs1155.lib.shooting.BasedShootingAlgorithm;
 import org.sciborgs1155.lib.shooting.ShootingAlgorithm;
 import org.sciborgs1155.robot.drive.Drive;
 
@@ -92,6 +93,36 @@ public class FuelLaunchVisualizer extends LaunchVisualizer {
                 drivetrain.pose3d()),
         Fuel::launchRotationalVelocity);
   }
+
+  /**
+   * Creates a new FuelLaunchVisualizer with the given shooting algorithm and drivetrain. The
+   * visualizer will create and launch projectiles with the parameters calculated by the shooting
+   * algorithm when the launchProjectile command is executed, and will update the simulation and
+   * logging for those projectiles when the updateSimulation and updateLogging methods are called,
+   * respectively.
+   *
+   * @param shootingAlgorithm the shooting algorithm to use for calculating the launch parameters of
+   *     the projectile
+   * @param drivetrain the drivetrain to use for providing the current pose and velocity of the
+   *     robot at launch time
+   */
+  public FuelLaunchVisualizer(BasedShootingAlgorithm shootingAlgorithm, Drive drivetrain) {
+    super(
+        () ->
+            Fuel.launchTranslation(
+                shootingAlgorithm.fieldRelativeShotVelocityVector(drivetrain.pose3d(), drivetrain.fieldRelativeChassisSpeeds()),
+                drivetrain.pose3d()),
+        () ->
+            Fuel.launchVelocity(
+                shootingAlgorithm.fieldRelativeShotVelocityVector(drivetrain.pose3d(), drivetrain.fieldRelativeChassisSpeeds()), 
+                drivetrain.pose3d(),
+                drivetrain.fieldRelativeChassisSpeeds()),
+        () ->
+            Fuel.launchRotation(
+                shootingAlgorithm.fieldRelativeShotVelocityVector(drivetrain.pose3d(), drivetrain.fieldRelativeChassisSpeeds()),
+                drivetrain.pose3d()),
+        Fuel::launchRotationalVelocity);
+   }
 
   /**
    * Creates a new FuelLaunchVisualizer with the given launch parameters. The visualizer will create

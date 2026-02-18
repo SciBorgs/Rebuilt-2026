@@ -96,6 +96,7 @@ public abstract class TrajectoryVisualizer {
 
     misses = projectile.willMiss();
     scores = projectile.willScore();
+
     airTime = frames / resolution;
 
     return trajectory.toArray(new Pose3d[0]);

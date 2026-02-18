@@ -8,6 +8,7 @@ import java.util.function.Supplier;
 import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.lib.Tracer;
 import org.sciborgs1155.lib.Tuning;
+import org.sciborgs1155.lib.shooting.BasedShootingAlgorithm;
 import org.sciborgs1155.lib.shooting.ShootingAlgorithm;
 import org.sciborgs1155.robot.drive.Drive;
 
@@ -90,6 +91,33 @@ public class FuelTrajectoryVisualizer extends TrajectoryVisualizer {
                 drivetrain.pose3d()),
         Fuel::launchRotationalVelocity);
   }
+
+  /**
+   * Creates a new FuelTrajectoryVisualizer with the given launch parameters. The visualizer will
+   * create and log the trajectory of the projectile with the given launch parameters.
+   *
+   * @param shootingAlgorithm the shooting algorithm to use for calculating the launch parameters of
+   *     the projectile
+   * @param drivetrain the drivetrain to use for providing the current pose and velocity of the
+   *     robot at launch time
+   */
+  public FuelTrajectoryVisualizer(BasedShootingAlgorithm shootingAlgorithm, Drive drivetrain) {
+    super(
+        () ->
+            Fuel.launchTranslation(
+                shootingAlgorithm.fieldRelativeShotVelocityVector(drivetrain.pose3d(), drivetrain.fieldRelativeChassisSpeeds()),
+                drivetrain.pose3d()),
+        () ->
+            Fuel.launchVelocity(
+                shootingAlgorithm.fieldRelativeShotVelocityVector(drivetrain.pose3d(), drivetrain.fieldRelativeChassisSpeeds()), 
+                drivetrain.pose3d(),
+                drivetrain.fieldRelativeChassisSpeeds()),
+        () ->
+            Fuel.launchRotation(
+                shootingAlgorithm.fieldRelativeShotVelocityVector(drivetrain.pose3d(), drivetrain.fieldRelativeChassisSpeeds()),
+                drivetrain.pose3d()),
+        Fuel::launchRotationalVelocity);
+   }
 
   /**
    * Creates a new FuelTrajectoryVisualizer with the given launch parameters. The visualizer will

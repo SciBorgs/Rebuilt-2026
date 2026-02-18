@@ -135,11 +135,11 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * @return the position of the pid
+   * @return the goal of the pid
    */
   @Logged
   public double setpoint() {
-    return pid.getSetpoint().position;
+    return pid.getGoal().position;
   }
 
   /**

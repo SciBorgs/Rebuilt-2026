@@ -48,6 +48,7 @@ import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.hood.Hood;
+import org.sciborgs1155.robot.hood.HoodConstants;
 import org.sciborgs1155.robot.shooter.Shooter;
 import org.sciborgs1155.robot.slapdown.Slapdown;
 import org.sciborgs1155.robot.turret.Turret;
@@ -68,10 +69,10 @@ public class Robot extends CommandRobot {
   private final PowerDistribution pdh = new PowerDistribution();
 
   // SUBSYSTEMS
-  private final Drive drive = Drive.create();
+  private final Drive drive = Drive.none();
   private final Hood hood = Hood.create();
-  private final Vision vision = Vision.create();
-  private final Shooter shooter = Shooter.create();
+  private final Vision vision = Vision.none();
+  private final Shooter shooter = Shooter.none();
   private final Turret turret = Turret.create();
 
   // COMMANDS
@@ -210,7 +211,7 @@ public class Robot extends CommandRobot {
 
     test().whileTrue(systemsCheck());
 
-    driver.b().whileTrue(drive.zeroHeading());
+    // driver.b().whileTrue(drive.zeroHeading());
     driver
         .leftBumper()
         .or(driver.rightBumper())
@@ -218,6 +219,11 @@ public class Robot extends CommandRobot {
         .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
 
     // TODO: Add any additional bindings.
+    driver.a().whileTrue(hood.goTo(HoodConstants.MIN_ANGLE));
+    driver.y().whileTrue(hood.goTo(HoodConstants.MAX_ANGLE));
+    driver.x().whileTrue(turret.goTo(() -> Math.PI/4));
+    driver.b().whileTrue(turret.goTo(() -> -Math.PI/4));
+
   }
 
   /**

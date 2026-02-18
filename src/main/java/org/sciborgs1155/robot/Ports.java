@@ -66,8 +66,8 @@ public final class Ports {
   }
 
   public static final class Turret {
-    public static final int MOTOR = 67;
-    public static final int ENCODER_A = 68;
+    public static final int MOTOR = 28;
+    public static final int ENCODER_A = 0;
     public static final int ENCODER_B = 69;
   }
 

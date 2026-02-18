@@ -54,7 +54,7 @@ public class SingleMotorRealTurret implements TurretIO {
 
   @Override
   public double encoderA() {
-    return encoderA.getAbsolutePosition().getValueAsDouble() + 0.5;
+    return encoderA.getAbsolutePosition().getValueAsDouble();
   }
 
   @Override
@@ -74,7 +74,7 @@ public class SingleMotorRealTurret implements TurretIO {
 
   @Override
   public double velocity() {
-    return hardware.getVelocity().getValueAsDouble() * 2 * Math.PI;
+    return hardware.getVelocity().getValueAsDouble();
   }
 
   @Override
@@ -84,6 +84,6 @@ public class SingleMotorRealTurret implements TurretIO {
 
   @Override
   public void periodic() {
-    update(encoderA());
+    update(hardware.getPosition().getValueAsDouble() * Math.PI * 2);
   }
 }

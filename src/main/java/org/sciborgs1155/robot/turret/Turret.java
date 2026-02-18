@@ -63,7 +63,7 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
   /** Creates real or simulated turret based on {@link Robot#isReal()}. */
   @NotLogged
   public static Turret create() {
-    return Robot.isReal() ? new Turret(new RealTurret()) : new Turret(new SimTurret());
+    return Robot.isReal() ? new Turret(new SingleMotorRealTurret()) : new Turret(new SimTurret());
   }
 
   /**

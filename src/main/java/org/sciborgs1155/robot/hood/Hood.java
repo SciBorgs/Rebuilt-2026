@@ -143,7 +143,7 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
    */
   @Logged
   public double angleSetpoint() {
-    return fb.getSetpoint().position;
+    return fb.getGoal().position;
   }
 
   /**

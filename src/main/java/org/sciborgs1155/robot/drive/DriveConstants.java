@@ -17,14 +17,11 @@ import edu.wpi.first.units.measure.Time;
 import java.util.List;
 
 /**
- * Constants for our 2025 Swerve X2t drivetrain! All fields in this file should be updated for the
+ * Constants for our 2026 Swerve X2t drivetrain! All fields in this file should be updated for the
  * current robot configuration!
  */
 public final class DriveConstants {
   // TODO: Change central drivetrain constants as needed.
-
-  // The type of module on the chassis
-  public static final ModuleType TYPE = ModuleType.TALON;
 
   // The control loop used by all of the modules when driving
   public static final ControlMode DRIVE_MODE = ControlMode.OPEN_LOOP_VELOCITY;
@@ -89,12 +86,6 @@ public final class DriveConstants {
 
   public record FFConstants(double kS, double kV, double kA) {}
 
-  /** The type of modules being used. */
-  public enum ModuleType {
-    TALON, // Kraken X60 Drive, Kraken X60 Turn
-    SPARK; // NEO Vortex Drive, NEO 550 Turn
-  }
-
   public static final class Assisted {
     // The angle between the velocity and the displacement from a target, above which the robot will
     // not use assisted driving to the target. (the driver must be driving in the general direction
@@ -129,7 +120,6 @@ public final class DriveConstants {
   }
 
   public static final class ModuleConstants {
-    public static final double COUPLING_RATIO = 0;
 
     public static final class Driving {
       public static final Distance CIRCUMFERENCE = WHEEL_RADIUS.times(2 * PI);
@@ -138,10 +128,6 @@ public final class DriveConstants {
 
       public static final Current STATOR_LIMIT = Amps.of(80); // 120A max slip current
       public static final Current SUPPLY_LIMIT = Amps.of(70);
-
-      // TODO these factors are for SparkModule only!
-      public static final Distance POSITION_FACTOR = CIRCUMFERENCE.times(GEARING);
-      public static final LinearVelocity VELOCITY_FACTOR = POSITION_FACTOR.per(Minute);
 
       public static final Current CURRENT_LIMIT = Amps.of(50);
 
@@ -165,10 +151,6 @@ public final class DriveConstants {
       public static final double ENCODER_GEARING = 1;
 
       public static final Current CURRENT_LIMIT = Amps.of(20);
-
-      // TODO these factors are for SparkModule only!
-      public static final Angle POSITION_FACTOR = Rotations.of(ENCODER_GEARING);
-      public static final AngularVelocity VELOCITY_FACTOR = POSITION_FACTOR.per(Minute);
 
       public static final class PID {
         public static final double P = 50;

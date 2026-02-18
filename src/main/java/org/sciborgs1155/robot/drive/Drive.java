@@ -180,7 +180,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
                     ANGULAR_OFFSETS.get(0),
                     Driving.FF_CONSTANTS.get(0),
                     "FL",
-                    false),
+                    true),
                 new TalonModule(
                     FRONT_RIGHT_DRIVE,
                     FRONT_RIGHT_TURNING,
@@ -188,7 +188,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
                     ANGULAR_OFFSETS.get(1),
                     Driving.FF_CONSTANTS.get(1),
                     "FR",
-                    false),
+                    true),
                 new TalonModule(
                     REAR_LEFT_DRIVE,
                     REAR_LEFT_TURNING,
@@ -196,7 +196,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
                     ANGULAR_OFFSETS.get(2),
                     Driving.FF_CONSTANTS.get(2),
                     "RL",
-                    false),
+                    true),
                 new TalonModule(
                     REAR_RIGHT_DRIVE,
                     REAR_RIGHT_TURNING,
@@ -204,7 +204,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
                     ANGULAR_OFFSETS.get(3),
                     Driving.FF_CONSTANTS.get(3),
                     "RR",
-                    false));
+                    true));
         case SPARK ->
             new Drive(
                 new NavXGyro(),
@@ -339,7 +339,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
 
     OdometryThread.getInstance().start();
 
-    if (TUNING.get()) {
+    if (TUNING) {
       SmartDashboard.putData(
           "Robot/translation/quasistatic forward",
           translationCharacterization
@@ -959,7 +959,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
       modules2d[i].setPose(pose().transformBy(transform));
     }
 
-    if (TUNING.get()) {
+    if (TUNING) {
       translationController.setPID(translationP.get(), translationI.get(), translationD.get());
       rotationController.setPID(rotationP.get(), rotationI.get(), rotationD.get());
     }

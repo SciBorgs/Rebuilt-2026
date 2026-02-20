@@ -127,23 +127,4 @@ public class TestingUtilTest {
     runToCompletion(toCommand(combo));
     assertFaultCount(1, 1, 0);
   }
-
-  /**
-   * Tests the unit test functionality with passing and failing assertions.
-   *
-   * @param x The value to test with.
-   */
-  @ParameterizedTest
-  @ValueSource(ints = {-4, 3, 9})
-  public void unitTestTest(int x) {
-    EqualityAssertion goodAssertion = eAssert("x", () -> x, () -> this.x);
-    Test passes = new Test(runOnce(() -> set(x)), Set.of(goodAssertion));
-    runToCompletion(toCommand(passes));
-    assertFaultCount(0, 0, 0);
-
-    TruthAssertion badAssertion = tAssert(() -> x != this.x, "x", () -> "fails");
-    Test fails = new Test(runOnce(() -> set(x)), Set.of(badAssertion));
-    assertThrows(AssertionError.class, (Executable) () -> runToCompletion(toCommand(fails)));
-    assertFaultCount(0, 0, 0);
-  }
 }

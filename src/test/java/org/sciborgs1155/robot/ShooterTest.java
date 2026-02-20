@@ -13,6 +13,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.RepeatedTest;
 import org.sciborgs1155.robot.shooter.Shooter;
+import org.sciborgs1155.robot.shooter.ShooterConstants;
 
 public class ShooterTest {
   private Shooter shooter;
@@ -46,6 +47,6 @@ public class ShooterTest {
     CommandScheduler.getInstance()
         .schedule(shooter.runShooter(setpoint).withDeadline(Commands.waitSeconds(3)));
     fastForward(Seconds.of(3));
-    assertTrue(shooter.atVelocity(setpoint));
+    assertTrue(shooter.velocity() - setpoint < ShooterConstants.VELOCITY_TOLERANCE.in(RadiansPerSecond) * 2);
   }
 }

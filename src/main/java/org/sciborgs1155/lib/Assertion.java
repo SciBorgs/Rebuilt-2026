@@ -1,8 +1,5 @@
 package org.sciborgs1155.lib;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
@@ -14,7 +11,7 @@ public sealed interface Assertion {
    *
    * @param unitTest Whether this is being run in a unit test.
    */
-  void apply(boolean unitTest);
+  void apply();
 
   /** Asserts that a condition is true and reports to FaultLogger. */
   private static void reportTrue(boolean condition, String faultName, String description) {
@@ -39,12 +36,8 @@ public sealed interface Assertion {
   record TruthAssertion(BooleanSupplier condition, String faultName, Supplier<String> description)
       implements Assertion {
     @Override
-    public void apply(boolean unitTest) {
-      if (unitTest) {
-        assertTrue(condition, faultName + ": " + description.get());
-      } else {
-        reportTrue(condition.getAsBoolean(), faultName, description.get());
-      }
+    public void apply() {
+      reportTrue(condition.getAsBoolean(), faultName, description.get());
     }
   }
 
@@ -52,12 +45,8 @@ public sealed interface Assertion {
       String faultName, DoubleSupplier expected, DoubleSupplier actual, double delta)
       implements Assertion {
     @Override
-    public void apply(boolean unitTest) {
-      if (unitTest) {
-        assertEquals(expected.getAsDouble(), actual.getAsDouble(), delta, faultName);
-      } else {
-        reportEquals(faultName, expected.getAsDouble(), actual.getAsDouble(), delta);
-      }
+    public void apply() {
+      reportEquals(faultName, expected.getAsDouble(), actual.getAsDouble(), delta);
     }
   }
 

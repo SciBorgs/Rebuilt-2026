@@ -1,7 +1,6 @@
 package org.sciborgs1155.lib;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.sciborgs1155.lib.UnitTestingUtil.setupTests;
 
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -79,7 +78,7 @@ public class FaultLoggerTest {
 
   @Test
   @SuppressWarnings(
-      "PMD.UnitTestShouldIncludeAssertion") // test is to make sure these methods do not error. no
+      "PMD.UnitTestShouldIncludeAssert") // test is to make sure these methods do not error. no
   // assertion needed
   void registerSpark() {
     SparkFlex spark = new SparkFlex(10, MotorType.kBrushless);
@@ -88,13 +87,12 @@ public class FaultLoggerTest {
   }
 
   @SuppressWarnings(
-      "PMD.UnitTestShouldIncludeAssertion") // test is to make sure these methods do not error. no
+      "PMD.UnitTestShouldIncludeAssert") // test is to make sure these methods do not error. no
   // assertion needed
   @Test
   void registerTalon() {
     TalonFX talon = new TalonFX(10);
     FaultLogger.register(talon);
     talon.close();
-    assertTrue(true);
   }
 }

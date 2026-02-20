@@ -2,6 +2,7 @@ package org.sciborgs1155.robot;
 
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Seconds;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.sciborgs1155.lib.UnitTestingUtil.fastForward;
 import static org.sciborgs1155.lib.UnitTestingUtil.reset;
 import static org.sciborgs1155.lib.UnitTestingUtil.setupTests;
@@ -48,6 +49,6 @@ public class TurretTest {
     CommandScheduler.getInstance()
         .schedule(turret.goTo(() -> setpoint.in(Radians)).withDeadline(Commands.waitSeconds(3)));
     fastForward(Seconds.of(3));
-    assert turret.atGoal();
+    assertTrue(turret.atGoal());
   }
 }

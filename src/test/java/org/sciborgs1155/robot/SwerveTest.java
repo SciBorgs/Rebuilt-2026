@@ -3,7 +3,7 @@ package org.sciborgs1155.robot;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Seconds;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.sciborgs1155.lib.Test.runUnitTest;
+import static org.sciborgs1155.lib.Test.toCommand;
 import static org.sciborgs1155.lib.UnitTestingUtil.*;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -52,10 +52,15 @@ public class SwerveTest {
   }
 
   /** Tests the drive systems check functionality. */
+  @SuppressWarnings(
+      "PMD.UnitTestShouldIncludeAssert") // drive.systemsCheck() cannot be modified because we run
+  // it both as a unit test and during competition testing.
+  // Here, we will continue to use the SciBorgs testing
+  // library.
   @Disabled
   @Test
   public void systemCheck() {
-    runUnitTest(drive.systemsCheck());
+    runToCompletion(toCommand(drive.systemsCheck()));
   }
 
   /** Tests that the robot reaches the commanded velocity. */

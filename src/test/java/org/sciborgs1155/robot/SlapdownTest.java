@@ -2,6 +2,7 @@ package org.sciborgs1155.robot;
 
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Seconds;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.sciborgs1155.lib.UnitTestingUtil.fastForward;
 import static org.sciborgs1155.lib.UnitTestingUtil.reset;
 import static org.sciborgs1155.lib.UnitTestingUtil.setupTests;
@@ -42,6 +43,6 @@ public class SlapdownTest {
     CommandScheduler.getInstance()
         .schedule(slapdown.goTo(setpoint).withDeadline(Commands.waitSeconds(3)));
     fastForward(Seconds.of(3));
-    assert slapdown.atPosition(setpoint);
+    assertTrue(slapdown.atPosition(setpoint));
   }
 }

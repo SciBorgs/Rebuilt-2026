@@ -1,12 +1,14 @@
 package org.sciborgs1155.lib.shooting;
 
-import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
+import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
+import org.sciborgs1155.lib.projectiles.Fuel;
 
 @FunctionalInterface
 public interface ShootingAlgorithm {
@@ -23,17 +25,34 @@ public interface ShootingAlgorithm {
   Vector<N3> calculate(Translation3d pose, Vector<N2> velocity);
 
   /**
-   * Converts a shooting algorithm output to a double[] of launch velocity (X, Y, and Z) which is
+   * Converts a shooting algorithm output to a shot velocity vector (X, Y, and Z) which is
    * compatible with visualizers.
    *
-   * @param robotPose The pose of the drivetrain.
-   * @param robotVelocity The velocity of the drivetrain.
-   * @return A double[] that can be passed into the constructor of a visualizer.
+   * @param robotPose A supplier for the pose of the drivetrain.
+   * @param robotVelocity A supplier for the velocity of the drivetrain.
+   * @return A double[] supplier that can be passed into the constructor of a visualizer.
    */
-  default double[] calculateToDoubleArray(Pose3d robotPose, ChassisSpeeds robotVelocity) {
-    return calculate(
-            robotPose.getTranslation(),
-            VecBuilder.fill(robotVelocity.vxMetersPerSecond, robotVelocity.vyMetersPerSecond))
-        .getData();
+  static Supplier<double[]> toShotVelocitySupplier(
+      ShootingAlgorithm shootingAlgorithm,
+      Supplier<Pose3d> robotPose,
+      Supplier<ChassisSpeeds> robotVelocity) {
+    return () -> Fuel.shotVelocity(shootingAlgorithm, robotPose.get(), robotVelocity.get());
+  }
+
+  /**
+   * Converts shooter properties to a shot velocity vector (X, Y, and Z) which is compatible with
+   * visualizers.
+   *
+   * @param speed A supplier for the launch speed of the FUEL.
+   * @param pitch A supplier for the pitch of the shooter.
+   * @param yaw A supplier for the yaw of the shooter.
+   * @param robotPose A supplier for the pose of the drivetrain.
+   * @return A double[] supplier that can be passed into the constructor of a visualizer.
+   */
+  static Supplier<double[]> toShotVelocitySupplier(
+      DoubleSupplier speed, DoubleSupplier pitch, DoubleSupplier yaw, Supplier<Pose3d> robotPose) {
+    return () ->
+        Fuel.shotVelocity(
+            speed.getAsDouble(), pitch.getAsDouble(), yaw.getAsDouble(), robotPose.get());
   }
 }

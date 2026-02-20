@@ -12,12 +12,10 @@ import org.sciborgs1155.lib.LoggingUtils;
  *
  * @see Projectile
  */
+@SuppressWarnings("PMD.OneDeclarationPerLine")
 public abstract class TrajectoryVisualizer {
   private double airTime;
-
-  @SuppressWarnings("PMD.OneDeclarationPerLine")
   private boolean scores, misses;
-  @SuppressWarnings("PMD.OneDeclarationPerLine")
   private final Supplier<double[]> launchTranslation, launchVelocity, launchRotation;
   private final DoubleSupplier launchRotationalVelocity;
 
@@ -29,16 +27,14 @@ public abstract class TrajectoryVisualizer {
       boolean liftEnabled);
 
   /**
-   * Creates a new TrajectoryVisualizer with the given launch parameters. The visualizer will update
-   * the trajectory when the updateLogging method is called.
+   * A class that manages the creation, simulation, and logging of simulated projectile
+   * trajectories.
    *
-   * @param launchTranslation a supplier that provides the current translation of the projectile at
-   *     launch time
-   * @param launchVelocity a supplier that provides the current velocity of the projectile at launch
+   * @param launchTranslation a supplier that provides the translation of the projectile at launch
    *     time
-   * @param launchRotation a supplier that provides the current rotation of the projectile at launch
-   *     time
-   * @param launchRotationalVelocity a supplier that provides the current rotational velocity of the
+   * @param launchVelocity a supplier that provides the velocity of the projectile at launch time
+   * @param launchRotation a supplier that provides the rotation of the projectile at launch time
+   * @param launchRotationalVelocity a supplier that provides the rotational velocity of the
    *     projectile at launch time
    */
   public TrajectoryVisualizer(

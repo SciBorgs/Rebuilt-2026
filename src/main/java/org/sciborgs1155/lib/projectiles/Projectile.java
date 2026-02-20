@@ -6,24 +6,25 @@ import static org.sciborgs1155.robot.Constants.PERIOD;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation3d;
 
 /** A class that models the physics of a projectile. */
 @SuppressWarnings("PMD.OneDeclarationPerLine")
 public abstract class Projectile {
-  /** The amount of simulation steps per second */
+  /** The amount of simulation steps per second. */
   public static final double RESOLUTION = 80;
 
-  /** The period of each simulation step in seconds */
+  /** The default period of each simulation step in seconds. */
   public static final double SIMULATION_PERIOD = 1 / RESOLUTION;
 
-  /** The period of logging in seconds */
+  /** The default period of each NetworkTables update in seconds. */
   public static final double LOGGING_PERIOD = PERIOD.in(Seconds);
 
-  /** The X, Y, Z components of a vector are the first, second, and third elements of the array */
-  public static final int X = 0, Y = 1, Z = 2;
+  /** The X, Y, Z components of a vector are the first, second, and third elements of the array. */
+  protected static final int X = 0, Y = 1, Z = 2;
 
-  /** The W component of a quaternion is the first element of the array */
-  public static final int ANGLE = 0, AXIS_X = 1, AXIS_Y = 2, AXIS_Z = 3;
+  /** The ANGLE and AXIS components of a rotation vector are placed in that order in the array. */
+  protected static final int ANGLE = 0, AXIS_X = 1, AXIS_Y = 2, AXIS_Z = 3;
 
   protected double resolution;
   protected boolean weightEnabled, dragEnabled, torqueEnabled, liftEnabled;
@@ -193,5 +194,44 @@ public abstract class Projectile {
         new Rotation3d(
             VecBuilder.fill(rotation[AXIS_X], rotation[AXIS_Y], rotation[AXIS_Z]),
             rotation[ANGLE]));
+  }
+
+  protected static double[] fromTranslation(Translation3d translation) {
+    return new double[] {translation.getX(), translation.getY(), translation.getZ()};
+  }
+
+  protected static double[] toDirectionVector(double pitch, double yaw) {
+    return new double[] {
+      Math.cos(pitch) * Math.cos(yaw), Math.cos(pitch) * Math.sin(yaw), Math.sin(pitch)
+    };
+  }
+
+  protected static double[] rotateAroundZ(double[] vector, double angle) {
+    return new double[] {
+      vector[X] * Math.cos(angle) - vector[Y] * Math.sin(angle),
+      vector[X] * Math.sin(angle) + vector[Y] * Math.cos(angle),
+      vector[Z]
+    };
+  }
+
+  protected static double[] add3(double[] vector1, double[] vector2) {
+    return new double[] {vector1[X] + vector2[X], vector1[Y] + vector2[Y], vector1[Z] + vector2[Z]};
+  }
+
+  protected static double[] scale3(double[] vector, double scalar) {
+    return new double[] {vector[X] * scalar, vector[Y] * scalar, vector[Z] * scalar};
+  }
+
+  protected static double[] scale4(double[] vector, double scalar) {
+    return new double[] {
+      vector[ANGLE] * scalar,
+      vector[AXIS_X] * scalar,
+      vector[AXIS_Y] * scalar,
+      vector[AXIS_Z] * scalar
+    };
+  }
+
+  protected static double norm3(double[] vector) {
+    return Math.sqrt(vector[X] * vector[X] + vector[Y] * vector[Y] + vector[Z] * vector[Z]);
   }
 }

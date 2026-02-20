@@ -4,20 +4,19 @@ import static edu.wpi.first.units.Units.Meters;
 import static org.sciborgs1155.robot.Constants.Robot.ROBOT_TO_SHOOTER;
 import static org.sciborgs1155.robot.Constants.Robot.SHOOTER_LENGTH;
 
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import org.sciborgs1155.lib.shooting.ShootingAlgorithm;
 import org.sciborgs1155.robot.FieldConstants.Hub;
 
-/**
- * Models the physics of a fuel projectile (sphere) including translation, drag, lift and torque.
- */
+/** Models the launch physics of a FUEL projectile. */
 public class Fuel extends Projectile {
   /** Mass of the fuel projectile in kilograms. */
-  public static final double FUEL_MASS = 0.225;
+  protected static final double FUEL_MASS = 0.225;
 
   /** Radius of the fuel projectile in meters. */
-  public static final double FUEL_RADIUS = 0.075;
+  protected static final double FUEL_RADIUS = 0.075;
 
   private static final double SCORE_TOLERANCE = 0;
   private static final double GRAVITY = -9.80665;
@@ -36,237 +35,6 @@ public class Fuel extends Projectile {
   private static final double TORQUE_CONSTANT =
       -8 * Math.PI * AIR_VISCOSITY * Math.pow(FUEL_RADIUS, 3);
 
-  /**
-   * Converts pitch and yaw angles (radians) to a unit direction vector.
-   *
-   * @param pitch elevation angle in radians
-   * @param yaw heading angle in radians
-   * @return 3-element direction vector [x, y, z]
-   */
-  private static double[] toDirectionVector(double pitch, double yaw) {
-    return new double[] {
-      Math.cos(pitch) * Math.cos(yaw), Math.cos(pitch) * Math.sin(yaw), Math.sin(pitch)
-    };
-  }
-
-  /**
-   * Rotates a 3D vector by a yaw angle about the Z axis.
-   *
-   * @param vector 3-element vector [x, y, z]
-   * @param yaw rotation about Z in radians
-   * @return rotated 3-element vector
-   */
-  private static double[] applyYaw(double[] vector, double yaw) {
-    return new double[] {
-      vector[X] * Math.cos(yaw) - vector[Y] * Math.sin(yaw),
-      vector[X] * Math.sin(yaw) + vector[Y] * Math.cos(yaw),
-      vector[Z]
-    };
-  }
-
-  /**
-   * Computes the Euclidean norm of a 3-element vector.
-   *
-   * @param vector 3-element vector
-   * @return length (>= 0)
-   */
-  private static double norm(double[] vector) {
-    return Math.sqrt(vector[X] * vector[X] + vector[Y] * vector[Y] + vector[Z] * vector[Z]);
-  }
-
-  /**
-   * Computes the linear velocity contribution from the robot to the launched projectile, combining
-   * translational and rotational components at the shooter exit point.
-   *
-   * @param robotRelativeLaunchDirection unit vector in robot-relative launch direction
-   * @param robotPose robot pose on the field
-   * @param robotVelocity robot chassis speeds
-   * @return field-relative velocity contribution [vx, vy, vz]
-   */
-  protected static double[] shooterVelocity(
-      double[] robotRelativeLaunchDirection, Pose3d robotPose, ChassisSpeeds robotVelocity) {
-    // CALCULATE LAUNCH TRANSLATION (ROBOT RELATIVE)
-    double shooterLength = SHOOTER_LENGTH.in(Meters);
-
-    double robotRelativeLaunchX =
-        ROBOT_TO_SHOOTER.getX() + robotRelativeLaunchDirection[X] * shooterLength;
-    double robotRelativeLaunchY =
-        ROBOT_TO_SHOOTER.getY() + robotRelativeLaunchDirection[Y] * shooterLength;
-    double robotRelativeLaunchZ =
-        ROBOT_TO_SHOOTER.getZ() + robotRelativeLaunchDirection[Z] * shooterLength;
-
-    // ADD ROBOT ROTATIONAL VELOCITY
-    double rotationalSpeed =
-        robotVelocity.omegaRadiansPerSecond
-            * Math.sqrt(
-                robotRelativeLaunchX * robotRelativeLaunchX
-                    + robotRelativeLaunchY * robotRelativeLaunchY
-                    + robotRelativeLaunchZ * robotRelativeLaunchZ);
-    double centripetalDirection = robotPose.getRotation().getZ();
-    double tangentialDirection = centripetalDirection + Math.PI / 2.0;
-
-    double rotationalVelocityX = rotationalSpeed * Math.cos(tangentialDirection);
-    double rotationalVelocityY = rotationalSpeed * Math.sin(tangentialDirection);
-
-    // ADD ROBOT TRANSLATIONAL VELOCITY
-    double translationVelocityX = robotVelocity.vxMetersPerSecond;
-    double translationVelocityY = robotVelocity.vyMetersPerSecond;
-
-    return new double[] {
-      rotationalVelocityX + translationVelocityX, rotationalVelocityY + translationVelocityY, 0
-    };
-  }
-
-  /**
-   * Computes the field-relative launch position of the projectile given a robot-relative launch
-   * direction.
-   *
-   * @param robotRelativeLaunchDirection robot-relative unit direction vector
-   * @param robotPose robot pose on the field
-   * @return field-relative 3-element translation [x, y, z] of the launch point
-   */
-  protected static double[] launchTranslation(
-      double[] robotRelativeLaunchDirection, Pose3d robotPose) {
-    double[] robotRelativeShooterTranslation =
-        applyYaw(ROBOT_TO_SHOOTER.toVector().getData(), robotPose.getRotation().getZ());
-    double[] fieldRelativeShooterTranslation = {
-      robotRelativeShooterTranslation[X] + robotPose.getTranslation().getX(),
-      robotRelativeShooterTranslation[Y] + robotPose.getTranslation().getY(),
-      robotRelativeShooterTranslation[Z] + robotPose.getTranslation().getZ()
-    };
-    double[] fieldRelativeLaunchDirection =
-        applyYaw(robotRelativeLaunchDirection, robotPose.getRotation().getZ());
-
-    double shooterLength = SHOOTER_LENGTH.in(Meters);
-    return new double[] {
-      fieldRelativeShooterTranslation[X] + fieldRelativeLaunchDirection[X] * shooterLength,
-      fieldRelativeShooterTranslation[Y] + fieldRelativeLaunchDirection[Y] * shooterLength,
-      fieldRelativeShooterTranslation[Z] + fieldRelativeLaunchDirection[Z] * shooterLength
-    };
-  }
-
-  /**
-   * Convenience overload for launchTranslation using pitch and yaw angles.
-   *
-   * @param pitch launch elevation in radians
-   * @param yaw launch heading in radians
-   * @param robotPose robot pose on the field
-   * @return field-relative launch position [x, y, z]
-   */
-  protected static double[] launchTranslation(double pitch, double yaw, Pose3d robotPose) {
-    return launchTranslation(toDirectionVector(pitch, yaw), robotPose);
-  }
-
-  /**
-   * Computes the resulting field-relative launch velocity, including robot motion, for a given
-   * muzzle speed and launch angles.
-   *
-   * @param velocity scalar launch speed (m/s)
-   * @param pitch elevation angle (radians)
-   * @param yaw heading angle (radians)
-   * @param robotPose robot pose on the field
-   * @param robotVelocity robot chassis speeds
-   * @return field-relative 3-element velocity [vx, vy, vz]
-   */
-  protected static double[] launchVelocity(
-      double velocity, double pitch, double yaw, Pose3d robotPose, ChassisSpeeds robotVelocity) {
-    double[] robotRelativeLaunchDirection = toDirectionVector(pitch, yaw);
-    double[] fieldRelativeLaunchDirection =
-        applyYaw(robotRelativeLaunchDirection, robotPose.getRotation().getZ());
-    double[] shotVelocity = {
-      fieldRelativeLaunchDirection[X] * velocity,
-      fieldRelativeLaunchDirection[Y] * velocity,
-      fieldRelativeLaunchDirection[Z] * velocity
-    };
-
-    return launchVelocity(shotVelocity, robotPose, robotVelocity);
-  }
-
-  /**
-   * Adds robot-induced velocity (translation + rotation at the shooter) to a field-relative shot
-   * velocity.
-   *
-   * @param fieldRelativeShotVelocity shot velocity expressed in field coordinates
-   * @param robotPose robot pose on the field
-   * @param robotVelocity robot chassis speeds
-   * @return combined field-relative velocity [vx, vy, vz]
-   */
-  @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
-  protected static double[] launchVelocity(
-      double[] fieldRelativeShotVelocity, Pose3d robotPose, ChassisSpeeds robotVelocity) {
-    double heading = robotPose.getRotation().getZ();
-
-    double[] robotRelativeLaunchVector = {
-      fieldRelativeShotVelocity[X] * Math.cos(heading)
-          + fieldRelativeShotVelocity[Y] * Math.sin(heading),
-      -fieldRelativeShotVelocity[X] * Math.sin(heading)
-          + fieldRelativeShotVelocity[Y] * Math.cos(heading),
-      fieldRelativeShotVelocity[Z]
-    };
-    double robotRelativeLaunchVectorNorm = norm(robotRelativeLaunchVector);
-
-    if (robotRelativeLaunchVectorNorm == 0.0)
-      return fieldRelativeShotVelocity; // No direction, so no shooter velocity contribution.
-
-    double[] robotRelativeLaunchDirection = {
-      robotRelativeLaunchVector[X] / robotRelativeLaunchVectorNorm,
-      robotRelativeLaunchVector[Y] / robotRelativeLaunchVectorNorm,
-      robotRelativeLaunchVector[Z] / robotRelativeLaunchVectorNorm
-    };
-    double[] shooterVelocity =
-        shooterVelocity(robotRelativeLaunchDirection, robotPose, robotVelocity);
-
-    return new double[] {
-      fieldRelativeShotVelocity[X] + shooterVelocity[X],
-      fieldRelativeShotVelocity[Y] + shooterVelocity[Y],
-      fieldRelativeShotVelocity[Z] + shooterVelocity[Z]
-    };
-  }
-
-  /**
-   * Computes the rotation axis (quaternion-like [w,x,y,z] with w==0) associated with the launch
-   * direction given by pitch and yaw.
-   *
-   * @param pitch elevation angle (radians)
-   * @param yaw heading angle (radians)
-   * @param robotPose robot pose on the field
-   * @return 4-element array representing rotation axis [w, x, y, z]
-   */
-  protected static double[] launchRotation(double pitch, double yaw, Pose3d robotPose) {
-    double[] robotRelativeLaunchDirection = toDirectionVector(pitch, yaw);
-    double[] fieldRelativeLaunchDirection =
-        applyYaw(robotRelativeLaunchDirection, robotPose.getRotation().getZ());
-
-    return launchRotation(fieldRelativeLaunchDirection, robotPose);
-  }
-
-  /**
-   * Computes a unit rotation axis perpendicular to the shot direction in field coordinates.
-   *
-   * @param fieldRelativeShotDirection 3-element shot direction in field coordinates
-   * @param robotPose robot pose (unused for current implementation but kept for API symmetry)
-   * @return 4-element axis [w, x, y, z] (w is zero)
-   */
-  @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
-  protected static double[] launchRotation(double[] fieldRelativeShotDirection, Pose3d robotPose) {
-    double[] axis = applyYaw(fieldRelativeShotDirection, Math.PI / 2.0);
-    double norm = norm(axis);
-    if (norm == 0.0) return new double[] {0, 0, 0, 0};
-
-    return new double[] {0, axis[X] / norm, axis[Y] / norm, 0};
-  }
-
-  /**
-   * Returns the rotational speed (rad/s) imparted to the projectile at launch.
-   *
-   * <p>TODO: implement a physics-based calculation. Returns a placeholder currently.
-   *
-   * @return rotational velocity (rad/s)
-   */
-  protected static double launchRotationalVelocity() {
-    return 0.5;
-  }
-
   @Override
   protected double[] weight() {
     // SOURCE: https://spaceplace.nasa.gov/what-is-gravity/en/
@@ -275,7 +43,7 @@ public class Fuel extends Projectile {
 
   @Override
   protected double[] drag() {
-    // SOURCE: https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/drag-of-a-sphere/
+    // https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/drag-of-a-sphere/
     return new double[] {
       velocity[X] * velocity[X] * DRAG_CONSTANT / FUEL_MASS,
       velocity[Y] * velocity[Y] * DRAG_CONSTANT / FUEL_MASS,
@@ -285,37 +53,129 @@ public class Fuel extends Projectile {
 
   @Override
   protected double torque() {
-    // SOURCE:
     // https://physics.wooster.edu/wp-content/uploads/2021/08/Junior-IS-Thesis-Web_1998_Grugel.pdf
     return rotationalVelocity * TORQUE_CONSTANT / FUEL_MASS;
   }
 
   @Override
   protected double[] lift() {
-    // SOURCE:
     // https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/ideal-lift-of-a-spinning-ball/
-    return new double[] {0, 0, LIFT_CONSTANT * norm(velocity) * rotationalVelocity / FUEL_MASS};
+    return new double[] {0, 0, LIFT_CONSTANT * norm3(velocity) * rotationalVelocity / FUEL_MASS};
   }
 
   @Override
   protected boolean willScore() {
-    Translation2d translation2d = new Translation2d(translation[X], translation[Y]);
+    double hub1XDisplacement = translation[X] - Hub.TOP_CENTER_POINT.getX();
+    double hub1YDisplacement = translation[Y] - Hub.TOP_CENTER_POINT.getY();
 
-    double planarDisplacement =
-        Math.min(
-            translation2d.getDistance(Hub.TOP_CENTER_POINT.toTranslation2d()),
-            translation2d.getDistance(Hub.OPP_TOP_CENTER_POINT.toTranslation2d()));
+    double hub2XDisplacement = translation[X] - Hub.OPP_TOP_CENTER_POINT.getX();
+    double hub2YDisplacement = translation[Y] - Hub.OPP_TOP_CENTER_POINT.getY();
+
+    double hub1Distance = Math.hypot(hub1XDisplacement, hub1YDisplacement);
+    double hub2Distance = Math.hypot(hub2XDisplacement, hub2YDisplacement);
+
+    double planarDistance = Math.min(hub1Distance, hub2Distance);
     double verticalDisplacement = Hub.HEIGHT - translation[Z];
     double scoreRadius = SCORE_TOLERANCE + FUEL_RADIUS + Hub.WIDTH / 2;
 
     return (verticalDisplacement < 0)
         && (verticalDisplacement > -FUEL_RADIUS)
-        && (planarDisplacement <= scoreRadius)
+        && (planarDistance <= scoreRadius)
         && velocity[Z] < 0;
   }
 
   @Override
   protected boolean willMiss() {
-    return translation[Z] <= FUEL_RADIUS;
+    double hub1XDisplacement = translation[X] - Hub.TOP_CENTER_POINT.getX();
+    double hub1YDisplacement = translation[Y] - Hub.TOP_CENTER_POINT.getY();
+
+    double hub2XDisplacement = translation[X] - Hub.OPP_TOP_CENTER_POINT.getX();
+    double hub2YDisplacement = translation[Y] - Hub.OPP_TOP_CENTER_POINT.getY();
+
+    double hub1Distance = Math.hypot(hub1XDisplacement, hub1YDisplacement);
+    double hub2Distance = Math.hypot(hub2XDisplacement, hub2YDisplacement);
+
+    double planarDistance = Math.min(hub1Distance, hub2Distance);
+    double verticalDisplacement = Hub.HEIGHT - translation[Z];
+    double scoreRadius = SCORE_TOLERANCE + FUEL_RADIUS + Hub.WIDTH / 2;
+
+    return (verticalDisplacement < 0)
+        && (verticalDisplacement > -FUEL_RADIUS)
+        && (planarDistance > scoreRadius)
+        && (velocity[Z] < 0);
+  }
+
+  protected static double[] launchTranslation(double[] shotVelocity, Pose3d robotPose) {
+    double[] robotTranslation = {robotPose.getX(), robotPose.getY(), robotPose.getZ()};
+    return add3(robotToFuel(shotVelocity, robotPose), robotTranslation);
+  }
+
+  protected static double[] launchVelocity(
+      double[] shotVelocity, Pose3d robotPose, ChassisSpeeds robotVelocity) {
+    return add3(shotVelocity, shooterVelocity(shotVelocity, robotPose, robotVelocity));
+  }
+
+  protected static double[] launchRotation(double[] shotVelocity, Pose3d robotPose) {
+    double[] axis = rotateAroundZ(shotVelocity, Math.PI / 2.0);
+    return scale4(new double[] {0, axis[X], axis[Y], axis[Z]}, 1 / norm3(shotVelocity));
+  }
+
+  protected static double launchRotationalVelocity() {
+    return 0.5; // TODO: UPDATE.
+  }
+
+  /**
+   * Converts shooter properties to a shot velocity vector (X, Y, and Z) which is compatible with
+   * visualizers.
+   *
+   * @param speed the launch speed of the FUEL.
+   * @param pitch the pitch of the shooter.
+   * @param yaw the yaw of the shooter.
+   * @param robotPose the pose of the drivetrain.
+   * @return A double[] that can be passed into the constructor of a visualizer.
+   */
+  public static double[] shotVelocity(double speed, double pitch, double yaw, Pose3d robotPose) {
+    return scale3(
+        rotateAroundZ(toDirectionVector(pitch, yaw), robotPose.getRotation().getZ()), speed);
+  }
+
+  /**
+   * Converts a shooting algorithm output to a shot velocity vector (X, Y, and Z) which is
+   * compatible with visualizers.
+   *
+   * @param shootingAlgorithm the shooting algorithm used to calculate the shot velocity.
+   * @param robotPose the pose of the drivetrain.
+   * @param robotVelocity the velocity of the drivetrain.
+   * @return A double[] that can be passed into the constructor of a visualizer.
+   */
+  public static double[] shotVelocity(
+      ShootingAlgorithm shootingAlgorithm, Pose3d robotPose, ChassisSpeeds robotVelocity) {
+    return shootingAlgorithm
+        .calculate(
+            robotPose.getTranslation(),
+            VecBuilder.fill(robotVelocity.vxMetersPerSecond, robotVelocity.vyMetersPerSecond))
+        .getData();
+  }
+
+  protected static double[] robotToFuel(double[] shotVelocity, Pose3d robotPose) {
+    double[] shooterToFuel = scale3(shotVelocity, SHOOTER_LENGTH.in(Meters) / norm3(shotVelocity));
+    double[] robotToShooter =
+        rotateAroundZ(fromTranslation(ROBOT_TO_SHOOTER), robotPose.getRotation().getZ());
+
+    return add3(shooterToFuel, robotToShooter);
+  }
+
+  protected static double[] shooterVelocity(
+      double[] shotVelocity, Pose3d robotPose, ChassisSpeeds robotVelocity) {
+    double tangentialSpeed =
+        robotVelocity.omegaRadiansPerSecond * norm3(robotToFuel(shotVelocity, robotPose));
+    double tangentialDirection = robotPose.getRotation().getZ() + Math.PI / 2.0;
+
+    double xVelocity =
+        robotVelocity.vxMetersPerSecond + tangentialSpeed * Math.cos(tangentialDirection);
+    double yVelocity =
+        robotVelocity.vyMetersPerSecond + tangentialSpeed * Math.sin(tangentialDirection);
+
+    return new double[] {xVelocity, yVelocity, 0};
   }
 }

@@ -22,9 +22,6 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
 // Constants from 6328
 public final class FieldConstants {
-  // Prevents instantiation
-  private FieldConstants() {}
-
   public static final String FIELD_TYPE = "welded";
 
   // AprilTag related constants
@@ -36,6 +33,9 @@ public final class FieldConstants {
   // Field dimensions
   public static final double FIELD_LENGTH = FIELD_LAYOUT.getFieldLength();
   public static final double FIELD_WIDTH = FIELD_LAYOUT.getFieldWidth();
+
+  // Prevents instantiation
+  private FieldConstants() {}
 
   /**
    * Officially defined and relevant vertical lines found on the field (defined by X-axis offset)

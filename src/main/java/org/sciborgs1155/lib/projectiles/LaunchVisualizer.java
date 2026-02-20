@@ -14,31 +14,16 @@ import org.sciborgs1155.lib.LoggingUtils;
  *
  * @see Projectile
  */
+@SuppressWarnings("PMD.OneDeclarationPerLine")
 public abstract class LaunchVisualizer {
-  @SuppressWarnings("PMD.OneDeclarationPerLine")
   private int scores, misses;
-  @SuppressWarnings("PMD.OneDeclarationPerLine")
   private boolean weightEnabled, dragEnabled, torqueEnabled, liftEnabled;
-  @SuppressWarnings("PMD.OneDeclarationPerLine")
   private final Supplier<double[]> launchTranslation, launchVelocity, launchRotation;
 
   private final DoubleSupplier launchRotationalVelocity;
   private final List<Projectile> projectiles = new ArrayList<>();
   private static final double COOLDOWN = 0.05;
 
-  /**
-   * Creates a new projectile with the given physics settings. The projectile will be launched with
-   * the launch parameters provided to the visualizer's constructor when the launchProjectile
-   * command is executed, and will be updated in the simulation and logging when the
-   * updateSimulation and updateLogging methods are called, respectively.
-   *
-   * @param resolution the resolution of the projectile's simulation, in steps per second
-   * @param weightEnabled Whether to apply weight to the projectile.
-   * @param dragEnabled Whether to apply drag to the projectile.
-   * @param torqueEnabled Whether to apply torque to the projectile.
-   * @param liftEnabled Whether to apply lift to the projectile.
-   * @return a new projectile with the given physics settings
-   */
   protected abstract Projectile createProjectile(
       double resolution,
       boolean weightEnabled,
@@ -47,18 +32,13 @@ public abstract class LaunchVisualizer {
       boolean liftEnabled);
 
   /**
-   * Creates a new LaunchVisualizer with the given launch parameters. The visualizer will create and
-   * launch projectiles with the given parameters when the launchProjectile command is executed, and
-   * will update the simulation and logging for those projectiles when the updateSimulation and
-   * updateLogging methods are called, respectively.
+   * A class that manages the creation, simulation, and logging of simulated projectiles.
    *
-   * @param launchTranslation a supplier that provides the current translation of the projectile at
-   *     launch time
-   * @param launchVelocity a supplier that provides the current velocity of the projectile at launch
+   * @param launchTranslation a supplier that provides the translation of the projectile at launch
    *     time
-   * @param launchRotation a supplier that provides the current rotation of the projectile at launch
-   *     time
-   * @param launchRotationalVelocity a supplier that provides the current rotational velocity of the
+   * @param launchVelocity a supplier that provides the velocity of the projectile at launch time
+   * @param launchRotation a supplier that provides the rotation of the projectile at launch time
+   * @param launchRotationalVelocity a supplier that provides the rotational velocity of the
    *     projectile at launch time
    */
   public LaunchVisualizer(
@@ -73,8 +53,8 @@ public abstract class LaunchVisualizer {
 
     weightEnabled = true;
     dragEnabled = true;
-    torqueEnabled = true;
-    liftEnabled = true;
+    torqueEnabled = false;
+    liftEnabled = false;
   }
 
   /**

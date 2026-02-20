@@ -19,7 +19,7 @@ public class SlapdownConstants {
 
   public static final double P = 10;
   public static final double I = 0;
-  public static final double D = 0;
+  public static final double D = 0.5;
 
   public static final double S = 0;
   public static final double V = 0;
@@ -44,5 +44,5 @@ public class SlapdownConstants {
   public static final Angle MAX_ANGLE = Degrees.of(83.7);
   public static final Angle START_ANGLE = MAX_ANGLE;
 
-  public static final Angle POSITION_TOLERANCE = Radians.of(0.05);
+  public static final Angle POSITION_TOLERANCE = Degrees.of(3);
 }

@@ -18,7 +18,6 @@
     <exclude name="JUnit5TestShouldBePackagePrivate" /> <!-- Violated a lot but this isn't a big deal -->
     <exclude name="UnitTestAssertionsShouldIncludeMessage" /> <!-- Not our current style, but maybe it should -->
     <exclude name="UnitTestContainsTooManyAsserts" /> <!-- I personally think this is fine -->
-    <exclude name="UnitTestShouldIncludeAssert" /> <!-- Tests use built-in assertions. -->
     <exclude name="UnusedPrivateField" /> <!-- This is often used during work in progress. This is fine. -->
     <exclude name="UnusedPrivateMethod" /> <!-- This is often used during work in progress. This is fine. -->
     <exclude name="UseVarargs" /> <!-- Does not fit our use cases -->

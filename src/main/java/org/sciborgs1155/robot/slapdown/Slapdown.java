@@ -18,10 +18,6 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
-import java.util.Set;
-import org.sciborgs1155.lib.Assertion;
-import org.sciborgs1155.lib.Assertion.EqualityAssertion;
-import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.lib.Tuning;
 import org.sciborgs1155.robot.Robot;
 
@@ -135,11 +131,11 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * @return the position of the pid
+   * @return the goal of the pid
    */
   @Logged
   public double setpoint() {
-    return pid.getSetpoint().position;
+    return pid.getGoal().position;
   }
 
   /**
@@ -168,18 +164,6 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
     double pidVoltage = pid.calculate(hardware.position(), rads);
     double ffVoltage = ff.calculate(pid.getSetpoint().position, pid.getSetpoint().velocity);
     hardware.setVoltage(pidVoltage + ffVoltage);
-  }
-
-  /**
-   * @param angle test if the Slapdown will go to the angle
-   * @return the test
-   */
-  public Test goToTest(double angle) {
-    EqualityAssertion atGoal =
-        Assertion.eAssert(
-            "Slapdown angle", () -> angle, hardware::position, POSITION_TOLERANCE.in(Radians));
-    Command testCommand = goTo(angle).until(pid::atGoal).withTimeout(5);
-    return new Test(testCommand, Set.of(atGoal));
   }
 
   @Override

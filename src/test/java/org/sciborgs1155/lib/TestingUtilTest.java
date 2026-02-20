@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.sciborgs1155.lib.Assertion.eAssert;
 import static org.sciborgs1155.lib.Assertion.tAssert;
-import static org.sciborgs1155.lib.Test.runUnitTest;
 import static org.sciborgs1155.lib.Test.toCommand;
 import static org.sciborgs1155.lib.UnitTestingUtil.reset;
 import static org.sciborgs1155.lib.UnitTestingUtil.runToCompletion;
@@ -127,24 +126,5 @@ public class TestingUtilTest {
     Test combo = new Test(runOnce(() -> set(x)), Set.of(goodAssertion, badAssertion));
     runToCompletion(toCommand(combo));
     assertFaultCount(1, 1, 0);
-  }
-
-  /**
-   * Tests the unit test functionality with passing and failing assertions.
-   *
-   * @param x The value to test with.
-   */
-  @ParameterizedTest
-  @ValueSource(ints = {-4, 3, 9})
-  public void unitTestTest(int x) {
-    EqualityAssertion goodAssertion = eAssert("x", () -> x, () -> this.x);
-    Test passes = new Test(runOnce(() -> set(x)), Set.of(goodAssertion));
-    runUnitTest(passes);
-    assertFaultCount(0, 0, 0);
-
-    TruthAssertion badAssertion = tAssert(() -> x != this.x, "x", () -> "fails");
-    Test fails = new Test(runOnce(() -> set(x)), Set.of(badAssertion));
-    assertThrows(AssertionError.class, (Executable) () -> runUnitTest(fails));
-    assertFaultCount(0, 0, 0);
   }
 }

@@ -1,4 +1,4 @@
-package org.sciborgs1155.lib.shooting;
+package org.sciborgs1155.robot.commands.shooting;
 
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -8,7 +8,6 @@ import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
-import org.sciborgs1155.lib.projectiles.Fuel;
 
 @FunctionalInterface
 public interface ShootingAlgorithm {
@@ -36,7 +35,8 @@ public interface ShootingAlgorithm {
       ShootingAlgorithm shootingAlgorithm,
       Supplier<Pose3d> robotPose,
       Supplier<ChassisSpeeds> robotVelocity) {
-    return () -> Fuel.shotVelocity(shootingAlgorithm, robotPose.get(), robotVelocity.get());
+    return () ->
+        FuelVisualizer.shotVelocity(shootingAlgorithm, robotPose.get(), robotVelocity.get());
   }
 
   /**
@@ -52,7 +52,7 @@ public interface ShootingAlgorithm {
   static Supplier<double[]> toShotVelocitySupplier(
       DoubleSupplier speed, DoubleSupplier pitch, DoubleSupplier yaw, Supplier<Pose3d> robotPose) {
     return () ->
-        Fuel.shotVelocity(
+        FuelVisualizer.shotVelocity(
             speed.getAsDouble(), pitch.getAsDouble(), yaw.getAsDouble(), robotPose.get());
   }
 }

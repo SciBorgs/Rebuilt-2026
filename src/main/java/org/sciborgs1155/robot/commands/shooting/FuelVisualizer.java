@@ -7,6 +7,8 @@ import static org.sciborgs1155.robot.Constants.Robot.SHOOTER_LENGTH;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.sciborgs1155.robot.FieldConstants.Hub;
 
@@ -19,7 +21,7 @@ public class FuelVisualizer extends ProjectileVisualizer {
   /**
    * A class that manages the creation, simulation, and logging of simulated FUEL projectiles.
    *
-   * @param launchVelocity a supplier that provides the velocity of the projectile at launch time
+   * @param launchVelocity a supplier that provides the velocity of the FUEL at launch time
    * @param robotPose a supplier that provides the pose of the robot at launch time
    * @param robotVelocity a supplier that provides the velocity of the robot at launch time
    */
@@ -32,6 +34,24 @@ public class FuelVisualizer extends ProjectileVisualizer {
         () -> launchVelocity(launchVelocity.get(), robotPose.get(), robotVelocity.get()),
         () -> launchRotation(launchVelocity.get(), robotPose.get()),
         () -> launchRotationalVelocity());
+  }
+
+  /**
+   * A class that manages the creation, simulation, and logging of simulated FUEL projectiles.
+   *
+   * @param launchTranslation a supplier that provides the translation of the FUEL at launch
+   *     time
+   * @param launchVelocity a supplier that provides the velocity of the FUEL at launch time
+   * @param launchRotation a supplier that provides the rotation of the FUEL at launch time
+   * @param launchRotationalVelocity a supplier that provides the rotational velocity of the
+   *     FUEL at launch time
+   */
+  public FuelVisualizer(
+      Supplier<double[]> launchTranslation,
+      Supplier<double[]> launchVelocity,
+      Supplier<double[]> launchRotation,
+      DoubleSupplier launchRotationalVelocity) {
+    super(launchTranslation,launchVelocity,launchRotation,launchRotationalVelocity);
   }
 
   @Override
@@ -126,17 +146,17 @@ public class FuelVisualizer extends ProjectileVisualizer {
   }
 
   /** Models the launch physics of a FUEL projectile. */
-  public class Fuel extends Projectile {
+  public static class Fuel extends Projectile {
     /** Mass of the fuel projectile in kilograms. */
     protected static final double FUEL_MASS = 0.225;
 
     /** Radius of the fuel projectile in meters. */
     protected static final double FUEL_RADIUS = 0.075;
 
-    private static final double SCORE_TOLERANCE = 0;
-    private static final double GRAVITY = -9.80665;
-    private static final double AIR_DENSITY = 1.225;
-    private static final double AIR_VISCOSITY = 15.24 * Math.pow(10, -6);
+    protected static final double SCORE_TOLERANCE = 0;
+    protected static final double GRAVITY = -9.80665;
+    protected static final double AIR_DENSITY = 1.225;
+    protected static final double AIR_VISCOSITY = 15.24 * Math.pow(10, -6);
 
     /** Multiplied by velocity squared to compute drag force. */
     private static final double DRAG_CONSTANT =
@@ -193,9 +213,9 @@ public class FuelVisualizer extends ProjectileVisualizer {
       double verticalDisplacement = Hub.HEIGHT - translation[Z];
       double scoreRadius = SCORE_TOLERANCE + FUEL_RADIUS + Hub.WIDTH / 2;
 
-      return (verticalDisplacement < 0)
-          && (verticalDisplacement > -FUEL_RADIUS)
-          && (planarDistance <= scoreRadius)
+      return verticalDisplacement < 0
+          && verticalDisplacement > -FUEL_RADIUS
+          && planarDistance <= scoreRadius
           && velocity[Z] < 0;
     }
 
@@ -214,10 +234,10 @@ public class FuelVisualizer extends ProjectileVisualizer {
       double verticalDisplacement = Hub.HEIGHT - translation[Z];
       double scoreRadius = SCORE_TOLERANCE + FUEL_RADIUS + Hub.WIDTH / 2;
 
-      return (verticalDisplacement < 0)
-          && (verticalDisplacement > -FUEL_RADIUS)
-          && (planarDistance > scoreRadius)
-          && (velocity[Z] < 0);
+      return (verticalDisplacement < 0
+          && verticalDisplacement > -FUEL_RADIUS
+          && planarDistance > scoreRadius
+          && velocity[Z] < 0) || translation[Z] < FUEL_RADIUS;
     }
   }
 }

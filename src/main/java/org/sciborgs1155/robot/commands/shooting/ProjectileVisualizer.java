@@ -33,7 +33,7 @@ public abstract class ProjectileVisualizer {
   private final List<Projectile> projectiles = new ArrayList<>();
 
   private static final double DEFAULT_COOLDOWN = 0.05;
-
+  private static final int MAX_TRAJECTORY_SIZE = 200;
   private static final double DEFAULT_LAUNCH_RESOLUTION = 80;
   private static final double DEFAULT_TRAJECTORY_RESOLUTION = 60;
 
@@ -69,6 +69,8 @@ public abstract class ProjectileVisualizer {
     this.launchVelocity = launchVelocity;
     this.launchRotation = launchRotation;
     this.launchRotationalVelocity = launchRotationalVelocity;
+
+    trajectory = new Pose3d[0];
 
     launchResolution = DEFAULT_LAUNCH_RESOLUTION;
     trajectoryResolution = DEFAULT_TRAJECTORY_RESOLUTION;
@@ -148,7 +150,7 @@ public abstract class ProjectileVisualizer {
    * Pose3d representing the projectile's pose at each step of the simulation. The simulation will
    * end when the projectile either scores or misses.
    *
-   * @param resolution the resolution of the projectile's simulation, in steps per second
+   * @param RESOLUTION the resolution of the projectile's simulation, in steps per second
    * @param weight Whether to apply weight to the projectile.
    * @param drag Whether to apply drag to the projectile.
    * @param torque Whether to apply torque to the projectile.
@@ -167,7 +169,7 @@ public abstract class ProjectileVisualizer {
         launchVelocity.get(),
         launchRotation.get(),
         launchRotationalVelocity.getAsDouble());
-    while (!projectile.willMiss() && !projectile.willScore()) {
+    while (!projectile.willMiss() && !projectile.willScore() && frames <= MAX_TRAJECTORY_SIZE) {
       trajectory.add(projectile.pose());
       projectile.periodic();
       frames++;
@@ -307,13 +309,8 @@ public abstract class ProjectileVisualizer {
 
   /** A class that models the physics of a projectile. */
   @SuppressWarnings("PMD.OneDeclarationPerLine")
-  protected abstract class Projectile {
-    /**
-     * The X, Y, Z components of a vector are the first, second, and third elements of the array.
-     */
+  protected abstract static class Projectile {
     protected static final int X = 0, Y = 1, Z = 2;
-
-    /** The ANGLE and AXIS components of a rotation vector are placed in that order in the array. */
     protected static final int ANGLE = 0, AXIS_X = 1, AXIS_Y = 2, AXIS_Z = 3;
 
     protected double resolution;
@@ -363,7 +360,6 @@ public abstract class ProjectileVisualizer {
      */
     protected abstract boolean willMiss();
 
-    /** A class that models the physics of a projectile. */
     protected Projectile() {
       translation = new double[3];
       velocity = new double[3];
@@ -381,15 +377,6 @@ public abstract class ProjectileVisualizer {
       resolution = 50;
     }
 
-    /**
-     * Launches the projectile with the given parameters.
-     *
-     * @param launchTranslation the initial translation of the projectile at launch time
-     * @param launchVelocity the initial velocity of the projectile at launch time
-     * @param launchRotation the initial rotation of the projectile at launch time
-     * @param launchRotationalVelocity the initial rotational velocity of the projectile at launch
-     *     time
-     */
     protected void launch(
         double[] launchTranslation,
         double[] launchVelocity,
@@ -404,16 +391,6 @@ public abstract class ProjectileVisualizer {
       rotationalAcceleration = 0;
     }
 
-    /**
-     * Configures the projectile's physics settings.
-     *
-     * @param fps the resolution of the projectile's simulation, in steps per second
-     * @param weight Whether to apply weight to the projectile.
-     * @param drag Whether to apply drag to the projectile.
-     * @param torque Whether to apply torque to the projectile.
-     * @param lift Whether to apply lift to the projectile.
-     * @return this projectile instance for chaining
-     */
     protected Projectile config(
         double fps, boolean weight, boolean drag, boolean torque, boolean lift) {
       resolution = fps;
@@ -425,7 +402,6 @@ public abstract class ProjectileVisualizer {
       return this;
     }
 
-    /** Increments the projectile's state by one simulation step. */
     protected void periodic() {
       translation[X] += velocity[X] / resolution;
       translation[Y] += velocity[Y] / resolution;
@@ -472,11 +448,6 @@ public abstract class ProjectileVisualizer {
       }
     }
 
-    /**
-     * Returns the projectile's current pose.
-     *
-     * @return the projectile's current pose
-     */
     protected Pose3d pose() {
       return new Pose3d(
           translation[X],
@@ -485,6 +456,16 @@ public abstract class ProjectileVisualizer {
           new Rotation3d(
               VecBuilder.fill(rotation[AXIS_X], rotation[AXIS_Y], rotation[AXIS_Z]),
               rotation[ANGLE]));
+    }
+
+    protected void reset() {
+      translation = new double[3];
+      velocity = new double[3];
+      acceleration = new double[3];
+
+      rotation = new double[4];
+      rotationalVelocity = 0;
+      rotationalAcceleration = 0;
     }
 
     protected static double[] fromTranslation(Translation3d translation) {

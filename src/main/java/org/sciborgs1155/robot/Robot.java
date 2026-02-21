@@ -43,6 +43,7 @@ import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.lib.Tracer;
+<<<<<<< HEAD
 import org.sciborgs1155.lib.projectiles.FuelLaunchVisualizer;
 import org.sciborgs1155.lib.projectiles.FuelTrajectoryVisualizer;
 import org.sciborgs1155.lib.projectiles.LaunchVisualizer;
@@ -50,9 +51,14 @@ import org.sciborgs1155.lib.projectiles.Projectile;
 import org.sciborgs1155.lib.projectiles.TrajectoryVisualizer;
 import org.sciborgs1155.lib.shooting.BasedShootingAlgorithm;
 import org.sciborgs1155.lib.shooting.ShootingAlgorithm;
+=======
+>>>>>>> fuel-visualizer
 import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
+import org.sciborgs1155.robot.commands.shooting.FuelVisualizer;
+import org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer;
+import org.sciborgs1155.robot.commands.shooting.ShootingAlgorithm;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.hood.Hood;
 import org.sciborgs1155.robot.shooter.Shooter;
@@ -88,12 +94,23 @@ public class Robot extends CommandRobot {
   @NotLogged private final SendableChooser<Command> autos = Autos.configureAutos(drive);
 
   @NotLogged
+<<<<<<< HEAD
   private final TrajectoryVisualizer trajectoryVisualizer =
       new FuelTrajectoryVisualizer(shootingAlgorithm, drive);
 
   @NotLogged
   private final LaunchVisualizer launchVisualizer =
       new FuelLaunchVisualizer(shootingAlgorithm, drive);
+=======
+  private final ProjectileVisualizer fuelVisualizer =
+      new FuelVisualizer(
+              ShootingAlgorithm.toShotVelocitySupplier(() -> 10, () -> 1, () -> 0, drive::pose3d),
+              drive::pose3d,
+              drive::fieldRelativeChassisSpeeds)
+          .configPhysics(true, true, false, false)
+          .configGeneration(0.05, 80, 60)
+          .config(true, true);
+>>>>>>> fuel-visualizer
 
   @Logged private double speedMultiplier = FULL_SPEED_MULTIPLIER;
 
@@ -170,10 +187,10 @@ public class Robot extends CommandRobot {
       pdh.setSwitchableChannel(true);
     } else {
       DriverStation.silenceJoystickConnectionWarning(true);
-      addPeriodic(trajectoryVisualizer::updateLogging, Projectile.LOGGING_PERIOD);
-      addPeriodic(launchVisualizer::updateLogging, Projectile.LOGGING_PERIOD);
-
-      addPeriodic(launchVisualizer::updateSimulation, Projectile.SIMULATION_PERIOD);
+      addPeriodic(fuelVisualizer::updateLogging, PERIOD);
+      addPeriodic(fuelVisualizer::updateLaunchSimulation, ProjectileVisualizer.LAUNCH_PERIOD);
+      addPeriodic(
+          fuelVisualizer::updateTrajectorySimulation, ProjectileVisualizer.TRAJECTORY_PERIOD);
     }
   }
 
@@ -236,7 +253,7 @@ public class Robot extends CommandRobot {
         .onTrue(Commands.runOnce(() -> speedMultiplier = SLOW_SPEED_MULTIPLIER))
         .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
 
-    operator.a().whileTrue(launchVisualizer.launchProjectile());
+    operator.a().whileTrue(fuelVisualizer.launchProjectiles());
   }
 
   /**

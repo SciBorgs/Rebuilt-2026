@@ -7,7 +7,6 @@ import static org.sciborgs1155.robot.Constants.Robot.SHOOTER_LENGTH;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.sciborgs1155.robot.FieldConstants.Hub;
@@ -39,19 +38,18 @@ public class FuelVisualizer extends ProjectileVisualizer {
   /**
    * A class that manages the creation, simulation, and logging of simulated FUEL projectiles.
    *
-   * @param launchTranslation a supplier that provides the translation of the FUEL at launch
-   *     time
+   * @param launchTranslation a supplier that provides the translation of the FUEL at launch time
    * @param launchVelocity a supplier that provides the velocity of the FUEL at launch time
    * @param launchRotation a supplier that provides the rotation of the FUEL at launch time
-   * @param launchRotationalVelocity a supplier that provides the rotational velocity of the
-   *     FUEL at launch time
+   * @param launchRotationalVelocity a supplier that provides the rotational velocity of the FUEL at
+   *     launch time
    */
   public FuelVisualizer(
       Supplier<double[]> launchTranslation,
       Supplier<double[]> launchVelocity,
       Supplier<double[]> launchRotation,
       DoubleSupplier launchRotationalVelocity) {
-    super(launchTranslation,launchVelocity,launchRotation,launchRotationalVelocity);
+    super(launchTranslation, launchVelocity, launchRotation, launchRotationalVelocity);
   }
 
   @Override
@@ -234,10 +232,10 @@ public class FuelVisualizer extends ProjectileVisualizer {
       double verticalDisplacement = Hub.HEIGHT - translation[Z];
       double scoreRadius = SCORE_TOLERANCE + FUEL_RADIUS + Hub.WIDTH / 2;
 
-      return (verticalDisplacement < 0
-          && verticalDisplacement > -FUEL_RADIUS
-          && planarDistance > scoreRadius
-          && velocity[Z] < 0) || translation[Z] < FUEL_RADIUS;
+      return (verticalDisplacement > -FUEL_RADIUS
+              && planarDistance > scoreRadius
+              && velocity[Z] < 0)
+          || translation[Z] < FUEL_RADIUS;
     }
   }
 }

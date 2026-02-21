@@ -80,7 +80,6 @@ public class Robot extends CommandRobot {
 
   // COMMANDS
   private final Alignment align = new Alignment(drive);
-  private final BasedShootingAlgorithm shootingAlgorithm = new BasedShootingAlgorithm();
 
   @NotLogged private final SendableChooser<Command> autos = Autos.configureAutos(drive);
 

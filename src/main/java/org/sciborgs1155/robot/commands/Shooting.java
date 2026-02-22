@@ -1,7 +1,9 @@
 package org.sciborgs1155.robot.commands;
 
 import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.CENTER_TO_SHOOTER;
+import static org.sciborgs1155.robot.shooter.ShooterConstants.IDLE_VELOCITY;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
@@ -26,6 +28,7 @@ import org.sciborgs1155.lib.Tuning;
 import org.sciborgs1155.lib.projectiles.FuelVisualizer;
 import org.sciborgs1155.robot.FieldConstants;
 import org.sciborgs1155.robot.drive.Drive;
+import org.sciborgs1155.robot.drive.DriveConstants;
 import org.sciborgs1155.robot.hood.Hood;
 import org.sciborgs1155.robot.hopper.Hopper;
 import org.sciborgs1155.robot.indexer.Indexer;
@@ -112,8 +115,8 @@ public class Shooting {
    *
    * @return
    */
-  public Command shootHubDriving(InputStream vx, InputStream vy) {
-    return Commands.waitUntil(() -> shooter.atSetpoint() && hood.atGoal() && turret.atGoal())
+  public Command shootHubDriving(InputStream vx, InputStream vy, InputStream omega) {
+    return Commands.waitUntil(() -> shooter.atSetpoint() && shooter.setpoint() > IDLE_VELOCITY.in(RadiansPerSecond) && hood.atGoal() && turret.atGoal())
         .andThen(
             hopper
                 .intake()
@@ -122,7 +125,7 @@ public class Shooting {
         .withTimeout(.2)
         .deadlineFor(
             runShooterSuperstructure(() -> calculateShot(HUB_TARGET))
-                .alongWith(drive.drive(vx.scale(.25), vy.scale(.5), () -> 0)));
+                .alongWith(drive.drive(vx.scale(DriveConstants.SHOOTING_TRANSLATIONAL_SPEED), vy.scale(DriveConstants.SHOOTING_TRANSLATIONAL_SPEED), omega.scale(DriveConstants.SHOOTING_ANGULAR_SPEED))));
   }
 
   private Command runShooterSuperstructure(Supplier<ShooterParams> params) {

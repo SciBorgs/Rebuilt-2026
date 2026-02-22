@@ -189,7 +189,7 @@ public class Robot extends CommandRobot {
         .onTrue(Commands.runOnce(() -> speedMultiplier = Constants.SLOW_SPEED_MULTIPLIER))
         .onFalse(Commands.runOnce(() -> speedMultiplier = Constants.FULL_SPEED_MULTIPLIER));
 
-    operator.a().whileTrue(shooting.shootHubDriving(x, y).repeatedly());
+    operator.a().whileTrue(shooting.shootHubDriving(x, y, omega).repeatedly());
   }
 
   /**

@@ -169,7 +169,7 @@ public final class Shooter extends SubsystemBase implements AutoCloseable {
             () -> goal.getAsDouble(),
             this::getVelocity,
             VELOCITY_TOLERANCE.in(RadiansPerSecond));
-    return new Test(testCommand, Set.of(atGoal));
+    return new Test(testCommand.withTimeout(5), Set.of(atGoal));
   }
 
   /** Closes the shooter motor. */

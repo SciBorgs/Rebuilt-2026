@@ -224,7 +224,7 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
     LoggingUtils.log("Robot/turret/encoder A position", hardware.encoderA());
     LoggingUtils.log("Robot/turret/encoder B position", hardware.encoderB());
 
-    if (TUNING.get()) {
+    if (TUNING) {
       controller.setP(tuningP.get());
       controller.setI(tuningI.get());
       controller.setD(tuningD.get());

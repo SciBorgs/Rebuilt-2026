@@ -20,12 +20,8 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
-// 6328 is a goated team
+// Constants from 6328
 public final class FieldConstants {
-  // Origin at corner of blue alliance side of field
-  public static final Distance LENGTH = Centimeters.of(1755);
-  public static final Distance WIDTH = Centimeters.of(805);
-
   // Prevents instantiation
   private FieldConstants() {}
 
@@ -307,9 +303,9 @@ public final class FieldConstants {
   /** Returns whether the provided position is within the boundaries of the field. */
   public static boolean inField(Pose3d pose) {
     return pose.getX() > 0
-        && pose.getX() < LENGTH.in(Meters)
+        && pose.getX() < FIELD_LENGTH
         && pose.getY() > 0
-        && pose.getY() < WIDTH.in(Meters);
+        && pose.getY() < FIELD_WIDTH;
   }
 
   /**
@@ -331,7 +327,7 @@ public final class FieldConstants {
    * @return A Vector from the given spherical coordinates.
    */
   public static Vector<N3> fromSphericalCoords(double magnitude, Rotation3d direction) {
-    double theta = direction.toRotation2d().getRadians();
+    double theta = direction.getZ();
     double alpha = direction.getY();
 
     return VecBuilder.fill(
@@ -354,7 +350,8 @@ public final class FieldConstants {
         ? pose
         : new Pose2d(
             pose.getTranslation()
-                .rotateAround(new Translation2d(LENGTH.div(2), WIDTH.div(2)), Rotation2d.k180deg),
+                .rotateAround(
+                    new Translation2d(FIELD_LENGTH / 2, FIELD_WIDTH / 2), Rotation2d.k180deg),
             pose.getRotation().plus(Rotation2d.k180deg));
   }
 
@@ -366,7 +363,7 @@ public final class FieldConstants {
    * @return A reflected distance, only if the alliance is red.
    */
   public static Distance reflectDistance(Distance blueDist) {
-    return alliance() == Alliance.Blue ? blueDist : WIDTH.minus(blueDist);
+    return alliance() == Alliance.Blue ? blueDist : Meters.of(FIELD_WIDTH - blueDist.in(Meters));
   }
 
   /**
@@ -376,7 +373,7 @@ public final class FieldConstants {
    * @return The alliance corresponding to the pose's position.
    */
   public static Alliance allianceFromPose(Pose2d pose) {
-    return pose.getX() > LENGTH.in(Meters) / 2 ? Alliance.Red : Alliance.Blue;
+    return pose.getX() > FIELD_LENGTH / 2 ? Alliance.Red : Alliance.Blue;
   }
 
   /**
@@ -402,14 +399,4 @@ public final class FieldConstants {
     return new Transform2d(
         new Translation2d(distance.in(Meters), Rotation2d.kZero), Rotation2d.kZero);
   }
-
-  // List field constants below!
-
-  public static final Distance HUB_DIAMETER = Meters.of(1.059942);
-  public static final Distance HUB_HEIGHT = Meters.of(1.8288);
-  public static final Translation2d BLUE_HUB = new Translation2d(4.611624, 4.021328);
-  public static final Translation2d RED_HUB = new Translation2d(11.901424, 4.021328);
-
-  public static final double FUEL_MASS = 0.225;
-  public static final double FUEL_RADIUS = 0.075;
 }

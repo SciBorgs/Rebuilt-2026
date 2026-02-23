@@ -179,7 +179,7 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
   /**
    * checks whether the hood is at a set desired state
    *
-   * @return Whether or not the elevator is at its desired state.
+   * @return Whether or not the hood is at its desired state.
    */
   @Logged
   public boolean atGoal() {
@@ -263,7 +263,7 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
   public void periodic() {
     measurement.setAngle(Radians.of(angle()).in(Degrees));
     setpoint.setAngle(Radians.of(angleSetpoint()).in(Degrees));
-    if (TUNING.get()) {
+    if (TUNING) {
       fb.setP(tuningP.get());
       fb.setI(tuningI.get());
       fb.setD(tuningD.get());

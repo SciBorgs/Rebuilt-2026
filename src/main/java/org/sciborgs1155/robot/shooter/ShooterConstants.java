@@ -24,7 +24,9 @@ public class ShooterConstants {
   public static final Current SUPPLY_CURRENT_LIMIT = Amps.of(30);
 
   public static final Transform3d CENTER_TO_SHOOTER =
-      new Transform3d(Inches.of(5.975), Inches.of(-5.975), Inches.of(-13.375), new Rotation3d());
+      new Transform3d(Inches.of(5.975), Inches.of(5.975), Inches.of(13.375), new Rotation3d());
+
+  public static final AngularVelocity VELOCITY_TOLERANCE = RadiansPerSecond.of(5);
 
   public static final class ControlConstants {
     public static final double P = 0.03;
@@ -35,6 +37,4 @@ public class ShooterConstants {
     public static final double V = 0.016981;
     public static final double A = 0.0021296;
   }
-
-  public static final AngularVelocity VELOCITY_TOLERANCE = RadiansPerSecond.of(5);
 }

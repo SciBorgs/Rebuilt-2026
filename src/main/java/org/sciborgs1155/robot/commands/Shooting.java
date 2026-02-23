@@ -25,8 +25,9 @@ import java.util.function.Supplier;
 import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.lib.Tuning;
-import org.sciborgs1155.lib.projectiles.FuelVisualizer;
 import org.sciborgs1155.robot.FieldConstants;
+import org.sciborgs1155.robot.Robot;
+import org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.drive.DriveConstants;
 import org.sciborgs1155.robot.hood.Hood;
@@ -47,7 +48,7 @@ public class Shooting {
   public static final DoubleEntry HOOD_DEGREES_TEST =
       Tuning.entry("/ShootingData/Hood Angle", 30.0);
 
-  public static final Distance MAX_DISTANCE = Meters.of(7);
+  public static final Distance MAX_DISTANCE = Meters.of(100);
   public static final Distance MIN_DISTANCE = Meters.of(.2);
 
   private static final InterpolatingDoubleTreeMap DISTANCE_TO_RADS =
@@ -58,18 +59,21 @@ public class Shooting {
       new InterpolatingTreeMap<>(InverseInterpolator.forDouble(), Rotation2d::interpolate);
 
   static {
-    // These are simulated values, not real-life
-    DISTANCE_TO_HOOD_ANGLE.put(6.122, Rotation2d.fromDegrees(40));
-    DISTANCE_TO_TOF.put(6.122, 1.0);
-    DISTANCE_TO_RADS.put(6.122, 270.0);
+    DISTANCE_TO_HOOD_ANGLE.put(1.7, Rotation2d.fromDegrees(15));
+    DISTANCE_TO_RADS.put(1.7, 125.0);
+    DISTANCE_TO_TOF.put(1.7, 1.133);
 
-    DISTANCE_TO_HOOD_ANGLE.put(3.333, Rotation2d.fromDegrees(30));
-    DISTANCE_TO_TOF.put(3.333, .8);
-    DISTANCE_TO_RADS.put(3.333, 220.0);
+    DISTANCE_TO_HOOD_ANGLE.put(3.5, Rotation2d.fromDegrees(20));
+    DISTANCE_TO_RADS.put(3.5, 150.0);
+    DISTANCE_TO_TOF.put(3.5, 1.4);
 
-    DISTANCE_TO_HOOD_ANGLE.put(1.184, Rotation2d.fromDegrees(15));
-    DISTANCE_TO_TOF.put(1.184, .7);
-    DISTANCE_TO_RADS.put(1.184, 190.0);
+    DISTANCE_TO_HOOD_ANGLE.put(5.5, Rotation2d.fromDegrees(27));
+    DISTANCE_TO_RADS.put(5.5, 160.0);
+    DISTANCE_TO_TOF.put(5.5, 1.43);  
+
+    DISTANCE_TO_HOOD_ANGLE.put(11.0, Rotation2d.fromDegrees(40));
+    DISTANCE_TO_RADS.put(11.0, 200.0);
+    DISTANCE_TO_TOF.put(11.0, 1.583);
   }
 
   private final Shooter shooter;
@@ -79,7 +83,7 @@ public class Shooting {
   private final Hopper hopper;
   private final Indexer indexer;
 
-  FuelVisualizer fuelVisualizer;
+  ProjectileVisualizer fuelVisualizer;
 
   /**
    * Creates the shooting command factory with all subsystems passed in. Subsystems provide
@@ -93,7 +97,7 @@ public class Shooting {
       Drive drive,
       Hopper hopper,
       Indexer indexer,
-      FuelVisualizer fuelVisualizer) {
+      ProjectileVisualizer fuelVisualizer) {
     this.shooter = shooter;
     this.turret = turret;
     this.hood = hood;
@@ -116,16 +120,25 @@ public class Shooting {
    * @return
    */
   public Command shootHubDriving(InputStream vx, InputStream vy, InputStream omega) {
-    return Commands.waitUntil(() -> shooter.atSetpoint() && shooter.setpoint() > IDLE_VELOCITY.in(RadiansPerSecond) && hood.atGoal() && turret.atGoal())
+    return Commands.waitUntil(
+            () ->
+                shooter.atSetpoint()
+                    && shooter.setpoint() > IDLE_VELOCITY.in(RadiansPerSecond)
+                    && hood.atGoal()
+                    && turret.atGoal())
         .andThen(
-            hopper
-                .intake()
-                .alongWith(indexer.forward())
-                .alongWith(fuelVisualizer.launchProjectile()))
-        .withTimeout(.2)
+            Commands.waitUntil(Robot.isReal() ? hopper.blocked : hopper.blocked.negate())
+                .andThen(Commands.waitUntil(hopper.blocked.negate()))
+                .deadlineFor(
+                    hopper.intake(),
+                    indexer.forward(),
+                    Commands.runOnce(() -> fuelVisualizer.launchProjectile())))
         .deadlineFor(
-            runShooterSuperstructure(() -> calculateShot(HUB_TARGET))
-                .alongWith(drive.drive(vx.scale(DriveConstants.SHOOTING_TRANSLATIONAL_SPEED), vy.scale(DriveConstants.SHOOTING_TRANSLATIONAL_SPEED), omega.scale(DriveConstants.SHOOTING_ANGULAR_SPEED))));
+            runShooterSuperstructure(() -> calculateShot(HUB_TARGET)),
+            drive.drive(
+                vx.scale(DriveConstants.SHOOTING_TRANSLATIONAL_SPEED),
+                vy.scale(DriveConstants.SHOOTING_TRANSLATIONAL_SPEED),
+                omega.scale(DriveConstants.SHOOTING_ANGULAR_SPEED)));
   }
 
   private Command runShooterSuperstructure(Supplier<ShooterParams> params) {
@@ -153,7 +166,7 @@ public class Shooting {
                     RADS_TEST.get(),
                     HOOD_DEGREES_TEST.get() * Math.PI / 180,
                     calculateShot(HUB_TARGET).turretAngle))
-        .alongWith(Commands.repeatingSequence(fuelVisualizer.launchProjectile()));
+        .alongWith(fuelVisualizer.launchProjectiles());
   }
 
   /**

@@ -29,7 +29,6 @@
     <exclude name="CallSuperInConstructor" /> <!-- Compiler will catch this automatically if needed -->
     <exclude name="CommentDefaultAccessModifier" /> <!-- Annoying and confusing -->
     <exclude name="ControlStatementBraces" /> <!-- Violated a lot -->
-    <exclude name="FieldDeclarationsShouldBeAtStartOfClass" /> <!-- Violated a lot -->
     <exclude name="LambdaCanBeMethodReference" /> <!-- I like doing this but some people can find this confusing -->
     <exclude name="LocalVariableCouldBeFinal" /> <!-- Too verbose -->
     <exclude name="LongVariable" /> <!-- Too sensitive -->
@@ -59,19 +58,19 @@
       it BEFORE the full `documentation` suite or else defaults are applied. -->
     <properties>
       <property name="methodWithOverrideCommentRequirement"
-        value="Ignored" />
-      <property name="accessorCommentRequirement" value="Ignored" />
-      <property name="classCommentRequirement" value="Ignored" />
-      <property name="fieldCommentRequirement" value="Ignored" />
+        value="ignored" />
+      <property name="accessorCommentRequirement" value="ignored" />
+      <property name="classCommentRequirement" value="ignored" />
+      <property name="fieldCommentRequirement" value="ignored" />
       <property name="publicMethodCommentRequirement"
-        value="Required" />
+        value="required" />
       <property name="protectedMethodCommentRequirement"
-        value="Ignored" />
-      <property name="enumCommentRequirement" value="Ignored" />
+        value="ignored" />
+      <property name="enumCommentRequirement" value="ignored" />
       <property name="serialVersionUIDCommentRequired"
-        value="Ignored" />
+        value="ignored" />
       <property name="serialPersistentFieldsCommentRequired"
-        value="Ignored" />
+        value="ignored" />
     </properties>
   </rule>
 

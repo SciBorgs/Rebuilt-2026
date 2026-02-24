@@ -28,11 +28,15 @@
               "degrees": 0
             },
             {
+              "axis": "y",
+              "degrees": 0
+            },
+            {
               "axis": "z",
               "degrees": 0
             }
         ],
-        "zeroedPosition": [0,2,0]
+        "zeroedPosition": [0,0,0]
       },
       {
         "zeroedRotations": [
@@ -63,10 +67,10 @@
             },
             {
               "axis": "z",
-              "degrees": -90
+              "degrees": 0
             }
         ],
-        "zeroedPosition": [0, 2, 0]
+        "zeroedPosition": [0, 0, 0]
       }
     ]
   }

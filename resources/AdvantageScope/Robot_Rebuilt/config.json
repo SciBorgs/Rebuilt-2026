@@ -29,7 +29,7 @@
             },
             {
               "axis": "z",
-              "degrees": -90
+              "degrees": 0
             }
         ],
         "zeroedPosition": [0,2,0]

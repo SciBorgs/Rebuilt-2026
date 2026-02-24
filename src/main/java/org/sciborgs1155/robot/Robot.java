@@ -69,10 +69,10 @@ public class Robot extends CommandRobot {
 
   // SUBSYSTEMS
   private final Drive drive = Drive.create();
-  private final Hood hood = Hood.none();
+  private final Hood hood = Hood.create();
   private final Vision vision = Vision.create();
-  private final Shooter shooter = Shooter.none();
-  private final Turret turret = Turret.none();
+  private final Shooter shooter = Shooter.create();
+  private final Turret turret = Turret.create();
 
   // COMMANDS
   private final Alignment align = new Alignment(drive);
@@ -218,7 +218,7 @@ public class Robot extends CommandRobot {
         .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
 
     // TODO: Add any additional bindings.
-    operator.a().onTrue(turret.manualTurret(InputStream.of(operator::getLeftY)));
+    operator.a().whileTrue(turret.manualTurret(InputStream.of(operator::getLeftY)));
     operator.b().onTrue(shooter.manualShooter(InputStream.of(operator::getLeftY)));
     operator.x().onTrue(hood.manualHood(InputStream.of(operator::getLeftY)));
   }

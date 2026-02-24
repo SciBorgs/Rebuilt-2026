@@ -1,13 +1,24 @@
 package org.sciborgs1155.robot.commands;
 
-import static org.sciborgs1155.robot.Constants.Robot.*;
+import static org.sciborgs1155.robot.Constants.Robot.MASS;
+import static org.sciborgs1155.robot.Constants.Robot.MOI;
 import static org.sciborgs1155.robot.Constants.alliance;
+import org.sciborgs1155.robot.drive.Drive;
+import org.sciborgs1155.robot.drive.DriveConstants.ControlMode;
 import static org.sciborgs1155.robot.drive.DriveConstants.MAX_SPEED;
 import static org.sciborgs1155.robot.drive.DriveConstants.MODULE_OFFSET;
+import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Driving;
+import org.sciborgs1155.robot.drive.DriveConstants.Rotation;
+import org.sciborgs1155.robot.drive.DriveConstants.Translation;
 import static org.sciborgs1155.robot.drive.DriveConstants.WHEEL_COF;
 import static org.sciborgs1155.robot.drive.DriveConstants.WHEEL_RADIUS;
+import org.sciborgs1155.robot.hood.Hood;
+import org.sciborgs1155.robot.intake.Intake;
+import org.sciborgs1155.robot.shooter.Shooter;
+import org.sciborgs1155.robot.turret.Turret;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
@@ -15,19 +26,12 @@ import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.system.plant.DCMotor;
+import static edu.wpi.first.units.Units.Degrees;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-
-import org.sciborgs1155.robot.drive.Drive;
-import org.sciborgs1155.robot.drive.DriveConstants.ControlMode;
-import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Driving;
-import org.sciborgs1155.robot.drive.DriveConstants.Rotation;
-import org.sciborgs1155.robot.drive.DriveConstants.Translation;
-import org.sciborgs1155.robot.hood.Hood;
-import org.sciborgs1155.robot.shooter.Shooter;
-import org.sciborgs1155.robot.turret.Turret;
+import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 
 public final class Autos {
 
@@ -65,7 +69,8 @@ public final class Autos {
         drive);
 
     PPHolonomicDriveController.overrideRotationFeedback(() -> drive.heading().getRadians());
-
+    NamedCommands.registerCommand("shoot", new ScheduleCommand(Commands.parallel(hood.goToShootingAngle(Degrees.of(45)), turret.goTo(() -> 1), shooter.runShooter(50))));
+    NamedCommands.registerCommand("intake", intake.intake());
     SendableChooser<Command> chooser = AutoBuilder.buildAutoChooser();
     chooser.addOption("no auto", Commands.none());
     return chooser;

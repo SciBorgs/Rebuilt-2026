@@ -111,8 +111,8 @@ public interface ShootingAlgorithm {
   }
 
   double turretAngle = turretAngle(odometry);
-  double hoodAngle = angleLookup.get(hDistance);
-  double velocity = velocityLookup.get(hDistance);
+  double hoodAngle = angleLookup.interpolate(hDistance);
+  double velocity = velocityLookup.interpolate(hDistance);
 
   ShootingAlgorithm calculate(double turretAngle, double hoodAngle, double velocity);
 }

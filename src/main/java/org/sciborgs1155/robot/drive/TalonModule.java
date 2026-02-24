@@ -48,8 +48,6 @@ public class TalonModule implements ModuleIO {
 
   @Logged private SwerveModuleState setpoint = new SwerveModuleState();
 
-  private Rotation2d lastRotation;
-
   private final String name;
 
   /**

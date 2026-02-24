@@ -171,7 +171,6 @@ public class Robot extends CommandRobot {
       // addPeriodic(fuelVisualizer::updateLogging, PERIOD);
       // addPeriodic(fuelVisualizer::updateLaunchSimulation, ProjectileVisualizer.LAUNCH_PERIOD);
 
-      addPeriodic(ShotOptimizer::updateSimulation, ProjectileVisualizer.TRAJECTORY_PERIOD);
       addPeriodic(ShotOptimizer::updateLogging, PERIOD);
     }
   }
@@ -236,7 +235,7 @@ public class Robot extends CommandRobot {
         .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
 
     // operator.a().whileTrue(fuelVisualizer.launchProjectiles());
-    operator.a().onTrue(ShotOptimizer.optimizeCommand());
+    operator.a().onTrue(ShotOptimizer.optimizeLaunch(5));
   }
 
   /**

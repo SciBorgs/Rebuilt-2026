@@ -160,7 +160,7 @@ public final class DriveConstants {
           List.of(FRONT_LEFT_FF, FRONT_RIGHT_FF, REAR_LEFT_FF, REAR_RIGHT_FF);
     }
 
-    static final class Turning {
+    public static final class Turning {
       public static final double GEARING = 12.1;
       public static final double ENCODER_GEARING = 1;
 

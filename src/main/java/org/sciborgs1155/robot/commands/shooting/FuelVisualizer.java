@@ -178,9 +178,9 @@ public class FuelVisualizer extends ProjectileVisualizer {
     protected double[] drag() {
       // https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/drag-of-a-sphere/
       return new double[] {
-        velocity[X] * velocity[X] * DRAG_CONSTANT / FUEL_MASS,
-        velocity[Y] * velocity[Y] * DRAG_CONSTANT / FUEL_MASS,
-        velocity[Z] * velocity[Z] * DRAG_CONSTANT / FUEL_MASS
+        Math.copySign(velocity[X] * velocity[X] * DRAG_CONSTANT / FUEL_MASS, -velocity[X]),
+        Math.copySign(velocity[Y] * velocity[Y] * DRAG_CONSTANT / FUEL_MASS, -velocity[Y]),
+        Math.copySign(velocity[Z] * velocity[Z] * DRAG_CONSTANT / FUEL_MASS, -velocity[Z])
       };
     }
 

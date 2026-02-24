@@ -49,16 +49,16 @@ public final class Ports {
   }
 
   public static final class Hopper {
-    public static final int MOTOR = 60;
+    public static final int MOTOR = 21;
     public static final int BEAMBREAK = 8;
   }
 
   public static final class Slapdown {
-    public static final int EXTENSION = 25;
+    public static final int EXTENSION = 20;
   }
 
   public static final class Intake {
-    public static final int ROLLERS = 26;
+    public static final int ROLLERS = 22;
   }
 
   public static final class LEDs {
@@ -66,13 +66,13 @@ public final class Ports {
   }
 
   public static final class Turret {
-    public static final int MOTOR = 67;
-    public static final int ENCODER_A = 68;
-    public static final int ENCODER_B = 69;
+    public static final int MOTOR = 25;
+    public static final int ENCODER_A = 26;
+    public static final int ENCODER_B = 27;
   }
 
   public static final class Shooter {
-    public static final int SHOOTER_MOTOR = 30; // placeholder
+    public static final int SHOOTER_MOTOR = 28; // placeholder 29
   }
 
   public static final class Hood {
@@ -86,7 +86,7 @@ public final class Ports {
   }
 
   public static final class Indexer {
-    public static final int MOTOR = 51;
+    public static final int MOTOR = 23;
     public static final int BEAMBREAK = 7;
   }
 }

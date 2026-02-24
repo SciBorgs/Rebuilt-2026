@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import java.util.Set;
 import java.util.function.DoubleSupplier;
 import org.sciborgs1155.lib.Assertion.EqualityAssertion;
+import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.robot.Robot;
 
@@ -154,6 +155,15 @@ public final class Shooter extends SubsystemBase implements AutoCloseable {
    */
   public Command runShooter(double velocity) {
     return runShooter(() -> velocity);
+  }
+  
+  public Command manualShooter(InputStream input) {
+    return runShooter(input
+            .deadband(.15, 1)
+            .scale(MAX_VELOCITY.in(RadiansPerSecond))
+            .scale(PERIOD.in(Seconds))
+            .add(() -> controller.getSetpoint()))
+        .withName("manual shooter");
   }
 
   /**

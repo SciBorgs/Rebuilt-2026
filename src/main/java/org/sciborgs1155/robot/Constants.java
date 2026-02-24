@@ -29,19 +29,6 @@ public final class Constants {
   /** States if we are in tuning mode. Ideally, keep it at false when not used. */
   public static final boolean TUNING = false;
 
-  public static final Time PERIOD = Seconds.of(0.02); // roborio tickrate (s)
-  public static final Time ODOMETRY_PERIOD = Seconds.of(1.0 / 20.0); // 4 ms (speedy!)
-  public static final double DEADBAND = 0.15;
-  public static final double MAX_RATE =
-      DriveConstants.MAX_ACCEL.baseUnitMagnitude()
-          / DriveConstants.MAX_ANGULAR_SPEED.baseUnitMagnitude();
-  public static final double SLOW_SPEED_MULTIPLIER = 0.33;
-  public static final double FULL_SPEED_MULTIPLIER = 1.0;
-
-  // The name of seperate canivore, set to rio if no seperate canivore
-  public static final CANBus DRIVE_CANIVORE = new CANBus("drivetrain");
-  public static final CANBus TURRET_CANIVORE = new CANBus("turret");
-
   // Prevents instantiation
   private Constants() {}
 
@@ -69,4 +56,18 @@ public final class Constants {
     public static final Mass MASS = Pounds.of(110);
     public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.2);
   }
+
+  public static final Time PERIOD = Seconds.of(0.02); // roborio tickrate (s)
+  public static final Time ODOMETRY_PERIOD = Seconds.of(1.0 / 20.0); // 4 ms (speedy!)
+  public static final double DEADBAND = 0.15;
+  public static final double MAX_RATE =
+      DriveConstants.MAX_ACCEL.baseUnitMagnitude()
+          / DriveConstants.MAX_ANGULAR_SPEED.baseUnitMagnitude();
+  public static final double SLOW_SPEED_MULTIPLIER = 0.33;
+  public static final double FULL_SPEED_MULTIPLIER = 1.0;
+
+  // The name of seperate canivore, set to rio if no seperate canivore
+  public static final CANBus DRIVE_CANIVORE = new CANBus("");
+  public static final CANBus SINGLE_CANIVORE = new CANBus("drivetrain");
+  public static final CANBus TURRET_CANIVORE = new CANBus("turret");
 }

@@ -1,6 +1,8 @@
 package org.sciborgs1155.robot.turret;
 
 import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 import static org.sciborgs1155.lib.Assertion.eAssert;
@@ -24,9 +26,11 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import java.util.Set;
 import java.util.function.DoubleSupplier;
 import org.sciborgs1155.lib.Assertion;
+import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.lib.Tuning;
+import org.sciborgs1155.robot.Constants;
 import org.sciborgs1155.robot.Robot;
 
 /**
@@ -167,6 +171,17 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
             direction == Direction.kForward
                 ? hardware.position() >= stopAngle.in(Radians)
                 : hardware.position() <= stopAngle.in(Radians));
+  }
+  
+  public Command manualTurret(InputStream input) {
+    return goTo(input
+            .deadband(.15, 1)
+            .scale(MAX_VELOCITY.in(RadiansPerSecond))
+            .scale(2)
+            .scale(Constants.PERIOD.in(Seconds))
+            .rateLimit(MAX_ACCELERATION.in(RadiansPerSecondPerSecond))
+            .add(() -> controller.getGoal().position))
+        .withName("manual elevator");
   }
 
   /**

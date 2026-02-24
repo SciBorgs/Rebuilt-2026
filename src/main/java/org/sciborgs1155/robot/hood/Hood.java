@@ -2,6 +2,7 @@ package org.sciborgs1155.robot.hood;
 
 import static edu.wpi.first.units.Units.*;
 import static org.sciborgs1155.lib.Assertion.eAssert;
+import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.Constants.TUNING;
 import static org.sciborgs1155.robot.hood.HoodConstants.*;
 import static org.sciborgs1155.robot.hood.HoodConstants.PID.*;
@@ -27,6 +28,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.DoubleSupplier;
 import org.sciborgs1155.lib.Assertion;
+import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.lib.Tuning;
@@ -216,6 +218,16 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
    */
   public Command goToShootingAngle(Angle goal) {
     return goToShootingAngle(() -> goal.in(Radians));
+  }
+
+  public Command manualHood(InputStream input) {
+    return goTo(input
+            .deadband(.15, 1)
+            .scale(MAX_VELOCITY.in(RadiansPerSecond))
+            .scale(PERIOD.in(Seconds))
+            .rateLimit(MAX_ACCEL.in(RadiansPerSecondPerSecond))
+            .add(() -> fb.getGoal().position))
+        .withName("manual hood");
   }
 
   /**

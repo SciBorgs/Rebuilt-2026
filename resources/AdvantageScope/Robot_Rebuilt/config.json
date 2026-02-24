@@ -1,0 +1,24 @@
+{
+    "name": "Rebuilt",
+    "sourceUrl": "https://cad.onshape.com/documents/012165606d215b05089d5ea7/w/0723b94045cbec556aff7d85/e/7d062eacef889785ac28b424",
+    "isFTC": false,
+    "disableSimplification": false,
+    "rotations": 
+    [          {
+        "axis": "x",
+        "degrees": 0
+      },
+
+      {
+        "axis": "z",
+        "degrees": -90
+                }
+    ], 
+    "position": [
+        0, 
+        0, 
+        0
+                ], 
+    "cameras": [],
+    "components": []
+  }

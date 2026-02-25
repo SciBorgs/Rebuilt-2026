@@ -88,10 +88,4 @@ public class SimTurret implements TurretIO {
 
   @Override
   public void close() throws Exception {}
-
-  @Override
-  public double rawA() {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'rawA'");
-  }
 }

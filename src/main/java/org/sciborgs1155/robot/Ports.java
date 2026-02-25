@@ -66,9 +66,9 @@ public final class Ports {
   }
 
   public static final class Turret {
-    public static final int MOTOR = 28;
-    public static final int ENCODER_A = 0;
-    public static final int ENCODER_B = 69;
+    public static final int MOTOR = 25;
+    public static final int ENCODER_A = 26;
+    public static final int ENCODER_B = 27;
   }
 
   public static final class Shooter {
@@ -81,8 +81,8 @@ public final class Ports {
   }
 
   public static final class Climb {
-    public static final int LEFT_MOTOR_ID = 123;
-    public static final int RIGHT_MOTOR_ID = 234;
+    public static final int LEFT_MOTOR_ID = 60;
+    public static final int RIGHT_MOTOR_ID = 61;
   }
 
   public static final class Indexer {

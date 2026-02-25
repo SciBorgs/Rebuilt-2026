@@ -81,8 +81,4 @@ public class SingleMotorRealTurret implements TurretIO {
     update(velocity());
   }
 
-  @Override
-  public double rawA() {
-    return encoderA.getAbsolutePosition().getValueAsDouble();
-  }
 }

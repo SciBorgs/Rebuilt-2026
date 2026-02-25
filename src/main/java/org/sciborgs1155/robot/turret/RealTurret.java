@@ -19,7 +19,7 @@ import yams.units.EasyCRTConfig;
 /** Real hardware interface for the {@code Turret} subsystem. */
 public class RealTurret implements TurretIO {
   /** Motor controller that operates a motor which is used to rotate the turret. */
-  private final TalonFX hardware = new TalonFX(MOTOR, TURRET_CANIVORE);
+  private final TalonFX hardware = new TalonFX(MOTOR);
 
   private final CANcoder encoderA = new CANcoder(ENCODER_A);
   private final CANcoder encoderB = new CANcoder(ENCODER_B);
@@ -89,11 +89,5 @@ public class RealTurret implements TurretIO {
   @Override
   public void close() throws Exception {
     hardware.close();
-  }
-
-  @Override
-  public double rawA() {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'rawA'");
   }
 }

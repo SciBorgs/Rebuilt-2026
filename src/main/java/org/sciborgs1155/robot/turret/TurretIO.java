@@ -30,8 +30,6 @@ public interface TurretIO extends AutoCloseable {
    */
   double encoderA();
 
-  double rawA();
-
   /**
    * Returns the angular position of encoder B in rotations.
    *

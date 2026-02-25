@@ -1,5 +1,6 @@
 package org.sciborgs1155.robot;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Second;
@@ -48,6 +49,7 @@ import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.hood.Hood;
+import org.sciborgs1155.robot.hood.HoodConstants;
 import org.sciborgs1155.robot.shooter.Shooter;
 import org.sciborgs1155.robot.slapdown.Slapdown;
 import org.sciborgs1155.robot.turret.Turret;
@@ -68,11 +70,12 @@ public class Robot extends CommandRobot {
   private final PowerDistribution pdh = new PowerDistribution();
 
   // SUBSYSTEMS
-  private final Drive drive = Drive.create();
-  private final Hood hood = Hood.create();
-  private final Vision vision = Vision.create();
-  private final Shooter shooter = Shooter.create();
+  private final Drive drive = Drive.none();
+  private final Hood hood = Hood.none();
+  private final Vision vision = Vision.none();
+  private final Shooter shooter = Shooter.none();
   private final Turret turret = Turret.create();
+  private final Slapdown slapdown = Slapdown.none();
 
   // COMMANDS
   private final Alignment align = new Alignment(drive);
@@ -80,14 +83,6 @@ public class Robot extends CommandRobot {
   @NotLogged private final SendableChooser<Command> autos = Autos.configureAutos(drive);
 
   @Logged private double speedMultiplier = FULL_SPEED_MULTIPLIER;
-
-  @Logged
-  @SuppressWarnings("PMD.TooFewBranchesForSwitch") // will be more values in the future
-  private final Slapdown slapdown =
-      switch (ROBOT_TYPE) {
-        case FULL -> Slapdown.create();
-        default -> Slapdown.none();
-      };
 
   /** The robot contains subsystems, OI devices, and commands. */
   public Robot() {
@@ -210,7 +205,7 @@ public class Robot extends CommandRobot {
 
     test().whileTrue(systemsCheck());
 
-    driver.b().whileTrue(drive.zeroHeading());
+    // driver.b().whileTrue(drive.zeroHeading());
     driver
         .leftBumper()
         .or(driver.rightBumper())
@@ -218,6 +213,12 @@ public class Robot extends CommandRobot {
         .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
 
     // TODO: Add any additional bindings.
+    driver.y().whileTrue(hood.goTo(HoodConstants.MAX_ANGLE));
+    driver.leftTrigger().whileTrue(turret.goLeft());
+    driver.rightTrigger().whileTrue(turret.goRight());
+    driver.a().whileTrue(hood.goTo(Degrees.of(0)));
+    driver.x().whileTrue(turret.goTo(() -> Math.PI / 4));
+    driver.b().whileTrue(turret.goTo(() -> -Math.PI / 4));
   }
 
   /**

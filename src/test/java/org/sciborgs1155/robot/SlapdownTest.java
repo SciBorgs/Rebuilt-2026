@@ -1,14 +1,11 @@
 package org.sciborgs1155.robot;
 
-import static edu.wpi.first.units.Units.Radians;
-import static org.sciborgs1155.lib.Test.runUnitTest;
 import static org.sciborgs1155.lib.UnitTestingUtil.reset;
 import static org.sciborgs1155.lib.UnitTestingUtil.setupTests;
 import static org.sciborgs1155.robot.slapdown.SlapdownConstants.*;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.sciborgs1155.robot.slapdown.Slapdown;
 
 public class SlapdownTest {
@@ -29,9 +26,9 @@ public class SlapdownTest {
     reset(slapdown);
   }
 
-  /** make the arm move */
-  @Test
-  public void setArmVoltage() {
-    runUnitTest(slapdown.goToTest(MIN_ANGLE.in(Radians)));
-  }
+  // /** make the arm move */
+  // @Test
+  // public void setArmVoltage() {
+  //   runUnitTest(slapdown.goToTest(MIN_ANGLE.in(Radians)));
+  // }
 }

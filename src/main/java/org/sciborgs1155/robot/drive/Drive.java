@@ -169,74 +169,40 @@ public class Drive extends SubsystemBase implements AutoCloseable {
    */
   public static Drive create() {
     if (Robot.isReal()) {
-      return switch (TYPE) {
-        case TALON ->
-            new Drive(
-                new ReduxGyro(),
-                new TalonModule(
-                    FRONT_LEFT_DRIVE,
-                    FRONT_LEFT_TURNING,
-                    FRONT_LEFT_CANCODER,
-                    ANGULAR_OFFSETS.get(0),
-                    Driving.FF_CONSTANTS.get(0),
-                    "FL",
-                    true),
-                new TalonModule(
-                    FRONT_RIGHT_DRIVE,
-                    FRONT_RIGHT_TURNING,
-                    FRONT_RIGHT_CANCODER,
-                    ANGULAR_OFFSETS.get(1),
-                    Driving.FF_CONSTANTS.get(1),
-                    "FR",
-                    true),
-                new TalonModule(
-                    REAR_LEFT_DRIVE,
-                    REAR_LEFT_TURNING,
-                    REAR_LEFT_CANCODER,
-                    ANGULAR_OFFSETS.get(2),
-                    Driving.FF_CONSTANTS.get(2),
-                    "RL",
-                    true),
-                new TalonModule(
-                    REAR_RIGHT_DRIVE,
-                    REAR_RIGHT_TURNING,
-                    REAR_RIGHT_CANCODER,
-                    ANGULAR_OFFSETS.get(3),
-                    Driving.FF_CONSTANTS.get(3),
-                    "RR",
-                    true));
-        case SPARK ->
-            new Drive(
-                new NavXGyro(),
-                new SparkModule(
-                    FRONT_LEFT_DRIVE,
-                    FRONT_LEFT_TURNING,
-                    ANGULAR_OFFSETS.get(0),
-                    Driving.FF_CONSTANTS.get(0),
-                    "FL",
-                    true),
-                new SparkModule(
-                    FRONT_RIGHT_DRIVE,
-                    FRONT_RIGHT_TURNING,
-                    ANGULAR_OFFSETS.get(1),
-                    Driving.FF_CONSTANTS.get(1),
-                    "FR",
-                    true),
-                new SparkModule(
-                    REAR_LEFT_DRIVE,
-                    REAR_LEFT_TURNING,
-                    ANGULAR_OFFSETS.get(2),
-                    Driving.FF_CONSTANTS.get(2),
-                    "RL",
-                    true),
-                new SparkModule(
-                    REAR_RIGHT_DRIVE,
-                    REAR_RIGHT_TURNING,
-                    ANGULAR_OFFSETS.get(3),
-                    Driving.FF_CONSTANTS.get(3),
-                    "RR",
-                    true));
-      };
+      return new Drive(
+          new ReduxGyro(),
+          new TalonModule(
+              FRONT_LEFT_DRIVE,
+              FRONT_LEFT_TURNING,
+              FRONT_LEFT_CANCODER,
+              ANGULAR_OFFSETS.get(0),
+              Driving.FF_CONSTANTS.get(0),
+              "FL",
+              true),
+          new TalonModule(
+              FRONT_RIGHT_DRIVE,
+              FRONT_RIGHT_TURNING,
+              FRONT_RIGHT_CANCODER,
+              ANGULAR_OFFSETS.get(1),
+              Driving.FF_CONSTANTS.get(1),
+              "FR",
+              true),
+          new TalonModule(
+              REAR_LEFT_DRIVE,
+              REAR_LEFT_TURNING,
+              REAR_LEFT_CANCODER,
+              ANGULAR_OFFSETS.get(2),
+              Driving.FF_CONSTANTS.get(2),
+              "RL",
+              true),
+          new TalonModule(
+              REAR_RIGHT_DRIVE,
+              REAR_RIGHT_TURNING,
+              REAR_RIGHT_CANCODER,
+              ANGULAR_OFFSETS.get(3),
+              Driving.FF_CONSTANTS.get(3),
+              "RR",
+              true));
     } else {
       return new Drive(
           new NoGyro(),

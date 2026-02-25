@@ -145,13 +145,12 @@ public class FuelVisualizer extends ProjectileVisualizer {
 
   /** Models the launch physics of a FUEL projectile. */
   public static class Fuel extends Projectile {
-    /** Mass of the fuel projectile in kilograms. */
     protected static final double FUEL_MASS = 0.225;
-
-    /** Radius of the fuel projectile in meters. */
     protected static final double FUEL_RADIUS = 0.075;
 
-    protected static final double SCORE_TOLERANCE = 0;
+    protected double scoreTolerance = 0;
+    protected double scoreDepth = 0;
+
     protected static final double GRAVITY = -9.80665;
     protected static final double AIR_DENSITY = 1.225;
     protected static final double AIR_VISCOSITY = 15.24 * Math.pow(10, -6);
@@ -167,6 +166,13 @@ public class FuelVisualizer extends ProjectileVisualizer {
     /** Multiplied by angular speed to compute torque. */
     private static final double TORQUE_CONSTANT =
         -8 * Math.PI * AIR_VISCOSITY * Math.pow(FUEL_RADIUS, 3);
+
+    public Fuel withScoringParameters(double tolerance, double depth) {
+      scoreDepth = depth;
+      scoreTolerance = tolerance;
+
+      return this;
+    }
 
     @Override
     protected double[] weight() {
@@ -208,8 +214,8 @@ public class FuelVisualizer extends ProjectileVisualizer {
       double hub2Distance = Math.hypot(hub2XDisplacement, hub2YDisplacement);
 
       double planarDistance = Math.min(hub1Distance, hub2Distance);
-      double verticalDisplacement = Hub.HEIGHT - translation[Z];
-      double scoreRadius = SCORE_TOLERANCE + FUEL_RADIUS + Hub.WIDTH / 2;
+      double verticalDisplacement = Hub.HEIGHT - scoreDepth - translation[Z];
+      double scoreRadius = scoreTolerance + FUEL_RADIUS + Hub.WIDTH / 2;
 
       return verticalDisplacement < 0
           && verticalDisplacement > -FUEL_RADIUS
@@ -229,8 +235,8 @@ public class FuelVisualizer extends ProjectileVisualizer {
       double hub2Distance = Math.hypot(hub2XDisplacement, hub2YDisplacement);
 
       double planarDistance = Math.min(hub1Distance, hub2Distance);
-      double verticalDisplacement = Hub.HEIGHT - translation[Z];
-      double scoreRadius = SCORE_TOLERANCE + FUEL_RADIUS + Hub.WIDTH / 2;
+      double verticalDisplacement = Hub.HEIGHT - scoreDepth - translation[Z];
+      double scoreRadius = scoreTolerance + FUEL_RADIUS + Hub.WIDTH / 2;
 
       return (verticalDisplacement > -FUEL_RADIUS
               && planarDistance > scoreRadius

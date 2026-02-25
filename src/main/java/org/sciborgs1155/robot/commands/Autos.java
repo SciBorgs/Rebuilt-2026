@@ -3,6 +3,7 @@ package org.sciborgs1155.robot.commands;
 import static org.sciborgs1155.robot.Constants.Robot.MASS;
 import static org.sciborgs1155.robot.Constants.Robot.MOI;
 import static org.sciborgs1155.robot.Constants.alliance;
+import org.sciborgs1155.robot.climb.Climb;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.drive.DriveConstants.ControlMode;
 import static org.sciborgs1155.robot.drive.DriveConstants.MAX_SPEED;
@@ -45,7 +46,7 @@ public final class Autos {
    * @return A SendableChooser for selecting autonomous commands.
    */
   @NotLogged
-  public static SendableChooser<Command> configureAutos(Drive drive, Intake intake, Shooter shooter, Hood hood, Turret turret) {
+  public static SendableChooser<Command> configureAutos(Drive drive, Intake intake, Shooter shooter, Hood hood, Turret turret, Climb climb) {
     AutoBuilder.configure(
         drive::pose,
         drive::resetOdometry,

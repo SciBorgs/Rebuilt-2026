@@ -38,12 +38,12 @@ public class HoodConstants {
   public static final double GEARING = 12.0 / 44.0 * 18.0 / 14.0 * 182.0 / 10.0;
 
   public class PID {
-    public static final double P = 10;
+    public static final double P = 0;
     public static final double I = 0;
-    public static final double D = .2;
+    public static final double D = 0;
     public static final double S = 0;
     public static final double V = 0;
-    public static final double G = .1;
+    public static final double G = 0;
     public static final double A = 0;
   }
 }

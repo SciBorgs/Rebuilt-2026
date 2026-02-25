@@ -218,9 +218,6 @@ public class Robot extends CommandRobot {
         .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
 
     // TODO: Add any additional bindings.
-    operator.a().whileTrue(turret.manualTurret(InputStream.of(operator::getLeftY)));
-    operator.b().onTrue(shooter.manualShooter(InputStream.of(operator::getLeftY)));
-    operator.x().onTrue(hood.manualHood(InputStream.of(operator::getLeftY)));
   }
 
   /**

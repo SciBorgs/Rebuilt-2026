@@ -32,7 +32,10 @@ public class TurretConstants {
   public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.0872);
   public static final AngularVelocity MAX_VELOCITY = RadiansPerSecond.of(3);
   public static final AngularAcceleration MAX_ACCELERATION = RadiansPerSecondPerSecond.of(6);
-  public static final Constraints CONSTRAINTS = new Constraints(MAX_VELOCITY.in(RadiansPerSecond), MAX_ACCELERATION.in(RadiansPerSecondPerSecond)); // TODO: Update.
+  public static final Constraints CONSTRAINTS =
+      new Constraints(
+          MAX_VELOCITY.in(RadiansPerSecond),
+          MAX_ACCELERATION.in(RadiansPerSecondPerSecond)); // TODO: Update.
 
   public static final Angle MAX_ANGLE = Degrees.of(175);
   public static final Angle MIN_ANGLE = Degrees.of(-175);

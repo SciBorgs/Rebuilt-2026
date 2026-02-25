@@ -156,13 +156,14 @@ public final class Shooter extends SubsystemBase implements AutoCloseable {
   public Command runShooter(double velocity) {
     return runShooter(() -> velocity);
   }
-  
+
   public Command manualShooter(InputStream input) {
-    return runShooter(input
-            .deadband(.15, 1)
-            .scale(MAX_VELOCITY.in(RadiansPerSecond))
-            .scale(PERIOD.in(Seconds))
-            .add(() -> controller.getSetpoint()))
+    return runShooter(
+            input
+                .deadband(.15, 1)
+                .scale(MAX_VELOCITY.in(RadiansPerSecond))
+                .scale(PERIOD.in(Seconds))
+                .add(() -> controller.getSetpoint()))
         .withName("manual shooter");
   }
 

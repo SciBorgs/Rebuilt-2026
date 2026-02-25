@@ -172,7 +172,7 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
                 ? hardware.position() >= stopAngle.in(Radians)
                 : hardware.position() <= stopAngle.in(Radians));
   }
-  
+
   public Command manualTurret(InputStream input) {
     return goTo(input
             .deadband(.15, 1)

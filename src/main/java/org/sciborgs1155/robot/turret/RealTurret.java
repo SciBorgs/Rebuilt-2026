@@ -6,6 +6,7 @@ import static edu.wpi.first.units.Units.Rotations;
 import static org.sciborgs1155.robot.Ports.Turret.*;
 import static org.sciborgs1155.robot.turret.TurretConstants.*;
 
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -36,7 +37,7 @@ public class RealTurret implements TurretIO {
               (double) TURRET_GEARING / ENCODER_A_GEARING,
               (double) TURRET_GEARING / ENCODER_B_GEARING)
           .withMechanismRange(MIN_ANGLE, MAX_ANGLE)
-          .withMatchTolerance(CRT_MATCH_TOLERANCE);
+          .withMatchTolerance(CRT_MATCH_TOLERANCE).withAbsoluteEncoderInversions(true, true);
 
   private final EasyCRT solverCRT = new EasyCRT(crtConfig);
 
@@ -48,12 +49,15 @@ public class RealTurret implements TurretIO {
     configuration.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     configuration.Feedback.SensorToMechanismRatio = GEAR_RATIO;
     configuration.CurrentLimits.SupplyCurrentLimit = CURRENT_LIMIT.in(Amps);
-
+    
     hardware.getConfigurator().apply(configuration);
-
-    encoderA.setPosition(0);
-    encoderB.setPosition(0);
     hardware.setPosition(0);
+
+    final CANcoderConfiguration encoderConfig = new CANcoderConfiguration();
+    encoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1;
+    
+    encoderA.getConfigurator().apply(encoderConfig);
+    encoderB.getConfigurator().apply(encoderConfig);
 
     // TALON UTILS
     TalonUtils.addMotor(hardware);
@@ -82,12 +86,12 @@ public class RealTurret implements TurretIO {
 
   @Override
   public double encoderA() {
-    return (encoderA.getAbsolutePosition().getValueAsDouble() + 1) / 2;
+    return (1-encoderA.getAbsolutePosition().getValueAsDouble());
   }
 
   @Override
   public double encoderB() {
-    return (encoderB.getAbsolutePosition().getValueAsDouble() + 1) / 2;
+    return (1-encoderB.getAbsolutePosition().getValueAsDouble());
   }
 
   @Override
@@ -109,11 +113,11 @@ public class RealTurret implements TurretIO {
             () -> {
               failCount++;
               if (failCount % 10 == 0) {
-                FaultLogger.report(
-                    new Fault(
-                        "Turret CRT failure: >10 consecutive failures",
-                        "Unable to solve turret position with CRT, using stale position - fail count: " + failCount,
-                        FaultType.WARNING));
+                // FaultLogger.report(
+                //     new Fault(
+                //         "Turret CRT failure: >10 consecutive failures",
+                //         "Unable to solve turret position with CRT, using stale position - fail count: " + failCount,
+                //         FaultType.WARNING));
                 }
                 return lastGoodPositionRad;
             });

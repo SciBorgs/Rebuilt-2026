@@ -60,18 +60,18 @@ public final class Shooter extends SubsystemBase implements AutoCloseable {
 
     characterization =
         new SysIdRoutine(
-            new SysIdRoutine.Config(Volts.per(Second).of(1), Volts.of(10.0), Seconds.of(11)),
+            new SysIdRoutine.Config(Volts.per(Second).of(1.0), Volts.of(0.5), Seconds.of(10)),
             new SysIdRoutine.Mechanism(
-                v -> hardware.setVoltage(v.in(Volts)), null, this, "top shooter"));
+                v -> hardware.setVoltage(v.in(Volts)), null, this, "shooter"));
 
     SmartDashboard.putData(
-        "shooter top quasistatic backward", characterization.quasistatic(Direction.kReverse));
+        "shooter quasistatic backward", characterization.quasistatic(Direction.kReverse));
     SmartDashboard.putData(
-        "shooter top quasistatic forward", characterization.quasistatic(Direction.kForward));
+        "shooter quasistatic forward", characterization.quasistatic(Direction.kForward));
     SmartDashboard.putData(
-        "shooter top dynamic backward", characterization.dynamic(Direction.kReverse));
+        "shooter dynamic backward", characterization.dynamic(Direction.kReverse));
     SmartDashboard.putData(
-        "shooter top dynamic forward", characterization.dynamic(Direction.kForward));
+        "shooter dynamic forward", characterization.dynamic(Direction.kForward));
 
     setDefaultCommand(runShooter(IDLE_VELOCITY.in(RadiansPerSecond)).withName("Idle"));
   }

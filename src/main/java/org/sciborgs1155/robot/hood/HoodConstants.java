@@ -28,8 +28,8 @@ public class HoodConstants {
 
   // Sysid constants
   public static final Velocity<VoltageUnit> RAMP_RATE = Volts.of(0.5).per(Second);
-  public static final Voltage STEP_VOLTAGE = Volts.of(0.3);
-  public static final Time TIME_OUT = Seconds.of(3);
+  public static final Voltage STEP_VOLTAGE = Volts.of(0.5);
+  public static final Time TIME_OUT = Seconds.of(6);
 
   public static final Distance HOOD_RADIUS = Inches.of(9.29);
   public static final double MOI = 0.0045821517; // kg*m^2

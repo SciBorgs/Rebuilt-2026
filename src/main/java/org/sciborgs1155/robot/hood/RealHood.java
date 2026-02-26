@@ -7,6 +7,7 @@ import static org.sciborgs1155.robot.Ports.Hood.MOTOR_PORT;
 import static org.sciborgs1155.robot.hood.HoodConstants.GEARING;
 import static org.sciborgs1155.robot.hood.HoodConstants.STATOR_LIMIT;
 import static org.sciborgs1155.robot.hood.HoodConstants.SUPPLY_LIMIT;
+import static org.sciborgs1155.robot.hood.HoodConstants.MIN_ANGLE;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -32,8 +33,9 @@ public class RealHood implements HoodIO {
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     config.Feedback.SensorToMechanismRatio = GEARING;
     config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
-
+    motor.setPosition(MIN_ANGLE);
     motor.getConfigurator().apply(config);
+
     TalonUtils.addMotor(motor);
     FaultLogger.register(motor);
   }
@@ -59,5 +61,10 @@ public class RealHood implements HoodIO {
   @Override
   public void close() throws Exception {
     motor.close();
+  }
+
+  @Override
+  public double getVoltage() {
+    return motor.getMotorVoltage().getValueAsDouble();
   }
 }

@@ -47,4 +47,9 @@ public class SimHood implements HoodIO {
 
   @Override
   public void close() throws Exception {}
+
+  @Override
+  public double getVoltage() {
+    return sim.getInput(0);
+  }
 }

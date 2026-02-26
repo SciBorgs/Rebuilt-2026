@@ -23,6 +23,8 @@ public interface HoodIO extends AutoCloseable {
    */
   double velocity();
 
+  double getVoltage();
+
   @Override
   void close() throws Exception;
 }

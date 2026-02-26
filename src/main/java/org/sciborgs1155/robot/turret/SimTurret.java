@@ -8,9 +8,14 @@ import static edu.wpi.first.units.Units.Seconds;
 import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.turret.TurretConstants.*;
 
+import org.sciborgs1155.lib.FaultLogger;
+import org.sciborgs1155.lib.FaultLogger.Fault;
+import org.sciborgs1155.lib.FaultLogger.FaultType;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import yams.units.EasyCRT;
 import yams.units.EasyCRTConfig;
 
@@ -30,6 +35,8 @@ public class SimTurret implements TurretIO {
 
   /** Cached last valid CRT solution */
   private double lastGoodPositionRad = START_ANGLE.in(Radians);
+  private static final double DEVIATION = .05; // rotations
+  private double failCount = 0;
 
   /** EasyCRT solver */
   private final EasyCRTConfig crtConfig =
@@ -52,7 +59,7 @@ public class SimTurret implements TurretIO {
     double turretRot = trueAngleRad() / (2.0 * Math.PI);
     double encoderRot = turretRot * ((double) TURRET_GEARING / ENCODER_A_GEARING);
 
-    return MathUtil.inputModulus(encoderRot, 0.0, 1.0);
+    return MathUtil.inputModulus(encoderRot + Math.random() * DEVIATION, 0.0, 1.0);
   }
 
   @Override
@@ -60,7 +67,7 @@ public class SimTurret implements TurretIO {
     double turretRot = trueAngleRad() / (2.0 * Math.PI);
     double encoderRot = turretRot * ((double) TURRET_GEARING / ENCODER_B_GEARING);
 
-    return MathUtil.inputModulus(encoderRot, 0.0, 1.0);
+    return MathUtil.inputModulus(encoderRot + Math.random() * DEVIATION, 0.0, 1.0);
   }
 
   @Override
@@ -76,9 +83,21 @@ public class SimTurret implements TurretIO {
         .map(
             a -> {
               lastGoodPositionRad = a.in(Radians);
+              failCount = 0;
               return lastGoodPositionRad;
             })
-        .orElse(lastGoodPositionRad);
+        .orElseGet(
+            () -> {
+              failCount++;
+              if (failCount % 10 == 0) {
+                FaultLogger.report(
+                    new Fault(
+                        "Turret CRT failure: >10 consecutive failures",
+                        "Unable to solve turret position with CRT, using stale position - fail count: " + failCount,
+                        FaultType.WARNING));
+                }
+                return lastGoodPositionRad;
+            });
   }
 
   @Override
@@ -88,4 +107,9 @@ public class SimTurret implements TurretIO {
 
   @Override
   public void close() throws Exception {}
+
+  @Override
+  public void periodic() {
+      SmartDashboard.putNumber("trueAngle", trueAngleRad());
+  }
 }

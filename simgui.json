@@ -14,6 +14,10 @@
       "/SmartDashboard/Robot/hood/dynamic forward": "Command",
       "/SmartDashboard/Robot/hood/quasistatic backward": "Command",
       "/SmartDashboard/Robot/hood/quasistatic forward": "Command",
+      "/SmartDashboard/Robot/slapdown/dynamic backward": "Command",
+      "/SmartDashboard/Robot/slapdown/dynamic forward": "Command",
+      "/SmartDashboard/Robot/slapdown/quasistatic backward": "Command",
+      "/SmartDashboard/Robot/slapdown/quasistatic forward": "Command",
       "/SmartDashboard/Turret dynamic clockwise": "Command",
       "/SmartDashboard/Turret dynamic counterclockwise": "Command",
       "/SmartDashboard/Turret quasistatic clockwise": "Command",
@@ -28,6 +32,7 @@
       "Robot/drive/translationController": "ProfiledPIDController",
       "Robot/hood/fb": "ProfiledPIDController",
       "Robot/shooter/controller": "PIDController",
+      "Robot/slapdown/pid": "ProfiledPIDController",
       "Robot/turret/controller": "ProfiledPIDController"
     }
   },

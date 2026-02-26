@@ -204,8 +204,7 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
         controller.calculate(
             hardware.position(),
             MathUtil.clamp(positionSetpoint, MIN_ANGLE.in(Radians), MAX_ANGLE.in(Radians)));
-    double ffdVolts =
-        feedforward.calculate(controller.getSetpoint().velocity);
+    double ffdVolts = feedforward.calculate(controller.getSetpoint().velocity);
 
     hardware.setVoltage(pidVolts + ffdVolts);
   }

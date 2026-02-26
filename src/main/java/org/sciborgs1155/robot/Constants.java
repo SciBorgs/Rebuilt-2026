@@ -27,7 +27,7 @@ public final class Constants {
   public static final RobotType ROBOT_TYPE = RobotType.FULL;
 
   /** States if we are in tuning mode. Ideally, keep it at false when not used. */
-  public static final boolean TUNING = false;
+  public static final boolean TUNING = true;
 
   // Prevents instantiation
   private Constants() {}

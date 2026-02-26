@@ -71,9 +71,9 @@ public class Robot extends CommandRobot {
 
   // SUBSYSTEMS
   private final Drive drive = Drive.none();
-  private final Hood hood = Hood.none();
+  private final Hood hood = Hood.create();
   private final Vision vision = Vision.none();
-  private final Shooter shooter = Shooter.none();
+  private final Shooter shooter = Shooter.create();
   private final Turret turret = Turret.create();
   private final Slapdown slapdown = Slapdown.none();
 
@@ -213,12 +213,14 @@ public class Robot extends CommandRobot {
         .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
 
     // TODO: Add any additional bindings.
-    driver.y().whileTrue(hood.goTo(HoodConstants.MAX_ANGLE));
-    driver.leftTrigger().whileTrue(turret.goLeft());
-    driver.rightTrigger().whileTrue(turret.goRight());
-    driver.a().whileTrue(hood.goTo(Degrees.of(0)));
-    driver.x().whileTrue(turret.goTo(() -> Math.PI / 4));
-    driver.b().whileTrue(turret.goTo(() -> -Math.PI / 4));
+    // driver.y().whileTrue(hood.goTo(HoodConstants.MAX_ANGLE));
+    // driver.leftTrigger().whileTrue(turret.goLeft());
+    // driver.rightTrigger().whileTrue(turret.goRight());
+    // driver.a().whileTrue(hood.goTo(Degrees.of(0)));
+    // driver.x().whileTrue(turret.goTo(() -> Math.PI / 4));
+    // driver.b().whileTrue(turret.goTo(() -> -Math.PI / 4));
+    driver.x().whileTrue(hood.manualHood(InputStream.of(driver::getLeftY)));
+    driver.y().whileTrue(shooter.manualShooter(InputStream.of(driver::getLeftY)));
   }
 
   /**

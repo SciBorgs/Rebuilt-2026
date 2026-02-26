@@ -15,8 +15,8 @@ import edu.wpi.first.units.measure.Voltage;
 
 public class HoodConstants {
 
-  public static final Angle MIN_ANGLE = Degrees.of(15);
-  public static final Angle MAX_ANGLE = Degrees.of(53);
+  public static final Angle MIN_ANGLE = Radians.of(0.064);
+  public static final Angle MAX_ANGLE = Radians.of(1.006-0.02);
   public static final Mass MASS = Pounds.of(1.307);
   public static final Angle STARTING_ANGLE = MIN_ANGLE;
   public static final Current SUPPLY_LIMIT = Amps.of(30);

@@ -47,6 +47,9 @@ public class RealTurret implements TurretIO {
 
     hardware.getConfigurator().apply(configuration);
 
+    encoderA.setPosition(0);
+    encoderB.setPosition(0);
+
     // TALON UTILS
     TalonUtils.addMotor(hardware);
 

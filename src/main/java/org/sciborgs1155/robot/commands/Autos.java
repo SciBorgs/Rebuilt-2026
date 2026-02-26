@@ -24,7 +24,17 @@ import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Driving;
 import org.sciborgs1155.robot.drive.DriveConstants.Rotation;
 import org.sciborgs1155.robot.drive.DriveConstants.Translation;
 
-public class Autos {
+public final class Autos {
+
+  // Prevents instantiation
+  private Autos() {}
+
+  /**
+   * Configures PathPlanner auto routines and returns a chooser for autonomous commands.
+   *
+   * @param drive The drive subsystem to use for autonomous.
+   * @return A SendableChooser for selecting autonomous commands.
+   */
   @NotLogged
   public static SendableChooser<Command> configureAutos(Drive drive) {
     AutoBuilder.configure(

@@ -10,6 +10,7 @@ import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import java.util.concurrent.atomic.AtomicReference;
 import org.sciborgs1155.robot.drive.DriveConstants;
 
 /**
@@ -21,7 +22,11 @@ import org.sciborgs1155.robot.drive.DriveConstants;
  *
  * @see Units
  */
-public class Constants {
+public final class Constants {
+
+  // Prevents instantiation
+  private Constants() {}
+
   // TODO: Modify as needed.
   /** Returns the robot's alliance. */
   public static Alliance alliance() {
@@ -34,17 +39,17 @@ public class Constants {
   }
 
   /** Defines the various types the robot can be. Useful for only using select subsystems. */
-  public static enum RobotType {
+  public enum RobotType {
     FULL,
     CHASSIS,
     NONE
   }
 
   /** The current robot state, as in the type. Remember to update! */
-  public static RobotType ROBOT_TYPE = RobotType.FULL;
+  public static final AtomicReference<RobotType> ROBOT_TYPE = new AtomicReference<>(RobotType.FULL);
 
   /** States if we are in tuning mode. Ideally, keep it at false when not used. */
-  public static boolean TUNING = false;
+  public static final AtomicReference<Boolean> TUNING = new AtomicReference<>(false);
 
   // TODO: UPDATE ALL OF THESE VALUES.
   /** Describes physical properites of the robot. */

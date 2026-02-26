@@ -26,9 +26,9 @@ import org.sciborgs1155.robot.drive.DriveConstants.Translation;
 public class Alignment {
   @NotLogged private final Drive drive;
 
-  private RepulsorFieldPlanner planner = new RepulsorFieldPlanner();
+  private final RepulsorFieldPlanner planner = new RepulsorFieldPlanner();
 
-  private Fault alternateAlliancePathfinding =
+  private final Fault alternateAlliancePathfinding =
       new Fault(
           "Alternate Alliance Pathfinding",
           "The robot is attempting to pathfind to a pose on the other alliance.",
@@ -136,7 +136,12 @@ public class Alignment {
     return pathfind(goal, Translation.TOLERANCE);
   }
 
-  // * Warms up the pathfind command by telling drive to drive to itself. */
+  /**
+   * Warms up the pathfind command by telling drive to drive to itself.
+   *
+   * @return A warmup command that pathfinds to the robot's current position.
+   */
+  @SuppressWarnings("PMD.SystemPrintln") // Please replace with better logging
   public Command warmupCommand() {
     return pathfind(() -> drive.pose(), MetersPerSecond.of(0))
         .withTimeout(3)

@@ -7,7 +7,7 @@ import java.util.Map;
 public final class Ports {
   // TODO: Add and change all ports as needed.
 
-  public static final Map<Integer, String> idToName =
+  public static final Map<Integer, String> ID_TO_NAME =
       Map.ofEntries(
           entry(Drive.FRONT_LEFT_DRIVE, "FL drive"),
           entry(Drive.REAR_LEFT_DRIVE, "RL drive"),

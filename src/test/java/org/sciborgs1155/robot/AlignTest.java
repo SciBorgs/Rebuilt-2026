@@ -24,6 +24,7 @@ public class AlignTest {
   Drive drive;
   Alignment align;
 
+  /** Sets up the test environment and initializes drive and alignment before each test. */
   @BeforeEach
   public void setup() {
     setupTests();
@@ -35,6 +36,7 @@ public class AlignTest {
     DriverStationSim.notifyNewData();
   }
 
+  /** Cleans up resources after each test. */
   @AfterEach
   public void destroy() throws Exception {
     reset(drive);

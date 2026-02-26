@@ -1,6 +1,7 @@
 package org.sciborgs1155.lib;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.sciborgs1155.lib.UnitTestingUtil.setupTests;
 
 import edu.wpi.first.networktables.BooleanEntry;
@@ -8,11 +9,13 @@ import edu.wpi.first.networktables.DoubleEntry;
 import edu.wpi.first.networktables.IntegerEntry;
 import edu.wpi.first.networktables.StringEntry;
 import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class TuningTest {
 
+  /** Sets up the test environment before each test. */
   @BeforeEach
   public void setup() {
     setupTests();
@@ -48,21 +51,21 @@ public class TuningTest {
     assertEquals(1155.2265, dbleEnt.get());
     assertEquals(2612668, intEnt.get());
     assertEquals("como estas", strEnt.get());
-    assertEquals(false, boolEnt.get());
+    assertFalse(boolEnt.get());
 
-    ArrayList<Double> doubleList = new ArrayList<>();
+    List<Double> doubleList = new ArrayList<>();
     doubleList.add(dbleVal);
     doubleList.add(1155.2265);
 
-    ArrayList<Long> intList = new ArrayList<>();
+    List<Long> intList = new ArrayList<>();
     intList.add(intVal);
     intList.add((long) 2612668);
 
-    ArrayList<String> strList = new ArrayList<>();
+    List<String> strList = new ArrayList<>();
     strList.add(strVal);
     strList.add("como estas");
 
-    ArrayList<Boolean> boolList = new ArrayList<>();
+    List<Boolean> boolList = new ArrayList<>();
     boolList.add(boolVal);
     boolList.add(false);
 

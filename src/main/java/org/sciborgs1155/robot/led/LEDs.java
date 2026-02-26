@@ -12,12 +12,24 @@ public class LEDs implements AutoCloseable {
   public final LEDStrip middleStrip;
   public final LEDStrip rightStrip;
 
+  /**
+   * Creates a new LEDs controller with the specified LED strips.
+   *
+   * @param leftStrip The left LED strip.
+   * @param middleStrip The middle LED strip.
+   * @param rightStrip The right LED strip.
+   */
   public LEDs(LEDStrip leftStrip, LEDStrip middleStrip, LEDStrip rightStrip) {
     this.leftStrip = leftStrip;
     this.middleStrip = middleStrip;
     this.rightStrip = rightStrip;
   }
 
+  /**
+   * Creates a new LEDs controller with the default LED strip configuration.
+   *
+   * @return A new LEDs instance.
+   */
   public static LEDs create() {
     LEDStrip leftLED = new LEDStrip(0, 37, false);
     LEDStrip middleLED = new LEDStrip(38, 59, true);

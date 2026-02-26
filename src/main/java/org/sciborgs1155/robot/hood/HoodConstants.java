@@ -35,7 +35,7 @@ public class HoodConstants {
   public static final double MOI = 0.0045821517; // kg*m^2
 
   public static final Angle DEFAULT_ANGLE = STARTING_ANGLE;
-  public static final double GEARING = 69.4; //95.3? or max angle is wrong
+  public static final double GEARING = 69.4; // 95.3? or max angle is wrong
 
   public class PID {
     public static final double P = 2.5;

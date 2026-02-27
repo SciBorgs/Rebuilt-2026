@@ -20,6 +20,7 @@ import static org.sciborgs1155.robot.drive.DriveConstants.MAX_SPEED;
 import static org.sciborgs1155.robot.drive.DriveConstants.TELEOP_ANGULAR_SPEED;
 
 import com.ctre.phoenix6.SignalLogger;
+import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
@@ -248,6 +249,11 @@ public class Robot extends CommandRobot {
    */
   public Command systemsCheck() {
     return Test.toCommand(drive.systemsCheck()).withName("Test Mechanisms");
+  }
+
+  @Override
+  public void robotInit() {
+    CameraServer.startAutomaticCapture();
   }
 
   @Override

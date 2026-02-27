@@ -1,19 +1,20 @@
 package org.sciborgs1155.robot;
 
-import org.sciborgs1155.robot.drive.DriveConstants;
-
-import com.ctre.phoenix6.CANBus;
-
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.util.Units;
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Pounds;
 import static edu.wpi.first.units.Units.Seconds;
+
+import com.ctre.phoenix6.CANBus;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Mass;
 import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import org.sciborgs1155.robot.drive.DriveConstants;
 
 /**
  * Constants is a globally accessible class for storing immutable values. Every value should be
@@ -73,4 +74,5 @@ public final class Constants {
     public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.2);
   }
 
+  public static final Pose2d CLIMB_POSE = new Pose2d(1.52, 3.74, new Rotation2d(Degrees.of(180)));
 }

@@ -43,7 +43,6 @@ import org.littletonrobotics.urcl.URCL;
 import org.sciborgs1155.lib.CommandRobot;
 import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.lib.InputStream;
-import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.lib.Tracer;
 import org.sciborgs1155.robot.Ports.OI;
@@ -118,17 +117,13 @@ public class Robot extends CommandRobot {
 
   @Override
   public void robotPeriodic() {
-
-    LoggingUtils.log(
-        "RobotModel/hopperOrigin", new Pose3d(0, 0, 0, new Rotation3d()), Pose3d.struct);
-    LoggingUtils.log(
+    log("RobotModel/hopperOrigin", new Pose3d(0, 0, 0, new Rotation3d()), Pose3d.struct);
+    log(
         "RobotModel/turretOrigin",
         new Transform3d(0.14006, 0.13983, 0.3286252, new Rotation3d(0, 0, turret.position())),
         Transform3d.struct);
-    LoggingUtils.log(
-        "RobotModel/intakeOrigin", new Pose3d(0, 0, 0, new Rotation3d()), Pose3d.struct);
-
-    LoggingUtils.log("RobotModel/driveOrigin", drive.pose3d(), Pose3d.struct);
+    log("RobotModel/intakeOrigin", new Pose3d(0, 0, 0, new Rotation3d()), Pose3d.struct);
+    log("RobotModel/driveOrigin", drive.pose3d(), Pose3d.struct);
 
     Tracer.startTrace("commands");
     CommandScheduler.getInstance().run();

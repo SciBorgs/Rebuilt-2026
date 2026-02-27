@@ -120,14 +120,17 @@ public class FuelVisualizer extends ProjectileVisualizer {
   }
 
   protected static double[] robotToFuel(double[] shotVelocity, Pose3d robotPose) {
-    double angle = Math.atan2(shotVelocity[Fuel.Z], Math.hypot(shotVelocity[Fuel.X], shotVelocity[Fuel.Y]));
-    double[] flywheelToFuel = {-Math.cos(angle) * SHOOTER_LENGTH.in(Meters), 0, Math.sin(angle) * SHOOTER_LENGTH.in(Meters)};
+    double angle =
+        Math.atan2(shotVelocity[Fuel.Z], Math.hypot(shotVelocity[Fuel.X], shotVelocity[Fuel.Y]));
+    double[] flywheelToFuel = {
+      -Math.cos(angle) * SHOOTER_LENGTH.in(Meters), 0, Math.sin(angle) * SHOOTER_LENGTH.in(Meters)
+    };
     double[] shooterToFlywheel = {SHOOTER_LENGTH.in(Meters), 0, FLYWHEEL_LIFT.in(Meters)};
 
     double[] robotToShooter =
         Projectile.rotateAroundZ(
             Projectile.fromTranslation(ROBOT_TO_SHOOTER), robotPose.getRotation().getZ());
-    double[] shooterToFuel = 
+    double[] shooterToFuel =
         Projectile.rotateAroundZ(
             Projectile.add3(shooterToFlywheel, flywheelToFuel), robotPose.getRotation().getZ());
 

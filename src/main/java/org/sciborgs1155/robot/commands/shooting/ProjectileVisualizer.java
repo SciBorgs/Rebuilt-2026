@@ -165,7 +165,7 @@ public abstract class ProjectileVisualizer {
     Projectile projectile =
         createProjectile(
             trajectoryResolution, weightEnabled, dragEnabled, torqueEnabled, liftEnabled);
-  
+
     projectile.launch(
         launchTranslation.get(),
         launchVelocity.get(),
@@ -314,7 +314,7 @@ public abstract class ProjectileVisualizer {
 
   /**
    * The initial pose of the projectile
-   * 
+   *
    * @return the initial pose of the projectile.
    */
   public Pose3d initial() {

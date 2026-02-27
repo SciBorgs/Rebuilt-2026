@@ -215,13 +215,13 @@ public class Robot extends CommandRobot {
     // driver.y().whileTrue(hood.goTo(HoodConstants.MAX_ANGLE));
     // driver.leftTrigger().whileTrue(turret.goLeft());
     // driver.rightTrigger().whileTrue(turret.goRight());
-    // driver.a().whileTrue(hood.goTo(Degrees.of(0)));
+    // driver.a().whileTrue(hood.goTo(Degrees.of(30)));
     // driver.x().whileTrue(turret.goTo(() -> Math.PI / 4));
     // driver.b().whileTrue(turret.goTo(() -> -Math.PI / 4));
     driver.leftTrigger().whileTrue(turret.goLeft());
     driver.rightTrigger().whileTrue(turret.goRight());
     driver.x().whileTrue(hood.manualHood(InputStream.of(driver::getLeftY)));
-    driver.y().whileTrue(shooter.manualShooter(InputStream.of(driver::getLeftY)));
+    driver.y().whileTrue(shooter.runShooter(25));
   }
 
   /**

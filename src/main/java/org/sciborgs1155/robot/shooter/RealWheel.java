@@ -1,6 +1,7 @@
 package org.sciborgs1155.robot.shooter;
 
 import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static org.sciborgs1155.robot.Ports.Shooter.*;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.*;
 
@@ -25,7 +26,7 @@ public class RealWheel implements WheelIO {
     config.CurrentLimits.StatorCurrentLimit = STATOR_CURRENT_LIMIT.in(Amps);
     config.CurrentLimits.SupplyCurrentLimit = SUPPLY_CURRENT_LIMIT.in(Amps);
 
-    config.Feedback.SensorToMechanismRatio = SENSOR_MECHANISM_RATIO;
+    config.Feedback.SensorToMechanismRatio = GEARING;
 
     config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     follower.setControl(new Follower(LEADER, MotorAlignmentValue.Aligned));
@@ -47,7 +48,7 @@ public class RealWheel implements WheelIO {
 
   @Override
   public double velocity() {
-    return leader.getVelocity().getValueAsDouble();
+    return leader.getVelocity().getValue().in(RadiansPerSecond);
   }
 
   @Override

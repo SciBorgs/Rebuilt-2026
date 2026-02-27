@@ -70,8 +70,9 @@ public final class Constants {
   public static class Robot {
     public static final Mass MASS = Pounds.of(110);
     public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.2);
-    public static final Distance SHOOTER_LENGTH = Inches.of(4); // TODO: UPDATE.
+    public static final Distance SHOOTER_LENGTH = Meters.of(0.105803);
+    public static final Distance FLYWHEEL_LIFT = Meters.of(0.061220);
     public static final Translation3d ROBOT_TO_SHOOTER =
-        new Translation3d(-0.14006, 0.13983, 0.3286252);
+        new Translation3d(0.14006, 0.13983, 0.3286252);
   }
 }

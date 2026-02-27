@@ -23,7 +23,12 @@ import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
+import edu.wpi.first.hal.SimDevice.Direction;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
@@ -37,10 +42,14 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import java.util.Arrays;
 import java.util.Set;
+
+import javax.lang.model.util.Elements.Origin;
+
 import org.littletonrobotics.urcl.URCL;
 import org.sciborgs1155.lib.CommandRobot;
 import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.lib.InputStream;
+import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.lib.Tracer;
 import org.sciborgs1155.robot.Ports.OI;
@@ -49,12 +58,12 @@ import org.sciborgs1155.robot.commands.Autos;
 import org.sciborgs1155.robot.commands.shooting.FuelVisualizer;
 import org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer;
 import org.sciborgs1155.robot.commands.shooting.ShootingAlgorithm;
-import org.sciborgs1155.robot.commands.shooting.ShotOptimizer;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.hood.Hood;
 import org.sciborgs1155.robot.shooter.Shooter;
 import org.sciborgs1155.robot.slapdown.Slapdown;
 import org.sciborgs1155.robot.turret.Turret;
+import org.sciborgs1155.robot.turret.Turret.SysIdTestType;
 import org.sciborgs1155.robot.vision.Vision;
 
 /**
@@ -115,6 +124,14 @@ public class Robot extends CommandRobot {
 
   @Override
   public void robotPeriodic() {
+
+    LoggingUtils.log("RobotModel/hopperOrigin", new Pose3d(0, 0,0, new Rotation3d()), Pose3d.struct);
+    LoggingUtils.log("RobotModel/turretOrigin", new Transform3d(0.14006, 0.13983, 0.3286252, new Rotation3d(0,0,turret.position())), Transform3d.struct);
+    LoggingUtils.log("RobotModel/intakeOrigin", new Pose3d(0,0,0, new Rotation3d()), Pose3d.struct);
+
+    LoggingUtils.log("RobotModel/driveOrigin", drive.pose3d(), Pose3d.struct);
+
+
     Tracer.startTrace("commands");
     CommandScheduler.getInstance().run();
     Tracer.endTrace();

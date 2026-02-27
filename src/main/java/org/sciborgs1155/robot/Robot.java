@@ -9,12 +9,7 @@ import static edu.wpi.first.wpilibj2.command.button.RobotModeTriggers.disabled;
 import static edu.wpi.first.wpilibj2.command.button.RobotModeTriggers.teleop;
 import static edu.wpi.first.wpilibj2.command.button.RobotModeTriggers.test;
 import static org.sciborgs1155.lib.LoggingUtils.log;
-import static org.sciborgs1155.robot.Constants.DEADBAND;
-import static org.sciborgs1155.robot.Constants.FULL_SPEED_MULTIPLIER;
-import static org.sciborgs1155.robot.Constants.PERIOD;
-import static org.sciborgs1155.robot.Constants.ROBOT_TYPE;
-import static org.sciborgs1155.robot.Constants.SLOW_SPEED_MULTIPLIER;
-import static org.sciborgs1155.robot.Constants.TUNING;
+import static org.sciborgs1155.robot.Constants.*;
 import static org.sciborgs1155.robot.drive.DriveConstants.MAX_ANGULAR_ACCEL;
 import static org.sciborgs1155.robot.drive.DriveConstants.MAX_SPEED;
 import static org.sciborgs1155.robot.drive.DriveConstants.TELEOP_ANGULAR_SPEED;
@@ -44,10 +39,12 @@ import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.lib.Tracer;
 import org.sciborgs1155.robot.Ports.OI;
+import org.sciborgs1155.robot.climb.Climb;
 import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.hood.Hood;
+import org.sciborgs1155.robot.intake.Intake;
 import org.sciborgs1155.robot.shooter.Shooter;
 import org.sciborgs1155.robot.slapdown.Slapdown;
 import org.sciborgs1155.robot.turret.Turret;
@@ -69,15 +66,20 @@ public class Robot extends CommandRobot {
 
   // SUBSYSTEMS
   private final Drive drive = Drive.create();
+  private final Intake intake = Intake.create();
   private final Hood hood = Hood.create();
   private final Vision vision = Vision.create();
   private final Shooter shooter = Shooter.create();
   private final Turret turret = Turret.create();
+  private final Climb climb = Climb.create();
+  private final Alignment alignment = new Alignment(drive);
 
   // COMMANDS
   private final Alignment align = new Alignment(drive);
 
-  @NotLogged private final SendableChooser<Command> autos = Autos.configureAutos(drive);
+  @NotLogged
+  private final SendableChooser<Command> autos =
+      Autos.configureAutos(drive, intake, shooter, hood, turret, climb, alignment);
 
   @Logged private double speedMultiplier = FULL_SPEED_MULTIPLIER;
 

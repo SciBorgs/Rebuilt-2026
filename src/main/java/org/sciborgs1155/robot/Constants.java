@@ -1,17 +1,14 @@
 package org.sciborgs1155.robot;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-
-import org.sciborgs1155.robot.drive.DriveConstants;
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.KilogramSquareMeters;
+import static edu.wpi.first.units.Units.Pounds;
+import static edu.wpi.first.units.Units.Seconds;
 
 import com.ctre.phoenix6.CANBus;
-
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
-import static edu.wpi.first.units.Units.KilogramSquareMeters;
-import static edu.wpi.first.units.Units.Kilograms;
-import static edu.wpi.first.units.Units.Seconds;
 import edu.wpi.first.units.measure.Mass;
 import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.units.measure.Time;
@@ -77,16 +74,5 @@ public final class Constants {
     public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.2);
   }
 
-  public static final Time PERIOD = Seconds.of(0.02); // roborio tickrate (s)
-  public static final Time ODOMETRY_PERIOD = Seconds.of(1.0 / 20.0); // 4 ms (speedy!)
-  public static final double DEADBAND = 0.15;
-  public static final double MAX_RATE =
-      DriveConstants.MAX_ACCEL.baseUnitMagnitude()
-          / DriveConstants.MAX_ANGULAR_SPEED.baseUnitMagnitude();
-  public static final double SLOW_SPEED_MULTIPLIER = 0.33;
-  public static final double FULL_SPEED_MULTIPLIER = 1.0;
-
-  // The name of seperate canivore, set to rio if no seperate canivore
-  public static final CANBus DRIVE_CANIVORE = new CANBus("drivetrain");
-  public static final CANBus TURRET_CANIVORE = new CANBus("turret");
+  public static final Pose2d CLIMB_POSE = new Pose2d(1.52, 3.74, new Rotation2d(Degrees.of(180)));
 }

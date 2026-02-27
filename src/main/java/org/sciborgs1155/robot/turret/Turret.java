@@ -11,6 +11,7 @@ import static org.sciborgs1155.robot.Constants.TUNING;
 import static org.sciborgs1155.robot.turret.TurretConstants.*;
 import static org.sciborgs1155.robot.turret.TurretConstants.ControlConstants.*;
 
+import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.MathUtil;
@@ -93,13 +94,12 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
 
     sysIdRoutine =
         new SysIdRoutine(
-            new SysIdRoutine.Config(RAMP_RATE, STEP_VOLTAGE, TIME_OUT),
-            new SysIdRoutine.Mechanism(
-                v -> hardware.setVoltage(v.in(Volts)),
-                log -> {
-                  log.motor("turret");
-                },
-                this));
+            new SysIdRoutine.Config(
+                RAMP_RATE,
+                STEP_VOLTAGE,
+                TIME_OUT,
+                (state) -> SignalLogger.writeString("turret state", state.toString())),
+            new SysIdRoutine.Mechanism(v -> hardware.setVoltage(v.in(Volts)), null, this));
 
     setDefaultCommand(run(() -> hardware.setVoltage(0)).withName("stop"));
 

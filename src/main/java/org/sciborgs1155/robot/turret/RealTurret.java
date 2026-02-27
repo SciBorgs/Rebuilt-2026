@@ -110,10 +110,11 @@ public class RealTurret implements TurretIO {
                 FaultLogger.report(
                     new Fault(
                         "Turret CRT failure: >10 consecutive failures",
-                        "Unable to solve turret position with CRT, using stale position - fail count: " + failCount,
+                        "Unable to solve turret position with CRT, using stale position - fail count: "
+                            + failCount,
                         FaultType.WARNING));
-                }
-                return lastGoodPositionRad;
+              }
+              return lastGoodPositionRad;
             });
   }
 

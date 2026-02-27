@@ -8,14 +8,13 @@ import static edu.wpi.first.units.Units.Seconds;
 import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.turret.TurretConstants.*;
 
-import org.sciborgs1155.lib.FaultLogger;
-import org.sciborgs1155.lib.FaultLogger.Fault;
-import org.sciborgs1155.lib.FaultLogger.FaultType;
-
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import org.sciborgs1155.lib.FaultLogger;
+import org.sciborgs1155.lib.FaultLogger.Fault;
+import org.sciborgs1155.lib.FaultLogger.FaultType;
 import yams.units.EasyCRT;
 import yams.units.EasyCRTConfig;
 
@@ -35,6 +34,7 @@ public class SimTurret implements TurretIO {
 
   /** Cached last valid CRT solution */
   private double lastGoodPositionRad = START_ANGLE.in(Radians);
+
   private static final double DEVIATION = .05; // rotations
   private double failCount = 0;
 
@@ -93,10 +93,11 @@ public class SimTurret implements TurretIO {
                 FaultLogger.report(
                     new Fault(
                         "Turret CRT failure: >10 consecutive failures",
-                        "Unable to solve turret position with CRT, using stale position - fail count: " + failCount,
+                        "Unable to solve turret position with CRT, using stale position - fail count: "
+                            + failCount,
                         FaultType.WARNING));
-                }
-                return lastGoodPositionRad;
+              }
+              return lastGoodPositionRad;
             });
   }
 
@@ -110,6 +111,6 @@ public class SimTurret implements TurretIO {
 
   @Override
   public void periodic() {
-      SmartDashboard.putNumber("trueAngle", trueAngleRad());
+    SmartDashboard.putNumber("trueAngle", trueAngleRad());
   }
 }

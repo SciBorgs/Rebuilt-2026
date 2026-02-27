@@ -6,6 +6,7 @@ import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.*;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.ControlConstants.*;
 
+import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
@@ -60,7 +61,11 @@ public final class Shooter extends SubsystemBase implements AutoCloseable {
 
     characterization =
         new SysIdRoutine(
-            new SysIdRoutine.Config(Volts.per(Second).of(1), Volts.of(10.0), Seconds.of(11)),
+            new SysIdRoutine.Config(
+                Volts.per(Second).of(1),
+                Volts.of(10.0),
+                Seconds.of(11),
+                (state) -> SignalLogger.writeString("shooter state", state.toString())),
             new SysIdRoutine.Mechanism(
                 v -> hardware.setVoltage(v.in(Volts)), null, this, "top shooter"));
 

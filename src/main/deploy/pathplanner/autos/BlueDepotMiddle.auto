@@ -78,6 +78,12 @@
           "data": {
             "pathName": "BlueDepotMiddle.4"
           }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "climb"
+          }
         }
       ]
     }

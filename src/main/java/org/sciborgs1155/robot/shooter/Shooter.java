@@ -162,7 +162,7 @@ public final class Shooter extends SubsystemBase implements AutoCloseable {
    * @param goal The velocity goal.
    */
   public Test goToTest(DoubleSupplier goal) {
-    Command testCommand = runShooter(goal).until(() -> atSetpoint());
+    Command testCommand = runShooter(goal).until(() -> atSetpoint()).withTimeout(5);
     EqualityAssertion atGoal =
         eAssert(
             "Shooter Syst Check Speed",

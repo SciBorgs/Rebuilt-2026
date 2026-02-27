@@ -15,8 +15,8 @@ import edu.wpi.first.units.measure.Voltage;
 
 public class HoodConstants {
 
-  public static final Angle MIN_ANGLE = Degrees.of(15);
-  public static final Angle MAX_ANGLE = Degrees.of(53);
+  public static final Angle MIN_ANGLE = Radians.of(0.064);
+  public static final Angle MAX_ANGLE = Radians.of(1.006-0.02);
   public static final Mass MASS = Pounds.of(1.307);
   public static final Angle STARTING_ANGLE = MIN_ANGLE;
   public static final Current SUPPLY_LIMIT = Amps.of(30);
@@ -28,15 +28,14 @@ public class HoodConstants {
 
   // Sysid constants
   public static final Velocity<VoltageUnit> RAMP_RATE = Volts.of(0.5).per(Second);
-  public static final Voltage STEP_VOLTAGE = Volts.of(0.3);
-  public static final Time TIME_OUT = Seconds.of(3);
+  public static final Voltage STEP_VOLTAGE = Volts.of(0.5);
+  public static final Time TIME_OUT = Seconds.of(6);
 
   public static final Distance HOOD_RADIUS = Inches.of(9.29);
   public static final double MOI = 0.0045821517; // kg*m^2
 
   public static final Angle DEFAULT_ANGLE = STARTING_ANGLE;
-  public static final double GEARING = 69.4; // 95.3? or max angle is wrong
-
+  public static final double GEARING = 95.33333;
   public class PID {
     public static final double P = 2.5;
     public static final double I = 0;

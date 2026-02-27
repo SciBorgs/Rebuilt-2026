@@ -17,7 +17,7 @@ public class ShooterConstants {
 
   public static final double MAX_VOLTAGE = 12.0;
 
-  public static final AngularVelocity IDLE_VELOCITY = RadiansPerSecond.of(5);
+  public static final AngularVelocity IDLE_VELOCITY = RadiansPerSecond.of(0);
   public static final AngularVelocity MAX_VELOCITY = RPM.of(7230);
 
   public static final Current STATOR_CURRENT_LIMIT = Amps.of(30);

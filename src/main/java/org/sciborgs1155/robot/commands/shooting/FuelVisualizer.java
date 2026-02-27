@@ -1,6 +1,7 @@
 package org.sciborgs1155.robot.commands.shooting;
 
 import static edu.wpi.first.units.Units.Meters;
+import static org.sciborgs1155.robot.Constants.Robot.FLYWHEEL_LIFT;
 import static org.sciborgs1155.robot.Constants.Robot.ROBOT_TO_SHOOTER;
 import static org.sciborgs1155.robot.Constants.Robot.SHOOTER_LENGTH;
 
@@ -119,11 +120,16 @@ public class FuelVisualizer extends ProjectileVisualizer {
   }
 
   protected static double[] robotToFuel(double[] shotVelocity, Pose3d robotPose) {
-    double[] shooterToFuel =
-        Projectile.scale3(shotVelocity, SHOOTER_LENGTH.in(Meters) / Projectile.norm3(shotVelocity));
+    double angle = Math.atan2(shotVelocity[Fuel.Z], Math.hypot(shotVelocity[Fuel.X], shotVelocity[Fuel.Y]));
+    double[] flywheelToFuel = {-Math.cos(angle) * SHOOTER_LENGTH.in(Meters), 0, Math.sin(angle) * SHOOTER_LENGTH.in(Meters)};
+    double[] shooterToFlywheel = {SHOOTER_LENGTH.in(Meters), 0, FLYWHEEL_LIFT.in(Meters)};
+
     double[] robotToShooter =
         Projectile.rotateAroundZ(
             Projectile.fromTranslation(ROBOT_TO_SHOOTER), robotPose.getRotation().getZ());
+    double[] shooterToFuel = 
+        Projectile.rotateAroundZ(
+            Projectile.add3(shooterToFlywheel, flywheelToFuel), robotPose.getRotation().getZ());
 
     return Projectile.add3(shooterToFuel, robotToShooter);
   }

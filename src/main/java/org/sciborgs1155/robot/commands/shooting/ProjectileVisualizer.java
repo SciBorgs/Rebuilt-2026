@@ -26,6 +26,7 @@ public abstract class ProjectileVisualizer {
   private boolean weightEnabled, dragEnabled, torqueEnabled, liftEnabled;
 
   private Pose3d[] trajectory;
+  private Pose3d initial;
 
   private final Supplier<double[]> launchTranslation, launchVelocity, launchRotation;
   private final DoubleSupplier launchRotationalVelocity;
@@ -143,6 +144,7 @@ public abstract class ProjectileVisualizer {
     LoggingUtils.log("Projectile Visualizer/Scores", scores());
     LoggingUtils.log("Projectile Visualizer/Misses", misses());
     LoggingUtils.log("Projectile Visualizer/Projectiles", poses(), Pose3d.struct);
+    LoggingUtils.log("Projectile Visualizer/Launch pose", initial(), Pose3d.struct);
   }
 
   /**
@@ -163,12 +165,14 @@ public abstract class ProjectileVisualizer {
     Projectile projectile =
         createProjectile(
             trajectoryResolution, weightEnabled, dragEnabled, torqueEnabled, liftEnabled);
-
+  
     projectile.launch(
         launchTranslation.get(),
         launchVelocity.get(),
         launchRotation.get(),
         launchRotationalVelocity.getAsDouble());
+
+    initial = projectile.pose();
     while (!projectile.willMiss() && !projectile.willScore() && frames <= MAX_TRAJECTORY_SIZE) {
       trajectory.add(projectile.pose());
       projectile.periodic();
@@ -192,6 +196,7 @@ public abstract class ProjectileVisualizer {
         launchVelocity.get(),
         launchRotation.get(),
         launchRotationalVelocity.getAsDouble());
+    initial = projectile.pose();
   }
 
   /**
@@ -305,6 +310,15 @@ public abstract class ProjectileVisualizer {
    */
   public Pose3d[] trajectory() {
     return trajectory.clone();
+  }
+
+  /**
+   * The initial pose of the projectile
+   * 
+   * @return the initial pose of the projectile.
+   */
+  public Pose3d initial() {
+    return initial;
   }
 
   /** A class that models the physics of a projectile. */

@@ -55,5 +55,4 @@ public interface ShootingAlgorithm {
         FuelVisualizer.shotVelocity(
             speed.getAsDouble(), pitch.getAsDouble(), yaw.getAsDouble(), robotPose.get());
   }
-
 }

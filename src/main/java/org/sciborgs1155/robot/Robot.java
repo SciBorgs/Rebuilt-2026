@@ -49,6 +49,7 @@ import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
 import org.sciborgs1155.robot.commands.shooting.FuelVisualizer;
+import org.sciborgs1155.robot.commands.shooting.MovingShooting;
 import org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer;
 import org.sciborgs1155.robot.commands.shooting.ShootingAlgorithm;
 import org.sciborgs1155.robot.commands.shooting.ShotTable;
@@ -88,7 +89,7 @@ public class Robot extends CommandRobot {
   @NotLogged
   private final ProjectileVisualizer fuelVisualizer =
       new FuelVisualizer(
-              ShootingAlgorithm.toShotVelocitySupplier(() -> ShotTable.speed(drive.pose3d()), () -> ShotTable.angle(drive.pose3d()), () -> 0, drive::pose3d),
+              () -> MovingShooting.launchVelocityWhileMoving(drive.pose3d(), drive.fieldRelativeChassisSpeeds()),
               drive::pose3d,
               drive::fieldRelativeChassisSpeeds)
           .configPhysics(true, true, false, false)
@@ -180,7 +181,8 @@ public class Robot extends CommandRobot {
       DriverStation.silenceJoystickConnectionWarning(true);
       addPeriodic(fuelVisualizer::updateLogging, PERIOD);
       addPeriodic(fuelVisualizer::updateLaunchSimulation, ProjectileVisualizer.LAUNCH_PERIOD);
-      addPeriodic(fuelVisualizer::updateTrajectorySimulation, ProjectileVisualizer.TRAJECTORY_PERIOD);
+      addPeriodic(
+          fuelVisualizer::updateTrajectorySimulation, ProjectileVisualizer.TRAJECTORY_PERIOD);
     }
   }
 

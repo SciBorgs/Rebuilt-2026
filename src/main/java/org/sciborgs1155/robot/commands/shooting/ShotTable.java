@@ -32,7 +32,7 @@ public class ShotTable {
       FileWriter fileWriter = new FileWriter(new File("resources/" + name + ".txt"));
 
       for (double distance = minDistance; distance < maxDistance; distance += increment) {
-        double[] launchParameters = ShotOptimizer.calculateLaunchParameters(distance);
+        double[] launchParameters = ShotOptimizer.distanceSpeedAndPitch(distance);
 
         // FORMAT: [DISTANCE]/[SPEED]/[ANGLE](SPACE)
         fileWriter.write(
@@ -40,7 +40,7 @@ public class ShotTable {
                 + ","
                 + launchParameters[ShotOptimizer.SPEED]
                 + ","
-                + launchParameters[ShotOptimizer.ANGLE]
+                + launchParameters[ShotOptimizer.PITCH]
                 + " ");
       }
 

@@ -47,7 +47,7 @@ public class ShotOptimizer {
   private static final double MINIMUM_ANGLE =
       SHOOTING_ANGLE_OFFSET.in(Radians) - MAX_ANGLE.in(Radians);
 
-  protected static final int DISTANCE = 0, SPEED = 1, ANGLE = 2;
+  protected static final int DISTANCE = 0, SPEED = 1, PITCH = 2, YAW = 3;
 
   private static Pose3d[] displayedTrajectory = new Pose3d[0];
   private static final Projectile projectile =
@@ -56,10 +56,10 @@ public class ShotOptimizer {
           .config(TRAJECTORY_RESOLUTION, true, DRAG_ENABLED, TORQUE_ENABLED, LIFT_ENABLED);
 
   public static Command viewOptimizedLaunch(double distance) {
-    return Commands.runOnce(() -> logTrajectory(calculateLaunchParameters(distance)));
+    return Commands.runOnce(() -> logTrajectory(distanceSpeedAndPitch(distance)));
   }
 
-  protected static double[] calculateLaunchParameters(double distance) {
+  protected static double[] distanceSpeedAndPitch(double distance) {
     Tracer.startTrace("Shot Optimization");
 
     double speed = 0;
@@ -148,7 +148,7 @@ public class ShotOptimizer {
 
   private static void logTrajectory(double[] launchParameters) {
     double[][] trajectory =
-        trajectory(launchParameters[DISTANCE], launchParameters[SPEED], launchParameters[ANGLE]);
+        trajectory(launchParameters[DISTANCE], launchParameters[SPEED], launchParameters[PITCH]);
 
     displayedTrajectory = new Pose3d[trajectory.length];
     for (int index = 0; index < trajectory.length; index++)

@@ -77,8 +77,7 @@ public class FuelVisualizer extends ProjectileVisualizer {
   protected static double[] launchRotation(double[] shotVelocity, Pose3d robotPose) {
     double[] axis = rotateAroundZ(shotVelocity, Math.PI / 2.0);
     return scale4(
-        new double[] {0, axis[Fuel.X], axis[Fuel.Y], axis[Fuel.Z]},
-        1 / norm3(shotVelocity));
+        new double[] {0, axis[Fuel.X], axis[Fuel.Y], axis[Fuel.Z]}, 1 / norm3(shotVelocity));
   }
 
   protected static double launchRotationalVelocity() {
@@ -96,7 +95,8 @@ public class FuelVisualizer extends ProjectileVisualizer {
    * @return A double[] that can be passed into the constructor of a visualizer.
    */
   public static double[] shotVelocity(double speed, double pitch, double yaw, Pose3d robotPose) {
-    return scale3(Fuel.rotateAroundZ(toDirectionVector(pitch, yaw), robotPose.getRotation().getZ()), speed);
+    return scale3(
+        Fuel.rotateAroundZ(toDirectionVector(pitch, yaw), robotPose.getRotation().getZ()), speed);
   }
 
   /**
@@ -130,7 +130,8 @@ public class FuelVisualizer extends ProjectileVisualizer {
     double[] shooterToFlywheel = {SHOOTER_LENGTH.in(Meters), 0, FLYWHEEL_LIFT.in(Meters)};
 
     double[] robotToShooter = robotToShooter(robotPose);
-    double[] shooterToFuel = rotateAroundZ(add3(shooterToFlywheel, flywheelToFuel), robotPose.getRotation().getZ());
+    double[] shooterToFuel =
+        rotateAroundZ(add3(shooterToFlywheel, flywheelToFuel), robotPose.getRotation().getZ());
 
     return add3(shooterToFuel, robotToShooter);
   }
@@ -144,7 +145,8 @@ public class FuelVisualizer extends ProjectileVisualizer {
 
   protected static double[] shooterVelocity(
       double[] shotVelocity, Pose3d robotPose, ChassisSpeeds robotVelocity) {
-    double tangentialSpeed = robotVelocity.omegaRadiansPerSecond * norm3(robotToFuel(shotVelocity, robotPose));
+    double tangentialSpeed =
+        robotVelocity.omegaRadiansPerSecond * norm3(robotToFuel(shotVelocity, robotPose));
     double tangentialDirection = robotPose.getRotation().getZ() + Math.PI / 2.0;
 
     double xVelocity =

@@ -93,7 +93,7 @@ public class Robot extends CommandRobot {
                       drive.pose3d(), drive.fieldRelativeChassisSpeeds()),
               drive)
           .configPhysics(true, true, false, false)
-          .configGeneration(0.05, 80, 60)
+          .configGeneration(0.05, 60, 60)
           .config(true, true);
 
   @Logged private double speedMultiplier = FULL_SPEED_MULTIPLIER;

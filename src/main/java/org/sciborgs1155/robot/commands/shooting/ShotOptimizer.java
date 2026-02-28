@@ -33,7 +33,7 @@ public class ShotOptimizer {
   private static final double SCORE_TOLERANCE = 0;
   private static final double SCORE_DEPTH = 0;
 
-  private static final double[] GOAL = Projectile.fromTranslation(Hub.TOP_CENTER_POINT);
+  protected static final double[] GOAL = Projectile.fromTranslation(Hub.TOP_CENTER_POINT);
 
   private static final double SPEED_CONSTANT = 0.01;
   private static final double ANGLE_INCREMENT = Math.PI / 12;

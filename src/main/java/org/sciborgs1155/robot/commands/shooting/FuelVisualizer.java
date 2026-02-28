@@ -5,6 +5,7 @@ import static org.sciborgs1155.robot.Constants.Robot.FLYWHEEL_LIFT;
 import static org.sciborgs1155.robot.Constants.Robot.ROBOT_TO_SHOOTER;
 import static org.sciborgs1155.robot.Constants.Robot.SHOOTER_TO_FLYWHEEL;
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.*;
+import static org.sciborgs1155.robot.commands.shooting.ShotOptimizer.*;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -67,9 +68,9 @@ public class FuelVisualizer extends ProjectileVisualizer {
         () ->
             launchVelocity(
                 shotVelocity(
-                    launchParameters.get()[ShotOptimizer.SPEED],
-                    launchParameters.get()[ShotOptimizer.PITCH],
-                    launchParameters.get()[ShotOptimizer.YAW],
+                    launchParameters.get()[SPEED],
+                    launchParameters.get()[PITCH],
+                    launchParameters.get()[YAW],
                     drive.pose3d()),
                 drive.pose3d(),
                 drive.fieldRelativeChassisSpeeds()),

@@ -1,5 +1,7 @@
 package org.sciborgs1155.robot.commands.shooting;
 
+import static org.sciborgs1155.robot.commands.shooting.ShotOptimizer.*;
+
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -7,6 +9,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Scanner;
+
+import org.sciborgs1155.lib.Tracer;
 
 public class ShotTable {
   private static boolean loaded = false;
@@ -28,21 +32,24 @@ public class ShotTable {
   public static void createShotTable(
       double minDistance, double maxDistance, double increment, String name) {
     try {
+      Tracer.startTrace("shot table generation");
       FileWriter fileWriter = new FileWriter(new File("resources/" + name + ".txt"));
 
       for (double distance = minDistance; distance < maxDistance; distance += increment) {
-        double[] launchParameters = ShotOptimizer.distanceSpeedAndPitch(distance);
+        double[] launchParameters = distanceSpeedAndPitch(distance);
 
-        if (launchParameters[ShotOptimizer.SPEED] < 0.01) continue;
+        double speed = launchParameters[SPEED];
+        double angle = launchParameters[PITCH];
 
-        double speed = launchParameters[ShotOptimizer.SPEED];
-        double angle = launchParameters[ShotOptimizer.PITCH];
+        if (speed < 0.01) continue;
 
         // FORMAT: [DISTANCE]/[SPEED]/[ANGLE](SPACE)
         fileWriter.write(distance + "," + speed + "," + angle + " ");
       }
 
       fileWriter.close();
+      System.out.println("Successfully generated shot table!");
+      Tracer.endTrace();
     } catch (IOException exception) {
       System.out.println("Failed to generate shot table! ");
       exception.printStackTrace();
@@ -54,6 +61,7 @@ public class ShotTable {
     ANGLE_TABLE.clear();
 
     try {
+      Tracer.startTrace("shot table generation");
       Scanner fileScanner = new Scanner(new File("resources/" + shotTableName + ".txt"));
 
       int treeIndex = 0;
@@ -76,6 +84,8 @@ public class ShotTable {
 
       fileScanner.close();
       loaded = true;
+      System.out.println("Successfully loaded shot table!");
+      Tracer.endTrace();
     } catch (Exception exception) {
       System.out.println("Failed to load shot table!");
       exception.printStackTrace();

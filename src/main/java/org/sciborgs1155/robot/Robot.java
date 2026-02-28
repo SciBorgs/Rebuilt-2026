@@ -247,7 +247,7 @@ public class Robot extends CommandRobot {
 
     operator.a().whileTrue(fuelVisualizer.launchProjectiles());
     operator.b().onTrue(ShotTable.createShotTableCommand(0.1, 5, 0.01, "shotTableV1"));
-    operator.x().onTrue(ShotTable.loadShotTableCommand("shotTableV1"));
+    operator.b().onTrue(ShotTable.loadShotTableCommand("shotTableV1"));
   }
 
   /**

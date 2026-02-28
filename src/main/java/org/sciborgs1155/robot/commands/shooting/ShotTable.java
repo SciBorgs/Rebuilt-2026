@@ -9,7 +9,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Scanner;
-
 import org.sciborgs1155.lib.Tracer;
 
 public class ShotTable {

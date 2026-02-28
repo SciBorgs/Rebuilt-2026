@@ -68,6 +68,7 @@ public class ShotOptimizer {
     for (double testAngle = MINIMUM_ANGLE;
         testAngle < MAXIMUM_ANGLE;
         testAngle += ANGLE_INCREMENT) {
+
       // TEST IF SHOT IS POSSIBLE
       if (!checkAngle(distance, testAngle)) continue;
 

@@ -11,12 +11,9 @@ import static org.sciborgs1155.robot.hood.HoodConstants.SHOOTING_ANGLE_OFFSET;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import java.util.ArrayList;
 import java.util.List;
-import org.sciborgs1155.lib.LoggingUtils;
-import org.sciborgs1155.lib.Tracer;
 import org.sciborgs1155.robot.FieldConstants.Hub;
 import org.sciborgs1155.robot.commands.shooting.FuelVisualizer.Fuel;
 import org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile;
@@ -49,19 +46,12 @@ public class ShotOptimizer {
 
   protected static final int DISTANCE = 0, SPEED = 1, PITCH = 2, YAW = 3;
 
-  private static Pose3d[] displayedTrajectory = new Pose3d[0];
   private static final Projectile projectile =
       new Fuel()
           .withScoringParameters(SCORE_TOLERANCE, SCORE_DEPTH)
           .config(TRAJECTORY_RESOLUTION, true, DRAG_ENABLED, TORQUE_ENABLED, LIFT_ENABLED);
 
-  public static Command viewOptimizedLaunch(double distance) {
-    return Commands.runOnce(() -> logTrajectory(distanceSpeedAndPitch(distance)));
-  }
-
   protected static double[] distanceSpeedAndPitch(double distance) {
-    Tracer.startTrace("Shot Optimization");
-
     double speed = 0;
     double angle = 0;
 
@@ -83,7 +73,6 @@ public class ShotOptimizer {
       break;
     }
 
-    Tracer.endTrace();
     return new double[] {distance, speed, angle};
   }
 
@@ -128,11 +117,19 @@ public class ShotOptimizer {
     projectile.reset();
     List<double[]> poseList = new ArrayList<>();
 
-    projectile.launch(
-        new double[] {GOAL[X] - distance, GOAL[Y], ROBOT_TO_SHOOTER.getZ()},
-        new double[] {Math.cos(angle) * speed, 0, Math.sin(angle) * speed},
-        new double[4],
-        0);
+    Pose3d robotPose =
+        new Pose3d(
+            GOAL[X] - distance - ROBOT_TO_SHOOTER.getX(),
+            GOAL[Y] - ROBOT_TO_SHOOTER.getY(),
+            0,
+            new Rotation3d());
+
+    double[] shotVelocity = FuelVisualizer.shotVelocity(speed, angle, 0, robotPose);
+    double[] launchVelocity =
+        FuelVisualizer.launchVelocity(shotVelocity, robotPose, new ChassisSpeeds());
+    double[] launchTranslation = FuelVisualizer.launchTranslation(shotVelocity, robotPose);
+
+    projectile.launch(launchTranslation, launchVelocity, new double[4], 0);
 
     int frames = 0;
     while (!projectile.willMiss() && !projectile.willScore()) {
@@ -144,21 +141,5 @@ public class ShotOptimizer {
     }
 
     return poseList.toArray(new double[0][]);
-  }
-
-  private static void logTrajectory(double[] launchParameters) {
-    double[][] trajectory =
-        trajectory(launchParameters[DISTANCE], launchParameters[SPEED], launchParameters[PITCH]);
-
-    displayedTrajectory = new Pose3d[trajectory.length];
-    for (int index = 0; index < trajectory.length; index++)
-      displayedTrajectory[index] =
-          new Pose3d(
-              trajectory[index][X], trajectory[index][Y], trajectory[index][Z], new Rotation3d());
-  }
-
-  public static void updateLogging() {
-    if (displayedTrajectory.length == 0) return;
-    LoggingUtils.log("Shot Optimizer/Trajectory", displayedTrajectory, Pose3d.struct);
   }
 }

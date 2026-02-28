@@ -51,7 +51,7 @@ import org.sciborgs1155.robot.commands.Autos;
 import org.sciborgs1155.robot.commands.shooting.FuelVisualizer;
 import org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer;
 import org.sciborgs1155.robot.commands.shooting.ShootingAlgorithm;
-import org.sciborgs1155.robot.commands.shooting.ShotOptimizer;
+import org.sciborgs1155.robot.commands.shooting.ShotTable;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.hood.Hood;
 import org.sciborgs1155.robot.shooter.Shooter;
@@ -88,7 +88,7 @@ public class Robot extends CommandRobot {
   @NotLogged
   private final ProjectileVisualizer fuelVisualizer =
       new FuelVisualizer(
-              ShootingAlgorithm.toShotVelocitySupplier(() -> 10, () -> 1, () -> 0, drive::pose3d),
+              ShootingAlgorithm.toShotVelocitySupplier(() -> ShotTable.speed(drive.pose3d()), () -> ShotTable.angle(drive.pose3d()), () -> 0, drive::pose3d),
               drive::pose3d,
               drive::fieldRelativeChassisSpeeds)
           .configPhysics(true, true, false, false)
@@ -178,10 +178,9 @@ public class Robot extends CommandRobot {
       pdh.setSwitchableChannel(true);
     } else {
       DriverStation.silenceJoystickConnectionWarning(true);
-      // addPeriodic(fuelVisualizer::updateLogging, PERIOD);
-      // addPeriodic(fuelVisualizer::updateLaunchSimulation, ProjectileVisualizer.LAUNCH_PERIOD);
-
-      addPeriodic(ShotOptimizer::updateLogging, PERIOD);
+      addPeriodic(fuelVisualizer::updateLogging, PERIOD);
+      addPeriodic(fuelVisualizer::updateLaunchSimulation, ProjectileVisualizer.LAUNCH_PERIOD);
+      addPeriodic(fuelVisualizer::updateTrajectorySimulation, ProjectileVisualizer.TRAJECTORY_PERIOD);
     }
   }
 
@@ -244,8 +243,9 @@ public class Robot extends CommandRobot {
         .onTrue(Commands.runOnce(() -> speedMultiplier = SLOW_SPEED_MULTIPLIER))
         .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
 
-    // operator.a().whileTrue(fuelVisualizer.launchProjectiles());
-    operator.a().onTrue(ShotOptimizer.optimizeLaunch(5));
+    operator.a().whileTrue(fuelVisualizer.launchProjectiles());
+    operator.b().onTrue(ShotTable.createShotTableCommand(1, 10, 0.1, "shotTableV1"));
+    operator.x().onTrue(ShotTable.loadShotTableCommand("shotTableV1"));
   }
 
   /**

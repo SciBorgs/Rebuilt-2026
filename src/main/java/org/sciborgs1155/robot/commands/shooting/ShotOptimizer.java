@@ -47,7 +47,7 @@ public class ShotOptimizer {
   private static final double MINIMUM_ANGLE =
       SHOOTING_ANGLE_OFFSET.in(Radians) - MAX_ANGLE.in(Radians);
 
-  private static final int DISTANCE = 0, SPEED = 1, ANGLE = 2;
+  protected static final int DISTANCE = 0, SPEED = 1, ANGLE = 2;
 
   private static Pose3d[] displayedTrajectory = new Pose3d[0];
   private static final Projectile projectile =
@@ -55,7 +55,7 @@ public class ShotOptimizer {
           .withScoringParameters(SCORE_TOLERANCE, SCORE_DEPTH)
           .config(TRAJECTORY_RESOLUTION, true, DRAG_ENABLED, TORQUE_ENABLED, LIFT_ENABLED);
 
-  public static Command optimizeLaunch(double distance) {
+  public static Command viewOptimizedLaunch(double distance) {
     return Commands.runOnce(() -> logTrajectory(calculateLaunchParameters(distance)));
   }
 

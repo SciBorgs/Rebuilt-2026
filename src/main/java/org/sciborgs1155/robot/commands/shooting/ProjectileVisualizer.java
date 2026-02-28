@@ -506,6 +506,12 @@ public abstract class ProjectileVisualizer {
       };
     }
 
+    protected static double[] sub3(double[] vector1, double[] vector2) {
+      return new double[] {
+        vector1[X] - vector2[X], vector1[Y] - vector2[Y], vector1[Z] - vector2[Z]
+      };
+    }
+
     protected static double[] scale3(double[] vector, double scalar) {
       return new double[] {vector[X] * scalar, vector[Y] * scalar, vector[Z] * scalar};
     }

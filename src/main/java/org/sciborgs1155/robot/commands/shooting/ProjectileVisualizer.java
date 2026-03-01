@@ -326,6 +326,7 @@ public abstract class ProjectileVisualizer {
   protected abstract static class Projectile {
     protected static final int X = 0, Y = 1, Z = 2;
     protected static final int ANGLE = 0, AXIS_X = 1, AXIS_Y = 2, AXIS_Z = 3;
+    protected static final int DISTANCE = 0, SPEED = 1, PITCH = 2, YAW = 3;
 
     protected double resolution;
     protected boolean weightEnabled, dragEnabled, torqueEnabled, liftEnabled;
@@ -484,6 +485,12 @@ public abstract class ProjectileVisualizer {
 
     protected static double[] fromTranslation(Translation3d translation) {
       return new double[] {translation.getX(), translation.getY(), translation.getZ()};
+    }
+
+    protected static Pose3d toPose(double[] translation, double heading) {
+      return new Pose3d(
+          new Translation3d(translation[X], translation[Y], translation[Z]),
+          new Rotation3d(0, 0, heading));
     }
 
     protected static double[] toDirectionVector(double pitch, double yaw) {

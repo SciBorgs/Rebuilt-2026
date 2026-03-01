@@ -1,11 +1,14 @@
 package org.sciborgs1155.robot;
 
 import static edu.wpi.first.units.Units.*;
-import static org.sciborgs1155.lib.Test.runUnitTest;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.sciborgs1155.lib.UnitTestingUtil.fastForward;
 import static org.sciborgs1155.lib.UnitTestingUtil.reset;
 import static org.sciborgs1155.lib.UnitTestingUtil.setupTests;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.*;
 
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.RepeatedTest;
@@ -39,6 +42,10 @@ public class ShooterTest {
   @RepeatedTest(5)
   public void randVelocity() throws Exception {
     double val = Math.random();
-    runUnitTest(shooter.goToTest(() -> val * MAX_VELOCITY.in(RadiansPerSecond)));
+    double setpoint = val * MAX_VELOCITY.in(RadiansPerSecond);
+    CommandScheduler.getInstance()
+        .schedule(shooter.runShooter(setpoint).withDeadline(Commands.waitSeconds(3)));
+    fastForward(Seconds.of(3));
+    assertTrue(shooter.velocity() - setpoint < VELOCITY_TOLERANCE.in(RadiansPerSecond) * 2);
   }
 }

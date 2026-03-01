@@ -12,7 +12,6 @@ import static org.sciborgs1155.lib.LoggingUtils.log;
 import static org.sciborgs1155.robot.Constants.DEADBAND;
 import static org.sciborgs1155.robot.Constants.FULL_SPEED_MULTIPLIER;
 import static org.sciborgs1155.robot.Constants.PERIOD;
-import static org.sciborgs1155.robot.Constants.ROBOT_TYPE;
 import static org.sciborgs1155.robot.Constants.SLOW_SPEED_MULTIPLIER;
 import static org.sciborgs1155.robot.Constants.TUNING;
 import static org.sciborgs1155.robot.drive.DriveConstants.MAX_ANGULAR_ACCEL;
@@ -73,6 +72,7 @@ public class Robot extends CommandRobot {
   private final Vision vision = Vision.create();
   private final Shooter shooter = Shooter.create();
   private final Turret turret = Turret.create();
+  private final Slapdown slapdown = Slapdown.create();
 
   // COMMANDS
   private final Alignment align = new Alignment(drive);
@@ -80,14 +80,6 @@ public class Robot extends CommandRobot {
   @NotLogged private final SendableChooser<Command> autos = Autos.configureAutos(drive);
 
   @Logged private double speedMultiplier = FULL_SPEED_MULTIPLIER;
-
-  @Logged
-  @SuppressWarnings("PMD.TooFewBranchesForSwitch") // will be more values in the future
-  private final Slapdown slapdown =
-      switch (ROBOT_TYPE) {
-        case FULL -> Slapdown.create();
-        default -> Slapdown.none();
-      };
 
   /** The robot contains subsystems, OI devices, and commands. */
   public Robot() {

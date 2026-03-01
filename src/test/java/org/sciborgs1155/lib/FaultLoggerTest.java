@@ -77,16 +77,20 @@ public class FaultLoggerTest {
   }
 
   @Test
+  @SuppressWarnings(
+      "PMD.UnitTestShouldIncludeAssert") // test is to make sure these methods do not error. no
+  // assertion needed
   void registerSpark() {
     SparkFlex spark = new SparkFlex(10, MotorType.kBrushless);
     FaultLogger.register(spark);
     spark.close();
   }
 
-  @SuppressWarnings({"PMD.SystemPrintln"})
+  @SuppressWarnings(
+      "PMD.UnitTestShouldIncludeAssert") // test is to make sure these methods do not error. no
+  // assertion needed
   @Test
   void registerTalon() {
-    System.out.println("--- The test is about to complain. This is good. ---");
     TalonFX talon = new TalonFX(10);
     FaultLogger.register(talon);
     talon.close();

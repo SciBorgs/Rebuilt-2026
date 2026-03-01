@@ -14,6 +14,9 @@ public class RobotTest {
   }
 
   @Test
+  @SuppressWarnings(
+      "PMD.UnitTestShouldIncludeAssert") // test is to make sure these methods do not error. no
+  // assertion needed
   void initialize() throws Exception {
     new Robot().close();
     reset();

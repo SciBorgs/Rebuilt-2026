@@ -147,6 +147,16 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
   }
 
   /**
+   * returns the angle goal of the hood trapezoid profile
+   *
+   * @return the position of the goal
+   */
+  @Logged
+  public double angleGoal() {
+    return fb.getGoal().position;
+  }
+
+  /**
    * gets the current velocity of the hood
    *
    * @return current velocity of the hood
@@ -173,7 +183,7 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
    */
   @Logged
   public boolean atGoal() {
-    return fb.atGoal();
+    return Math.abs(angleGoal() - angle()) < POSITION_TOLERANCE.in(Radians);
   }
 
   /** checks if the hood is at a certain position within tolerance */

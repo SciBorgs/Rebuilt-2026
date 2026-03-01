@@ -50,7 +50,6 @@ import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
 import org.sciborgs1155.robot.commands.shooting.FuelVisualizer;
 import org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer;
-import org.sciborgs1155.robot.commands.shooting.ShootingAlgorithm;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.hood.Hood;
 import org.sciborgs1155.robot.shooter.Shooter;
@@ -86,10 +85,8 @@ public class Robot extends CommandRobot {
 
   @NotLogged
   private final ProjectileVisualizer fuelVisualizer =
-      new FuelVisualizer(
-              ShootingAlgorithm.toShotVelocitySupplier(() -> 10, () -> 1, () -> 0, drive::pose3d),
-              drive::pose3d,
-              drive::fieldRelativeChassisSpeeds)
+      FuelVisualizer.fromLaunchParameters(() -> 10, () -> 1, () -> 0, drive)
+          .withScoringParameters(0, 0)
           .configPhysics(true, true, false, false)
           .configGeneration(0.05, 80, 60)
           .config(true, true);

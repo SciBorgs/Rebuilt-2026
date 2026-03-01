@@ -19,6 +19,9 @@ import org.sciborgs1155.robot.drive.Drive;
  * @see Fuel
  */
 public class FuelVisualizer extends ProjectileVisualizer {
+  private double scoreTolerance;
+  private double scoreDepth;
+
   /**
    * A class that manages the creation, simulation, and logging of simulated FUEL projectiles.
    *
@@ -26,7 +29,7 @@ public class FuelVisualizer extends ProjectileVisualizer {
    * @param robotPose a supplier that provides the pose of the robot at launch time
    * @param robotVelocity a supplier that provides the velocity of the robot at launch time
    */
-  public FuelVisualizer(
+  protected FuelVisualizer(
       Supplier<double[]> launchVelocity,
       Supplier<Pose3d> robotPose,
       Supplier<ChassisSpeeds> robotVelocity) {
@@ -46,7 +49,7 @@ public class FuelVisualizer extends ProjectileVisualizer {
    * @param launchRotationalVelocity a supplier that provides the rotational velocity of the FUEL at
    *     launch time
    */
-  public FuelVisualizer(
+  protected FuelVisualizer(
       Supplier<double[]> launchTranslation,
       Supplier<double[]> launchVelocity,
       Supplier<double[]> launchRotation,
@@ -73,6 +76,43 @@ public class FuelVisualizer extends ProjectileVisualizer {
         drive::fieldRelativeChassisSpeeds);
   }
 
+  /**
+   * A class that manages the creation, simulation, and logging of simulated FUEL projectiles.
+   *
+   * @param speed a supplier for the speed of the FUEL at launch
+   * @param pitch a supplier for the pitch of the FUEL's launch trajectory
+   * @param yaw a supplier for the yaw of the FUEL's launch trajectory
+   * @param drive the drivetrain subsystem
+   * @return a new visualizer instance
+   */
+  public static FuelVisualizer fromLaunchParameters(
+      DoubleSupplier speed, DoubleSupplier pitch, DoubleSupplier yaw, Drive drive) {
+    return new FuelVisualizer(
+        () ->
+            launchVelocity(
+                Fuel.shotVelocity(
+                    new double[] {0, speed.getAsDouble(), pitch.getAsDouble(), yaw.getAsDouble()},
+                    drive.pose3d().getRotation().getZ()),
+                drive.pose3d(),
+                drive.fieldRelativeChassisSpeeds()),
+        drive::pose3d,
+        drive::fieldRelativeChassisSpeeds);
+  }
+
+  /**
+   * Alters scoring parameters.
+   *
+   * @param tolerance the maximum planar distance from the HUB
+   * @param depth the distance under the top of the HUB.
+   * @return this FUEL for chaining
+   */
+  public FuelVisualizer withScoringParameters(double tolerance, double depth) {
+    scoreDepth = depth;
+    scoreTolerance = tolerance;
+
+    return this;
+  }
+
   @Override
   protected Projectile createProjectile(
       double resolution,
@@ -80,7 +120,9 @@ public class FuelVisualizer extends ProjectileVisualizer {
       boolean dragEnabled,
       boolean torqueEnabled,
       boolean liftEnabled) {
-    return new Fuel().config(resolution, weightEnabled, dragEnabled, torqueEnabled, liftEnabled);
+    return new Fuel()
+        .withScoringParameters(scoreTolerance, scoreDepth)
+        .config(resolution, weightEnabled, dragEnabled, torqueEnabled, liftEnabled);
   }
 
   protected static double distanceToHub(double[] shotVelocity, Pose3d robotPose) {
@@ -145,8 +187,8 @@ public class FuelVisualizer extends ProjectileVisualizer {
     protected static final double FUEL_MASS = 0.225;
     protected static final double FUEL_RADIUS = 0.075;
 
-    protected double scoreTolerance = 0;
-    protected double scoreDepth = 0;
+    protected double scoreTolerance;
+    protected double scoreDepth;
 
     protected static final double GRAVITY = -9.80665;
     protected static final double AIR_DENSITY = 1.225;
@@ -166,7 +208,7 @@ public class FuelVisualizer extends ProjectileVisualizer {
 
     /**
      * Alters scoring parameters.
-     * 
+     *
      * @param tolerance the maximum planar distance from the HUB
      * @param depth the distance under the top of the HUB.
      * @return this FUEL for chaining
@@ -250,8 +292,7 @@ public class FuelVisualizer extends ProjectileVisualizer {
 
     protected static double[] shotVelocity(double[] launchParameters, double heading) {
       double[] direction = toDirectionVector(launchParameters[PITCH], launchParameters[YAW]);
-      return scale3(
-          rotateAroundZ(direction, heading), launchParameters[SPEED]);
+      return scale3(rotateAroundZ(direction, heading), launchParameters[SPEED]);
     }
 
     protected static double[] launchParameters(double[] shotVelocity, double heading) {

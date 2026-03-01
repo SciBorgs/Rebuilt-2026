@@ -69,7 +69,7 @@ public class Shooting {
 
     DISTANCE_TO_HOOD_ANGLE.put(5.5, Rotation2d.fromDegrees(27));
     DISTANCE_TO_RADS.put(5.5, 160.0);
-    DISTANCE_TO_TOF.put(5.5, 1.43);  
+    DISTANCE_TO_TOF.put(5.5, 1.43);
 
     DISTANCE_TO_HOOD_ANGLE.put(11.0, Rotation2d.fromDegrees(40));
     DISTANCE_TO_RADS.put(11.0, 200.0);
@@ -84,6 +84,9 @@ public class Shooting {
   private final Indexer indexer;
 
   ProjectileVisualizer fuelVisualizer;
+
+  private static final Translation2d HUB_TARGET =
+      FieldConstants.Hub.TOP_CENTER_POINT.toTranslation2d();
 
   /**
    * Creates the shooting command factory with all subsystems passed in. Subsystems provide
@@ -110,9 +113,6 @@ public class Shooting {
   // Constants I want somewhere else
 
   public record ShooterParams(double RADS, double hoodAngle, double turretAngle) {}
-
-  private static final Translation2d HUB_TARGET =
-      FieldConstants.Hub.TOP_CENTER_POINT.toTranslation2d();
 
   /**
    * Shoots the ball at the hub. Can do it while driving.

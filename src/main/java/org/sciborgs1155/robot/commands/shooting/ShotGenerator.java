@@ -14,8 +14,10 @@ import static org.sciborgs1155.robot.commands.shooting.ShotOptimizer.*;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 
-public class ShotGenerator {
+public final class ShotGenerator {
   private static final double VELOCITY_DEADBAND = 0.1;
+
+  private ShotGenerator() {}
 
   private static double[] stationaryLaunchParameters(double[] shooterPose, double heading) {
     double yDisplacement = GOAL[Y] - shooterPose[Y];
@@ -29,11 +31,19 @@ public class ShotGenerator {
     return new double[] {distance, launchParameters[SPEED], launchParameters[PITCH], yaw};
   }
 
-  private static double[] movingLaunchParameters(double[] stationaryShotVelocity, double[] shooterVelocity, double heading) {
+  private static double[] movingLaunchParameters(
+      double[] stationaryShotVelocity, double[] shooterVelocity, double heading) {
     double[] movingShotVelocity = sub3(stationaryShotVelocity, shooterVelocity);
     return launchParameters(movingShotVelocity, heading);
   }
 
+  /**
+   * Calculates the launch parameters to score FUEL in the HUB.
+   *
+   * @param robotPose the pose of the robot
+   * @param robotVelocity the velocity of the robot
+   * @return the launch parameters [DISTANCE, SPEED, PITCH, YAW]
+   */
   public static double[] calculateLaunchParameters(Pose3d robotPose, ChassisSpeeds robotVelocity) {
     double heading = robotPose.getRotation().getZ();
 

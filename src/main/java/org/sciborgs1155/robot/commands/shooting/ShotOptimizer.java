@@ -24,7 +24,7 @@ import org.sciborgs1155.robot.FieldConstants.Hub;
 import org.sciborgs1155.robot.commands.shooting.FuelVisualizer.Fuel;
 import org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile;
 
-public class ShotOptimizer {
+public final class ShotOptimizer {
   private static final boolean DRAG_ENABLED = true;
   private static final boolean TORQUE_ENABLED = false;
   private static final boolean LIFT_ENABLED = false;
@@ -39,23 +39,23 @@ public class ShotOptimizer {
   private static final double SCORE_TOLERANCE = 0;
   private static final double SCORE_DEPTH = 0;
 
-  protected static final double[] GOAL = Projectile.fromTranslation(Hub.TOP_CENTER_POINT);
+  static final double[] GOAL = fromTranslation(Hub.TOP_CENTER_POINT);
 
   private static final double SPEED_CONSTANT = 0.01;
   private static final double ANGLE_INCREMENT = Math.PI / 12;
 
   private static final double MAX_SPEED = 20;
-  protected static final double MAXIMUM_ANGLE =
-      SHOOTING_ANGLE_OFFSET.in(Radians) - MIN_ANGLE.in(Radians);
-  protected static final double MINIMUM_ANGLE =
-      SHOOTING_ANGLE_OFFSET.in(Radians) - MAX_ANGLE.in(Radians);
+  static final double MAXIMUM_ANGLE = SHOOTING_ANGLE_OFFSET.in(Radians) - MIN_ANGLE.in(Radians);
+  static final double MINIMUM_ANGLE = SHOOTING_ANGLE_OFFSET.in(Radians) - MAX_ANGLE.in(Radians);
 
-  private static final Projectile projectile =
+  private static final Projectile PROJECTILE =
       new Fuel()
           .withScoringParameters(SCORE_TOLERANCE, SCORE_DEPTH)
           .config(TRAJECTORY_RESOLUTION, true, DRAG_ENABLED, TORQUE_ENABLED, LIFT_ENABLED);
 
-  protected static double[] directLaunchParameters(double distance) {
+  private ShotOptimizer() {}
+
+  static double[] directLaunchParameters(double distance) {
     double speed = 0;
     double angle = 0;
 
@@ -70,11 +70,11 @@ public class ShotOptimizer {
       double optimalAngle = testAngle;
 
       // TEST IF FUEL HAS ENOUGH CLEARANCE OVER THE HUB EDGE
-      if (!checkClearance(distance, optimalSpeed, optimalAngle)) continue;
-
-      speed = optimalSpeed;
-      angle = optimalAngle;
-      break;
+      if (checkClearance(distance, optimalSpeed, optimalAngle)) {
+        speed = optimalSpeed;
+        angle = optimalAngle;
+        break;
+      }
     }
 
     return new double[] {distance, speed, angle, 0};
@@ -118,7 +118,7 @@ public class ShotOptimizer {
   }
 
   private static double[][] directTrajectory(double[] launchParameters) {
-    projectile.reset();
+    PROJECTILE.reset();
     List<double[]> poseList = new ArrayList<>();
 
     Pose3d robotPose =
@@ -132,20 +132,26 @@ public class ShotOptimizer {
     double[] launchVelocity = launchVelocity(shotVelocity, robotPose, new ChassisSpeeds());
     double[] launchTranslation = launchTranslation(shotVelocity, robotPose);
 
-    projectile.launch(launchTranslation, launchVelocity, new double[4], 0);
+    PROJECTILE.launch(launchTranslation, launchVelocity, new double[4], 0);
 
     int frames = 0;
-    while (!projectile.willMiss() && !projectile.willScore()) {
+    while (!PROJECTILE.willMiss() && !PROJECTILE.willScore()) {
       frames++;
       if (frames >= TRAJECTORY_SIZE_LIMIT) break;
 
-      poseList.add(projectile.translation.clone());
-      projectile.periodic();
+      poseList.add(PROJECTILE.translation.clone());
+      PROJECTILE.periodic();
     }
 
     return poseList.toArray(new double[0][]);
   }
 
+  /**
+   * A utility method used to view the results of shot optimization.
+   *
+   * @param distance the distance from the HUB
+   * @return a command to calculate and display the optimized trajectory
+   */
   public static Command displayOptimizedShot(double distance) {
     return Commands.runOnce(
         () -> {

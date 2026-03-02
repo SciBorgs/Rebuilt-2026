@@ -29,9 +29,9 @@ public final class ShotOptimizer {
   private static final boolean TORQUE_ENABLED = false;
   private static final boolean LIFT_ENABLED = false;
 
-  private static final int TRAJECTORY_RESOLUTION = 100;
+  private static final int TRAJECTORY_RESOLUTION = 200;
   private static final int OPTIMIZATION_RESOLUTION = 500;
-  private static final int TRAJECTORY_SIZE_LIMIT = 200;
+  private static final int TRAJECTORY_SIZE_LIMIT = 500;
 
   private static final double CLEARANCE = 0.13;
   private static final double CLEARANCE_CHECK = Hub.INNER_WIDTH / 2;
@@ -42,7 +42,7 @@ public final class ShotOptimizer {
   static final double[] GOAL = fromTranslation(Hub.TOP_CENTER_POINT);
 
   private static final double SPEED_CONSTANT = 0.01;
-  private static final double ANGLE_INCREMENT = Math.PI / 12;
+  private static final double ANGLE_INCREMENT = Math.PI / 48;
 
   private static final double MAX_SPEED = 20;
   static final double MAXIMUM_ANGLE = SHOOTING_ANGLE_OFFSET.in(Radians) - MIN_ANGLE.in(Radians);

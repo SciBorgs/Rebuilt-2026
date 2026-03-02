@@ -47,9 +47,9 @@ import org.sciborgs1155.lib.Tracer;
 import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
-import org.sciborgs1155.robot.commands.Shooting;
 import org.sciborgs1155.robot.commands.shooting.FuelVisualizer;
 import org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer;
+import org.sciborgs1155.robot.commands.shooting.Shooting;
 import org.sciborgs1155.robot.commands.shooting.ShotGenerator;
 import org.sciborgs1155.robot.commands.shooting.ShotOptimizer;
 import org.sciborgs1155.robot.commands.shooting.TableGenerator;
@@ -98,9 +98,6 @@ public class Robot extends CommandRobot {
           .configPhysics(true, true, false, false)
           .configGeneration(0.05, 60, 60)
           .config(true, true);
-
-  private final Shooting shooting =
-      new Shooting(shooter, turret, hood, drive, hopper, indexer, fuelVisualizer);
 
   @Logged private double speedMultiplier = FULL_SPEED_MULTIPLIER;
 

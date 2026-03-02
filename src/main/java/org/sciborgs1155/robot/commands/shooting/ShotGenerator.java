@@ -11,11 +11,15 @@ import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Proj
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.norm3;
 import static org.sciborgs1155.robot.commands.shooting.ShotOptimizer.*;
 
+import org.sciborgs1155.robot.FieldConstants.Hub;
+
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 
 public final class ShotGenerator {
   private static final double VELOCITY_DEADBAND = 0.1;
+  private static final double MOVING_OFFSET = 2;
+  private static final double DISTANCE_OFFSET = Hub.INNER_WIDTH / 2;
 
   private ShotGenerator() {}
 
@@ -23,7 +27,7 @@ public final class ShotGenerator {
     double yDisplacement = GOAL[Y] - shooterPose[Y];
     double xDisplacement = GOAL[X] - shooterPose[X];
 
-    double distance = Math.hypot(yDisplacement, xDisplacement);
+    double distance = Math.hypot(yDisplacement, xDisplacement) - DISTANCE_OFFSET;
     double yaw = Math.atan2(yDisplacement, xDisplacement) - heading;
 
     double[] launchParameters = TableGenerator.directLaunchParameters(distance);
@@ -33,7 +37,7 @@ public final class ShotGenerator {
 
   private static double[] movingLaunchParameters(
       double[] stationaryShotVelocity, double[] shooterVelocity, double heading) {
-    double[] movingShotVelocity = sub3(stationaryShotVelocity, shooterVelocity);
+    double[] movingShotVelocity = sub3(stationaryShotVelocity, scale3(shooterVelocity, MOVING_OFFSET));
     return launchParameters(movingShotVelocity, heading);
   }
 

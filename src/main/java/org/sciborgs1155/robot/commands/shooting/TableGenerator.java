@@ -20,9 +20,9 @@ import org.sciborgs1155.lib.Tracer;
 
 public final class TableGenerator {
   private static final double MIN_DISTANCE = 0.1;
-  private static final double MAX_DISTANCE = 15;
+  private static final double MAX_DISTANCE = 20;
 
-  private static final double INCREMENT = 0.01;
+  private static final double INCREMENT = 0.005;
   private static final String NAME = "LookUpTable";
 
   private static final double SPEED_DEADBAND = 0.01;
@@ -30,7 +30,7 @@ public final class TableGenerator {
   private static final InterpolatingDoubleTreeMap SPEED_TABLE = new InterpolatingDoubleTreeMap();
   private static final InterpolatingDoubleTreeMap ANGLE_TABLE = new InterpolatingDoubleTreeMap();
 
-  private static final int MAX_TABLE_SIZE = 1000;
+  private static final int MAX_TABLE_SIZE = 10000;
 
   private TableGenerator() {}
 

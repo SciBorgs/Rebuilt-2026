@@ -261,7 +261,7 @@ public class FuelVisualizer extends ProjectileVisualizer {
 
       double planarDistance = Math.min(hub1Distance, hub2Distance);
       double verticalDisplacement = Hub.HEIGHT - scoreDepth - translation[Z];
-      double scoreRadius = scoreTolerance + FUEL_RADIUS + Hub.WIDTH / 2;
+      double scoreRadius = scoreTolerance + FUEL_RADIUS + Hub.INNER_WIDTH / 2;
 
       return verticalDisplacement < 0
           && verticalDisplacement > -FUEL_RADIUS
@@ -282,7 +282,7 @@ public class FuelVisualizer extends ProjectileVisualizer {
 
       double planarDistance = Math.min(hub1Distance, hub2Distance);
       double verticalDisplacement = Hub.HEIGHT - scoreDepth - translation[Z];
-      double scoreRadius = scoreTolerance + FUEL_RADIUS + Hub.WIDTH / 2;
+      double scoreRadius = scoreTolerance + FUEL_RADIUS + Hub.INNER_WIDTH / 2;
 
       return (verticalDisplacement > -FUEL_RADIUS
               && planarDistance > scoreRadius

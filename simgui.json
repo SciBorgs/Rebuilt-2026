@@ -1,4 +1,11 @@
 {
+  "HALProvider": {
+    "Other Devices": {
+      "window": {
+        "visible": false
+      }
+    }
+  },
   "NTProvider": {
     "types": {
       "/FMSInfo": "FMSInfo",
@@ -14,16 +21,28 @@
       "/SmartDashboard/Robot/hood/dynamic forward": "Command",
       "/SmartDashboard/Robot/hood/quasistatic backward": "Command",
       "/SmartDashboard/Robot/hood/quasistatic forward": "Command",
+      "/SmartDashboard/Robot/rotation/dynamic backward": "Command",
+      "/SmartDashboard/Robot/rotation/dynamic forward": "Command",
+      "/SmartDashboard/Robot/rotation/quasistatic backward": "Command",
+      "/SmartDashboard/Robot/rotation/quasistatic forward": "Command",
       "/SmartDashboard/Robot/slapdown/dynamic backward": "Command",
       "/SmartDashboard/Robot/slapdown/dynamic forward": "Command",
       "/SmartDashboard/Robot/slapdown/quasistatic backward": "Command",
       "/SmartDashboard/Robot/slapdown/quasistatic forward": "Command",
+      "/SmartDashboard/Robot/translation/dynamic backward": "Command",
+      "/SmartDashboard/Robot/translation/dynamic forward": "Command",
+      "/SmartDashboard/Robot/translation/quasistatic backward": "Command",
+      "/SmartDashboard/Robot/translation/quasistatic forward": "Command",
       "/SmartDashboard/Turret dynamic clockwise": "Command",
       "/SmartDashboard/Turret dynamic counterclockwise": "Command",
       "/SmartDashboard/Turret quasistatic clockwise": "Command",
       "/SmartDashboard/Turret quasistatic counterclockwise": "Command",
       "/SmartDashboard/TurretVisualizer": "Mechanism2d",
       "/SmartDashboard/VisionSystemSim-main/Sim Field": "Field2d",
+      "/SmartDashboard/shooter dynamic backward": "Command",
+      "/SmartDashboard/shooter dynamic forward": "Command",
+      "/SmartDashboard/shooter quasistatic backward": "Command",
+      "/SmartDashboard/shooter quasistatic forward": "Command",
       "/SmartDashboard/shooter top dynamic backward": "Command",
       "/SmartDashboard/shooter top dynamic forward": "Command",
       "/SmartDashboard/shooter top quasistatic backward": "Command",
@@ -36,7 +55,49 @@
       "Robot/turret/controller": "ProfiledPIDController"
     }
   },
-  "NetworkTables Info": {
-    "visible": true
+  "NetworkTables": {
+    "transitory": {
+      "Robot": {
+        "open": true,
+        "shooter": {
+          "open": true
+        }
+      }
+    }
+  },
+  "Plot": {
+    "Plot <0>": {
+      "plots": [
+        {
+          "backgroundColor": [
+            0.0,
+            0.0,
+            0.0,
+            0.8500000238418579
+          ],
+          "height": 332,
+          "series": [
+            {
+              "color": [
+                0.2980392277240753,
+                0.44705885648727417,
+                0.6901960968971252,
+                1.0
+              ],
+              "id": "NT:Robot/shooter/setpoint"
+            },
+            {
+              "color": [
+                0.8666667342185974,
+                0.5176470875740051,
+                0.32156863808631897,
+                1.0
+              ],
+              "id": "NT:Robot/shooter/velocity"
+            }
+          ]
+        }
+      ]
+    }
   }
 }

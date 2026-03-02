@@ -40,9 +40,10 @@ public class HoodConstants {
     public static final double P = 0;
     public static final double I = 0;
     public static final double D = 0;
-    public static final double S = 0.44;
-    public static final double V = 4.6;
+    // these suck
+    public static final double S = 0.061223;
+    public static final double V = 1.7623;
     public static final double G = 0.81;
-    public static final double A = 0.94;
+    public static final double A = 0;
   }
 }

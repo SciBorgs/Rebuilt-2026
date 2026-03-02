@@ -33,7 +33,7 @@ public class ShooterConstants {
     public static final double D = 0.0;
 
     public static final double S = 0.0;
-    public static final double V = 0.96;
-    public static final double A = 0.42;
+    public static final double V = 0.15318;
+    public static final double A = 0.066883;
   }
 }

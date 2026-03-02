@@ -35,8 +35,7 @@ public class SimTurret implements TurretIO {
   /** Cached last valid CRT solution */
   private double lastGoodPositionRad = START_ANGLE.in(Radians);
 
-  private static final double DEVIATION = .05; // rotations
-  private double failCount = 0;
+  private double failCount;
 
   /** EasyCRT solver */
   private final EasyCRTConfig crtConfig =
@@ -59,7 +58,7 @@ public class SimTurret implements TurretIO {
     double turretRot = trueAngleRad() / (2.0 * Math.PI);
     double encoderRot = turretRot * ((double) TURRET_GEARING / ENCODER_A_GEARING);
 
-    return MathUtil.inputModulus(encoderRot + Math.random() * DEVIATION, 0.0, 1.0);
+    return MathUtil.inputModulus(encoderRot, 0.0, 1.0);
   }
 
   @Override
@@ -67,7 +66,7 @@ public class SimTurret implements TurretIO {
     double turretRot = trueAngleRad() / (2.0 * Math.PI);
     double encoderRot = turretRot * ((double) TURRET_GEARING / ENCODER_B_GEARING);
 
-    return MathUtil.inputModulus(encoderRot + Math.random() * DEVIATION, 0.0, 1.0);
+    return MathUtil.inputModulus(encoderRot, 0.0, 1.0);
   }
 
   @Override

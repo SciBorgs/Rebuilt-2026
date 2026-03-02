@@ -143,6 +143,11 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
     return hardware.angle();
   }
 
+  /**
+   * gets the current voltage of the hood motor
+   *
+   * @return the voltage in volts
+   */
   @Logged
   public double voltage() {
     return hardware.getVoltage();
@@ -230,6 +235,12 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
     return goToShootingAngle(() -> goal.in(Radians));
   }
 
+  /**
+   * manual control of the hood with an controler, which will be used for operator control and
+   * testing
+   *
+   * @param input The controller value to use for manual control.
+   */
   public Command manualHood(InputStream input) {
     return goTo(input
             .deadband(.15, 1)

@@ -29,7 +29,7 @@ public class RealTurret implements TurretIO {
   private final CANcoder encoderB = new CANcoder(ENCODER_B);
 
   private double lastGoodPositionRad;
-  private double failCount = 0;
+  private double failCount;
 
   private final EasyCRTConfig crtConfig =
       new EasyCRTConfig(() -> Rotations.of(encoderA()), () -> Rotations.of(encoderB()))
@@ -37,7 +37,8 @@ public class RealTurret implements TurretIO {
               (double) TURRET_GEARING / ENCODER_A_GEARING,
               (double) TURRET_GEARING / ENCODER_B_GEARING)
           .withMechanismRange(MIN_ANGLE, MAX_ANGLE)
-          .withMatchTolerance(CRT_MATCH_TOLERANCE).withAbsoluteEncoderInversions(true, true);
+          .withMatchTolerance(CRT_MATCH_TOLERANCE)
+          .withAbsoluteEncoderInversions(true, true);
 
   private final EasyCRT solverCRT = new EasyCRT(crtConfig);
 
@@ -49,13 +50,13 @@ public class RealTurret implements TurretIO {
     configuration.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     configuration.Feedback.SensorToMechanismRatio = GEAR_RATIO;
     configuration.CurrentLimits.SupplyCurrentLimit = CURRENT_LIMIT.in(Amps);
-    
+
     hardware.getConfigurator().apply(configuration);
     hardware.setPosition(0);
 
     final CANcoderConfiguration encoderConfig = new CANcoderConfiguration();
     encoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1;
-    
+
     encoderA.getConfigurator().apply(encoderConfig);
     encoderB.getConfigurator().apply(encoderConfig);
 
@@ -68,16 +69,28 @@ public class RealTurret implements TurretIO {
     FaultLogger.register(encoderB);
   }
 
+  /**
+   * Uses integrated motor encoder to get what encoder values should be (for testing, note that it
+   * will not save pass resets)
+   */
   public double trueAngleRot() {
     return hardware.getPosition().getValueAsDouble();
   }
 
+  /**
+   * Derives encoder values from the integrated motor encoder. Note that this will not save pass
+   * resets, so it should only be used for testing.
+   */
   public double encoderADerived() {
     double encoderRot = trueAngleRot() * ((double) TURRET_GEARING / ENCODER_A_GEARING);
 
     return MathUtil.inputModulus(encoderRot, 0.0, 1.0);
   }
 
+  /**
+   * Derives encoder values from the integrated motor encoder. Note that this will not save pass
+   * resets, so it should only be used for testing.
+   */
   public double encoderBDerived() {
     double encoderRot = trueAngleRot() * ((double) TURRET_GEARING / ENCODER_B_GEARING);
 
@@ -86,12 +99,12 @@ public class RealTurret implements TurretIO {
 
   @Override
   public double encoderA() {
-    return (1-encoderA.getAbsolutePosition().getValueAsDouble());
+    return 1 - encoderA.getAbsolutePosition().getValueAsDouble();
   }
 
   @Override
   public double encoderB() {
-    return (1-encoderB.getAbsolutePosition().getValueAsDouble());
+    return 1 - encoderB.getAbsolutePosition().getValueAsDouble();
   }
 
   @Override
@@ -113,13 +126,14 @@ public class RealTurret implements TurretIO {
             () -> {
               failCount++;
               if (failCount % 10 == 0) {
-                // FaultLogger.report(
-                //     new Fault(
-                //         "Turret CRT failure: >10 consecutive failures",
-                //         "Unable to solve turret position with CRT, using stale position - fail count: " + failCount,
-                //         FaultType.WARNING));
-                }
-                return lastGoodPositionRad;
+                FaultLogger.report(
+                    new Fault(
+                        "Turret CRT failure: >10 consecutive failures",
+                        "Unable to solve turret position with CRT, using stale position - fail count: "
+                            + failCount,
+                        FaultType.WARNING));
+              }
+              return lastGoodPositionRad;
             });
   }
 

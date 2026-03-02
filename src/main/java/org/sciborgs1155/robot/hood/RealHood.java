@@ -5,9 +5,9 @@ import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static org.sciborgs1155.robot.Ports.Hood.MOTOR_PORT;
 import static org.sciborgs1155.robot.hood.HoodConstants.GEARING;
+import static org.sciborgs1155.robot.hood.HoodConstants.MIN_ANGLE;
 import static org.sciborgs1155.robot.hood.HoodConstants.STATOR_LIMIT;
 import static org.sciborgs1155.robot.hood.HoodConstants.SUPPLY_LIMIT;
-import static org.sciborgs1155.robot.hood.HoodConstants.MIN_ANGLE;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;

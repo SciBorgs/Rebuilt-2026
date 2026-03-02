@@ -43,7 +43,6 @@ public final class Shooter extends SubsystemBase implements AutoCloseable {
   @NotLogged private final DoubleEntry tuningV = Tuning.entry("Robot/tuning/shooter/V", V);
   @NotLogged private final DoubleEntry tuningA = Tuning.entry("Robot/tuning/shooter/A", A);
 
-
   /**
    * Returns the shooter subsystem
    *
@@ -88,8 +87,7 @@ public final class Shooter extends SubsystemBase implements AutoCloseable {
         "shooter quasistatic forward", characterization.quasistatic(Direction.kForward));
     SmartDashboard.putData(
         "shooter dynamic backward", characterization.dynamic(Direction.kReverse));
-    SmartDashboard.putData(
-        "shooter dynamic forward", characterization.dynamic(Direction.kForward));
+    SmartDashboard.putData("shooter dynamic forward", characterization.dynamic(Direction.kForward));
 
     setDefaultCommand(runShooter(IDLE_VELOCITY.in(RadiansPerSecond)).withName("Idle"));
   }
@@ -175,6 +173,12 @@ public final class Shooter extends SubsystemBase implements AutoCloseable {
     return runShooter(() -> velocity);
   }
 
+  /**
+   * Manual control of the shooter with an controller, which will be used for operator control and
+   * testing.
+   *
+   * @param input The controller value to use for manual control.
+   */
   public Command manualShooter(InputStream input) {
     return runShooter(
             input

@@ -23,6 +23,11 @@ public interface HoodIO extends AutoCloseable {
    */
   double velocity();
 
+  /**
+   * gets the current voltage of the hood motor
+   *
+   * @return voltage in volts
+   */
   double getVoltage();
 
   @Override

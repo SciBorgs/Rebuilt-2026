@@ -31,7 +31,6 @@ import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.lib.Tuning;
-import org.sciborgs1155.robot.Constants;
 import org.sciborgs1155.robot.Robot;
 
 /**
@@ -114,10 +113,12 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
         "Turret dynamic counterclockwise", sysIdTest(SysIdTestType.DYNAMIC, Direction.kReverse));
   }
 
+  /** manual control to test the turret, makes it go left. */
   public Command goLeft() {
     return run(() -> hardware.setVoltage(1));
   }
 
+  /** manual control to test the turret, makes it go right. */
   public Command goRight() {
     return run(() -> hardware.setVoltage(-1));
   }
@@ -183,12 +184,18 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
                 : hardware.position() <= stopAngle.in(Radians));
   }
 
+  /**
+   * manual control of the turret with an controller, which will be used for operator control and
+   * testing
+   *
+   * @param input The controller value to use for manual control.
+   */
   public Command manualTurret(InputStream input) {
     return goTo(input
             .deadband(.15, 1)
             .scale(MAX_VELOCITY.in(RadiansPerSecond))
             .scale(2)
-            .scale(Constants.PERIOD.in(Seconds))
+            .scale(PERIOD.in(Seconds))
             .rateLimit(MAX_ACCELERATION.in(RadiansPerSecondPerSecond))
             .add(() -> controller.getGoal().position))
         .withName("manual elevator");

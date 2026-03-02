@@ -2,6 +2,8 @@ package org.sciborgs1155.robot.hood;
 
 import static edu.wpi.first.units.Units.*;
 
+import org.sciborgs1155.robot.Robot;
+
 import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
@@ -36,13 +38,14 @@ public class HoodConstants {
 
   public static final Angle DEFAULT_ANGLE = STARTING_ANGLE;
   public static final double GEARING = 95.33333;
+
   public class PID {
-    public static final double P = 0;
-    public static final double I = 0;
-    public static final double D = 0;
-    public static final double S = 0.44;
-    public static final double V = 4.6;
-    public static final double G = 0.81;
-    public static final double A = 0.94;
+    public static final double P = Robot.isReal() ? 0 : 10;
+    public static final double I = Robot.isReal() ? 0 : 0;
+    public static final double D = Robot.isReal() ? 0 : 0;
+    public static final double S = Robot.isReal() ? 0.44 : 0;
+    public static final double V = Robot.isReal() ? 4.6 : 0;
+    public static final double G = Robot.isReal() ? 0.81 : 0;
+    public static final double A = Robot.isReal() ? 0.94 : 0;
   }
 }

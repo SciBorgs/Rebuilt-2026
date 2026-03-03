@@ -14,7 +14,7 @@ public class ShooterConstants {
 
   public static final Distance RADIUS = Inches.of(2);
   public static final Distance CIRCUMFERENCE = RADIUS.times(2 * Math.PI);
-  public static final double MOI = 0.498952 * RADIUS.in(Meters) + .53 * 0.0381;
+  public static final double MOI = 0.0015328465;
 
   public static final double MAX_VOLTAGE = 12.0;
 
@@ -27,7 +27,7 @@ public class ShooterConstants {
   public static final Transform3d CENTER_TO_SHOOTER =
       new Transform3d(5.975, -5.975, -13.375, new Rotation3d());
 
-  public static final AngularVelocity VELOCITY_TOLERANCE = RadiansPerSecond.of(1);
+  public static final AngularVelocity VELOCITY_TOLERANCE = RadiansPerSecond.of(3);
 
   public static final class ControlConstants {
     public static final double P = Robot.isReal() ? 0.0 : 0.070000;
@@ -35,7 +35,7 @@ public class ShooterConstants {
     public static final double D = Robot.isReal() ? 0.0 : 0.000000001;
 
     public static final double S = Robot.isReal() ? 0.0 : 0.000000001;
-    public static final double V = Robot.isReal() ? 0.15318 : 0.024000;
-    public static final double A = Robot.isReal() ? 0.066883 : 0.066880;
+    public static final double V = Robot.isReal() ? 0.15318 : 0.023880;
+    public static final double A = Robot.isReal() ? 0.066883 : 0.001000;
   }
 }

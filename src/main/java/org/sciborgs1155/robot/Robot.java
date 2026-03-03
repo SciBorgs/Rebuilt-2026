@@ -219,7 +219,7 @@ public class Robot extends CommandRobot {
     driver.leftTrigger().whileTrue(turret.goLeft());
     driver.rightTrigger().whileTrue(turret.goRight());
     driver.x().whileTrue(hood.manualHood(InputStream.of(driver::getLeftY)));
-    driver.y().whileTrue(shooter.runShooter(50));
+    driver.y().whileTrue(shooter.runShooter(342));
   }
 
   /**

@@ -75,7 +75,7 @@ public class Robot extends CommandRobot {
   private final Vision vision = Vision.none();
   private final Shooter shooter = Shooter.create();
   private final Turret turret = Turret.create();
-  private final Slapdown slapdown = Slapdown.none();
+  private final Slapdown slapdown = Slapdown.create();
 
   // COMMANDS
   private final Alignment align = new Alignment(drive);

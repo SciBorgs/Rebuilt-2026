@@ -1,4 +1,11 @@
 {
+  "HALProvider": {
+    "Other Devices": {
+      "window": {
+        "visible": false
+      }
+    }
+  },
   "NTProvider": {
     "types": {
       "/FMSInfo": "FMSInfo",
@@ -55,6 +62,9 @@
           "open": true
         },
         "open": true,
+        "slapdown": {
+          "open": true
+        },
         "tuning": {
           "open": true
         }

@@ -1,6 +1,7 @@
 package org.sciborgs1155.robot.shooter;
 
 import static edu.wpi.first.units.Units.*;
+import static org.sciborgs1155.robot.drive.DriveConstants.RADIUS;
 
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -14,9 +15,9 @@ import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 public class ShooterConstants {
   public static final double GEARING = 1 / 0.8;
 
-  public static final double MOI = 1;
   public static final Distance RADIUS = Inches.of(2);
   public static final Distance CIRCUMFERENCE = RADIUS.times(2 * Math.PI);
+  public static final double MOI = 0.498952 * RADIUS.in(Meters) + .53 * 0.0381;
 
   public static final double MAX_VOLTAGE = 12.0;
 
@@ -37,7 +38,7 @@ public class ShooterConstants {
     public static final double D = 0.0;
 
     public static final double S = 0.0;
-    public static final double V = 0.001;
-    public static final double A = 0.000001;
+    public static final double V = 0.15318;
+    public static final double A = 0.066883;
   }
 }

@@ -2,8 +2,6 @@ package org.sciborgs1155.robot.hood;
 
 import static edu.wpi.first.units.Units.*;
 
-import org.sciborgs1155.robot.Robot;
-
 import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
@@ -14,6 +12,7 @@ import edu.wpi.first.units.measure.Mass;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.units.measure.Voltage;
+import org.sciborgs1155.robot.Robot;
 
 public class HoodConstants {
 
@@ -41,8 +40,8 @@ public class HoodConstants {
 
   public class PID {
     public static final double P = Robot.isReal() ? 0 : 10;
-    public static final double I = Robot.isReal() ? 0 : 0;
-    public static final double D = Robot.isReal() ? 0 : 0;
+    public static final double I = Robot.isReal() ? 0 : 0.000001;
+    public static final double D = Robot.isReal() ? 0 : 0.000001;
     public static final double S = Robot.isReal() ? 0.44 : 0;
     public static final double V = Robot.isReal() ? 4.6 : 0;
     public static final double G = Robot.isReal() ? 0.81 : 0;

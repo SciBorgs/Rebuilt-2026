@@ -58,15 +58,18 @@
   "NetworkTables": {
     "transitory": {
       "Robot": {
-        "hood": {
+        "open": true,
+        "shooter": {
           "open": true
         },
-        "open": true,
         "slapdown": {
           "open": true
         },
         "tuning": {
-          "open": true
+          "open": true,
+          "shooter": {
+            "open": true
+          }
         }
       }
     }
@@ -138,7 +141,27 @@
             0.0,
             0.8500000238418579
           ],
-          "height": 332
+          "height": 332,
+          "series": [
+            {
+              "color": [
+                0.2980392277240753,
+                0.44705885648727417,
+                0.6901960968971252,
+                1.0
+              ],
+              "id": "NT:Robot/shooter/setpoint"
+            },
+            {
+              "color": [
+                0.8666667342185974,
+                0.5176470875740051,
+                0.32156863808631897,
+                1.0
+              ],
+              "id": "NT:Robot/shooter/velocity"
+            }
+          ]
         }
       ]
     }

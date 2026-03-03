@@ -1,7 +1,6 @@
 package org.sciborgs1155.robot;
 
 import static edu.wpi.first.units.Units.MetersPerSecond;
-import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
@@ -48,10 +47,8 @@ import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.hood.Hood;
-import org.sciborgs1155.robot.hood.HoodConstants;
 import org.sciborgs1155.robot.shooter.Shooter;
 import org.sciborgs1155.robot.slapdown.Slapdown;
-import org.sciborgs1155.robot.slapdown.SlapdownConstants;
 import org.sciborgs1155.robot.turret.Turret;
 import org.sciborgs1155.robot.vision.Vision;
 
@@ -223,9 +220,6 @@ public class Robot extends CommandRobot {
     driver.rightTrigger().whileTrue(turret.goRight());
     driver.x().whileTrue(hood.manualHood(InputStream.of(driver::getLeftY)));
     driver.y().whileTrue(shooter.runShooter(50));
-
-    operator.a().onTrue(hood.goTo(HoodConstants.MAX_ANGLE.div(2)));
-    operator.b().toggleOnTrue(slapdown.goTo(SlapdownConstants.MAX_ANGLE.div(2).in(Radians)));
   }
 
   /**

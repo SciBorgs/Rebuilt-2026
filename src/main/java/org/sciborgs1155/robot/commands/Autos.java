@@ -72,7 +72,7 @@ public final class Autos {
                 Driving.STATOR_LIMIT,
                 1),
             MODULE_OFFSET),
-        () -> alliance() == Alliance.Red,
+        () -> alliance() == Alliance.Blue,
         drive);
 
     PPHolonomicDriveController.overrideRotationFeedback(() -> drive.heading().getRadians());

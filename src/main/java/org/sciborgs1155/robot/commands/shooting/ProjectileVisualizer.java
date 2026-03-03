@@ -26,7 +26,7 @@ public abstract class ProjectileVisualizer {
   private boolean weightEnabled, dragEnabled, torqueEnabled, liftEnabled;
 
   private Pose3d[] trajectory;
-  private Pose3d initial;
+  private Pose3d initial, ending;
 
   private final Supplier<double[]> launchTranslation, launchVelocity, launchRotation;
   private final DoubleSupplier launchRotationalVelocity;
@@ -145,6 +145,7 @@ public abstract class ProjectileVisualizer {
     LoggingUtils.log("Projectile Visualizer/Misses", misses());
     LoggingUtils.log("Projectile Visualizer/Projectiles", poses(), Pose3d.struct);
     LoggingUtils.log("Projectile Visualizer/Launch pose", initial(), Pose3d.struct);
+    LoggingUtils.log("Projectile Visualizer/Ending pose", ending(), Pose3d.struct);
   }
 
   /**
@@ -178,6 +179,7 @@ public abstract class ProjectileVisualizer {
       projectile.periodic();
       frames++;
     }
+    ending = projectile.pose();
 
     willMiss = projectile.willMiss();
     willScore = projectile.willScore();
@@ -218,11 +220,13 @@ public abstract class ProjectileVisualizer {
 
       if (projectile.willMiss()) {
         misses++;
+        ending = projectile.pose();
         projectiles.remove(index);
       }
 
       if (projectile.willScore()) {
         scores++;
+        ending = projectile.pose();
         projectiles.remove(index);
       }
 
@@ -313,12 +317,21 @@ public abstract class ProjectileVisualizer {
   }
 
   /**
-   * The initial pose of the projectile
+   * The initial pose of the projectile.
    *
-   * @return the initial pose of the projectile.
+   * @return the initial pose of the projectile
    */
   public Pose3d initial() {
     return initial;
+  }
+
+  /**
+   * The ending pose of the projectile.
+   *
+   * @return the ending pose of the projectile
+   */
+  public Pose3d ending() {
+    return ending;
   }
 
   /** A class that models the physics of a projectile. */

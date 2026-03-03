@@ -10,6 +10,8 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
+
+import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.robot.FieldConstants.Hub;
 import org.sciborgs1155.robot.drive.Drive;
 
@@ -123,6 +125,13 @@ public class FuelVisualizer extends ProjectileVisualizer {
     return new Fuel()
         .withScoringParameters(scoreTolerance, scoreDepth)
         .config(resolution, weightEnabled, dragEnabled, torqueEnabled, liftEnabled);
+  }
+
+  @Override
+  public void updateLogging() {
+    super.updateLogging();
+
+    LoggingUtils.log("Projectile Visualizer/Distance From Goal", norm3(sub3(fromTranslation(ending().getTranslation()), ShotOptimizer.GOAL)));
   }
 
   protected static double distanceToHub(double[] shotVelocity, Pose3d robotPose) {

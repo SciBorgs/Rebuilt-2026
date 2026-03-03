@@ -80,14 +80,14 @@
           },
           {
             "axis": "y",
-            "degrees": 0
+            "degrees": -15
           },
           {
             "axis": "z",
             "degrees": -90
           }
       ],
-      "zeroedPosition": [0, 2, 0]
+      "zeroedPosition": [-0.17506, -0.12983, -0.2986252]
     }
   ]
 }

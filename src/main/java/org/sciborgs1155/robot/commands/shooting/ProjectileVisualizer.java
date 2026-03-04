@@ -27,7 +27,6 @@ public abstract class ProjectileVisualizer {
 
   private Pose3d[] trajectory;
   private Pose3d initial, ending;
-
   private final Supplier<double[]> launchTranslation, launchVelocity, launchRotation;
   private final DoubleSupplier launchRotationalVelocity;
 
@@ -343,7 +342,8 @@ public abstract class ProjectileVisualizer {
 
     protected double resolution;
     protected boolean weightEnabled, dragEnabled, torqueEnabled, liftEnabled;
-    protected double[] translation, velocity, acceleration, rotation;
+    protected final double[] translation, velocity, acceleration;
+    protected double[] rotation;
     protected double rotationalVelocity, rotationalAcceleration;
 
     /**
@@ -410,9 +410,12 @@ public abstract class ProjectileVisualizer {
         double[] launchVelocity,
         double[] launchRotation,
         double launchRotationalVelocity) {
-      translation = launchTranslation.clone();
-      velocity = launchVelocity.clone();
-      acceleration = new double[3];
+      zero3(translation);
+      zero3(velocity);
+      zero3(acceleration);
+
+      scaledAddTo3(translation, launchTranslation, 1);
+      scaledAddTo3(velocity, launchVelocity, 1);
 
       rotation = launchRotation.clone();
       rotationalVelocity = launchRotationalVelocity;
@@ -431,49 +434,19 @@ public abstract class ProjectileVisualizer {
     }
 
     protected void periodic() {
-      translation[X] += velocity[X] / resolution;
-      translation[Y] += velocity[Y] / resolution;
-      translation[Z] += velocity[Z] / resolution;
+      scaledAddTo3(translation, velocity, 1 / resolution);
+      scaledAddTo3(velocity, acceleration, 1 / resolution);
 
-      velocity[X] += acceleration[X] / resolution;
-      velocity[Y] += acceleration[Y] / resolution;
-      velocity[Z] += acceleration[Z] / resolution;
-
-      acceleration[X] = 0;
-      acceleration[Y] = 0;
-      acceleration[Z] = 0;
-
-      if (weightEnabled) {
-        double[] weight = weight();
-
-        acceleration[X] += weight[X];
-        acceleration[Y] += weight[Y];
-        acceleration[Z] += weight[Z];
-      }
-
-      if (dragEnabled) {
-        double[] drag = drag();
-
-        acceleration[X] += drag[X];
-        acceleration[Y] += drag[Y];
-        acceleration[Z] += drag[Z];
-      }
-
-      if (liftEnabled) {
-        double[] lift = lift();
-
-        acceleration[X] += lift[X];
-        acceleration[Y] += lift[Y];
-        acceleration[Z] += lift[Z];
-      }
+      zero3(acceleration);
+      if (weightEnabled) scaledAddTo3(acceleration, weight(), 1);
+      if (dragEnabled) scaledAddTo3(acceleration, drag(), 1);
+      if (liftEnabled) scaledAddTo3(acceleration, lift(), 1);
 
       rotation[ANGLE] += rotationalVelocity / resolution;
       rotationalVelocity += rotationalAcceleration / resolution;
       rotationalAcceleration = 0;
 
-      if (torqueEnabled) {
-        rotationalAcceleration = torque();
-      }
+      if (torqueEnabled) rotationalAcceleration = torque();
     }
 
     protected Pose3d pose() {
@@ -487,9 +460,9 @@ public abstract class ProjectileVisualizer {
     }
 
     protected void reset() {
-      translation = new double[3];
-      velocity = new double[3];
-      acceleration = new double[3];
+      zero3(translation);
+      zero3(velocity);
+      zero3(acceleration);
 
       rotation = new double[4];
       rotationalVelocity = 0;
@@ -524,6 +497,18 @@ public abstract class ProjectileVisualizer {
       return new double[] {
         vector1[X] + vector2[X], vector1[Y] + vector2[Y], vector1[Z] + vector2[Z]
       };
+    }
+
+    protected static void zero3(double[] vector) {
+      vector[X] = 0;
+      vector[Y] = 0;
+      vector[Z] = 0;
+    }
+
+    protected static void scaledAddTo3(double[] vector1, double[] vector2, double scalar) {
+      vector1[X] += vector2[X] * scalar;
+      vector1[Y] += vector2[Y] * scalar;
+      vector1[Z] += vector2[Z] * scalar;
     }
 
     protected static double[] sub3(double[] vector1, double[] vector2) {

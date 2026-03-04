@@ -2,8 +2,8 @@ package org.sciborgs1155.robot.commands.shooting;
 
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.PITCH;
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.SPEED;
-import static org.sciborgs1155.robot.commands.shooting.ShotOptimizer.MAXIMUM_ANGLE;
-import static org.sciborgs1155.robot.commands.shooting.ShotOptimizer.MINIMUM_ANGLE;
+import static org.sciborgs1155.robot.commands.shooting.ShotGenerator.MAXIMUM_ANGLE;
+import static org.sciborgs1155.robot.commands.shooting.ShotGenerator.MINIMUM_ANGLE;
 
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -54,7 +54,7 @@ public final class TableGenerator {
 
       int tableIndex = 0;
       for (double distance = minDistance; distance < maxDistance; distance += increment) {
-        double[] launchParameters = ShotOptimizer.directLaunchParameters(distance);
+        double[] launchParameters = ShotGenerator.optimizedLaunchParameters(distance);
 
         double speed = launchParameters[SPEED];
         double angle = launchParameters[PITCH];

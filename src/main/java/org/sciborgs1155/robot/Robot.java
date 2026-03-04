@@ -49,9 +49,7 @@ import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
 import org.sciborgs1155.robot.commands.shooting.FuelVisualizer;
 import org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer;
-import org.sciborgs1155.robot.commands.shooting.Shooting;
 import org.sciborgs1155.robot.commands.shooting.ShotGenerator;
-import org.sciborgs1155.robot.commands.shooting.ShotOptimizer;
 import org.sciborgs1155.robot.commands.shooting.TableGenerator;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.hood.Hood;
@@ -90,14 +88,12 @@ public class Robot extends CommandRobot {
 
   @NotLogged
   private final ProjectileVisualizer fuelVisualizer =
-      FuelVisualizer.fromLaunchParameters(
+      ShotGenerator.configureVisualizer(
+          FuelVisualizer.fromLaunchParameters(
               () ->
-                  ShotGenerator.calculateLaunchParameters(
+                  ShotGenerator.movingLaunchParameters(
                       drive.pose3d(), drive.fieldRelativeChassisSpeeds()),
-              drive)
-          .configPhysics(true, true, false, false)
-          .configGeneration(0.05, 60, 60)
-          .config(true, true);
+              drive));
 
   @Logged private double speedMultiplier = FULL_SPEED_MULTIPLIER;
 
@@ -243,7 +239,7 @@ public class Robot extends CommandRobot {
     operator.a().whileTrue(fuelVisualizer.launchProjectiles());
     operator.b().onTrue(TableGenerator.loadTable());
     operator.x().onTrue(TableGenerator.createTable());
-    operator.y().onTrue(ShotOptimizer.displayOptimizedShot(5));
+    operator.y().onTrue(ShotGenerator.displayOptimizedShot(5));
   }
 
   /**

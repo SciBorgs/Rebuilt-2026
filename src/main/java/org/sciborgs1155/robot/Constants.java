@@ -73,7 +73,6 @@ public final class Constants {
     public static final Mass MASS = Pounds.of(110);
     public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.2);
   }
-  
-  //** Climb pose of the robot. */
+
   public static final Pose2d CLIMB_POSE = new Pose2d(1.52, 3.74, new Rotation2d(Degrees.of(180)));
 }

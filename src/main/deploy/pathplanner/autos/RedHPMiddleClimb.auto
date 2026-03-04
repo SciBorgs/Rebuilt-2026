@@ -46,12 +46,6 @@
           "data": {
             "pathName": "RedHPMiddleClimb.3"
           }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "climb"
-          }
         }
       ]
     }

@@ -78,12 +78,6 @@
           "data": {
             "pathName": "RedDepotMiddle.4"
           }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "climb"
-          }
         }
       ]
     }

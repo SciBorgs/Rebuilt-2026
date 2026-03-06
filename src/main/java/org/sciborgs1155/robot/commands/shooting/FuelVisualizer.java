@@ -203,9 +203,12 @@ public class FuelVisualizer extends ProjectileVisualizer {
     protected static final double FUEL_MASS = 0.225;
     protected static final double FUEL_RADIUS = 0.075;
 
-    protected double scoreTolerance = Hub.INNER_WIDTH;
     protected double scoreDepth;
     protected double[] targetPose = fromTranslation(Hub.TOP_CENTER_POINT);
+
+    protected double planarDistance = 0;
+    protected double verticalDisplacement = 0;
+    protected double scoreRadius = Hub.INNER_WIDTH + FUEL_RADIUS;
 
     protected static final double GRAVITY = -9.80665;
     protected static final double AIR_DENSITY = 1.225;
@@ -233,7 +236,7 @@ public class FuelVisualizer extends ProjectileVisualizer {
     public Fuel withScoringParameters(double[] goal, double tolerance, double depth) {
       targetPose = goal.clone();
       scoreDepth = depth;
-      scoreTolerance = tolerance;
+      scoreRadius = tolerance + FUEL_RADIUS;
 
       return this;
     }
@@ -267,14 +270,18 @@ public class FuelVisualizer extends ProjectileVisualizer {
     }
 
     @Override
-    protected boolean willScore() {
+    protected void periodic() {
+      super.periodic();
+
       double xDisplacement = translation[X] - targetPose[X];
       double yDisplacement = translation[Y] - targetPose[Y];
 
-      double planarDistance = Math.hypot(xDisplacement, yDisplacement);
-      double verticalDisplacement = targetPose[Z] - scoreDepth - translation[Z];
-      double scoreRadius = scoreTolerance + FUEL_RADIUS;
+      planarDistance = Math.hypot(xDisplacement, yDisplacement);
+      verticalDisplacement = targetPose[Z] - scoreDepth - translation[Z];
+    }
 
+    @Override
+    protected boolean willScore() {
       return verticalDisplacement < 0
           && verticalDisplacement > -FUEL_RADIUS
           && planarDistance <= scoreRadius
@@ -283,13 +290,6 @@ public class FuelVisualizer extends ProjectileVisualizer {
 
     @Override
     protected boolean willMiss() {
-      double xDisplacement = translation[X] - targetPose[X];
-      double yDisplacement = translation[Y] - targetPose[Y];
-
-      double planarDistance = Math.hypot(xDisplacement, yDisplacement);
-      double verticalDisplacement = targetPose[Z] - scoreDepth - translation[Z];
-      double scoreRadius = scoreTolerance + FUEL_RADIUS;
-
       return (verticalDisplacement > -FUEL_RADIUS
               && planarDistance > scoreRadius
               && velocity[Z] < 0)

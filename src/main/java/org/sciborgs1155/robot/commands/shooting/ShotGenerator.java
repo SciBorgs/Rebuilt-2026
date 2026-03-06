@@ -31,6 +31,7 @@ import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.robot.FieldConstants.Hub;
 import org.sciborgs1155.robot.commands.shooting.FuelVisualizer.Fuel;
 import org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile;
+import org.sciborgs1155.robot.drive.Drive;
 
 public final class ShotGenerator {
   private static final boolean WEIGHT_ENABLED = true;
@@ -41,9 +42,9 @@ public final class ShotGenerator {
   private static final double VELOCITY_DEADBAND = 0.1;
   private static final double DISTANCE_OFFSET = 0.05;
 
-  private static final int TRAJECTORY_RESOLUTION = 100;
+  private static final int TRAJECTORY_RESOLUTION = 200;
   private static final int OPTIMIZATION_RESOLUTION = 500;
-  private static final int TRAJECTORY_SIZE_LIMIT = 250;
+  private static final int TRAJECTORY_SIZE_LIMIT = 500;
 
   private static final double CLEARANCE = 0.13;
   private static final double CLEARANCE_CHECK = Hub.INNER_WIDTH / 2;
@@ -51,8 +52,8 @@ public final class ShotGenerator {
   private static final double SCORE_DEPTH = 0;
   private static final double SCORE_RADIUS = Hub.INNER_WIDTH / 2;
 
-  private static final double SPEED_PRECISION = 0.01;
-  private static final double PITCH_PRECISION = Math.PI / 48;
+  private static final double SPEED_PRECISION = 0.005;
+  private static final double PITCH_PRECISION = Math.PI / 96;
 
   private static final double MAX_SPEED = 20;
   static final double MAXIMUM_ANGLE = SHOOTING_ANGLE_OFFSET.in(Radians) - MIN_ANGLE.in(Radians);
@@ -234,5 +235,15 @@ public final class ShotGenerator {
         .withScoringParameters(GOAL, SCORE_RADIUS, SCORE_DEPTH)
         .configPhysics(WEIGHT_ENABLED, DRAG_ENABLED, TORQUE_ENABLED, LIFT_ENABLED)
         .configGeneration(0.05, TRAJECTORY_RESOLUTION, TRAJECTORY_RESOLUTION);
+  }
+
+  /**
+   * Creates a new visualizer with input parameters calculated by the Shot Generator.
+   * 
+   * @param drive the drivetrain subsystem
+   * @return the configured visualizer.
+   */
+  public static ProjectileVisualizer createVisualizer(Drive drive) {
+    return configureVisualizer(FuelVisualizer.fromLaunchParameters(() -> movingLaunchParameters(drive.pose3d(), drive.fieldRelativeChassisSpeeds()), drive));
   }
 }

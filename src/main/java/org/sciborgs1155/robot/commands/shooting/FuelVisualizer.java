@@ -10,6 +10,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
+import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.robot.FieldConstants.Hub;
 import org.sciborgs1155.robot.drive.Drive;
 
@@ -19,8 +20,9 @@ import org.sciborgs1155.robot.drive.Drive;
  * @see Fuel
  */
 public class FuelVisualizer extends ProjectileVisualizer {
-  private double scoreTolerance;
+  private double scoreTolerance = Hub.INNER_WIDTH / 2;
   private double scoreDepth;
+  private double[] targetPose = fromTranslation(Hub.TOP_CENTER_POINT);
 
   /**
    * A class that manages the creation, simulation, and logging of simulated FUEL projectiles.
@@ -106,7 +108,8 @@ public class FuelVisualizer extends ProjectileVisualizer {
    * @param depth the distance under the top of the HUB.
    * @return this FUEL for chaining
    */
-  public FuelVisualizer withScoringParameters(double tolerance, double depth) {
+  public FuelVisualizer withScoringParameters(double[] goal, double tolerance, double depth) {
+    targetPose = goal.clone();
     scoreDepth = depth;
     scoreTolerance = tolerance;
 
@@ -121,8 +124,21 @@ public class FuelVisualizer extends ProjectileVisualizer {
       boolean torqueEnabled,
       boolean liftEnabled) {
     return new Fuel()
-        .withScoringParameters(scoreTolerance, scoreDepth)
+        .withScoringParameters(targetPose, scoreTolerance, scoreDepth)
         .config(resolution, weightEnabled, dragEnabled, torqueEnabled, liftEnabled);
+  }
+
+  @Override
+  public void updateLogging() {
+    super.updateLogging();
+
+    if (ending() == null) return;
+    double[] planarDistance = {
+      targetPose[X] - ending().getTranslation().getX(),
+      targetPose[Y] - ending().getTranslation().getY(),
+      0,
+    };
+    LoggingUtils.log("Projectile Visualizer/Distance From Goal", norm3(planarDistance));
   }
 
   protected static double distanceToHub(double[] shotVelocity, Pose3d robotPose) {
@@ -145,8 +161,10 @@ public class FuelVisualizer extends ProjectileVisualizer {
   }
 
   protected static double[] launchRotation(double[] shotVelocity, Pose3d robotPose) {
-    double[] axis = rotateAroundZ(shotVelocity, Math.PI / 2.0);
-    return scale4(new double[] {0, axis[X], axis[Y], axis[Z]}, 1 / norm3(shotVelocity));
+    double[] shotDirection = scale3(shotVelocity, 1 / norm3(shotVelocity));
+    double[] axis = rotateAroundZ(shotDirection, Math.PI / 2.0);
+
+    return new double[] {0, axis[X], axis[Y], axis[Z]};
   }
 
   protected static double[] shooterPose(Pose3d robotPose) {
@@ -187,8 +205,12 @@ public class FuelVisualizer extends ProjectileVisualizer {
     protected static final double FUEL_MASS = 0.225;
     protected static final double FUEL_RADIUS = 0.075;
 
-    protected double scoreTolerance;
     protected double scoreDepth;
+    protected double[] targetPose = fromTranslation(Hub.TOP_CENTER_POINT);
+
+    protected double planarDistance;
+    protected double verticalDisplacement;
+    protected double scoreRadius = Hub.INNER_WIDTH + FUEL_RADIUS;
 
     protected static final double GRAVITY = -9.80665;
     protected static final double AIR_DENSITY = 1.225;
@@ -213,9 +235,10 @@ public class FuelVisualizer extends ProjectileVisualizer {
      * @param depth the distance under the top of the HUB.
      * @return this FUEL for chaining
      */
-    public Fuel withScoringParameters(double tolerance, double depth) {
+    public Fuel withScoringParameters(double[] goal, double tolerance, double depth) {
+      targetPose = goal.clone();
       scoreDepth = depth;
-      scoreTolerance = tolerance;
+      scoreRadius = tolerance + FUEL_RADIUS;
 
       return this;
     }
@@ -249,20 +272,18 @@ public class FuelVisualizer extends ProjectileVisualizer {
     }
 
     @Override
+    protected void periodic() {
+      super.periodic();
+
+      double xDisplacement = translation[X] - targetPose[X];
+      double yDisplacement = translation[Y] - targetPose[Y];
+
+      planarDistance = Math.hypot(xDisplacement, yDisplacement);
+      verticalDisplacement = targetPose[Z] - scoreDepth - translation[Z];
+    }
+
+    @Override
     protected boolean willScore() {
-      double hub1XDisplacement = translation[X] - Hub.TOP_CENTER_POINT.getX();
-      double hub1YDisplacement = translation[Y] - Hub.TOP_CENTER_POINT.getY();
-
-      double hub2XDisplacement = translation[X] - Hub.OPP_TOP_CENTER_POINT.getX();
-      double hub2YDisplacement = translation[Y] - Hub.OPP_TOP_CENTER_POINT.getY();
-
-      double hub1Distance = Math.hypot(hub1XDisplacement, hub1YDisplacement);
-      double hub2Distance = Math.hypot(hub2XDisplacement, hub2YDisplacement);
-
-      double planarDistance = Math.min(hub1Distance, hub2Distance);
-      double verticalDisplacement = Hub.HEIGHT - scoreDepth - translation[Z];
-      double scoreRadius = scoreTolerance + FUEL_RADIUS + Hub.WIDTH / 2;
-
       return verticalDisplacement < 0
           && verticalDisplacement > -FUEL_RADIUS
           && planarDistance <= scoreRadius
@@ -271,19 +292,6 @@ public class FuelVisualizer extends ProjectileVisualizer {
 
     @Override
     protected boolean willMiss() {
-      double hub1XDisplacement = translation[X] - Hub.TOP_CENTER_POINT.getX();
-      double hub1YDisplacement = translation[Y] - Hub.TOP_CENTER_POINT.getY();
-
-      double hub2XDisplacement = translation[X] - Hub.OPP_TOP_CENTER_POINT.getX();
-      double hub2YDisplacement = translation[Y] - Hub.OPP_TOP_CENTER_POINT.getY();
-
-      double hub1Distance = Math.hypot(hub1XDisplacement, hub1YDisplacement);
-      double hub2Distance = Math.hypot(hub2XDisplacement, hub2YDisplacement);
-
-      double planarDistance = Math.min(hub1Distance, hub2Distance);
-      double verticalDisplacement = Hub.HEIGHT - scoreDepth - translation[Z];
-      double scoreRadius = scoreTolerance + FUEL_RADIUS + Hub.WIDTH / 2;
-
       return (verticalDisplacement > -FUEL_RADIUS
               && planarDistance > scoreRadius
               && velocity[Z] < 0)

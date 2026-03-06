@@ -26,8 +26,7 @@ public abstract class ProjectileVisualizer {
   private boolean weightEnabled, dragEnabled, torqueEnabled, liftEnabled;
 
   private Pose3d[] trajectory;
-  private Pose3d initial;
-
+  private Pose3d initial, ending;
   private final Supplier<double[]> launchTranslation, launchVelocity, launchRotation;
   private final DoubleSupplier launchRotationalVelocity;
 
@@ -39,10 +38,14 @@ public abstract class ProjectileVisualizer {
   private static final double DEFAULT_TRAJECTORY_RESOLUTION = 60;
 
   /** The delay between each update of the simulated projectile poses. */
-  public static final double LAUNCH_PERIOD = 1 / DEFAULT_LAUNCH_RESOLUTION;
+  public double launchPeriod() {
+    return 1 / launchResolution;
+  }
 
   /** The delay between each update of the simulated projectile trajectories. */
-  public static final double TRAJECTORY_PERIOD = 1 / DEFAULT_TRAJECTORY_RESOLUTION;
+  public double trajectoryPeriod() {
+    return 1 / trajectoryResolution;
+  }
 
   protected abstract Projectile createProjectile(
       double resolution,
@@ -108,6 +111,8 @@ public abstract class ProjectileVisualizer {
   /**
    * Configures the visualizer's generation settings.
    *
+   * <p>NOTE: THIS WILL MAKE PROJECTILE DISPLAY IN NETWORK-TABLES NOT CONSISTENT WITH TIME
+   *
    * @param delay the minimum amount of time in between projectile launches
    * @param launch the resolution of the projectile's simulation, in steps per second
    * @param trajectory the resolution of the projectile's trajectory, in steps per second
@@ -145,6 +150,7 @@ public abstract class ProjectileVisualizer {
     LoggingUtils.log("Projectile Visualizer/Misses", misses());
     LoggingUtils.log("Projectile Visualizer/Projectiles", poses(), Pose3d.struct);
     LoggingUtils.log("Projectile Visualizer/Launch pose", initial(), Pose3d.struct);
+    LoggingUtils.log("Projectile Visualizer/Ending pose", ending(), Pose3d.struct);
   }
 
   /**
@@ -178,6 +184,7 @@ public abstract class ProjectileVisualizer {
       projectile.periodic();
       frames++;
     }
+    ending = projectile.pose();
 
     willMiss = projectile.willMiss();
     willScore = projectile.willScore();
@@ -218,11 +225,13 @@ public abstract class ProjectileVisualizer {
 
       if (projectile.willMiss()) {
         misses++;
+        ending = projectile.pose();
         projectiles.remove(index);
       }
 
       if (projectile.willScore()) {
         scores++;
+        ending = projectile.pose();
         projectiles.remove(index);
       }
 
@@ -295,15 +304,6 @@ public abstract class ProjectileVisualizer {
   }
 
   /**
-   * Returns the resolution of the projectile's simulation, in steps per second .
-   *
-   * @return the resolution of the projectile's simulation, in steps per second
-   */
-  public int resolution() {
-    return misses;
-  }
-
-  /**
    * Returns the most recent generated trajectory of the projectile.
    *
    * @return the generated trajectory of the projectile
@@ -313,12 +313,21 @@ public abstract class ProjectileVisualizer {
   }
 
   /**
-   * The initial pose of the projectile
+   * The initial pose of the projectile.
    *
-   * @return the initial pose of the projectile.
+   * @return the initial pose of the projectile
    */
   public Pose3d initial() {
     return initial;
+  }
+
+  /**
+   * The ending pose of the projectile.
+   *
+   * @return the ending pose of the projectile
+   */
+  public Pose3d ending() {
+    return ending;
   }
 
   /** A class that models the physics of a projectile. */
@@ -330,7 +339,8 @@ public abstract class ProjectileVisualizer {
 
     protected double resolution;
     protected boolean weightEnabled, dragEnabled, torqueEnabled, liftEnabled;
-    protected double[] translation, velocity, acceleration, rotation;
+    protected final double[] translation, velocity, acceleration;
+    protected double[] rotation;
     protected double rotationalVelocity, rotationalAcceleration;
 
     /**
@@ -397,9 +407,12 @@ public abstract class ProjectileVisualizer {
         double[] launchVelocity,
         double[] launchRotation,
         double launchRotationalVelocity) {
-      translation = launchTranslation.clone();
-      velocity = launchVelocity.clone();
-      acceleration = new double[3];
+      zero3(translation);
+      zero3(velocity);
+      zero3(acceleration);
+
+      scaledAddTo3(translation, launchTranslation, 1);
+      scaledAddTo3(velocity, launchVelocity, 1);
 
       rotation = launchRotation.clone();
       rotationalVelocity = launchRotationalVelocity;
@@ -418,49 +431,19 @@ public abstract class ProjectileVisualizer {
     }
 
     protected void periodic() {
-      translation[X] += velocity[X] / resolution;
-      translation[Y] += velocity[Y] / resolution;
-      translation[Z] += velocity[Z] / resolution;
+      scaledAddTo3(translation, velocity, 1 / resolution);
+      scaledAddTo3(velocity, acceleration, 1 / resolution);
 
-      velocity[X] += acceleration[X] / resolution;
-      velocity[Y] += acceleration[Y] / resolution;
-      velocity[Z] += acceleration[Z] / resolution;
-
-      acceleration[X] = 0;
-      acceleration[Y] = 0;
-      acceleration[Z] = 0;
-
-      if (weightEnabled) {
-        double[] weight = weight();
-
-        acceleration[X] += weight[X];
-        acceleration[Y] += weight[Y];
-        acceleration[Z] += weight[Z];
-      }
-
-      if (dragEnabled) {
-        double[] drag = drag();
-
-        acceleration[X] += drag[X];
-        acceleration[Y] += drag[Y];
-        acceleration[Z] += drag[Z];
-      }
-
-      if (liftEnabled) {
-        double[] lift = lift();
-
-        acceleration[X] += lift[X];
-        acceleration[Y] += lift[Y];
-        acceleration[Z] += lift[Z];
-      }
+      zero3(acceleration);
+      if (weightEnabled) scaledAddTo3(acceleration, weight(), 1);
+      if (dragEnabled) scaledAddTo3(acceleration, drag(), 1);
+      if (liftEnabled) scaledAddTo3(acceleration, lift(), 1);
 
       rotation[ANGLE] += rotationalVelocity / resolution;
       rotationalVelocity += rotationalAcceleration / resolution;
       rotationalAcceleration = 0;
 
-      if (torqueEnabled) {
-        rotationalAcceleration = torque();
-      }
+      if (torqueEnabled) rotationalAcceleration = torque();
     }
 
     protected Pose3d pose() {
@@ -474,9 +457,9 @@ public abstract class ProjectileVisualizer {
     }
 
     protected void reset() {
-      translation = new double[3];
-      velocity = new double[3];
-      acceleration = new double[3];
+      zero3(translation);
+      zero3(velocity);
+      zero3(acceleration);
 
       rotation = new double[4];
       rotationalVelocity = 0;
@@ -511,6 +494,18 @@ public abstract class ProjectileVisualizer {
       return new double[] {
         vector1[X] + vector2[X], vector1[Y] + vector2[Y], vector1[Z] + vector2[Z]
       };
+    }
+
+    protected static void zero3(double[] vector) {
+      vector[X] = 0;
+      vector[Y] = 0;
+      vector[Z] = 0;
+    }
+
+    protected static void scaledAddTo3(double[] vector1, double[] vector2, double scalar) {
+      vector1[X] += vector2[X] * scalar;
+      vector1[Y] += vector2[Y] * scalar;
+      vector1[Z] += vector2[Z] * scalar;
     }
 
     protected static double[] sub3(double[] vector1, double[] vector2) {

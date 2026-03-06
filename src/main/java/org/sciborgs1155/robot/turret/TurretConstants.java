@@ -26,7 +26,7 @@ public class TurretConstants {
 
   public static final double GEAR_RATIO = 686 / 15;
   public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.0872);
-  public static final Constraints CONSTRAINTS = new Constraints(16, 16); // TODO: Update.
+  public static final Constraints CONSTRAINTS = new Constraints(6, 10); // TODO: Update.
 
   public static final Angle MAX_ANGLE = Degrees.of(175);
   public static final Angle MIN_ANGLE = Degrees.of(-175);
@@ -49,9 +49,9 @@ public class TurretConstants {
 
   public static final class ControlConstants {
     // PID CONSTANTS
-    public static final double P = 6.7;
+    public static final double P = 20;
     public static final double I = 0;
-    public static final double D = 0;
+    public static final double D = 0.2;
 
     // FEEDFORWARD CONSTANTS (VELOCITY IN RAD/SEC)
     public static final double S = 0; // TODO: Update.

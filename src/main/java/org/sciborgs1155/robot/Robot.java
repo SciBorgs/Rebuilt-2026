@@ -14,6 +14,7 @@ import static org.sciborgs1155.robot.Constants.FULL_SPEED_MULTIPLIER;
 import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.Constants.SLOW_SPEED_MULTIPLIER;
 import static org.sciborgs1155.robot.Constants.TUNING;
+import static org.sciborgs1155.robot.Constants.Robot.ROBOT_TO_SHOOTER;
 import static org.sciborgs1155.robot.drive.DriveConstants.MAX_ANGULAR_ACCEL;
 import static org.sciborgs1155.robot.drive.DriveConstants.MAX_SPEED;
 import static org.sciborgs1155.robot.drive.DriveConstants.TELEOP_ANGULAR_SPEED;
@@ -104,12 +105,9 @@ public class Robot extends CommandRobot {
 
   @Override
   public void robotPeriodic() {
-    log("RobotModel/hopperOrigin", new Pose3d(0, 0, 0, new Rotation3d()), Pose3d.struct);
-    log(
-        "RobotModel/turretOrigin",
-        new Transform3d(0.14006, 0.13983, 0.3286252, new Rotation3d(0, 0, turret.position())),
-        Transform3d.struct);
-    log("RobotModel/intakeOrigin", new Pose3d(0, 0, 0, new Rotation3d()), Pose3d.struct);
+    log("RobotModel/hopperOrigin", new Transform3d(), Transform3d.struct);
+    log("RobotModel/turretOrigin", new Transform3d(ROBOT_TO_SHOOTER, new Rotation3d(0, 0, turret.position())), Transform3d.struct);
+    log("RobotModel/intakeOrigin", new Transform3d(), Transform3d.struct);
     log("RobotModel/driveOrigin", drive.pose3d(), Pose3d.struct);
 
     Tracer.startTrace("commands");
@@ -166,9 +164,8 @@ public class Robot extends CommandRobot {
     } else {
       DriverStation.silenceJoystickConnectionWarning(true);
       addPeriodic(fuelVisualizer::updateLogging, PERIOD);
-      addPeriodic(fuelVisualizer::updateLaunchSimulation, ProjectileVisualizer.LAUNCH_PERIOD);
-      addPeriodic(
-          fuelVisualizer::updateTrajectorySimulation, ProjectileVisualizer.TRAJECTORY_PERIOD);
+      addPeriodic(fuelVisualizer::updateLaunchSimulation, fuelVisualizer.trajectoryPeriod());
+      addPeriodic(fuelVisualizer::updateTrajectorySimulation, fuelVisualizer.launchPeriod());
     }
   }
 

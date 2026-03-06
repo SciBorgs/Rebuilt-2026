@@ -135,8 +135,8 @@ public class FuelVisualizer extends ProjectileVisualizer {
     if (ending() == null) return;
     double[] planarDistance = {
       ShotGenerator.GOAL[X] - ending().getTranslation().getX(),
+      ShotGenerator.GOAL[Y] - ending().getTranslation().getY(),
       0,
-      ShotGenerator.GOAL[Y] - ending().getTranslation().getY()
     };
     LoggingUtils.log("Projectile Visualizer/Distance From Goal", norm3(planarDistance));
   }
@@ -161,8 +161,10 @@ public class FuelVisualizer extends ProjectileVisualizer {
   }
 
   protected static double[] launchRotation(double[] shotVelocity, Pose3d robotPose) {
-    double[] axis = rotateAroundZ(shotVelocity, Math.PI / 2.0);
-    return scale4(new double[] {0, axis[X], axis[Y], axis[Z]}, 1 / norm3(shotVelocity));
+    double[] shotDirection = scale3(shotVelocity, 1 / norm3(shotVelocity));
+    double[] axis = rotateAroundZ(shotDirection, Math.PI / 2.0);
+
+    return new double[] {0, axis[X], axis[Y], axis[Z]};
   }
 
   protected static double[] shooterPose(Pose3d robotPose) {
@@ -170,7 +172,7 @@ public class FuelVisualizer extends ProjectileVisualizer {
   }
 
   protected static double[] shooterVelocity(
-      double[] shotVelocity, Pose3d robotPose, ChassisSpeeds robotVelocity) {
+    double[] shotVelocity, Pose3d robotPose, ChassisSpeeds robotVelocity) {
     double[] robotToFuel = add3(shooterToFuel(shotVelocity, robotPose), shooterPose(robotPose));
     double tangentialSpeed = robotVelocity.omegaRadiansPerSecond * norm3(robotToFuel);
     double tangentialDirection = robotPose.getRotation().getZ() + Math.PI / 2.0;
@@ -178,8 +180,7 @@ public class FuelVisualizer extends ProjectileVisualizer {
     return new double[] {
       robotVelocity.vxMetersPerSecond + tangentialSpeed * Math.cos(tangentialDirection),
       robotVelocity.vyMetersPerSecond + tangentialSpeed * Math.sin(tangentialDirection),
-      0
-    };
+      0};
   }
 
   protected static double[] shooterToFuel(double[] shotVelocity, Pose3d robotPose) {

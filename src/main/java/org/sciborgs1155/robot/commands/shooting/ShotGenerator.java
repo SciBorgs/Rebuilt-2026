@@ -217,8 +217,10 @@ public final class ShotGenerator {
     double[] stationaryLaunchParameters = stationaryLaunchParameters(shooterPose, heading);
     double[] stationaryShotVelocity = shotVelocity(stationaryLaunchParameters, heading);
     double[] shooterVelocity = shooterVelocity(stationaryShotVelocity, robotPose, robotVelocity);
+    double shooterSpeed = norm3(shooterVelocity);
 
-    if (norm3(shooterVelocity) < VELOCITY_DEADBAND) return stationaryLaunchParameters;
+    LoggingUtils.log("Shooting/Shooter Velocity", shooterSpeed);
+    if (shooterSpeed < VELOCITY_DEADBAND) return stationaryLaunchParameters;
 
     double[] movingShotVelocity = sub3(stationaryShotVelocity, scale3(shooterVelocity, 2));
     return launchParameters(movingShotVelocity, heading);

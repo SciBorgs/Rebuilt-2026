@@ -38,10 +38,14 @@ public abstract class ProjectileVisualizer {
   private static final double DEFAULT_TRAJECTORY_RESOLUTION = 60;
 
   /** The delay between each update of the simulated projectile poses. */
-  public static final double LAUNCH_PERIOD = 1 / DEFAULT_LAUNCH_RESOLUTION;
+  public double launchPeriod() {
+    return 1 / launchResolution;
+  }
 
   /** The delay between each update of the simulated projectile trajectories. */
-  public static final double TRAJECTORY_PERIOD = 1 / DEFAULT_TRAJECTORY_RESOLUTION;
+  public double trajectoryPeriod() {
+    return 1 / trajectoryResolution;
+  }
 
   protected abstract Projectile createProjectile(
       double resolution,
@@ -107,6 +111,8 @@ public abstract class ProjectileVisualizer {
   /**
    * Configures the visualizer's generation settings.
    *
+   * NOTE: THIS WILL MAKE PROJECTILE DISPLAY IN NETWORK-TABLES NOT CONSISTENT WITH TIME
+   * 
    * @param delay the minimum amount of time in between projectile launches
    * @param launch the resolution of the projectile's simulation, in steps per second
    * @param trajectory the resolution of the projectile's trajectory, in steps per second
@@ -294,15 +300,6 @@ public abstract class ProjectileVisualizer {
    * @return the number of times a projectile has missed
    */
   public int misses() {
-    return misses;
-  }
-
-  /**
-   * Returns the resolution of the projectile's simulation, in steps per second .
-   *
-   * @return the resolution of the projectile's simulation, in steps per second
-   */
-  public int resolution() {
     return misses;
   }
 

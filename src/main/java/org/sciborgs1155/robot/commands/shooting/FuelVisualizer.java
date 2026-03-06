@@ -134,8 +134,8 @@ public class FuelVisualizer extends ProjectileVisualizer {
 
     if (ending() == null) return;
     double[] planarDistance = {
-      ShotGenerator.GOAL[X] - ending().getTranslation().getX(),
-      ShotGenerator.GOAL[Y] - ending().getTranslation().getY(),
+      targetPose[X] - ending().getTranslation().getX(),
+      targetPose[Y] - ending().getTranslation().getY(),
       0,
     };
     LoggingUtils.log("Projectile Visualizer/Distance From Goal", norm3(planarDistance));
@@ -172,7 +172,7 @@ public class FuelVisualizer extends ProjectileVisualizer {
   }
 
   protected static double[] shooterVelocity(
-    double[] shotVelocity, Pose3d robotPose, ChassisSpeeds robotVelocity) {
+      double[] shotVelocity, Pose3d robotPose, ChassisSpeeds robotVelocity) {
     double[] robotToFuel = add3(shooterToFuel(shotVelocity, robotPose), shooterPose(robotPose));
     double tangentialSpeed = robotVelocity.omegaRadiansPerSecond * norm3(robotToFuel);
     double tangentialDirection = robotPose.getRotation().getZ() + Math.PI / 2.0;
@@ -180,7 +180,8 @@ public class FuelVisualizer extends ProjectileVisualizer {
     return new double[] {
       robotVelocity.vxMetersPerSecond + tangentialSpeed * Math.cos(tangentialDirection),
       robotVelocity.vyMetersPerSecond + tangentialSpeed * Math.sin(tangentialDirection),
-      0};
+      0
+    };
   }
 
   protected static double[] shooterToFuel(double[] shotVelocity, Pose3d robotPose) {
@@ -207,8 +208,8 @@ public class FuelVisualizer extends ProjectileVisualizer {
     protected double scoreDepth;
     protected double[] targetPose = fromTranslation(Hub.TOP_CENTER_POINT);
 
-    protected double planarDistance = 0;
-    protected double verticalDisplacement = 0;
+    protected double planarDistance;
+    protected double verticalDisplacement;
     protected double scoreRadius = Hub.INNER_WIDTH + FUEL_RADIUS;
 
     protected static final double GRAVITY = -9.80665;

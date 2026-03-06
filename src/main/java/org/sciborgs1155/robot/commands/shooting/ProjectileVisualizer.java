@@ -111,8 +111,8 @@ public abstract class ProjectileVisualizer {
   /**
    * Configures the visualizer's generation settings.
    *
-   * NOTE: THIS WILL MAKE PROJECTILE DISPLAY IN NETWORK-TABLES NOT CONSISTENT WITH TIME
-   * 
+   * <p>NOTE: THIS WILL MAKE PROJECTILE DISPLAY IN NETWORK-TABLES NOT CONSISTENT WITH TIME
+   *
    * @param delay the minimum amount of time in between projectile launches
    * @param launch the resolution of the projectile's simulation, in steps per second
    * @param trajectory the resolution of the projectile's trajectory, in steps per second

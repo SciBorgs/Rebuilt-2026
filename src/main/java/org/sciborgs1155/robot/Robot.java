@@ -89,7 +89,7 @@ public class Robot extends CommandRobot {
   private final ProjectileVisualizer fuelVisualizer =
       FuelVisualizer.fromLaunchParameters(() -> 10, () -> 1, () -> 0, drive)
           .configPhysics(true, true, false, false)
-          .configGeneration(0.05, 80, 60)
+          .configGeneration(0.05, 2, 200, 200)
           .config(true, true);
 
   @Logged private double speedMultiplier = FULL_SPEED_MULTIPLIER;
@@ -167,9 +167,9 @@ public class Robot extends CommandRobot {
       pdh.setSwitchableChannel(true);
     } else {
       DriverStation.silenceJoystickConnectionWarning(true);
+
+      fuelVisualizer.startSimulation();
       addPeriodic(fuelVisualizer::updateLogging, PERIOD);
-      addPeriodic(fuelVisualizer::updateLaunchSimulation, fuelVisualizer.trajectoryPeriod());
-      addPeriodic(fuelVisualizer::updateTrajectorySimulation, fuelVisualizer.launchPeriod());
     }
   }
 

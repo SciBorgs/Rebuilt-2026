@@ -8,6 +8,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.sciborgs1155.lib.LoggingUtils;
@@ -20,7 +23,7 @@ import org.sciborgs1155.lib.Tracer;
  */
 @SuppressWarnings("PMD.OneDeclarationPerLine")
 public abstract class ProjectileVisualizer {
-  private double airTime, launchResolution, trajectoryResolution, cooldown;
+  private double airTime, launchResolution, trajectoryResolution, cooldown, maxAirTime;
   private int scores, misses;
   private boolean willScore, willMiss, launchEnabled, trajectoryEnabled;
   private boolean weightEnabled, dragEnabled, torqueEnabled, liftEnabled;
@@ -33,9 +36,19 @@ public abstract class ProjectileVisualizer {
   private final List<Projectile> projectiles = new ArrayList<>();
 
   private static final double DEFAULT_COOLDOWN = 0.05;
-  private static final int MAX_TRAJECTORY_SIZE = 200;
-  private static final double DEFAULT_LAUNCH_RESOLUTION = 80;
-  private static final double DEFAULT_TRAJECTORY_RESOLUTION = 60;
+  private static final double DEFAULT_MAX_AIR_TIME = 3.0;
+  private static final double DEFAULT_LAUNCH_RESOLUTION = 100;
+  private static final double DEFAULT_TRAJECTORY_RESOLUTION = 100;
+
+  private final ExecutorService trajectorySimulationUpdater =
+      Executors.newSingleThreadScheduledExecutor(
+          target -> new Thread(target, "Projectile Trajectory Simulation"));
+
+  private final ExecutorService launchSimulationUpdater =
+      Executors.newSingleThreadScheduledExecutor(
+          target -> new Thread(target, "Projectile Launch Simulation"));
+
+  private final AtomicBoolean running = new AtomicBoolean(false);
 
   /** The delay between each update of the simulated projectile poses. */
   public double launchPeriod() {
@@ -45,6 +58,45 @@ public abstract class ProjectileVisualizer {
   /** The delay between each update of the simulated projectile trajectories. */
   public double trajectoryPeriod() {
     return 1 / trajectoryResolution;
+  }
+
+  /** Ends simulation thread. */
+  public void endSimulation() {
+    running.set(false);
+
+    trajectorySimulationUpdater.shutdownNow();
+    launchSimulationUpdater.shutdownNow();
+  }
+
+  /** Starts simulation thread. */
+  public void startSimulation() {
+    running.set(true);
+
+    trajectorySimulationUpdater.submit(
+        () -> {
+          while (running.get()) {
+            updateTrajectorySimulation();
+
+            try {
+              Thread.sleep(Math.round(trajectoryPeriod() * 1000));
+            } catch (InterruptedException e) {
+              break;
+            }
+          }
+        });
+
+    launchSimulationUpdater.submit(
+        () -> {
+          while (running.get()) {
+            updateLaunchSimulation();
+
+            try {
+              Thread.sleep(Math.round(launchPeriod() * 1000));
+            } catch (InterruptedException e) {
+              break;
+            }
+          }
+        });
   }
 
   protected abstract Projectile createProjectile(
@@ -78,6 +130,7 @@ public abstract class ProjectileVisualizer {
 
     launchResolution = DEFAULT_LAUNCH_RESOLUTION;
     trajectoryResolution = DEFAULT_TRAJECTORY_RESOLUTION;
+    maxAirTime = DEFAULT_MAX_AIR_TIME;
     cooldown = DEFAULT_COOLDOWN;
 
     weightEnabled = true;
@@ -114,12 +167,15 @@ public abstract class ProjectileVisualizer {
    * <p>NOTE: THIS WILL MAKE PROJECTILE DISPLAY IN NETWORK-TABLES NOT CONSISTENT WITH TIME
    *
    * @param delay the minimum amount of time in between projectile launches
+   * @param air the maximum amount of time the projectile can be in the air for
    * @param launch the resolution of the projectile's simulation, in steps per second
    * @param trajectory the resolution of the projectile's trajectory, in steps per second
    * @return this visualizer
    */
-  public ProjectileVisualizer configGeneration(double delay, double launch, double trajectory) {
+  public ProjectileVisualizer configGeneration(
+      double delay, double air, double launch, double trajectory) {
     cooldown = delay;
+    maxAirTime = air;
     launchResolution = launch;
     trajectoryResolution = trajectory;
 
@@ -166,7 +222,10 @@ public abstract class ProjectileVisualizer {
    * @return an array of Pose3d objects representing the projectile's trajectory
    */
   public Pose3d[] generateTrajectory() {
+    if (!running.get()) return new Pose3d[0];
+
     int frames = 0;
+    double maxFrames = maxAirTime * trajectoryResolution;
     List<Pose3d> trajectory = new ArrayList<>();
     Projectile projectile =
         createProjectile(
@@ -179,7 +238,7 @@ public abstract class ProjectileVisualizer {
         launchRotationalVelocity.getAsDouble());
 
     initial = projectile.pose();
-    while (!projectile.willMiss() && !projectile.willScore() && frames <= MAX_TRAJECTORY_SIZE) {
+    while (!projectile.willMiss() && !projectile.willScore() && frames <= maxFrames) {
       trajectory.add(projectile.pose());
       projectile.periodic();
       frames++;
@@ -195,6 +254,8 @@ public abstract class ProjectileVisualizer {
 
   /** Launches a singular projectile. */
   public void launchProjectile() {
+    if (!running.get()) return;
+
     Projectile projectile =
         createProjectile(launchResolution, weightEnabled, dragEnabled, torqueEnabled, liftEnabled);
     projectiles.add(projectile);
@@ -217,7 +278,7 @@ public abstract class ProjectileVisualizer {
   }
 
   /** Updates the simulation for all projectiles in the visualizer. */
-  public void updateLaunchSimulation() {
+  private void updateLaunchSimulation() {
     Tracer.startTrace("launch simulation");
     if (!launchEnabled) return;
     for (int index = 0; index < projectiles.size(); index++) {
@@ -235,13 +296,18 @@ public abstract class ProjectileVisualizer {
         projectiles.remove(index);
       }
 
+      if (projectile.frames >= maxAirTime * trajectoryResolution) {
+        ending = projectile.pose();
+        projectiles.remove(index);
+      }
+
       projectile.periodic();
     }
     Tracer.endTrace();
   }
 
   /** Updates the displayed trajectory of the projectile. */
-  public void updateTrajectorySimulation() {
+  private void updateTrajectorySimulation() {
     Tracer.startTrace("trajectory generation");
     trajectory = trajectoryEnabled ? generateTrajectory() : new Pose3d[0];
     Tracer.endTrace();
@@ -337,6 +403,7 @@ public abstract class ProjectileVisualizer {
     protected static final int ANGLE = 0, AXIS_X = 1, AXIS_Y = 2, AXIS_Z = 3;
     protected static final int DISTANCE = 0, SPEED = 1, PITCH = 2, YAW = 3;
 
+    protected int frames;
     protected double resolution;
     protected boolean weightEnabled, dragEnabled, torqueEnabled, liftEnabled;
     protected final double[] translation, velocity, acceleration;
@@ -417,6 +484,8 @@ public abstract class ProjectileVisualizer {
       rotation = launchRotation.clone();
       rotationalVelocity = launchRotationalVelocity;
       rotationalAcceleration = 0;
+
+      frames = 0;
     }
 
     protected Projectile config(
@@ -444,6 +513,7 @@ public abstract class ProjectileVisualizer {
       rotationalAcceleration = 0;
 
       if (torqueEnabled) rotationalAcceleration = torque();
+      frames++;
     }
 
     protected Pose3d pose() {
@@ -464,6 +534,8 @@ public abstract class ProjectileVisualizer {
       rotation = new double[4];
       rotationalVelocity = 0;
       rotationalAcceleration = 0;
+
+      frames = 0;
     }
 
     protected static double[] fromTranslation(Translation3d translation) {

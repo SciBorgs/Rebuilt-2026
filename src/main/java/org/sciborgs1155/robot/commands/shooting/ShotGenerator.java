@@ -42,6 +42,7 @@ public final class ShotGenerator {
   private static final double VELOCITY_DEADBAND = 0.1;
   private static final double DISTANCE_OFFSET = 0.05;
 
+  private static final double MAX_AIR_TIME = 10;
   private static final int TRAJECTORY_RESOLUTION = 200;
   private static final int OPTIMIZATION_RESOLUTION = 500;
   private static final int TRAJECTORY_SIZE_LIMIT = 500;
@@ -236,7 +237,7 @@ public final class ShotGenerator {
     return visualizer
         .withScoringParameters(GOAL, SCORE_RADIUS, SCORE_DEPTH)
         .configPhysics(WEIGHT_ENABLED, DRAG_ENABLED, TORQUE_ENABLED, LIFT_ENABLED)
-        .configGeneration(0.05, TRAJECTORY_RESOLUTION, TRAJECTORY_RESOLUTION);
+        .configGeneration(0.05, MAX_AIR_TIME, TRAJECTORY_RESOLUTION, TRAJECTORY_RESOLUTION);
   }
 
   /**

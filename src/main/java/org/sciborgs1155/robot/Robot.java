@@ -163,9 +163,9 @@ public class Robot extends CommandRobot {
       pdh.setSwitchableChannel(true);
     } else {
       DriverStation.silenceJoystickConnectionWarning(true);
+      
+      fuelVisualizer.startSimulation();
       addPeriodic(fuelVisualizer::updateLogging, PERIOD);
-      addPeriodic(fuelVisualizer::updateLaunchSimulation, fuelVisualizer.trajectoryPeriod());
-      addPeriodic(fuelVisualizer::updateTrajectorySimulation, fuelVisualizer.launchPeriod());
     }
   }
 

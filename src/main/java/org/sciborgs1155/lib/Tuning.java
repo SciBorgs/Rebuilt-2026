@@ -42,8 +42,9 @@ import org.sciborgs1155.robot.Constants;
  */
 @SuppressWarnings({
   "PMD.GodClass",
-  "PMD.UseConcurrentHashMap"
-}) // Not sure if there are concurrent accesses
+  "PMD.UseConcurrentHashMap",
+  "PMD.CloseResource"
+}) // Not sure if there are concurrent accesses; entries in update* are owned by caller
 public final class Tuning {
   /* HashMap of values of each topic path */
   private static final Map<String, List<Double>> DOUBLE_HASH = new HashMap<>();
@@ -405,7 +406,6 @@ public final class Tuning {
    *
    * @param entryList A list of DoubleEntries
    */
-  @SuppressWarnings("PMD.CloseResource") // entries are passed in from caller; caller owns them
   public static void updateDoubles(List<DoubleEntry> entryList) {
     for (DoubleEntry doubleEntry : entryList) {
       String topicName = doubleEntry.getTopic().getName();
@@ -438,7 +438,6 @@ public final class Tuning {
    *
    * @param entryList A list of IntegerEntries
    */
-  @SuppressWarnings("PMD.CloseResource") // entries are passed in from caller; caller owns them
   public static void updateInts(List<IntegerEntry> entryList) {
     for (IntegerEntry integerEntry : entryList) {
       String topicName = integerEntry.getTopic().getName();
@@ -472,7 +471,6 @@ public final class Tuning {
    *
    * @param entryList A list of StringEntries
    */
-  @SuppressWarnings("PMD.CloseResource") // entries are passed in from caller; caller owns them
   public static void updateStrings(List<StringEntry> entryList) {
     for (StringEntry stringEntry : entryList) {
       String topicName = stringEntry.getTopic().getName();
@@ -506,7 +504,6 @@ public final class Tuning {
    *
    * @param entryList A list of BooleanEntries
    */
-  @SuppressWarnings("PMD.CloseResource") // entries are passed in from caller; caller owns them
   public static void updateBooleans(List<BooleanEntry> entryList) {
     for (BooleanEntry booleanEntry : entryList) {
       String topicName = booleanEntry.getTopic().getName();

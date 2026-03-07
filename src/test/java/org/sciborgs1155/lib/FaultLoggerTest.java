@@ -32,7 +32,9 @@ public class FaultLoggerTest {
   void report() {
     NetworkTable base = NetworkTableInstance.getDefault().getTable("Faults");
     try (var activeInfos =
-            base.getSubTable("Active Faults").getStringArrayTopic("infos").subscribe(new String[10]);
+            base.getSubTable("Active Faults")
+                .getStringArrayTopic("infos")
+                .subscribe(new String[10]);
         var totalErrors =
             base.getSubTable("Total Faults")
                 .getStringArrayTopic("errors")

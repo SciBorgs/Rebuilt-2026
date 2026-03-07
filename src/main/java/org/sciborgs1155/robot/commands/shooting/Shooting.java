@@ -54,6 +54,7 @@ public class Shooting {
   }
 
   public ProjectileVisualizer createVisualizer() {
-    return ShotGenerator.configureVisualizer(FuelVisualizer.fromLaunchParameters(() -> launchParameters, drive));
+    return ShotGenerator.configureVisualizer(
+        FuelVisualizer.fromLaunchParameters(() -> launchParameters, drive));
   }
 }

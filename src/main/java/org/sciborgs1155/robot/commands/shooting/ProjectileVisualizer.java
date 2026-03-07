@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -29,11 +30,12 @@ public abstract class ProjectileVisualizer {
   private boolean weightEnabled, dragEnabled, torqueEnabled, liftEnabled;
 
   private Pose3d[] trajectory;
+
   private Pose3d initial, ending;
   private final Supplier<double[]> launchTranslation, launchVelocity, launchRotation;
   private final DoubleSupplier launchRotationalVelocity;
 
-  private final List<Projectile> projectiles = new ArrayList<>();
+  private final List<Projectile> projectiles = new CopyOnWriteArrayList<>();
 
   private static final double DEFAULT_COOLDOWN = 0.05;
   private static final double DEFAULT_MAX_AIR_TIME = 3.0;
@@ -63,9 +65,6 @@ public abstract class ProjectileVisualizer {
   /** Ends simulation thread. */
   public void endSimulation() {
     running.set(false);
-
-    trajectorySimulationUpdater.shutdownNow();
-    launchSimulationUpdater.shutdownNow();
   }
 
   /** Starts simulation thread. */
@@ -222,8 +221,6 @@ public abstract class ProjectileVisualizer {
    * @return an array of Pose3d objects representing the projectile's trajectory
    */
   public Pose3d[] generateTrajectory() {
-    if (!running.get()) return new Pose3d[0];
-
     int frames = 0;
     double maxFrames = maxAirTime * trajectoryResolution;
     List<Pose3d> trajectory = new ArrayList<>();
@@ -281,7 +278,7 @@ public abstract class ProjectileVisualizer {
   private void updateLaunchSimulation() {
     Tracer.startTrace("launch simulation");
     if (!launchEnabled) return;
-    for (int index = 0; index < projectiles.size(); index++) {
+    for (int index = projectiles.size() - 1; index >= 0; index--) {
       Projectile projectile = projectiles.get(index);
 
       if (projectile.willMiss()) {
@@ -296,7 +293,7 @@ public abstract class ProjectileVisualizer {
         projectiles.remove(index);
       }
 
-      if (projectile.frames >= maxAirTime * trajectoryResolution) {
+      if (projectile.frames >= maxAirTime * launchResolution) {
         ending = projectile.pose();
         projectiles.remove(index);
       }
@@ -320,7 +317,8 @@ public abstract class ProjectileVisualizer {
    */
   public Pose3d[] poses() {
     Pose3d[] poses = new Pose3d[projectiles.size()];
-    for (int index = 0; index < poses.length; index++) poses[index] = projectiles.get(index).pose();
+    for (int index = 0; index < projectiles.size(); index++)
+      poses[index] = projectiles.get(index).pose();
     return poses;
   }
 
@@ -590,17 +588,16 @@ public abstract class ProjectileVisualizer {
       return new double[] {vector[X] * scalar, vector[Y] * scalar, vector[Z] * scalar};
     }
 
-    protected static double[] scale4(double[] vector, double scalar) {
-      return new double[] {
-        vector[ANGLE] * scalar,
-        vector[AXIS_X] * scalar,
-        vector[AXIS_Y] * scalar,
-        vector[AXIS_Z] * scalar
-      };
-    }
-
     protected static double norm3(double[] vector) {
       return Math.sqrt(vector[X] * vector[X] + vector[Y] * vector[Y] + vector[Z] * vector[Z]);
+    }
+
+    protected static double[] cross3(double[] vector1, double[] vector2) {
+      return new double[] {
+        vector1[Y] * vector2[Z] - vector1[Z] * vector2[Y],
+        vector1[Z] * vector2[X] - vector1[X] * vector2[Z],
+        vector1[X] * vector2[Y] - vector1[Y] * vector2[X]
+      };
     }
   }
 }

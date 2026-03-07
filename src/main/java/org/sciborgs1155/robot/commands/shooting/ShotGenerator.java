@@ -13,7 +13,6 @@ import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Proj
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.add3;
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.fromTranslation;
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.norm3;
-import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.scale3;
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.sub3;
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.toPose;
 import static org.sciborgs1155.robot.hood.HoodConstants.MAX_ANGLE;
@@ -223,7 +222,7 @@ public final class ShotGenerator {
     LoggingUtils.log("Shooting/Shooter Velocity", shooterSpeed);
     if (shooterSpeed < VELOCITY_DEADBAND) return stationaryLaunchParameters;
 
-    double[] movingShotVelocity = sub3(stationaryShotVelocity, scale3(shooterVelocity, 2));
+    double[] movingShotVelocity = sub3(stationaryShotVelocity, shooterVelocity);
     return launchParameters(movingShotVelocity, heading);
   }
 
@@ -242,11 +241,14 @@ public final class ShotGenerator {
 
   /**
    * Creates a new visualizer with input parameters calculated by the Shot Generator.
-   * 
+   *
    * @param drive the drivetrain subsystem
    * @return the configured visualizer.
    */
   public static ProjectileVisualizer createVisualizer(Drive drive) {
-    return configureVisualizer(FuelVisualizer.fromLaunchParameters(() -> movingLaunchParameters(drive.pose3d(), drive.fieldRelativeChassisSpeeds()), drive));
+    return configureVisualizer(
+        FuelVisualizer.fromLaunchParameters(
+            () -> movingLaunchParameters(drive.pose3d(), drive.fieldRelativeChassisSpeeds()),
+            drive));
   }
 }

@@ -12,9 +12,9 @@ import static org.sciborgs1155.lib.LoggingUtils.log;
 import static org.sciborgs1155.robot.Constants.DEADBAND;
 import static org.sciborgs1155.robot.Constants.FULL_SPEED_MULTIPLIER;
 import static org.sciborgs1155.robot.Constants.PERIOD;
+import static org.sciborgs1155.robot.Constants.Robot.ROBOT_TO_SHOOTER;
 import static org.sciborgs1155.robot.Constants.SLOW_SPEED_MULTIPLIER;
 import static org.sciborgs1155.robot.Constants.TUNING;
-import static org.sciborgs1155.robot.Constants.Robot.ROBOT_TO_SHOOTER;
 import static org.sciborgs1155.robot.drive.DriveConstants.MAX_ANGULAR_ACCEL;
 import static org.sciborgs1155.robot.drive.DriveConstants.MAX_SPEED;
 import static org.sciborgs1155.robot.drive.DriveConstants.TELEOP_ANGULAR_SPEED;
@@ -50,7 +50,6 @@ import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
 import org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer;
 import org.sciborgs1155.robot.commands.shooting.Shooting;
-import org.sciborgs1155.robot.commands.shooting.ShotGenerator;
 import org.sciborgs1155.robot.commands.shooting.TableGenerator;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.hood.Hood;
@@ -88,8 +87,7 @@ public class Robot extends CommandRobot {
   private final Shooting shooting = new Shooting(turret, hood, drive);
   @NotLogged private final SendableChooser<Command> autos = Autos.configureAutos(drive);
 
-  @NotLogged
-  private final ProjectileVisualizer fuelVisualizer = ShotGenerator.createVisualizer(drive);
+  @NotLogged private final ProjectileVisualizer fuelVisualizer = shooting.createVisualizer();
 
   @Logged private double speedMultiplier = FULL_SPEED_MULTIPLIER;
 
@@ -106,7 +104,10 @@ public class Robot extends CommandRobot {
   @Override
   public void robotPeriodic() {
     log("RobotModel/hopperOrigin", new Transform3d(), Transform3d.struct);
-    log("RobotModel/turretOrigin", new Transform3d(ROBOT_TO_SHOOTER, new Rotation3d(0, 0, turret.position())), Transform3d.struct);
+    log(
+        "RobotModel/turretOrigin",
+        new Transform3d(ROBOT_TO_SHOOTER, new Rotation3d(0, 0, turret.position())),
+        Transform3d.struct);
     log("RobotModel/intakeOrigin", new Transform3d(), Transform3d.struct);
     log("RobotModel/driveOrigin", drive.pose3d(), Pose3d.struct);
 
@@ -163,7 +164,7 @@ public class Robot extends CommandRobot {
       pdh.setSwitchableChannel(true);
     } else {
       DriverStation.silenceJoystickConnectionWarning(true);
-      
+
       fuelVisualizer.startSimulation();
       addPeriodic(fuelVisualizer::updateLogging, PERIOD);
     }
@@ -228,7 +229,9 @@ public class Robot extends CommandRobot {
         .onTrue(Commands.runOnce(() -> speedMultiplier = SLOW_SPEED_MULTIPLIER))
         .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
 
-    operator.a().whileTrue(fuelVisualizer.launchProjectiles().alongWith(shooting.runShooter()));
+    teleop().whileTrue(shooting.runShooter());
+
+    operator.a().whileTrue(fuelVisualizer.launchProjectiles());
     operator.b().onTrue(TableGenerator.loadTable());
     operator.x().onTrue(TableGenerator.createTable());
   }

@@ -251,7 +251,6 @@ public class TalonModule implements ModuleIO {
   }
 
   @Override
-  @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops") // SwerveModulePosition must be created per odometry sample
   public SwerveModulePosition[] odometryData() {
     SwerveModulePosition[] positions = new SwerveModulePosition[20];
     Drive.LOCK.lock();

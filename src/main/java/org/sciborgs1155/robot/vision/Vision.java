@@ -70,7 +70,8 @@ public class Vision {
    *
    * @param configs The camera configurations to use.
    */
-  @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops") // Each camera and estimator is unique per config
+  @SuppressWarnings(
+      "PMD.AvoidInstantiatingObjectsInLoops") // Each camera and estimator is unique per config
   public Vision(CameraConfig... configs) {
     cameras = new PhotonCamera[configs.length];
     estimators = new PhotonPoseEstimator[configs.length];

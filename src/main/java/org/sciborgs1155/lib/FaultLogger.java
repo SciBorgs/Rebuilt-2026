@@ -343,6 +343,7 @@ public final class FaultLogger {
    *
    * @param powerDistribution The power distribution to manage.
    */
+  @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops") // Fault is unique per field
   public static void register(PowerDistribution powerDistribution) {
     var fields = PowerDistributionFaults.class.getFields();
     for (Field fault : fields) {

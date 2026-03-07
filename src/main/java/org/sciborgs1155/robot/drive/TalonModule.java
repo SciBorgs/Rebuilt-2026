@@ -23,7 +23,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import java.util.Queue;
-import java.util.stream.IntStream;
 import org.sciborgs1155.lib.TalonUtils;
 import org.sciborgs1155.robot.drive.DriveConstants.ControlMode;
 import org.sciborgs1155.robot.drive.DriveConstants.FFConstants;
@@ -252,18 +251,16 @@ public class TalonModule implements ModuleIO {
   }
 
   @Override
+  @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops") // SwerveModulePosition must be created per odometry sample
   public SwerveModulePosition[] odometryData() {
     SwerveModulePosition[] positions = new SwerveModulePosition[20];
     Drive.LOCK.lock();
 
     var data = moduleOdometryData();
 
-    IntStream.range(0, data[0].length)
-        .forEach(
-            i ->
-                positions[i] =
-                    new SwerveModulePosition(
-                        data[0][i], Rotation2d.fromRotations(data[1][i])));
+    for (int i = 0; i < data[0].length; i++) {
+      positions[i] = new SwerveModulePosition(data[0][i], Rotation2d.fromRotations(data[1][i]));
+    }
 
     position.clear();
     rotation.clear();

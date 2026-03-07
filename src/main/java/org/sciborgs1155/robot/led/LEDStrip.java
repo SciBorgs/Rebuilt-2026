@@ -97,7 +97,7 @@ public class LEDStrip extends SubsystemBase implements AutoCloseable {
         .andThen(blink(Color.kAqua));
   }
 
-  /** A gradient of green to yellow LEDs, moving at 60 bpm, which synchronizes with many song. */
+  /** A gradient of green to yellow LEDs, moving at 60 bpm, which synchronizes with many songs. */
   public Command music() {
     return set(
         LEDPattern.gradient(LEDPattern.GradientType.kContinuous, Color.kGreen, Color.kYellow)

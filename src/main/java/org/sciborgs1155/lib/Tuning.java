@@ -401,6 +401,7 @@ public final class Tuning {
    *
    * @param entryList A list of DoubleEntries
    */
+  @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops") // ArrayList is only created for new topics
   public static void updateDoubles(List<DoubleEntry> entryList) {
     for (DoubleEntry doubleEntry : entryList) {
       String topicName = doubleEntry.getTopic().getName();
@@ -433,6 +434,7 @@ public final class Tuning {
    *
    * @param entryList A list of IntegerEntries
    */
+  @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops") // ArrayList is only created for new topics
   public static void updateInts(List<IntegerEntry> entryList) {
     for (IntegerEntry integerEntry : entryList) {
       String topicName = integerEntry.getTopic().getName();
@@ -466,6 +468,7 @@ public final class Tuning {
    *
    * @param entryList A list of StringEntries
    */
+  @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops") // ArrayList is only created for new topics
   public static void updateStrings(List<StringEntry> entryList) {
     for (StringEntry stringEntry : entryList) {
       String topicName = stringEntry.getTopic().getName();
@@ -499,6 +502,7 @@ public final class Tuning {
    *
    * @param entryList A list of BooleanEntries
    */
+  @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops") // ArrayList is only created for new topics
   public static void updateBooleans(List<BooleanEntry> entryList) {
     for (BooleanEntry booleanEntry : entryList) {
       String topicName = booleanEntry.getTopic().getName();

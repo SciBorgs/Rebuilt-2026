@@ -874,6 +874,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
   }
 
   @Override
+  @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops") // Transform2d must be created per module
   public void periodic() {
     // update our heading in reality / sim
     Tracer.startTrace("drive periodic");

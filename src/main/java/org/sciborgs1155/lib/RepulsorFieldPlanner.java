@@ -481,6 +481,7 @@ public class RepulsorFieldPlanner {
    * @param stepSizeM The step size in meters.
    * @return A list of Translation2d waypoints forming the trajectory.
    */
+  @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops") // Translation2d must be created per step
   public List<Translation2d> getTrajectory(
       Translation2d current, Translation2d goalTranslation, double stepSizeM) {
     pathLength = 0;

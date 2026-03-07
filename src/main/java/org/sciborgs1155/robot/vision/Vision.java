@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj.Timer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.stream.IntStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -71,24 +72,27 @@ public class Vision {
    * @param configs The camera configurations to use.
    */
   public Vision(CameraConfig... configs) {
-    cameras = new PhotonCamera[configs.length];
-    estimators = new PhotonPoseEstimator[configs.length];
-    estimatorStrategies = new PoseStrategy[configs.length];
+    cameras =
+        Arrays.stream(configs)
+            .map(c -> new PhotonCamera(c.name()))
+            .toArray(PhotonCamera[]::new);
+
+    estimators =
+        Arrays.stream(configs)
+            .map(c -> new PhotonPoseEstimator(TAG_LAYOUT, c.robotToCam()))
+            .toArray(PhotonPoseEstimator[]::new);
+
+    estimatorStrategies =
+        Arrays.stream(configs).map(CameraConfig::strategy).toArray(PoseStrategy[]::new);
+
     simCameras = new PhotonCameraSim[configs.length];
     lastResults = new PhotonPipelineResult[configs.length];
+    Arrays.setAll(lastResults, i -> new PhotonPipelineResult());
     filteredEstimates = new ArrayList<>();
     camerasEnabled = new HashMap<>();
 
-    for (int i = 0; i < configs.length; i++) {
-      PhotonCamera camera = new PhotonCamera(configs[i].name());
-      PhotonPoseEstimator estimator = new PhotonPoseEstimator(TAG_LAYOUT, configs[i].robotToCam());
-
-      cameras[i] = camera;
-      estimators[i] = estimator;
-      estimatorStrategies[i] = configs[i].strategy();
-      lastResults[i] = new PhotonPipelineResult();
+    for (PhotonCamera camera : cameras) {
       camerasEnabled.put(camera.getName(), true);
-
       FaultLogger.register(camera);
     }
 
@@ -96,23 +100,25 @@ public class Vision {
       visionSim = new VisionSystemSim("main");
       visionSim.addAprilTags(TAG_LAYOUT);
 
-      for (int i = 0; i < cameras.length; i++) {
-        var prop = new SimCameraProperties();
-        prop.setCalibration(WIDTH, HEIGHT, Rotation2d.fromDegrees(configs[i].FOV));
-        prop.setCalibError(0.15, 0.05);
-        prop.setFPS(45);
-        prop.setAvgLatencyMs(12);
-        prop.setLatencyStdDevMs(3.5);
+      IntStream.range(0, cameras.length)
+          .forEach(
+              i -> {
+                var prop = new SimCameraProperties();
+                prop.setCalibration(WIDTH, HEIGHT, Rotation2d.fromDegrees(configs[i].FOV));
+                prop.setCalibError(0.15, 0.05);
+                prop.setFPS(45);
+                prop.setAvgLatencyMs(12);
+                prop.setLatencyStdDevMs(3.5);
 
-        PhotonCameraSim cameraSim = new PhotonCameraSim(cameras[i], prop);
-        cameraSim.setMaxSightRange(5);
-        cameraSim.enableRawStream(true);
-        cameraSim.enableProcessedStream(true);
-        cameraSim.enableDrawWireframe(true);
+                PhotonCameraSim cameraSim = new PhotonCameraSim(cameras[i], prop);
+                cameraSim.setMaxSightRange(5);
+                cameraSim.enableRawStream(true);
+                cameraSim.enableProcessedStream(true);
+                cameraSim.enableDrawWireframe(true);
 
-        visionSim.addCamera(cameraSim, configs[i].robotToCam());
-        simCameras[i] = cameraSim;
-      }
+                visionSim.addCamera(cameraSim, configs[i].robotToCam());
+                simCameras[i] = cameraSim;
+              });
     }
   }
 

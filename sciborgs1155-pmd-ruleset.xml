@@ -95,9 +95,7 @@
     <exclude name="DoNotUseThreads" /> <!-- Need to use threads -->
   </rule>
 
-  <rule ref="category/java/performance.xml">
-    <exclude name="AvoidInstantiatingObjectsInLoops" /> <!-- We do this a lot and I think this is fine. Minimal performance effect. -->
-  </rule>
+  <rule ref="category/java/performance.xml" />
 
   <rule ref="category/java/security.xml" />
 

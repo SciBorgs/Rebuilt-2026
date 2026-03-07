@@ -47,6 +47,9 @@ import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.hood.Hood;
+import org.sciborgs1155.robot.hopper.Hopper;
+import org.sciborgs1155.robot.indexer.Indexer;
+import org.sciborgs1155.robot.intake.Intake;
 import org.sciborgs1155.robot.shooter.Shooter;
 import org.sciborgs1155.robot.slapdown.Slapdown;
 import org.sciborgs1155.robot.turret.Turret;
@@ -67,12 +70,15 @@ public class Robot extends CommandRobot {
   private final PowerDistribution pdh = new PowerDistribution();
 
   // SUBSYSTEMS
-  private final Drive drive = Drive.none();
+  private final Drive drive = Drive.create();
   private final Hood hood = Hood.create();
-  private final Vision vision = Vision.none();
+  private final Vision vision = Vision.create();
   private final Shooter shooter = Shooter.create();
   private final Turret turret = Turret.create();
   private final Slapdown slapdown = Slapdown.create();
+  private final Intake intake = Intake.create();
+  private final Indexer indexer = Indexer.create();
+  private final Hopper hopper = Hopper.create();
 
   // COMMANDS
   private final Alignment align = new Alignment(drive);

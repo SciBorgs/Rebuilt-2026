@@ -24,7 +24,7 @@ public class RealSlapdown implements SlapdownIO {
 
     TalonFXConfiguration motorConfig = new TalonFXConfiguration();
 
-    motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     motorConfig.CurrentLimits.SupplyCurrentLimit = CURRENT_LIMIT.in(Amps);
     motorConfig.Feedback.SensorToMechanismRatio = GEARING;
 

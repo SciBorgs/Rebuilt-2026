@@ -19,6 +19,7 @@ import org.sciborgs1155.robot.drive.Drive;
  *
  * @see Fuel
  */
+@SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
 public class FuelVisualizer extends ProjectileVisualizer {
   private double scoreTolerance = Hub.INNER_WIDTH / 2;
   private double scoreDepth;
@@ -35,7 +36,7 @@ public class FuelVisualizer extends ProjectileVisualizer {
         () -> launchTranslation(launchVelocity.get(), robotPose.get()),
         () -> launchVelocity.get(),
         () -> launchRotation(launchVelocity.get(), robotPose.get()),
-        () -> 2);
+        () -> 2); // PURELY COSMETIC
   }
 
   /**

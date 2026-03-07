@@ -89,7 +89,7 @@ public class Robot extends CommandRobot {
   private final ProjectileVisualizer fuelVisualizer =
       FuelVisualizer.fromLaunchParameters(() -> 10, () -> 1, () -> 0, drive)
           .configPhysics(true, true, false, false)
-          .configGeneration(0.05, 2, 200, 200)
+          .configGeneration(0.05, 2, 100, 100)
           .config(true, true);
 
   @Logged private double speedMultiplier = FULL_SPEED_MULTIPLIER;

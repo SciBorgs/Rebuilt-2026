@@ -7,7 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "BlueDepotMiddle.0"
+            "pathName": "BlueMiddleDepot.0"
           }
         },
         {
@@ -17,7 +17,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "BlueDepotMiddle.1"
+                  "pathName": "BlueMiddleDepot.1"
                 }
               },
               {
@@ -32,7 +32,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "BlueDepotMiddle.2"
+            "pathName": "BlueMiddleDepot.2"
           }
         },
         {
@@ -61,7 +61,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "BlueDepotMiddle.3"
+                  "pathName": "BlueMiddleDepot.3"
                 }
               },
               {
@@ -76,7 +76,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "BlueDepotMiddle.4"
+            "pathName": "BlueMiddleDepot.4"
           }
         }
       ]

@@ -7,7 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "BlueHPDoubleMiddle.0"
+            "pathName": "BlueHPMiddle.0"
           }
         },
         {
@@ -17,7 +17,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "BlueHPDoubleMiddle.1"
+                  "pathName": "BlueHPMiddle.1"
                 }
               },
               {
@@ -32,7 +32,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "BlueHPDoubleMiddle.2"
+            "pathName": "BlueHPMiddle.2"
           }
         },
         {
@@ -57,7 +57,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "BlueHPDoubleMiddle.3"
+            "pathName": "BlueHPMiddle.3"
           }
         },
         {
@@ -67,7 +67,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "BlueHPDoubleMiddle.4"
+                  "pathName": "BlueHPMiddle.4"
                 }
               },
               {
@@ -82,7 +82,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "BlueHPDoubleMiddle.5"
+            "pathName": "BlueHPMiddle.5"
           }
         },
         {

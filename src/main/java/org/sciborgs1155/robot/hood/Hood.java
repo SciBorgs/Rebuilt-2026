@@ -243,6 +243,14 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
     return new Test(testCommand, assertions);
   }
 
+  public Command goToTestCommand(Angle goal) {
+
+    Command testCommand = goTo(goal).until(this::atGoal).withTimeout(5);
+
+    return testCommand;
+    
+  }
+
   /** closes the hood */
   @Override
   public void close() throws Exception {

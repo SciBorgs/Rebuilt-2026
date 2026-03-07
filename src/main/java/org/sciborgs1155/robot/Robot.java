@@ -1,6 +1,7 @@
 package org.sciborgs1155.robot;
 
 import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
@@ -151,10 +152,8 @@ public class Robot extends CommandRobot {
         PERIOD);
   
     addPeriodic(() -> {
-      // -0.14006, -0.13983, -0.3286252
-      // 0.14006, 0.13983, 0.3286252
-      // 0,0,0
-      log("RobotModel/turretOrigin", new Transform3d(0,0,0, new Rotation3d(0,0,0)), Transform3d.struct);
+      log("RobotModel/turretOrigin", new Transform3d(0,0,0, new Rotation3d()), Transform3d.struct);
+      log("RobotModel/hoodOrigin", new Transform3d(0,0,0, new Rotation3d()), Transform3d.struct);
       log("RobotModel/hopperOrigin", new Transform3d(0,0,0, new Rotation3d()), Transform3d.struct);
       log("RobotModel/intakeOrigin", new Transform3d(0,0,0, new Rotation3d()), Transform3d.struct);
       log("RobotModel/driveOrigin", drive.pose3d(), Pose3d.struct);
@@ -232,7 +231,8 @@ public class Robot extends CommandRobot {
         .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
 
     operator.a().whileTrue(turret.sysIdTest(SysIdTestType.QUASISTATIC, edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction.kForward));
-      
+    operator.b().whileTrue(hood.goToTestCommand(Radians.of(2)));
+
     
 
     // TODO: Add any additional bindings.

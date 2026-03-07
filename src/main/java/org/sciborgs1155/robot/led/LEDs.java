@@ -52,7 +52,7 @@ public class LEDs implements AutoCloseable {
     return tempStrip.solid(color);
   }
 
-    /** Sets all LEDStrips to scrolling a given color. */
+  /** Sets all LEDStrips to scrolling a given color. */
   public Command scroll(Color color) {
     return tempStrip.scrolling(color);
   }

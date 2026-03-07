@@ -263,7 +263,10 @@ public class Robot extends CommandRobot {
                         Degrees.of(2).in(Radians))));
 
     // CLIMB
-    operator.y().whileTrue(climb.extend().alongWith(leds.scroll(Color.kRed))).onFalse(climb.retract().alongWith(leds.solid(Color.kRed)));
+    operator
+        .y()
+        .whileTrue(climb.extend().alongWith(leds.scroll(Color.kRed)))
+        .onFalse(climb.retract().alongWith(leds.solid(Color.kRed)));
 
     // DEBUG
     // im on the wrong branch arent i

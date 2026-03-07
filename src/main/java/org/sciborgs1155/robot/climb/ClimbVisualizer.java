@@ -21,6 +21,7 @@ public class ClimbVisualizer {
    * @param name The name of the mechanism
    * @param color The color the mechanism will show up as in the sim
    */
+  @SuppressWarnings("PMD.CloseResource") // chassis is owned by mech
   public ClimbVisualizer(String name, Color8Bit color) {
     this.name = name;
     mech = new Mechanism2d(50, 50);

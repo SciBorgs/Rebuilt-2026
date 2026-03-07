@@ -186,7 +186,8 @@ public interface InputStream extends DoubleSupplier {
    * @param key The NetworkTables key to publish to.
    * @return A stream with the same output as this one.
    */
-  @SuppressWarnings("PMD.CloseResource") // publisher is intentionally captured in the returned lambda
+  @SuppressWarnings(
+      "PMD.CloseResource") // publisher is intentionally captured in the returned lambda
   default InputStream log(String key) {
     DoublePublisher pub = NetworkTableInstance.getDefault().getDoubleTopic(key).publish();
     return () -> {

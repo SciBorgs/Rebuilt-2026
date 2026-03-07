@@ -31,64 +31,71 @@ public class FaultLoggerTest {
   @Test
   void report() {
     NetworkTable base = NetworkTableInstance.getDefault().getTable("Faults");
-    var activeInfos =
-        base.getSubTable("Active Faults").getStringArrayTopic("infos").subscribe(new String[10]);
-    var totalErrors =
-        base.getSubTable("Total Faults").getStringArrayTopic("errors").subscribe(new String[10]);
-    FaultLogger.update();
-    FaultLogger.report("Test", "Example", FaultType.INFO);
-    assertEquals(1, FaultLogger.activeFaults().size());
-    FaultLogger.update();
-    assertEquals(1, FaultLogger.totalFaults().size());
-    assertEquals(1, activeInfos.get().length);
-    assertEquals(0, totalErrors.get().length);
+    try (var activeInfos =
+            base.getSubTable("Active Faults").getStringArrayTopic("infos").subscribe(new String[10]);
+        var totalErrors =
+            base.getSubTable("Total Faults")
+                .getStringArrayTopic("errors")
+                .subscribe(new String[10])) {
+      FaultLogger.update();
+      FaultLogger.report("Test", "Example", FaultType.INFO);
+      assertEquals(1, FaultLogger.activeFaults().size());
+      FaultLogger.update();
+      assertEquals(1, FaultLogger.totalFaults().size());
+      assertEquals(1, activeInfos.get().length);
+      assertEquals(0, totalErrors.get().length);
 
-    // duplicate
-    FaultLogger.report("Test", "Example", FaultType.INFO);
-    assertEquals(1, FaultLogger.activeFaults().size());
-    FaultLogger.update();
-    assertEquals(1, FaultLogger.totalFaults().size());
-    assertEquals(1, activeInfos.get().length);
-    assertEquals(0, totalErrors.get().length);
+      // duplicate
+      FaultLogger.report("Test", "Example", FaultType.INFO);
+      assertEquals(1, FaultLogger.activeFaults().size());
+      FaultLogger.update();
+      assertEquals(1, FaultLogger.totalFaults().size());
+      assertEquals(1, activeInfos.get().length);
+      assertEquals(0, totalErrors.get().length);
 
-    FaultLogger.report("Test2", "Example2", FaultType.ERROR);
-    assertEquals(1, FaultLogger.activeFaults().size());
-    FaultLogger.update();
-    assertEquals(2, FaultLogger.totalFaults().size());
-    assertEquals(0, activeInfos.get().length);
-    assertEquals(1, totalErrors.get().length);
+      FaultLogger.report("Test2", "Example2", FaultType.ERROR);
+      assertEquals(1, FaultLogger.activeFaults().size());
+      FaultLogger.update();
+      assertEquals(2, FaultLogger.totalFaults().size());
+      assertEquals(0, activeInfos.get().length);
+      assertEquals(1, totalErrors.get().length);
+    }
   }
 
   @Test
   void register() {
     NetworkTable base = NetworkTableInstance.getDefault().getTable("Faults");
-    var activeErrors =
-        base.getSubTable("Active Faults").getStringArrayTopic("errors").subscribe(new String[10]);
-    var totalErrors =
-        base.getSubTable("Total Faults").getStringArrayTopic("errors").subscribe(new String[10]);
+    try (var activeErrors =
+            base.getSubTable("Active Faults")
+                .getStringArrayTopic("errors")
+                .subscribe(new String[10]);
+        var totalErrors =
+            base.getSubTable("Total Faults")
+                .getStringArrayTopic("errors")
+                .subscribe(new String[10])) {
+      FaultLogger.update();
+      FaultLogger.register(() -> true, "Recurring Test", "Idk", FaultType.ERROR);
+      FaultLogger.update();
+      FaultLogger.update();
 
-    FaultLogger.update();
-    FaultLogger.register(() -> true, "Recurring Test", "Idk", FaultType.ERROR);
-    FaultLogger.update();
-    FaultLogger.update();
-
-    assertEquals(1, activeErrors.get().length);
-    assertEquals(1, totalErrors.get().length);
+      assertEquals(1, activeErrors.get().length);
+      assertEquals(1, totalErrors.get().length);
+    }
   }
 
   @Test
   void registerSpark() {
-    SparkFlex spark = new SparkFlex(10, MotorType.kBrushless);
-    FaultLogger.register(spark);
-    spark.close();
+    try (SparkFlex spark = new SparkFlex(10, MotorType.kBrushless)) {
+      FaultLogger.register(spark);
+    }
   }
 
   @SuppressWarnings({"PMD.SystemPrintln"})
   @Test
   void registerTalon() {
     System.out.println("--- The test is about to complain. This is good. ---");
-    TalonFX talon = new TalonFX(10);
-    FaultLogger.register(talon);
-    talon.close();
+    try (TalonFX talon = new TalonFX(10)) {
+      FaultLogger.register(talon);
+    }
   }
 }

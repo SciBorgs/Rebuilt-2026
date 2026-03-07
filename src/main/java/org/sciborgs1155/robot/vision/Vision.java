@@ -70,6 +70,7 @@ public class Vision {
    *
    * @param configs The camera configurations to use.
    */
+  @SuppressWarnings("PMD.CloseResource") // camera and cameraSim are stored in the class arrays
   public Vision(CameraConfig... configs) {
     cameras = new PhotonCamera[configs.length];
     estimators = new PhotonPoseEstimator[configs.length];

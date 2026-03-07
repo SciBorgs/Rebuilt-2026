@@ -23,6 +23,7 @@ public class HoodVisualizer {
    * @param hoodColor color of the hood
    * @param fuelTrajColor color of the line depicting the fuel trajectory
    */
+  @SuppressWarnings("PMD.CloseResource") // chassis is owned by mech
   public HoodVisualizer(String name, Color8Bit hoodColor, Color8Bit fuelTrajColor) {
     this.name = name;
     mech = new Mechanism2d(100, 100);

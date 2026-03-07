@@ -219,6 +219,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
   }
 
   /** A swerve drive subsystem containing four {@link ModuleIO} modules and a gyroscope. */
+  @SuppressWarnings("PMD.CloseResource") // modules are stored in the class; Drive owns them
   public Drive(
       GyroIO gyro, ModuleIO frontLeft, ModuleIO frontRight, ModuleIO rearLeft, ModuleIO rearRight) {
     // Swerve drive bits
@@ -874,6 +875,8 @@ public class Drive extends SubsystemBase implements AutoCloseable {
   }
 
   @Override
+  @SuppressWarnings(
+      "PMD.CloseResource") // module is a reference to an element in modules; Drive owns it
   public void periodic() {
     // update our heading in reality / sim
     Tracer.startTrace("drive periodic");

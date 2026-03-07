@@ -33,6 +33,7 @@ public final class UnitTestingUtil {
    *
    * @param subsystems All subsystems that need to be closed
    */
+  @SuppressWarnings("PMD.CloseResource") // subsystems are passed in from caller; caller owns them
   public static void reset(AutoCloseable... subsystems) throws Exception {
     CommandScheduler.getInstance().unregisterAllSubsystems();
     CommandScheduler.getInstance().cancelAll();

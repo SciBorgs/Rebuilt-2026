@@ -23,60 +23,55 @@ public class TuningTest {
 
   @Test
   void fullEntryTest() {
-    DoubleEntry dbleEnt;
-    IntegerEntry intEnt;
-    StringEntry strEnt;
-    BooleanEntry boolEnt;
-
     double dbleVal = 2.0;
     long intVal = 7823; // IntgerTopic.getEntry() accepts longs for default values
     String strVal = "Hello, World! <3";
     boolean boolVal = true;
 
-    dbleEnt = Tuning.entry("/Robot/a", dbleVal);
-    intEnt = Tuning.entry("/Robot/b", intVal);
-    strEnt = Tuning.entry("/Robot/c", strVal);
-    boolEnt = Tuning.entry("/Robot/d", boolVal);
+    try (DoubleEntry dbleEnt = Tuning.entry("/Robot/a", dbleVal);
+        IntegerEntry intEnt = Tuning.entry("/Robot/b", intVal);
+        StringEntry strEnt = Tuning.entry("/Robot/c", strVal);
+        BooleanEntry boolEnt = Tuning.entry("/Robot/d", boolVal)) {
+      assertEquals(dbleVal, dbleEnt.get());
+      assertEquals(intVal, intEnt.get());
+      assertEquals(strVal, strEnt.get());
+      assertEquals(boolVal, boolEnt.get());
 
-    assertEquals(dbleVal, dbleEnt.get());
-    assertEquals(intVal, intEnt.get());
-    assertEquals(strVal, strEnt.get());
-    assertEquals(boolVal, boolEnt.get());
+      Tuning.put(dbleEnt.getTopic(), 1155.2265);
+      Tuning.put(intEnt.getTopic(), 2612668);
+      Tuning.put(strEnt.getTopic(), "como estas");
+      Tuning.put(boolEnt.getTopic(), false);
 
-    Tuning.put(dbleEnt.getTopic(), 1155.2265);
-    Tuning.put(intEnt.getTopic(), 2612668);
-    Tuning.put(strEnt.getTopic(), "como estas");
-    Tuning.put(boolEnt.getTopic(), false);
+      assertEquals(1155.2265, dbleEnt.get());
+      assertEquals(2612668, intEnt.get());
+      assertEquals("como estas", strEnt.get());
+      assertFalse(boolEnt.get());
 
-    assertEquals(1155.2265, dbleEnt.get());
-    assertEquals(2612668, intEnt.get());
-    assertEquals("como estas", strEnt.get());
-    assertFalse(boolEnt.get());
+      List<Double> doubleList = new ArrayList<>();
+      doubleList.add(dbleVal);
+      doubleList.add(1155.2265);
 
-    List<Double> doubleList = new ArrayList<>();
-    doubleList.add(dbleVal);
-    doubleList.add(1155.2265);
+      List<Long> intList = new ArrayList<>();
+      intList.add(intVal);
+      intList.add((long) 2612668);
 
-    List<Long> intList = new ArrayList<>();
-    intList.add(intVal);
-    intList.add((long) 2612668);
+      List<String> strList = new ArrayList<>();
+      strList.add(strVal);
+      strList.add("como estas");
 
-    List<String> strList = new ArrayList<>();
-    strList.add(strVal);
-    strList.add("como estas");
+      List<Boolean> boolList = new ArrayList<>();
+      boolList.add(boolVal);
+      boolList.add(false);
 
-    List<Boolean> boolList = new ArrayList<>();
-    boolList.add(boolVal);
-    boolList.add(false);
+      assertEquals(doubleList, Tuning.recentChanges(dbleEnt.getTopic()));
+      assertEquals(intList, Tuning.recentChanges(intEnt.getTopic()));
+      assertEquals(strList, Tuning.recentChanges(strEnt.getTopic()));
+      assertEquals(boolList, Tuning.recentChanges(boolEnt.getTopic()));
 
-    assertEquals(doubleList, Tuning.recentChanges(dbleEnt.getTopic()));
-    assertEquals(intList, Tuning.recentChanges(intEnt.getTopic()));
-    assertEquals(strList, Tuning.recentChanges(strEnt.getTopic()));
-    assertEquals(boolList, Tuning.recentChanges(boolEnt.getTopic()));
-
-    assertEquals(doubleList.get(1), Tuning.recentChanges(dbleEnt.getTopic(), 1).get(0));
-    assertEquals(intList.get(1), Tuning.recentChanges(intEnt.getTopic(), 1).get(0));
-    assertEquals(strList.get(1), Tuning.recentChanges(strEnt.getTopic(), 1).get(0));
-    assertEquals(boolList.get(1), Tuning.recentChanges(boolEnt.getTopic(), 1).get(0));
+      assertEquals(doubleList.get(1), Tuning.recentChanges(dbleEnt.getTopic(), 1).get(0));
+      assertEquals(intList.get(1), Tuning.recentChanges(intEnt.getTopic(), 1).get(0));
+      assertEquals(strList.get(1), Tuning.recentChanges(strEnt.getTopic(), 1).get(0));
+      assertEquals(boolList.get(1), Tuning.recentChanges(boolEnt.getTopic(), 1).get(0));
+    }
   }
 }

@@ -54,6 +54,8 @@ public final class TalonUtils {
    * @param fileName The path of the file to play.
    * @return Whether loading the file was successful.
    */
+  @SuppressWarnings(
+      "PMD.CloseResource") // talon is a reference to an element in TALONS; TALONS owns it
   public static boolean configureOrchestra(String fileName) {
     AudioConfigs audioCfg = new AudioConfigs().withAllowMusicDurDisable(true);
     for (TalonFX talon : TALONS) {

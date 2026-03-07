@@ -203,7 +203,14 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
   public Test goToTest(DoubleSupplier goal) {
     Command testCommand = goTo(goal).until(this::atGoal).withTimeout(5);
     Set<Assertion> assertions =
-        Set.of(tAssert(this::atGoal, "Turret system check", () -> "turret not at goal"));
+        Set.of(
+            tAssert(
+                this::atGoal,
+                "Turret system check",
+                () ->
+                    String.format(
+                        "Turret not at goal: current=%.3f rad, goal=%.3f rad, tolerance=%.3f rad",
+                        hardware.position(), goal.getAsDouble(), TOLERANCE.in(Radians))));
     return new Test(testCommand, assertions);
   }
 

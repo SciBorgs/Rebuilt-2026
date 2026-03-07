@@ -50,11 +50,15 @@ public class Shooting {
     return Commands.parallel(
         updateLaunchParameters(),
         turret.goTo(() -> launchParameters[YAW]),
-        hood.goToShootingAngle(() -> launchParameters[PITCH]));
+        hood.goTo(() -> Math.PI / 2 - launchParameters[PITCH]));
   }
 
   public ProjectileVisualizer createVisualizer() {
     return ShotGenerator.configureVisualizer(
-        FuelVisualizer.fromLaunchParameters(() -> launchParameters, drive));
+        FuelVisualizer.fromLaunchParameters(
+            () -> launchParameters[SPEED],
+            () -> Math.PI / 2 - hood.angle(),
+            () -> turret.position(),
+            drive));
   }
 }

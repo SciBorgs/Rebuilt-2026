@@ -49,6 +49,7 @@ import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
 import org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer;
+import org.sciborgs1155.robot.commands.shooting.ShooterAnalyzer;
 import org.sciborgs1155.robot.commands.shooting.Shooting;
 import org.sciborgs1155.robot.commands.shooting.TableGenerator;
 import org.sciborgs1155.robot.drive.Drive;
@@ -85,9 +86,12 @@ public class Robot extends CommandRobot {
   // COMMANDS
   private final Alignment align = new Alignment(drive);
   private final Shooting shooting = new Shooting(turret, hood, drive);
+  private final ShooterAnalyzer shooterLogger = new ShooterAnalyzer(shooter);
   @NotLogged private final SendableChooser<Command> autos = Autos.configureAutos(drive);
 
-  @NotLogged private final ProjectileVisualizer fuelVisualizer = shooting.createVisualizer();
+  @NotLogged
+  private final ProjectileVisualizer fuelVisualizer =
+      shooting.createVisualizer().configGeneration(0.05, 10, 100, 100);
 
   @Logged private double speedMultiplier = FULL_SPEED_MULTIPLIER;
 
@@ -233,6 +237,8 @@ public class Robot extends CommandRobot {
 
     operator.a().whileTrue(fuelVisualizer.launchProjectiles());
     operator.b().onTrue(TableGenerator.loadTable());
+    operator.x().onTrue(shooterLogger.startLogging());
+    operator.y().onTrue(shooterLogger.endLogging());
   }
 
   /**

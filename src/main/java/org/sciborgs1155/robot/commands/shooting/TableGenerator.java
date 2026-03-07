@@ -50,7 +50,7 @@ public final class TableGenerator {
       LoggingUtils.log("Shooting/Entries Generated", 0);
       BufferedWriter fileWriter =
           Files.newBufferedWriter(
-              Paths.get("resources/" + tableName + ".txt"), StandardCharsets.UTF_8);
+              Paths.get("resources/shooting" + tableName + ".ankit"), StandardCharsets.UTF_8);
 
       int tableIndex = 0;
       for (double distance = minDistance; distance < maxDistance; distance += increment) {
@@ -93,7 +93,7 @@ public final class TableGenerator {
       Tracer.startTrace("lookup table loading");
       LoggingUtils.log("Shooting/Entries Loaded", 0);
       Scanner fileScanner =
-          new Scanner(new File("resources/" + tableName + ".txt"), StandardCharsets.UTF_8);
+          new Scanner(new File("resources/shooting" + tableName + ".ankit"), StandardCharsets.UTF_8);
 
       int tableIndex = 0;
       while (tableIndex < MAX_TABLE_SIZE && fileScanner.hasNext()) {

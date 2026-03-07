@@ -25,9 +25,9 @@ public final class VisionConstants {
   /** TODO: Create cameras with updated constants; be sure to add in {@link Vision#create} */
   // WARNING: EMPTY TRANSFORMS WILL CRASH SIMULATION UPON TAG DETECTION
   // TODO: actually add camera positions, figure out if its actually 148 fov
-  public static final CameraConfig CAMERA_0 =
+  public static final CameraConfig FL_CAMERA = // CAMERA 0
       new CameraConfig(
-          "cam 0 RENAME",
+          "FL cam",
           78,
           new Transform3d(
               Inches.of(11.265),
@@ -36,9 +36,9 @@ public final class VisionConstants {
               yawPitchRoll(90, -20, 180)),
           PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
 
-  public static final CameraConfig CAMERA_1 =
+  public static final CameraConfig FR_CAMERA = // CAMERA 1
       new CameraConfig(
-          "cam 1 RENAME",
+          "FR cam",
           78,
           new Transform3d(
               Inches.of(11.265),
@@ -47,32 +47,26 @@ public final class VisionConstants {
               yawPitchRoll(-90, -20, 180)),
           PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
 
-  public static final CameraConfig CAMERA_2 =
+  public static final CameraConfig F_CAMERA = // CAMERA 4
       new CameraConfig(
-          "cam 2 RENAME",
+          "indexer cam",
           78,
-          new Transform3d(Inches.of(1), Inches.of(1), Inches.of(1), yawPitchRoll(0, 0, 180)),
+          new Transform3d(
+              Inches.of(13.327756),
+              Inches.of(2.755270),
+              Inches.of(10.815961),
+              yawPitchRoll(0, 0, 180)),
           PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
 
-  public static final CameraConfig CAMERA_3 =
+  public static final CameraConfig B_CAMERA = // CAMERA 2
       new CameraConfig(
-          "cam 3 RENAME",
+          "intake cam",
           78,
-          new Transform3d(Inches.of(1), Inches.of(1), Inches.of(1), yawPitchRoll(0, 0, 180)),
-          PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
-
-  public static final CameraConfig CAMERA_4 =
-      new CameraConfig(
-          "cam 4 RENAME",
-          78,
-          new Transform3d(Inches.of(1), Inches.of(1), Inches.of(1), yawPitchRoll(0, 0, 180)),
-          PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
-
-  public static final CameraConfig CAMERA_5 =
-      new CameraConfig(
-          "cam 5 RENAME",
-          78,
-          new Transform3d(Inches.of(1), Inches.of(1), Inches.of(1), yawPitchRoll(0, 0, 180)),
+          new Transform3d(
+              Inches.of(1.827756),
+              Inches.of(-3.312500),
+              Inches.of(20.928461),
+              yawPitchRoll(180, 0, 180)),
           PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
 
   // Camera constants for our configuration

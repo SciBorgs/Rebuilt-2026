@@ -42,9 +42,9 @@ import org.sciborgs1155.robot.Constants;
  */
 @SuppressWarnings({
   "PMD.GodClass",
-  "PMD.UseConcurrentHashMap",
-  "PMD.AvoidInstantiatingObjectsInLoops"
-}) // Not sure if there are concurrent accesses
+  "PMD.UseConcurrentHashMap", // Not sure if there are concurrent accesses
+  "PMD.AvoidInstantiatingObjectsInLoops" // ArrayList instances must be created per-iteration
+})
 public final class Tuning {
   /* HashMap of values of each topic path */
   private static final Map<String, List<Double>> DOUBLE_HASH = new HashMap<>();

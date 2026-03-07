@@ -1,4 +1,11 @@
 {
+  "HALProvider": {
+    "Addressable LEDs": {
+      "window": {
+        "visible": true
+      }
+    }
+  },
   "NTProvider": {
     "types": {
       "/FMSInfo": "FMSInfo",
@@ -10,6 +17,8 @@
       "/SmartDashboard/Drive Field": "Field2d",
       "/SmartDashboard/PathPlanner": "Alerts",
       "/SmartDashboard/PhotonAlerts": "Alerts",
+      "/SmartDashboard/Robot/climb/measurement visualizer": "Mechanism2d",
+      "/SmartDashboard/Robot/climb/setpoint visualizer": "Mechanism2d",
       "/SmartDashboard/Robot/hood/dynamic backward": "Command",
       "/SmartDashboard/Robot/hood/dynamic forward": "Command",
       "/SmartDashboard/Robot/hood/quasistatic backward": "Command",
@@ -36,18 +45,16 @@
       "/SmartDashboard/shooter top dynamic forward": "Command",
       "/SmartDashboard/shooter top quasistatic backward": "Command",
       "/SmartDashboard/shooter top quasistatic forward": "Command",
+      "Robot/climb/pid": "ProfiledPIDController",
       "Robot/drive/rotationController": "PIDController",
       "Robot/drive/translationController": "ProfiledPIDController",
       "Robot/hood/fb": "ProfiledPIDController",
       "Robot/shooter/controller": "PIDController",
       "Robot/slapdown/pid": "ProfiledPIDController",
-      "Robot/shooter/controller": "PIDController"
+      "Robot/turret/controller": "ProfiledPIDController"
     },
     "windows": {
       "/Robot/drive/field2d": {
-        "bottom": 1914,
-        "height": 8.069275856018066,
-        "left": 245,
         "bottom": 1914,
         "height": 8.069275856018066,
         "left": 245,
@@ -87,6 +94,16 @@
           "visible": true
         }
       },
+      "/SmartDashboard/Robot/climb/measurement visualizer": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/Robot/climb/setpoint visualizer": {
+        "window": {
+          "visible": true
+        }
+      },
       "/SmartDashboard/TurretVisualizer": {
         "window": {
           "visible": true
@@ -99,16 +116,6 @@
         "right": 3942,
         "top": 118,
         "width": 16.54119300842285,
-        "window": {
-          "visible": true
-        }
-      },
-      "/SmartDashboard/Robot/climb/measurement visualizer": {
-        "window": {
-          "visible": true
-        }
-      },
-      "/SmartDashboard/Robot/climb/setpoint visualizer": {
         "window": {
           "visible": true
         }
@@ -144,7 +151,7 @@
             0.0,
             0.8500000238418579
           ],
-          "height": 578,
+          "height": 0,
           "series": [
             {
               "color": [

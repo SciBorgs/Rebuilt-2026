@@ -1,6 +1,8 @@
 package org.sciborgs1155.robot;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
@@ -9,15 +11,11 @@ import static edu.wpi.first.wpilibj2.command.button.RobotModeTriggers.disabled;
 import static edu.wpi.first.wpilibj2.command.button.RobotModeTriggers.teleop;
 import static edu.wpi.first.wpilibj2.command.button.RobotModeTriggers.test;
 import static org.sciborgs1155.lib.LoggingUtils.log;
-import static org.sciborgs1155.robot.Constants.DEADBAND;
-import static org.sciborgs1155.robot.Constants.FULL_SPEED_MULTIPLIER;
-import static org.sciborgs1155.robot.Constants.PERIOD;
-import static org.sciborgs1155.robot.Constants.ROBOT_TYPE;
-import static org.sciborgs1155.robot.Constants.SLOW_SPEED_MULTIPLIER;
-import static org.sciborgs1155.robot.Constants.TUNING;
+import static org.sciborgs1155.robot.Constants.*;
 import static org.sciborgs1155.robot.drive.DriveConstants.MAX_ANGULAR_ACCEL;
 import static org.sciborgs1155.robot.drive.DriveConstants.MAX_SPEED;
 import static org.sciborgs1155.robot.drive.DriveConstants.TELEOP_ANGULAR_SPEED;
+import static org.sciborgs1155.robot.turret.TurretConstants.FULL_ANGLE_RANGE;
 
 import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.epilogue.Epilogue;
@@ -31,6 +29,7 @@ import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -44,10 +43,14 @@ import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.lib.Tracer;
 import org.sciborgs1155.robot.Ports.OI;
+import org.sciborgs1155.robot.climb.Climb;
 import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.hood.Hood;
+import org.sciborgs1155.robot.indexer.Indexer;
+import org.sciborgs1155.robot.intake.Intake;
+import org.sciborgs1155.robot.led.LEDs;
 import org.sciborgs1155.robot.shooter.Shooter;
 import org.sciborgs1155.robot.slapdown.Slapdown;
 import org.sciborgs1155.robot.turret.Turret;
@@ -69,10 +72,14 @@ public class Robot extends CommandRobot {
 
   // SUBSYSTEMS
   private final Drive drive = Drive.create();
-  private final Hood hood = Hood.create();
   private final Vision vision = Vision.create();
-  private final Shooter shooter = Shooter.create();
+  private final Intake intake = Intake.create();
+  private final Indexer indexer = Indexer.create();
   private final Turret turret = Turret.create();
+  private final Hood hood = Hood.create();
+  private final Shooter shooter = Shooter.create();
+  private final Climb climb = Climb.none();
+  private final LEDs leds = LEDs.create();
 
   // COMMANDS
   private final Alignment align = new Alignment(drive);
@@ -210,14 +217,57 @@ public class Robot extends CommandRobot {
 
     test().whileTrue(systemsCheck());
 
-    driver.b().whileTrue(drive.zeroHeading());
+    driver.povUp().whileTrue(drive.zeroHeading());
+    // driver
+    //     .leftBumper()
+    //     .or(driver.rightBumper())
+    //     .onTrue(Commands.runOnce(() -> speedMultiplier = SLOW_SPEED_MULTIPLIER))
+    //     .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
+
+    // INTAKE TOGGLE
+    driver.a().toggleOnTrue(slapdown.extend().alongWith(intake.intake()));
+
+    // FEED CONTINUOUS (LEFT SIDE)
     driver
         .leftBumper()
-        .or(driver.rightBumper())
-        .onTrue(Commands.runOnce(() -> speedMultiplier = SLOW_SPEED_MULTIPLIER))
-        .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
+        .whileTrue(
+            Commands.run(() -> {})
+                .alongWith(
+                    leds.error(
+                        () ->
+                            (turret.position() - turret.setpoint()) / FULL_ANGLE_RANGE.in(Radians),
+                        Degrees.of(2).in(Radians))));
 
-    // TODO: Add any additional bindings.
+    // FEED CONTINUOUS (RIGHT SIDE)
+    driver
+        .rightBumper()
+        .whileTrue(
+            Commands.run(() -> {})
+                .alongWith(
+                    Commands.none(),
+                    leds.error(
+                        () ->
+                            (turret.position() - turret.setpoint()) / FULL_ANGLE_RANGE.in(Radians),
+                        Degrees.of(2).in(Radians))));
+
+    // SCORE CONTINUOUS
+    driver
+        .rightTrigger()
+        .whileTrue(
+            Commands.run(() -> {})
+                .alongWith(
+                    Commands.none(),
+                    leds.error(
+                        () ->
+                            (turret.position() - turret.setpoint()) / FULL_ANGLE_RANGE.in(Radians),
+                        Degrees.of(2).in(Radians))));
+
+    // CLIMB
+    operator.y().whileTrue(climb.extend().alongWith(leds.scroll(Color.kRed))).onFalse(climb.retract().alongWith(leds.solid(Color.kRed)));
+
+    // DEBUG
+    // im on the wrong branch arent i
+
   }
 
   /**

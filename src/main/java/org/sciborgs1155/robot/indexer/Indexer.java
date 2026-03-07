@@ -82,7 +82,7 @@ public final class Indexer extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * @return runs indexer withno power
+   * @return runs indexer with no power
    */
   public Command stop() {
     return runIndexer(0);

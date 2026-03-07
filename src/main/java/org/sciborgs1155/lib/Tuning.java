@@ -180,8 +180,9 @@ public final class Tuning {
    * @param value The value that you want to put under the topic.
    */
   public static void put(DoubleTopic subtopic, double value) {
-    DoublePublisher dblePub = subtopic.publish();
-    dblePub.accept(value);
+    try (DoublePublisher dblePub = subtopic.publish()) {
+      dblePub.accept(value);
+    }
 
     List<Double> arrayList = new ArrayList<>();
     if (DOUBLE_HASH.get(subtopic.getName()) != null) {
@@ -203,8 +204,9 @@ public final class Tuning {
    * @param value The value that you want to put under the topic.
    */
   public static void put(IntegerTopic subtopic, long value) {
-    IntegerPublisher intPub = subtopic.publish();
-    intPub.accept(value);
+    try (IntegerPublisher intPub = subtopic.publish()) {
+      intPub.accept(value);
+    }
 
     List<Long> arrayList = new ArrayList<>();
     if (INT_HASH.get(subtopic.getName()) != null) {
@@ -226,8 +228,9 @@ public final class Tuning {
    * @param value The value that you want to put under the topic.
    */
   public static void put(StringTopic subtopic, String value) {
-    StringPublisher strPub = subtopic.publish();
-    strPub.accept(value);
+    try (StringPublisher strPub = subtopic.publish()) {
+      strPub.accept(value);
+    }
 
     List<String> arrayList = new ArrayList<>();
     if (STRING_HASH.get(subtopic.getName()) != null) {
@@ -249,8 +252,9 @@ public final class Tuning {
    * @param value The value that you want to put under the topic.
    */
   public static void put(BooleanTopic subtopic, Boolean value) {
-    BooleanPublisher boolPub = subtopic.publish();
-    boolPub.accept(value);
+    try (BooleanPublisher boolPub = subtopic.publish()) {
+      boolPub.accept(value);
+    }
 
     List<Boolean> arrayList = new ArrayList<>();
     if (BOOLEAN_HASH.get(subtopic.getName()) != null) {

@@ -173,6 +173,7 @@ public final class Tracer {
       return gcTime;
     }
 
+    @SuppressWarnings("PMD.CloseResource") // publisher is intentionally stored in mPublishers for reuse
     private void endCycle() {
       if (mDisabled != mDisableNextCycle || mCyclePoisoned) {
         // Gives publishers empty times,

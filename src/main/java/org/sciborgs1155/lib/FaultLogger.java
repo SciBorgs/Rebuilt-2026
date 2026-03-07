@@ -11,6 +11,7 @@ import edu.wpi.first.hal.PowerDistributionFaults;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringArrayPublisher;
+import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.PowerDistribution;
@@ -80,6 +81,7 @@ public final class FaultLogger {
   /** A class to represent an alerts widget on NetworkTables */
   public static class Alerts {
     private final NetworkTable table;
+    private final StringPublisher type;
     private StringArrayPublisher errors;
     private StringArrayPublisher warnings;
     private StringArrayPublisher infos;
@@ -92,7 +94,8 @@ public final class FaultLogger {
      */
     public Alerts(NetworkTable base, String name) {
       table = base.getSubTable(name);
-      table.getStringTopic(".type").publish().set("Alerts");
+      type = table.getStringTopic(".type").publish();
+      type.set("Alerts");
       errors = table.getStringArrayTopic("errors").publish();
       warnings = table.getStringArrayTopic("warnings").publish();
       infos = table.getStringArrayTopic("infos").publish();

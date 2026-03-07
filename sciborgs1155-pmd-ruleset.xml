@@ -85,8 +85,6 @@
   <rule ref="category/java/errorprone.xml">
     <exclude name="AvoidCatchingGenericException" /> <!-- Used a lot in lock context. I'll stay far away -->
     <exclude name="AvoidFieldNameMatchingMethodName" /> <!-- Violated often -->
-    <exclude name="CloseResource" /> <!-- Many violations exist currently. We may want to do something about this
-      to prevent resource leaks. -->
     <exclude name="ConstructorCallsOverridableMethod" /> <!-- This is used often in subsystem construction -->
   </rule>
 

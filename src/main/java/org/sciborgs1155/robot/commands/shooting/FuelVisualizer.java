@@ -29,34 +29,13 @@ public class FuelVisualizer extends ProjectileVisualizer {
    *
    * @param launchVelocity a supplier that provides the velocity of the FUEL at launch time
    * @param robotPose a supplier that provides the pose of the robot at launch time
-   * @param robotVelocity a supplier that provides the velocity of the robot at launch time
    */
-  protected FuelVisualizer(
-      Supplier<double[]> launchVelocity,
-      Supplier<Pose3d> robotPose,
-      Supplier<ChassisSpeeds> robotVelocity) {
+  protected FuelVisualizer(Supplier<double[]> launchVelocity, Supplier<Pose3d> robotPose) {
     super(
         () -> launchTranslation(launchVelocity.get(), robotPose.get()),
-        () -> launchVelocity(launchVelocity.get(), robotPose.get(), robotVelocity.get()),
+        () -> launchVelocity.get(),
         () -> launchRotation(launchVelocity.get(), robotPose.get()),
-        () -> 0);
-  }
-
-  /**
-   * A class that manages the creation, simulation, and logging of simulated FUEL projectiles.
-   *
-   * @param launchTranslation a supplier that provides the translation of the FUEL at launch time
-   * @param launchVelocity a supplier that provides the velocity of the FUEL at launch time
-   * @param launchRotation a supplier that provides the rotation of the FUEL at launch time
-   * @param launchRotationalVelocity a supplier that provides the rotational velocity of the FUEL at
-   *     launch time
-   */
-  protected FuelVisualizer(
-      Supplier<double[]> launchTranslation,
-      Supplier<double[]> launchVelocity,
-      Supplier<double[]> launchRotation,
-      DoubleSupplier launchRotationalVelocity) {
-    super(launchTranslation, launchVelocity, launchRotation, launchRotationalVelocity);
+        () -> 2);
   }
 
   /**
@@ -74,8 +53,7 @@ public class FuelVisualizer extends ProjectileVisualizer {
                 Fuel.shotVelocity(launchParameters.get(), drive.pose3d().getRotation().getZ()),
                 drive.pose3d(),
                 drive.fieldRelativeChassisSpeeds()),
-        drive::pose3d,
-        drive::fieldRelativeChassisSpeeds);
+        drive::pose3d);
   }
 
   /**
@@ -97,8 +75,7 @@ public class FuelVisualizer extends ProjectileVisualizer {
                     drive.pose3d().getRotation().getZ()),
                 drive.pose3d(),
                 drive.fieldRelativeChassisSpeeds()),
-        drive::pose3d,
-        drive::fieldRelativeChassisSpeeds);
+        drive::pose3d);
   }
 
   /**
@@ -133,12 +110,11 @@ public class FuelVisualizer extends ProjectileVisualizer {
     super.updateLogging();
 
     if (ending() == null) return;
-    double[] planarDistance = {
-      targetPose[X] - ending().getTranslation().getX(),
-      targetPose[Y] - ending().getTranslation().getY(),
-      0,
-    };
-    LoggingUtils.log("Projectile Visualizer/Distance From Goal", norm3(planarDistance));
+    LoggingUtils.log(
+        "Projectile Visualizer/Distance From Goal",
+        Math.hypot(
+            targetPose[X] - ending().getTranslation().getX(),
+            targetPose[Y] - ending().getTranslation().getY()));
   }
 
   protected static double distanceToHub(double[] shotVelocity, Pose3d robotPose) {
@@ -162,9 +138,12 @@ public class FuelVisualizer extends ProjectileVisualizer {
 
   protected static double[] launchRotation(double[] shotVelocity, Pose3d robotPose) {
     double[] shotDirection = scale3(shotVelocity, 1 / norm3(shotVelocity));
-    double[] axis = rotateAroundZ(shotDirection, Math.PI / 2.0);
+    double[] axis = cross3(new double[] {0, 0, 1}, shotDirection);
 
-    return new double[] {0, axis[X], axis[Y], axis[Z]};
+    if (norm3(axis) < 1e-6) axis = new double[] {1, 0, 0};
+    axis = scale3(axis, 1 / norm3(axis));
+
+    return new double[] {0, axis[X], axis[Y], 0};
   }
 
   protected static double[] shooterPose(Pose3d robotPose) {
@@ -174,7 +153,9 @@ public class FuelVisualizer extends ProjectileVisualizer {
   protected static double[] shooterVelocity(
       double[] shotVelocity, Pose3d robotPose, ChassisSpeeds robotVelocity) {
     double[] robotToFuel = add3(shooterToFuel(shotVelocity, robotPose), shooterPose(robotPose));
-    double tangentialSpeed = robotVelocity.omegaRadiansPerSecond * norm3(robotToFuel);
+
+    double radius = Math.hypot(robotToFuel[X], robotToFuel[Y]);
+    double tangentialSpeed = robotVelocity.omegaRadiansPerSecond * radius;
     double tangentialDirection = robotPose.getRotation().getZ() + Math.PI / 2.0;
 
     return new double[] {
@@ -185,6 +166,9 @@ public class FuelVisualizer extends ProjectileVisualizer {
   }
 
   protected static double[] shooterToFuel(double[] shotVelocity, Pose3d robotPose) {
+    double speed = norm3(shotVelocity);
+    if (speed < 1e-6) return new double[4];
+
     double[] shotDirection = scale3(shotVelocity, 1 / norm3(shotVelocity));
 
     double shooterToFlyWheel = Math.hypot(shotDirection[X], shotDirection[Y]);
@@ -218,15 +202,11 @@ public class FuelVisualizer extends ProjectileVisualizer {
 
     /** Multiplied by velocity squared to compute drag force. */
     private static final double DRAG_CONSTANT =
-        0.5 * 0.47 * AIR_DENSITY * Math.PI * FUEL_RADIUS * FUEL_RADIUS;
-
-    /** Multiplied by velocity * angular speed to compute lift force. */
-    private static final double LIFT_CONSTANT =
-        4 / 3 * 4 * Math.PI * Math.PI * FUEL_RADIUS * FUEL_RADIUS * FUEL_RADIUS * AIR_DENSITY;
+        0.5 * 0.47 * AIR_DENSITY * Math.PI * FUEL_RADIUS * FUEL_RADIUS / FUEL_MASS;
 
     /** Multiplied by angular speed to compute torque. */
     private static final double TORQUE_CONSTANT =
-        -8 * Math.PI * AIR_VISCOSITY * Math.pow(FUEL_RADIUS, 3);
+        -8 * Math.PI * AIR_VISCOSITY * FUEL_RADIUS / FUEL_MASS;
 
     /**
      * Alters scoring parameters.
@@ -252,23 +232,23 @@ public class FuelVisualizer extends ProjectileVisualizer {
     @Override
     protected double[] drag() {
       // https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/drag-of-a-sphere/
+      double speed = norm3(velocity);
+
       return new double[] {
-        Math.copySign(velocity[X] * velocity[X] * DRAG_CONSTANT / FUEL_MASS, -velocity[X]),
-        Math.copySign(velocity[Y] * velocity[Y] * DRAG_CONSTANT / FUEL_MASS, -velocity[Y]),
-        Math.copySign(velocity[Z] * velocity[Z] * DRAG_CONSTANT / FUEL_MASS, -velocity[Z])
+        -velocity[X] * speed * DRAG_CONSTANT,
+        -velocity[Y] * speed * DRAG_CONSTANT,
+        -velocity[Z] * speed * DRAG_CONSTANT
       };
     }
 
     @Override
     protected double torque() {
-      // https://physics.wooster.edu/wp-content/uploads/2021/08/Junior-IS-Thesis-Web_1998_Grugel.pdf
-      return rotationalVelocity * TORQUE_CONSTANT / FUEL_MASS;
+      return rotationalVelocity * TORQUE_CONSTANT;
     }
 
     @Override
     protected double[] lift() {
-      // https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/ideal-lift-of-a-spinning-ball/
-      return new double[] {0, 0, LIFT_CONSTANT * norm3(velocity) * rotationalVelocity / FUEL_MASS};
+      return new double[3];
     }
 
     @Override
@@ -305,6 +285,8 @@ public class FuelVisualizer extends ProjectileVisualizer {
 
     protected static double[] launchParameters(double[] shotVelocity, double heading) {
       double speed = norm3(shotVelocity);
+      if (speed < 1e-6) return new double[4];
+
       double[] direction = scale3(shotVelocity, 1 / speed);
 
       double yaw = Math.atan2(direction[Y], direction[X]) - heading;

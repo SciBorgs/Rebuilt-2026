@@ -41,10 +41,10 @@ import org.sciborgs1155.robot.Constants;
  * </pre>
  */
 @SuppressWarnings({
-  "PMD.GodClass",
-  "PMD.UseConcurrentHashMap",
-  "PMD.CloseResource"
-}) // Not sure if there are concurrent accesses; entry() methods return *Entry instances to caller
+  "PMD.GodClass", // large utility class; each type variant requires its own set of methods
+  "PMD.UseConcurrentHashMap", // not sure if there are concurrent accesses
+  "PMD.CloseResource" // entry() methods return *Entry instances owned by caller
+})
 public final class Tuning {
   /* HashMap of values of each topic path */
   private static final Map<String, List<Double>> DOUBLE_HASH = new HashMap<>();

@@ -78,7 +78,7 @@ public class SimTurret implements TurretIO {
               lastGoodPositionRad = a.in(Radians);
               return lastGoodPositionRad;
             })
-        .orElseGet(this::trueAngleRad);
+        .orElse(lastGoodPositionRad);
   }
 
   @Override

@@ -213,7 +213,9 @@ public class Robot extends CommandRobot {
       disabled().onTrue(Commands.runOnce(() -> SignalLogger.stop()));
     }
 
-    autonomous().whileTrue(Commands.defer(autos::getSelected, Set.of(drive)).asProxy());
+    autonomous()
+        .whileTrue(
+            Commands.defer(autos::getSelected, Set.of(drive)).asProxy().alongWith(leds.autos()));
 
     test().whileTrue(systemsCheck());
 
@@ -235,7 +237,8 @@ public class Robot extends CommandRobot {
                 .alongWith(
                     leds.error(
                         () ->
-                            (turret.position() - turret.setpoint()) / FULL_ANGLE_RANGE.in(Radians),
+                            Math.abs(turret.position() - turret.goal())
+                                / FULL_ANGLE_RANGE.in(Radians),
                         Degrees.of(2).in(Radians))));
 
     // FEED CONTINUOUS (RIGHT SIDE)
@@ -247,7 +250,8 @@ public class Robot extends CommandRobot {
                     Commands.none(),
                     leds.error(
                         () ->
-                            (turret.position() - turret.setpoint()) / FULL_ANGLE_RANGE.in(Radians),
+                            Math.abs(turret.position() - turret.goal())
+                                / FULL_ANGLE_RANGE.in(Radians),
                         Degrees.of(2).in(Radians))));
 
     // SCORE CONTINUOUS
@@ -259,7 +263,8 @@ public class Robot extends CommandRobot {
                     Commands.none(),
                     leds.error(
                         () ->
-                            (turret.position() - turret.setpoint()) / FULL_ANGLE_RANGE.in(Radians),
+                            Math.abs(turret.position() - turret.goal())
+                                / FULL_ANGLE_RANGE.in(Radians),
                         Degrees.of(2).in(Radians))));
 
     // CLIMB
@@ -300,7 +305,11 @@ public class Robot extends CommandRobot {
    * @return A command that tests all mechanisms.
    */
   public Command systemsCheck() {
-    return Test.toCommand(drive.systemsCheck()).withName("Test Mechanisms");
+    return Test.toCommand(
+            Test.fromCommand(leds.blink(Color.kRed).withTimeout(0.5)),
+            drive.systemsCheck(),
+            Test.fromCommand(leds.solid(Color.kGreen).withTimeout(0.5)))
+        .withName("Test Mechanisms");
   }
 
   @Override

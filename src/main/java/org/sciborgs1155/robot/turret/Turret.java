@@ -129,6 +129,16 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
   }
 
   /**
+   * Returns the goal of the turret.
+   *
+   * @return The goal of the turret.
+   */
+  @Logged
+  public double goal() {
+    return controller.getGoal().position;
+  }
+
+  /**
    * Returns whether the turret is at its goal or not.
    *
    * @return whether the turret is at its goal or not.

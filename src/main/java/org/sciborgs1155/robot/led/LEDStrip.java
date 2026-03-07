@@ -111,7 +111,7 @@ public class LEDStrip extends SubsystemBase implements AutoCloseable {
   public Command scrolling(Color color) {
     return set(
         alternatingColor(color, 5, Color.kBlack, 5)
-            .scrollAtAbsoluteSpeed(MetersPerSecond.of(0.5), LED_SPACING));
+            .scrollAtAbsoluteSpeed(MetersPerSecond.of(0.25), LED_SPACING));
   }
 
   /** A breathing gradient that matches the alliance colors. */

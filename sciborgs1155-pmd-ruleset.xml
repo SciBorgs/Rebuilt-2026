@@ -45,7 +45,6 @@
   <rule ref="category/java/design.xml">
     <exclude name="CognitiveComplexity" /> <!-- Violated a lot -->
     <exclude name="CouplingBetweenObjects" /> <!-- This is done a lot. I'll leave it for now. -->
-    <exclude name="DataClass" /> <!-- We should not use data classes -->
     <exclude name="ExcessiveImports" /> <!-- Welcome to FRC... -->
     <exclude name="LawOfDemeter" /> <!-- This happens a lot for us. To fix, it would require a lot of copying.
       I'll save my programmers time... -->

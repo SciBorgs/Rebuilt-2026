@@ -47,8 +47,10 @@ public class Vision {
 
   private VisionSystemSim visionSim;
 
+  @SuppressWarnings("PMD.DataClass")
   public record CameraConfig(String name, int FOV, Transform3d robotToCam, PoseStrategy strategy) {}
 
+  @SuppressWarnings("PMD.DataClass")
   public record PoseEstimate(EstimatedRobotPose estimatedPose, Matrix<N3, N1> standardDev) {}
 
   /** A factory to create new vision classes with our cameras. */

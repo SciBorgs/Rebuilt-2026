@@ -60,6 +60,7 @@ public final class FaultLogger {
   }
 
   /** An individual fault, containing necessary information. */
+  @SuppressWarnings("PMD.DataClass")
   public record Fault(String name, String description, FaultType type) {
     @Override
     public String toString() {

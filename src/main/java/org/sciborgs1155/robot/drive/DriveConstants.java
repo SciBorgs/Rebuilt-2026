@@ -84,6 +84,7 @@ public final class DriveConstants {
     OPEN_LOOP_VELOCITY;
   }
 
+  @SuppressWarnings("PMD.DataClass")
   public record FFConstants(double kS, double kV, double kA) {}
 
   public static final class Assisted {

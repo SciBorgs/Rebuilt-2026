@@ -108,6 +108,10 @@ public class Robot extends CommandRobot {
         "RobotModel/turretOrigin",
         new Transform3d(ROBOT_TO_SHOOTER, new Rotation3d(0, 0, turret.position())),
         Transform3d.struct);
+    log(
+        "RobotModel/turretOrigin",
+        new Transform3d(ROBOT_TO_SHOOTER, new Rotation3d(0, 0, turret.position())),
+        Transform3d.struct);
     log("RobotModel/intakeOrigin", new Transform3d(), Transform3d.struct);
     log("RobotModel/driveOrigin", drive.pose3d(), Pose3d.struct);
 
@@ -164,6 +168,7 @@ public class Robot extends CommandRobot {
       pdh.setSwitchableChannel(true);
     } else {
       DriverStation.silenceJoystickConnectionWarning(true);
+
 
       fuelVisualizer.startSimulation();
       addPeriodic(fuelVisualizer::updateLogging, PERIOD);
@@ -233,7 +238,6 @@ public class Robot extends CommandRobot {
 
     operator.a().whileTrue(fuelVisualizer.launchProjectiles());
     operator.b().onTrue(TableGenerator.loadTable());
-    operator.x().onTrue(TableGenerator.createTable());
   }
 
   /**

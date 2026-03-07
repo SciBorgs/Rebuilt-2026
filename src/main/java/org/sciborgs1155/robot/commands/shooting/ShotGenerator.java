@@ -21,6 +21,7 @@ import static org.sciborgs1155.robot.hood.HoodConstants.SHOOTING_ANGLE_OFFSET;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -40,6 +41,8 @@ public final class ShotGenerator {
 
   private static final double VELOCITY_DEADBAND = 0.1;
   private static final double DISTANCE_OFFSET = 0.05;
+  // tuning?
+  private static final double LATENCY = 0.05;
 
   private static final double MAX_AIR_TIME = 10;
   private static final int TRAJECTORY_RESOLUTION = 200;
@@ -187,10 +190,12 @@ public final class ShotGenerator {
    * @param distance the distance from the HUB
    * @return a command to calculate and display the optimized trajectory
    */
-  public static Command displayOptimizedShot(double distance) {
+  public static Command displayOptimizedShot(double distance, double robotVelocity) {
+    double compensatedDistance = distance + (robotVelocity * LATENCY);
+
     return Commands.runOnce(
         () -> {
-          double[] launchParameters = optimizedLaunchParameters(distance);
+          double[] launchParameters = optimizedLaunchParameters(compensatedDistance);
           double[][] trajectory = generateDirectTrajectory(launchParameters);
           Pose3d[] poses = new Pose3d[trajectory.length];
 
@@ -214,9 +219,23 @@ public final class ShotGenerator {
     double[] shooterPose =
         add3(shooterPose(robotPose), fromTranslation(robotPose.getTranslation()));
 
-    double[] stationaryLaunchParameters = stationaryLaunchParameters(shooterPose, heading);
+    double[] compensatedShooter = {
+      shooterPose[X] + (robotVelocity.vxMetersPerSecond * LATENCY),
+      shooterPose[Y] + (robotVelocity.vyMetersPerSecond * LATENCY),
+      shooterPose[Z]
+    };
+    Pose3d compensatedRobot =
+        new Pose3d(
+            new Translation3d(
+                robotPose.getX() + (robotVelocity.vxMetersPerSecond * LATENCY),
+                robotPose.getY() + (robotVelocity.vyMetersPerSecond * LATENCY),
+                robotPose.getZ()),
+            robotPose.getRotation());
+
+    double[] stationaryLaunchParameters = stationaryLaunchParameters(compensatedShooter, heading);
     double[] stationaryShotVelocity = shotVelocity(stationaryLaunchParameters, heading);
-    double[] shooterVelocity = shooterVelocity(stationaryShotVelocity, robotPose, robotVelocity);
+    double[] shooterVelocity =
+        shooterVelocity(stationaryShotVelocity, compensatedRobot, robotVelocity);
     double shooterSpeed = norm3(shooterVelocity);
 
     LoggingUtils.log("Shooting/Shooter Velocity", shooterSpeed);

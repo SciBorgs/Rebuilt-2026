@@ -33,6 +33,8 @@ public final class UnitTestingUtil {
    *
    * @param subsystems All subsystems that need to be closed
    */
+  @SuppressWarnings(
+      "PMD.CloseResource") // each subsystem is closed in the loop; varargs can't use TWR syntax
   public static void reset(AutoCloseable... subsystems) throws Exception {
     CommandScheduler.getInstance().unregisterAllSubsystems();
     CommandScheduler.getInstance().cancelAll();

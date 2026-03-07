@@ -44,7 +44,7 @@ import org.sciborgs1155.robot.Constants;
   "PMD.GodClass",
   "PMD.UseConcurrentHashMap",
   "PMD.CloseResource"
-}) // Not sure if there are concurrent accesses; entries in update* are owned by caller
+}) // Not sure if there are concurrent accesses; entry() methods return *Entry instances to caller
 public final class Tuning {
   /* HashMap of values of each topic path */
   private static final Map<String, List<Double>> DOUBLE_HASH = new HashMap<>();

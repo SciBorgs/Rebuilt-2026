@@ -70,7 +70,8 @@ public class Vision {
    *
    * @param configs The camera configurations to use.
    */
-  @SuppressWarnings("PMD.CloseResource") // camera and cameraSim are stored in the class arrays
+  @SuppressWarnings(
+      "PMD.CloseResource") // cameras/sims are stored in class arrays; lifetime == robot process
   public Vision(CameraConfig... configs) {
     cameras = new PhotonCamera[configs.length];
     estimators = new PhotonPoseEstimator[configs.length];

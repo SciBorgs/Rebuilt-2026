@@ -266,7 +266,7 @@ public final class ShotGenerator {
    */
   public static ProjectileVisualizer createVisualizer(Drive drive) {
     return configureVisualizer(
-        FuelVisualizer.fromLaunchParameters(
+        fromLaunchParameters(
             () -> movingLaunchParameters(drive.pose3d(), drive.fieldRelativeChassisSpeeds()),
             drive));
   }

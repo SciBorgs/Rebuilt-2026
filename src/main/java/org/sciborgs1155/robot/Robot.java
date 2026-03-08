@@ -1,7 +1,6 @@
 package org.sciborgs1155.robot;
 
 import static edu.wpi.first.units.Units.MetersPerSecond;
-import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
@@ -13,7 +12,6 @@ import static org.sciborgs1155.lib.LoggingUtils.log;
 import static org.sciborgs1155.robot.Constants.DEADBAND;
 import static org.sciborgs1155.robot.Constants.FULL_SPEED_MULTIPLIER;
 import static org.sciborgs1155.robot.Constants.PERIOD;
-import static org.sciborgs1155.robot.Constants.Robot.ROBOT_TO_SHOOTER;
 import static org.sciborgs1155.robot.Constants.SLOW_SPEED_MULTIPLIER;
 import static org.sciborgs1155.robot.Constants.TUNING;
 import static org.sciborgs1155.robot.drive.DriveConstants.MAX_ANGULAR_ACCEL;
@@ -51,8 +49,8 @@ import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
 import org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer;
-import org.sciborgs1155.robot.commands.shooting.ShooterAnalyzer;
 import org.sciborgs1155.robot.commands.shooting.Shooting;
+import org.sciborgs1155.robot.commands.shooting.ShotDataCollector;
 import org.sciborgs1155.robot.commands.shooting.TableGenerator;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.hood.Hood;
@@ -88,7 +86,7 @@ public class Robot extends CommandRobot {
   // COMMANDS
   private final Alignment align = new Alignment(drive);
   private final Shooting shooting = new Shooting(turret, hood, drive);
-  private final ShooterAnalyzer shooterLogger = new ShooterAnalyzer(shooter);
+  private final ShotDataCollector shotDataCollector = new ShotDataCollector(shooter, indexer, hood);
   @NotLogged private final SendableChooser<Command> autos = Autos.configureAutos(drive);
 
   @NotLogged
@@ -109,14 +107,6 @@ public class Robot extends CommandRobot {
 
   @Override
   public void robotPeriodic() {
-    log("RobotModel/hopperOrigin", new Transform3d(), Transform3d.struct);
-    log(
-        "RobotModel/turretOrigin",
-        new Transform3d(ROBOT_TO_SHOOTER, new Rotation3d(0, 0, turret.position())),
-        Transform3d.struct);
-    log("RobotModel/intakeOrigin", new Transform3d(), Transform3d.struct);
-    log("RobotModel/driveOrigin", drive.pose3d(), Pose3d.struct);
-
     Tracer.startTrace("commands");
     CommandScheduler.getInstance().run();
     Tracer.endTrace();
@@ -161,14 +151,28 @@ public class Robot extends CommandRobot {
             drive.updateEstimates(
                 vision.estimatedGlobalPoses(drive.gyroHeading(), disabled().getAsBoolean())),
         PERIOD);
-  
-    addPeriodic(() -> {
-      log("RobotModel/turretOrigin", new Transform3d(0,0,0, new Rotation3d()), Transform3d.struct);
-      log("RobotModel/hoodOrigin", new Transform3d(0,0,0, new Rotation3d()), Transform3d.struct);
-      log("RobotModel/hopperOrigin", new Transform3d(0,0,0, new Rotation3d()), Transform3d.struct);
-      log("RobotModel/intakeOrigin", new Transform3d(0,0,0, new Rotation3d()), Transform3d.struct);
-      log("RobotModel/driveOrigin", drive.pose3d(), Pose3d.struct);
-    }, PERIOD);
+
+    addPeriodic(
+        () -> {
+          log(
+              "RobotModel/turretOrigin",
+              new Transform3d(0, 0, 0, new Rotation3d()),
+              Transform3d.struct);
+          log(
+              "RobotModel/hoodOrigin",
+              new Transform3d(0, 0, 0, new Rotation3d()),
+              Transform3d.struct);
+          log(
+              "RobotModel/hopperOrigin",
+              new Transform3d(0, 0, 0, new Rotation3d()),
+              Transform3d.struct);
+          log(
+              "RobotModel/intakeOrigin",
+              new Transform3d(0, 0, 0, new Rotation3d()),
+              Transform3d.struct);
+          log("RobotModel/driveOrigin", drive.pose3d(), Pose3d.struct);
+        },
+        PERIOD);
 
     RobotController.setBrownoutVoltage(6.0);
 
@@ -247,10 +251,14 @@ public class Robot extends CommandRobot {
 
     teleop().whileTrue(shooting.runShooter());
 
+    if (isReal()) {
+      teleop().onTrue(shotDataCollector.startLogging());
+      disabled().onTrue(shotDataCollector.endLogging());
+    }
+
     operator.a().whileTrue(fuelVisualizer.launchProjectiles());
     operator.b().onTrue(TableGenerator.loadTable());
-    operator.x().onTrue(shooterLogger.startLogging());
-    operator.y().onTrue(shooterLogger.endLogging());
+    operator.x().onTrue(TableGenerator.createTable());
   }
 
   /**

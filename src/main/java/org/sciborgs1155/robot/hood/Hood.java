@@ -258,7 +258,6 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
     Command testCommand = goTo(goal).until(this::atGoal).withTimeout(5);
 
     return testCommand;
-    
   }
 
   /** closes the hood */

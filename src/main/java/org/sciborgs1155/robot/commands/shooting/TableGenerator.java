@@ -23,7 +23,7 @@ public final class TableGenerator {
   private static final double MAX_DISTANCE = 20;
 
   private static final double INCREMENT = 0.005;
-  private static final String NAME = "LookUpTable";
+  private static final String PATH = "shooting/ParameterLookUp";
 
   private static final double SPEED_DEADBAND = 0.01;
 
@@ -40,17 +40,17 @@ public final class TableGenerator {
    * @return a command to generate the lookup table
    */
   public static Command createTable() {
-    return Commands.runOnce(() -> createTable(MIN_DISTANCE, MAX_DISTANCE, INCREMENT, NAME));
+    return Commands.runOnce(() -> createTable(MIN_DISTANCE, MAX_DISTANCE, INCREMENT, PATH));
   }
 
   static void createTable(
-      double minDistance, double maxDistance, double increment, String tableName) {
+      double minDistance, double maxDistance, double increment, String tablePath) {
     try {
       Tracer.startTrace("lookup table generation");
       LoggingUtils.log("Shooting/Entries Generated", 0);
       BufferedWriter fileWriter =
           Files.newBufferedWriter(
-              Paths.get("resources/shooting" + tableName + ".ankit"), StandardCharsets.UTF_8);
+              Paths.get("resources/" + tablePath + ".ankit"), StandardCharsets.UTF_8);
 
       int tableIndex = 0;
       for (double distance = minDistance; distance < maxDistance; distance += increment) {
@@ -64,7 +64,9 @@ public final class TableGenerator {
         if (angle > MAXIMUM_ANGLE) continue;
 
         // FORMAT: [DISTANCE]/[SPEED]/[ANGLE](SPACE)
-        fileWriter.write(distance + "," + speed + "," + angle + " ");
+        fileWriter.write(distance + "," + speed + "," + angle);
+        fileWriter.newLine();
+
         tableIndex++;
         LoggingUtils.log("Shooting/Entries Generated", tableIndex);
       }
@@ -82,10 +84,10 @@ public final class TableGenerator {
    * @return a command to load the lookup table
    */
   public static Command loadTable() {
-    return Commands.runOnce(() -> loadTable(NAME));
+    return Commands.runOnce(() -> loadTable(PATH));
   }
 
-  static void loadTable(String tableName) {
+  static void loadTable(String tablePath) {
     SPEED_TABLE.clear();
     ANGLE_TABLE.clear();
 
@@ -93,11 +95,11 @@ public final class TableGenerator {
       Tracer.startTrace("lookup table loading");
       LoggingUtils.log("Shooting/Entries Loaded", 0);
       Scanner fileScanner =
-          new Scanner(new File("resources/shooting" + tableName + ".ankit"), StandardCharsets.UTF_8);
+          new Scanner(new File("resources/" + tablePath + ".ankit"), StandardCharsets.UTF_8);
 
       int tableIndex = 0;
-      while (tableIndex < MAX_TABLE_SIZE && fileScanner.hasNext()) {
-        String entry = fileScanner.next();
+      while (tableIndex < MAX_TABLE_SIZE && fileScanner.hasNextLine()) {
+        String entry = fileScanner.nextLine();
 
         int comma1Index = entry.indexOf(',');
         int comma2Index = entry.indexOf(',', comma1Index + 1);

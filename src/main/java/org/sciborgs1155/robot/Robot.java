@@ -1,6 +1,7 @@
 package org.sciborgs1155.robot;
 
 import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
@@ -159,6 +160,14 @@ public class Robot extends CommandRobot {
             drive.updateEstimates(
                 vision.estimatedGlobalPoses(drive.gyroHeading(), disabled().getAsBoolean())),
         PERIOD);
+  
+    addPeriodic(() -> {
+      log("RobotModel/turretOrigin", new Transform3d(0,0,0, new Rotation3d()), Transform3d.struct);
+      log("RobotModel/hoodOrigin", new Transform3d(0,0,0, new Rotation3d()), Transform3d.struct);
+      log("RobotModel/hopperOrigin", new Transform3d(0,0,0, new Rotation3d()), Transform3d.struct);
+      log("RobotModel/intakeOrigin", new Transform3d(0,0,0, new Rotation3d()), Transform3d.struct);
+      log("RobotModel/driveOrigin", drive.pose3d(), Pose3d.struct);
+    }, PERIOD);
 
     RobotController.setBrownoutVoltage(6.0);
 

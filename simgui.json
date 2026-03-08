@@ -42,6 +42,7 @@
       "Robot/shooter/controller": "PIDController",
       "Robot/slapdown/pid": "ProfiledPIDController",
       "Robot/turret/controller": "ProfiledPIDController"
+      "Robot/turret/controller": "ProfiledPIDController"
     },
     "windows": {
       "/Robot/drive/field2d": {
@@ -80,6 +81,16 @@
         "right": 3942,
         "top": 118,
         "width": 16.54119300842285,
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/Robot/climb/measurement visualizer": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/Robot/climb/setpoint visualizer": {
         "window": {
           "visible": true
         }

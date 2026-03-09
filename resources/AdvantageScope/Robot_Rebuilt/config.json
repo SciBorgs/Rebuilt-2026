@@ -3,12 +3,25 @@
   "sourceUrl": "https://cad.onshape.com/documents/012165606d215b05089d5ea7/w/0723b94045cbec556aff7d85/e/7d062eacef889785ac28b424",
   "isFTC": false,
   "disableSimplification": false,
-  "rotations": [],
+  "rotations": 
+  [          {
+      "axis": "x",
+      "degrees": -90
+    },
+    {
+      "axis": "y",
+      "degrees": 180
+    },
+    {
+      "axis": "z",
+      "degrees": 0 
+              }
+  ], 
   "position": [
-    0,
-    0,
-    0
-  ],
+      0, 
+      0, 
+      0
+              ], 
   "cameras": [
     {
       "name": "camera-0",
@@ -68,87 +81,71 @@
   "components": [
     {
       "zeroedRotations": [
-        {
-          "axis": "x",
-          "degrees": 0
-        },
-        {
-          "axis": "y",
-          "degrees": 0
-        },
-        {
-          "axis": "z",
-          "degrees": 0
-        }
+          {
+            "axis": "x",
+            "degrees": 90
+          },
+          {
+            "axis": "y",
+            "degrees": 0
+          },
+          {
+            "axis": "z",
+            "degrees": 0
+          }
       ],
-      "zeroedPosition": [
-        0,
-        0,
-        0
-      ]
+      "zeroedPosition": [0,0,0]
     },
     {
       "zeroedRotations": [
-        {
-          "axis": "x",
-          "degrees": 0
-        },
-        {
-          "axis": "y",
-          "degrees": 0
-        },
-        {
-          "axis": "z",
-          "degrees": 0
-        }
+          {
+            "axis": "x",
+            "degrees": 90
+          },
+          {
+            "axis": "y",
+            "degrees": 0
+          },
+          {
+            "axis": "z",
+            "degrees": 0
+          }
       ],
-      "zeroedPosition": [
-        0,
-        0,
-        0
-      ]
+      "zeroedPosition": [-0.36, 0, 0.16]
     },
     {
       "zeroedRotations": [
-        {
-          "axis": "x",
-          "degrees": 0
-        },
-        {
-          "axis": "y",
-          "degrees": 0
-        },
-        {
-          "axis": "z",
-          "degrees": 0
-        }
+          {
+            "axis": "x",
+            "degrees": 0
+          },
+          {
+            "axis": "y",
+            "degrees": 0
+          },
+          {
+            "axis": "z",
+            "degrees":-90
+          }
       ],
-      "zeroedPosition": [
-        0,
-        0,
-        0
-      ]
+      "zeroedPosition": [0,0,0]
     },
     {
       "zeroedRotations": [
-        {
-          "axis": "x",
-          "degrees": 0
-        },
-        {
-          "axis": "y",
-          "degrees": -15
-        },
-        {
-          "axis": "z",
-          "degrees": -90
-        }
+          {
+            "axis": "x",
+            "degrees": 90
+          },
+          {
+            "axis": "y",
+            "degrees": 0
+          },
+          {
+            "axis": "z",
+            "degrees": 0
+          }
       ],
-      "zeroedPosition": [
-        -0.17506,
-        -0.12983,
-        -0.2986252
-      ]
+      "zeroedPosition": [0,0.005,0]
     }
   ]
 }

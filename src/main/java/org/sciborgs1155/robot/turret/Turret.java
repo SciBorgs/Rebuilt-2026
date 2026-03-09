@@ -209,7 +209,7 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
                 "Turret system check",
                 () ->
                     String.format(
-                        "Turret not at goal: current=%.3f rad, goal=%.3f rad, tolerance=%.3f rad",
+                        "Turret goal check: current=%.3f rad, goal=%.3f rad, tolerance=%.3f rad",
                         hardware.position(), goal.getAsDouble(), TOLERANCE.in(Radians))));
     return new Test(testCommand, assertions);
   }

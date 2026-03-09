@@ -118,6 +118,12 @@ public class Robot extends CommandRobot {
     FaultLogger.register(pdh);
     SmartDashboard.putData("Auto Chooser", autos);
 
+    if (isReal()){ 
+      teleop().onTrue(shotDataCollector.startLogging());
+      teleop().onFalse(shotDataCollector.endLogging());
+    }
+
+
     if (TUNING) {
       addPeriodic(
           () ->
@@ -209,11 +215,6 @@ public class Robot extends CommandRobot {
     autonomous().whileTrue(Commands.defer(autos::getSelected, Set.of(drive)).asProxy());
 
     test().whileTrue(systemsCheck());
-
-    if (isReal()) {
-      teleop().onTrue(shotDataCollector.startLogging());
-      disabled().onTrue(shotDataCollector.endLogging());
-    }
 
     // driver.b().whileTrue(drive.zeroHeading());
     driver

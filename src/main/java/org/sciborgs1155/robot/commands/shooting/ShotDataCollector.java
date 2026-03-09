@@ -10,6 +10,8 @@ import java.nio.file.Paths;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.robot.Constants;
 import org.sciborgs1155.robot.hood.Hood;
@@ -36,6 +38,8 @@ public class ShotDataCollector {
   private static final long MAX_LOG = 500;
   private static final long MAX_TIMESTEPS = Math.round(300 / ANALYSIS_PERIOD);
 
+  private static final AtomicBoolean running = new AtomicBoolean(false);
+
   protected int timestep;
   private BufferedWriter dataWriter;
 
@@ -52,9 +56,18 @@ public class ShotDataCollector {
     }
 
     executorService.scheduleAtFixedRate(
-        () -> LoggingUtils.log("Shooting/DataLog TimeStep", timestep),
+        () -> {
+          LoggingUtils.log("Shooting/DataLog TimeStep", timestep);
+          LoggingUtils.log("Shooting/DataLog Status", running.get());
+        },
         Math.round(INITIAL_DELAY * 1000),
         Math.round(Constants.PERIOD.in(Milliseconds)),
+        TimeUnit.MILLISECONDS);
+    
+    executorService.scheduleAtFixedRate(
+        this::logTimestep,
+        Math.round(INITIAL_DELAY * 1000),
+        Math.round(ANALYSIS_PERIOD * 1000),
         TimeUnit.MILLISECONDS);
 
     try {
@@ -68,32 +81,22 @@ public class ShotDataCollector {
   }
 
   public Command startLogging() {
-    if (dataWriter == null) return Commands.none();
-    return Commands.runOnce(
-        () ->
-            executorService.scheduleAtFixedRate(
-                this::logTimestep,
-                Math.round(INITIAL_DELAY * 1000),
-                Math.round(ANALYSIS_PERIOD * 1000),
-                TimeUnit.MILLISECONDS));
+    return Commands.runOnce(() -> {
+      System.out.println("Started Ankit Log!");
+      running.set(true);
+    });       
   }
 
   public Command endLogging() {
-    if (dataWriter == null) return Commands.none();
-
-    return Commands.runOnce(
-        () -> {
-          timestep = 0;
-
-          try {
-            dataWriter.close();
-          } catch (IOException exception) {
-          }
-          executorService.shutdown();
-        });
+    return Commands.runOnce(() -> {
+      System.out.println("Ended Ankit Log!");
+      running.set(false);
+    });
   }
 
   private void logTimestep() {
+    if (!running.get() || dataWriter == null) return;
+
     try {
       dataWriter.write(
           indexer.blocked.getAsBoolean() + "," + shooter.getVelocity() + "," + hood.angle());

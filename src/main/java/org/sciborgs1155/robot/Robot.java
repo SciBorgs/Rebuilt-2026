@@ -278,7 +278,7 @@ public class Robot extends CommandRobot {
         .onFalse(climb.retract().alongWith(leds.solid(Color.kRed)));
 
     // DEBUG
-    // im on the wrong branch arent i
+    // TODO: various operator debug stuff (turret, hood, shooter)
 
   }
 

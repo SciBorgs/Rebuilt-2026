@@ -152,8 +152,8 @@ public class Robot extends CommandRobot {
         PERIOD);
   
     addPeriodic(() -> {
-      log("RobotModel/turretOrigin", new Transform3d(0.14006, 0.13983, 0.3286252, new Rotation3d(0,0,turret.position())), Transform3d.struct);
-      log("RobotModel/hoodOrigin", new Transform3d(0.14006, 0.13983, 0.3286252, new Rotation3d(0,hood.angle(),turret.position())), Transform3d.struct);
+      log("RobotModel/turretOrigin", new Transform3d(0.14006, 0.13983, 0.3586252, new Rotation3d(0,0,turret.position())), Transform3d.struct);
+      log("RobotModel/hoodOrigin", new Transform3d(0.04006, 0.14483, 0.4086252, new Rotation3d(0,hood.angle(),turret.position())), Transform3d.struct);
       log("RobotModel/hopperOrigin", new Transform3d(0,0,0, new Rotation3d()), Transform3d.struct);
       log("RobotModel/intakeOrigin", new Transform3d(0,0,0, new Rotation3d()), Transform3d.struct);
       log("RobotModel/driveOrigin", drive.pose3d(), Pose3d.struct);

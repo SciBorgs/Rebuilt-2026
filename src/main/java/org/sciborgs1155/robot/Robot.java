@@ -1,5 +1,6 @@
 package org.sciborgs1155.robot;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Second;
@@ -230,10 +231,12 @@ public class Robot extends CommandRobot {
     // driver.a().whileTrue(hood.goTo(Degrees.of(30)));
     // driver.x().whileTrue(turret.goTo(() -> Math.PI / 4));
     // driver.b().whileTrue(turret.goTo(() -> -Math.PI / 4));
-    driver.leftTrigger().whileTrue(turret.goLeft());
-    driver.rightTrigger().whileTrue(turret.goRight());
-    driver.x().whileTrue(hood.manualHood(InputStream.of(driver::getLeftY)));
-    driver.y().whileTrue(shooter.runShooter(342));
+    operator.leftTrigger().whileTrue(turret.goLeft());
+    operator.rightTrigger().whileTrue(turret.goRight());
+    operator.x().whileTrue(hood.goTo(Degrees.of(45)));
+    operator.b().whileTrue(hood.goTo(Degrees.of(25)));
+    operator.y().whileTrue(shooter.runShooter(100));
+    operator.a().whileTrue(shooter.runShooter(250));
   }
 
   /**

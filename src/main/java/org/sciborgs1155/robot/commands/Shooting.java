@@ -111,7 +111,7 @@ public class Shooting {
 
   public record ShooterParams(double RADS, double hoodAngle, double turretAngle) {}
 
-  private static final Translation2d HUB_TARGET =
+  public static final Translation2d HUB_TARGET =
       FieldConstants.Hub.TOP_CENTER_POINT.toTranslation2d();
 
   /**
@@ -176,7 +176,7 @@ public class Shooting {
    * @param target the x and y location of the target (with hub height)
    * @return the parameters to command relevant subsystems to
    */
-  private ShooterParams calculateShot(Translation2d target) {
+  public ShooterParams calculateShot(Translation2d target) {
     Pose2d turretPose = projectTurretPose(target);
     LoggingUtils.log("/ShootingData/Projected Turret Pose", turretPose, Pose2d.struct);
     double distance = turretPose.getTranslation().getDistance(target);

@@ -3,9 +3,9 @@ package org.sciborgs1155.robot.drive;
 import static edu.wpi.first.units.Units.*;
 import static org.sciborgs1155.lib.FaultLogger.*;
 import static org.sciborgs1155.robot.Constants.DRIVE_CANIVORE;
+import static org.sciborgs1155.robot.Constants.INTAKE_CANIVORE;
 import static org.sciborgs1155.robot.Constants.ODOMETRY_PERIOD;
 import static org.sciborgs1155.robot.Constants.PERIOD;
-import static org.sciborgs1155.robot.Constants.INTAKE_CANIVORE;
 import static org.sciborgs1155.robot.Ports.Drive.FRONT_LEFT_TURNING;
 
 import com.ctre.phoenix6.BaseStatusSignal;

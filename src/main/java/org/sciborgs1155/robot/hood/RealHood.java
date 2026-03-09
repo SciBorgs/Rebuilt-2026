@@ -3,6 +3,7 @@ package org.sciborgs1155.robot.hood;
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static org.sciborgs1155.robot.Constants.SHOOTING_CANIVORE;
 import static org.sciborgs1155.robot.Ports.Hood.MOTOR_PORT;
 import static org.sciborgs1155.robot.hood.HoodConstants.GEARING;
 import static org.sciborgs1155.robot.hood.HoodConstants.MIN_ANGLE;
@@ -24,7 +25,7 @@ public class RealHood implements HoodIO {
 
   /** constructor for real hood */
   public RealHood() {
-    motor = new TalonFX(MOTOR_PORT);
+    motor = new TalonFX(MOTOR_PORT, SHOOTING_CANIVORE);
 
     config = new TalonFXConfiguration();
 

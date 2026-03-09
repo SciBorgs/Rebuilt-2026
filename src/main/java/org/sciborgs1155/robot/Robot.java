@@ -80,7 +80,7 @@ public class Robot extends CommandRobot {
   private final Hopper hopper = Hopper.create();
   private final Slapdown slapdown = Slapdown.create();
   private final Intake intake = Intake.create();
-  
+
   // COMMANDS
   private final Alignment align = new Alignment(drive);
   private final ShotDataCollector shotDataCollector = new ShotDataCollector(shooter, indexer, hood);

@@ -2,6 +2,8 @@ package org.sciborgs1155.robot.commands.shooting;
 
 import static edu.wpi.first.units.Units.Milliseconds;
 
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -15,9 +17,6 @@ import org.sciborgs1155.robot.Constants;
 import org.sciborgs1155.robot.hood.Hood;
 import org.sciborgs1155.robot.indexer.Indexer;
 import org.sciborgs1155.robot.shooter.Shooter;
-
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 
 public class ShotDataCollector {
   private final Shooter shooter;

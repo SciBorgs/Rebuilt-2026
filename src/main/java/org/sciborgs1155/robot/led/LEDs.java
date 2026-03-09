@@ -4,7 +4,6 @@ import static org.sciborgs1155.robot.led.LEDConstants.LED_LENGTH;
 
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
@@ -60,9 +59,7 @@ public class LEDs implements AutoCloseable {
 
   /** Sets all the LEDs based on an error. */
   public Command error(DoubleSupplier error, double tolerance) {
-    return tempStrip
-        .error(error, tolerance)
-        .alongWith(Commands.run(() -> System.out.println(error.getAsDouble())));
+    return tempStrip.error(error, tolerance);
   }
 
   @Override

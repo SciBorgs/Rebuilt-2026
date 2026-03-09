@@ -220,11 +220,12 @@ public class Robot extends CommandRobot {
     test().whileTrue(systemsCheck());
 
     driver.povUp().whileTrue(drive.zeroHeading());
-    // driver
-    //     .leftBumper()
-    //     .or(driver.rightBumper())
-    //     .onTrue(Commands.runOnce(() -> speedMultiplier = SLOW_SPEED_MULTIPLIER))
-    //     .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
+
+    driver
+        .leftTrigger()
+        .or(driver.rightBumper())
+        .onTrue(Commands.runOnce(() -> speedMultiplier = SLOW_SPEED_MULTIPLIER))
+        .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
 
     // INTAKE TOGGLE
     driver.a().toggleOnTrue(slapdown.extend().alongWith(intake.intake()));

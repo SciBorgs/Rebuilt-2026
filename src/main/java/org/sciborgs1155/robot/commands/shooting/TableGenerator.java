@@ -30,7 +30,7 @@ public final class TableGenerator {
   private static final InterpolatingDoubleTreeMap SPEED_TABLE = new InterpolatingDoubleTreeMap();
   private static final InterpolatingDoubleTreeMap ANGLE_TABLE = new InterpolatingDoubleTreeMap();
 
-  private static final int MAX_TABLE_SIZE = 2000;
+  private static final int MAX_TABLE_SIZE = 5000;
 
   private TableGenerator() {}
 

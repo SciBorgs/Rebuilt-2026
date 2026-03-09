@@ -42,7 +42,9 @@ public class ShotDataCollector {
     this.shooter = shooter;
     this.indexer = indexer;
     this.hood = hood;
+  }
 
+  public Command startLogging() {
     int logIndex = 1;
     while (logIndex < MAX_LOG) {
       if (Paths.get("resources/" + PATH + LOG_NAME + logIndex + ".ankit").toFile().exists())
@@ -64,9 +66,7 @@ public class ShotDataCollector {
     } catch (IOException exception) {
       exception.printStackTrace();
     }
-  }
 
-  public Command startLogging() {
     if (dataWriter == null) return Commands.none();
     return Commands.runOnce(
         () ->

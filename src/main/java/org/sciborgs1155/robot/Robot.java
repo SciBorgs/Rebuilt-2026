@@ -51,6 +51,7 @@ import org.sciborgs1155.robot.commands.Autos;
 import org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer;
 import org.sciborgs1155.robot.commands.shooting.Shooting;
 import org.sciborgs1155.robot.commands.shooting.ShotDataCollector;
+import org.sciborgs1155.robot.commands.shooting.ShotGenerator;
 import org.sciborgs1155.robot.commands.shooting.TableGenerator;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.hood.Hood;
@@ -90,8 +91,7 @@ public class Robot extends CommandRobot {
   @NotLogged private final SendableChooser<Command> autos = Autos.configureAutos(drive);
 
   @NotLogged
-  private final ProjectileVisualizer fuelVisualizer =
-      shooting.createVisualizer().configGeneration(0.05, 10, 100, 100);
+  private final ProjectileVisualizer fuelVisualizer = ShotGenerator.createVisualizer(drive);
 
   @Logged private double speedMultiplier = FULL_SPEED_MULTIPLIER;
 

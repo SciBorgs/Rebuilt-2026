@@ -3,18 +3,12 @@ package org.sciborgs1155.robot.commands.shooting;
 import static edu.wpi.first.units.Units.Radians;
 import static org.sciborgs1155.robot.Constants.Robot.ROBOT_TO_SHOOTER;
 import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.*;
-import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.Fuel.*;
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.DISTANCE;
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.PITCH;
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.SPEED;
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.X;
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.Y;
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.Z;
-import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.add3;
-import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.fromTranslation;
-import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.norm3;
-import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.sub3;
-import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.toPose;
 import static org.sciborgs1155.robot.hood.HoodConstants.MAX_ANGLE;
 import static org.sciborgs1155.robot.hood.HoodConstants.MIN_ANGLE;
 import static org.sciborgs1155.robot.hood.HoodConstants.SHOOTING_ANGLE_OFFSET;
@@ -40,14 +34,13 @@ public final class ShotGenerator {
   private static final boolean LIFT_ENABLED = false;
 
   private static final double VELOCITY_DEADBAND = 0.1;
-  private static final double DISTANCE_OFFSET = 0.05;
   // tuning?
   private static final double LATENCY = 0.05;
 
   private static final double MAX_AIR_TIME = 10;
-  private static final int TRAJECTORY_RESOLUTION = 200;
+  private static final int TRAJECTORY_RESOLUTION = 300;
   private static final int OPTIMIZATION_RESOLUTION = 500;
-  private static final int TRAJECTORY_SIZE_LIMIT = 500;
+  private static final int TRAJECTORY_SIZE_LIMIT = 5000;
 
   private static final double CLEARANCE = 0.13;
   private static final double CLEARANCE_CHECK = Hub.INNER_WIDTH / 2;
@@ -56,7 +49,7 @@ public final class ShotGenerator {
   private static final double SCORE_RADIUS = Hub.INNER_WIDTH / 2;
 
   private static final double SPEED_PRECISION = 0.005;
-  private static final double PITCH_PRECISION = Math.PI / 96;
+  private static final double PITCH_PRECISION = Math.PI / 128;
 
   private static final double MAX_SPEED = 20;
   static final double MAXIMUM_ANGLE = SHOOTING_ANGLE_OFFSET.in(Radians) - MIN_ANGLE.in(Radians);
@@ -64,7 +57,7 @@ public final class ShotGenerator {
 
   static final double[] GOAL = fromTranslation(Hub.TOP_CENTER_POINT);
 
-  private static final Projectile PROJECTILE =
+  private static final Projectile projectile =
       new Fuel()
           .withScoringParameters(GOAL, SCORE_RADIUS, SCORE_DEPTH)
           .config(
@@ -73,7 +66,7 @@ public final class ShotGenerator {
   private ShotGenerator() {}
 
   private static double[][] generateDirectTrajectory(double[] launchParameters) {
-    PROJECTILE.reset();
+    projectile.reset();
     List<double[]> poseList = new ArrayList<>();
 
     Pose3d robotPose =
@@ -84,18 +77,19 @@ public final class ShotGenerator {
             new Rotation3d());
 
     double[] shotVelocity = shotVelocity(launchParameters, robotPose.getRotation().getZ());
-    double[] launchVelocity = launchVelocity(shotVelocity, robotPose, new ChassisSpeeds());
-    double[] launchTranslation = launchTranslation(shotVelocity, robotPose);
+    double[] launchVelocity = initialVelocity(shotVelocity, robotPose, new ChassisSpeeds());
+    double[] launchTranslation = initialTranslation(shotVelocity, robotPose);
+    double[] initialRotation = initialRotation(shotVelocity);
 
-    PROJECTILE.launch(launchTranslation, launchVelocity, new double[4], 0);
+    projectile.launch(launchTranslation, launchVelocity, initialRotation, 0);
 
     int frames = 0;
-    while (!PROJECTILE.willMiss() && !PROJECTILE.willScore()) {
+    while (!projectile.willMiss() && !projectile.willScore()) {
       frames++;
       if (frames >= TRAJECTORY_SIZE_LIMIT) break;
 
-      poseList.add(PROJECTILE.translation.clone());
-      PROJECTILE.periodic();
+      poseList.add(new double[] {projectile.x, projectile.y, projectile.z});
+      projectile.periodic();
     }
 
     return poseList.toArray(new double[0][]);
@@ -145,7 +139,7 @@ public final class ShotGenerator {
     double yDisplacement = GOAL[Y] - shooterPose[Y];
     double xDisplacement = GOAL[X] - shooterPose[X];
 
-    double distance = Math.hypot(yDisplacement, xDisplacement) - DISTANCE_OFFSET;
+    double distance = Math.hypot(yDisplacement, xDisplacement);
     double yaw = Math.atan2(yDisplacement, xDisplacement) - heading;
 
     double[] launchParameters = TableGenerator.directLaunchParameters(distance);
@@ -199,8 +193,14 @@ public final class ShotGenerator {
           double[][] trajectory = generateDirectTrajectory(launchParameters);
           Pose3d[] poses = new Pose3d[trajectory.length];
 
-          for (int index = 0; index < poses.length; index++)
-            poses[index] = toPose(trajectory[index], 0);
+          for (int index = 0; index < poses.length; index++) {
+            double[] translation = trajectory[index];
+
+            poses[index] =
+                new Pose3d(
+                    new Translation3d(translation[X], translation[Y], translation[Z]),
+                    new Rotation3d());
+          }
 
           LoggingUtils.log("Shooting/Optimized Shot Display", poses, Pose3d.struct);
         });
@@ -216,32 +216,54 @@ public final class ShotGenerator {
   public static double[] movingLaunchParameters(Pose3d robotPose, ChassisSpeeds robotVelocity) {
     double heading = robotPose.getRotation().getZ();
 
+    double[] robotToShooter = shooterPose(robotPose);
+
     double[] shooterPose =
-        add3(shooterPose(robotPose), fromTranslation(robotPose.getTranslation()));
+        new double[] {
+          robotToShooter[X] + robotPose.getX(),
+          robotToShooter[Y] + robotPose.getY(),
+          robotToShooter[Z] + robotPose.getZ()
+        };
 
-    double[] compensatedShooter = {
-      shooterPose[X] + (robotVelocity.vxMetersPerSecond * LATENCY),
-      shooterPose[Y] + (robotVelocity.vyMetersPerSecond * LATENCY),
-      shooterPose[Z]
-    };
-    Pose3d compensatedRobot =
-        new Pose3d(
-            new Translation3d(
-                robotPose.getX() + (robotVelocity.vxMetersPerSecond * LATENCY),
-                robotPose.getY() + (robotVelocity.vyMetersPerSecond * LATENCY),
-                robotPose.getZ()),
-            robotPose.getRotation());
+    // double[] compensatedShooter = {
+    //   shooterPose[X] + (robotVelocity.vxMetersPerSecond * LATENCY),
+    //   shooterPose[Y] + (robotVelocity.vyMetersPerSecond * LATENCY),
+    //   shooterPose[Z]
+    // };
+    // Pose3d compensatedRobot =
+    //     new Pose3d(
+    //         new Translation3d(
+    //             robotPose.getX() + (robotVelocity.vxMetersPerSecond * LATENCY),
+    //             robotPose.getY() + (robotVelocity.vyMetersPerSecond * LATENCY),
+    //             robotPose.getZ()),
+    //         robotPose.getRotation());
 
-    double[] stationaryLaunchParameters = stationaryLaunchParameters(compensatedShooter, heading);
+    double[] stationaryLaunchParameters = stationaryLaunchParameters(shooterPose, heading);
     double[] stationaryShotVelocity = shotVelocity(stationaryLaunchParameters, heading);
+
+    double radius = Math.hypot(robotToShooter[X], robotToShooter[Y]);
+    double tangentialSpeed = robotVelocity.omegaRadiansPerSecond * radius;
+    double tangentialDirection = robotPose.getRotation().getZ() + Math.PI / 2.0;
+
     double[] shooterVelocity =
-        shooterVelocity(stationaryShotVelocity, compensatedRobot, robotVelocity);
-    double shooterSpeed = norm3(shooterVelocity);
+        new double[] {
+          robotVelocity.vxMetersPerSecond + tangentialSpeed * Math.cos(tangentialDirection),
+          robotVelocity.vyMetersPerSecond + tangentialSpeed * Math.sin(tangentialDirection),
+          0
+        };
+
+    double shooterSpeed = norm(shooterVelocity);
 
     LoggingUtils.log("Shooting/Shooter Velocity", shooterSpeed);
     if (shooterSpeed < VELOCITY_DEADBAND) return stationaryLaunchParameters;
 
-    double[] movingShotVelocity = sub3(stationaryShotVelocity, shooterVelocity);
+    double[] movingShotVelocity =
+        new double[] {
+          stationaryShotVelocity[X] - shooterVelocity[X],
+          stationaryShotVelocity[Y] - shooterVelocity[Y],
+          stationaryShotVelocity[Z] - shooterVelocity[Z]
+        };
+
     return launchParameters(movingShotVelocity, heading);
   }
 
@@ -255,7 +277,8 @@ public final class ShotGenerator {
     return visualizer
         .withScoringParameters(GOAL, SCORE_RADIUS, SCORE_DEPTH)
         .configPhysics(WEIGHT_ENABLED, DRAG_ENABLED, TORQUE_ENABLED, LIFT_ENABLED)
-        .configGeneration(0.05, MAX_AIR_TIME, TRAJECTORY_RESOLUTION, TRAJECTORY_RESOLUTION);
+        .configGeneration(0.05, MAX_AIR_TIME, TRAJECTORY_RESOLUTION, TRAJECTORY_RESOLUTION)
+        .config(true, true);
   }
 
   /**

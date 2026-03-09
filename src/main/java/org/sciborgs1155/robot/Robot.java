@@ -50,7 +50,6 @@ import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
 import org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer;
 import org.sciborgs1155.robot.commands.shooting.Shooting;
-import org.sciborgs1155.robot.commands.shooting.ShotDataCollector;
 import org.sciborgs1155.robot.commands.shooting.ShotGenerator;
 import org.sciborgs1155.robot.commands.shooting.TableGenerator;
 import org.sciborgs1155.robot.drive.Drive;
@@ -87,7 +86,6 @@ public class Robot extends CommandRobot {
   // COMMANDS
   private final Alignment align = new Alignment(drive);
   private final Shooting shooting = new Shooting(turret, hood, drive);
-  private final ShotDataCollector shotDataCollector = new ShotDataCollector(shooter, indexer, hood);
   @NotLogged private final SendableChooser<Command> autos = Autos.configureAutos(drive);
 
   @NotLogged
@@ -250,11 +248,6 @@ public class Robot extends CommandRobot {
         .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
 
     teleop().whileTrue(shooting.runShooter());
-
-    if (isReal()) {
-      teleop().onTrue(shotDataCollector.startLogging());
-      disabled().onTrue(shotDataCollector.endLogging());
-    }
 
     operator.a().whileTrue(fuelVisualizer.launchProjectiles());
     operator.b().onTrue(TableGenerator.loadTable());

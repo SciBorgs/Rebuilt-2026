@@ -38,7 +38,7 @@ public final class ShotGenerator {
   private static final double LATENCY = 0.05;
 
   private static final double MAX_AIR_TIME = 10;
-  private static final int TRAJECTORY_RESOLUTION = 300;
+  private static final int TRAJECTORY_RESOLUTION = 100;
   private static final int OPTIMIZATION_RESOLUTION = 500;
   private static final int TRAJECTORY_SIZE_LIMIT = 5000;
 

@@ -81,7 +81,7 @@ public abstract class ProjectileVisualizer {
           2,
           runnable -> {
             Thread thread = new Thread(runnable);
-            thread.setDaemon(true);
+            thread.setName("Projectile Visualizer");
             return thread;
           });
 

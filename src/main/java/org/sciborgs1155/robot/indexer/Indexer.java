@@ -17,8 +17,8 @@ import org.sciborgs1155.robot.Robot;
 
 public final class Indexer extends SubsystemBase implements AutoCloseable {
   private final SimpleMotor hardware;
-  private final Beambreak beambreak;
   public final Trigger blocked;
+  private final Beambreak beambreak;
 
   /**
    * @return Creates a real indexer or no indexer based on Robot.isReal()

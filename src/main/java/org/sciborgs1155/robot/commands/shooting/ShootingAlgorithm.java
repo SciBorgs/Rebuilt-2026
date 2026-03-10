@@ -5,6 +5,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
 
+@FunctionalInterface
 public interface ShootingAlgorithm {
   /**
    * Calculates the direction and speed to run the shooter at to shoot accurately towards the goal.

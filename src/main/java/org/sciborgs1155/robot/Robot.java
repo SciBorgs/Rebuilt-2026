@@ -1,5 +1,6 @@
 package org.sciborgs1155.robot;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
@@ -146,14 +147,18 @@ public class Robot extends CommandRobot {
 
     // Configure pose estimation updates every tick
     addPeriodic(
+      
         () ->
             drive.updateEstimates(
                 vision.estimatedGlobalPoses(drive.gyroHeading(), disabled().getAsBoolean())),
         PERIOD);
   
+    //0.14006, 0.13983, 0.3586252 
+    //0.04006, 0.14483, 0.4086252
+              // 22006
     addPeriodic(() -> {
       log("RobotModel/turretOrigin", new Transform3d(0.14006, 0.13983, 0.3586252, new Rotation3d(0,0,turret.position())), Transform3d.struct);
-      log("RobotModel/hoodOrigin", new Transform3d(0.04006, 0.14483, 0.4086252, new Rotation3d(0,hood.angle(),turret.position())), Transform3d.struct);
+      log("RobotModel/hoodOrigin", new Transform3d(0.14006, 0.13983, 0.4086252, new Rotation3d(0,hood.angle(),turret.position())), Transform3d.struct);
       log("RobotModel/hopperOrigin", new Transform3d(0,0,0, new Rotation3d()), Transform3d.struct);
       log("RobotModel/intakeOrigin", new Transform3d(0,0,0, new Rotation3d()), Transform3d.struct);
       log("RobotModel/driveOrigin", drive.pose3d(), Pose3d.struct);
@@ -231,7 +236,7 @@ public class Robot extends CommandRobot {
         .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
 
     operator.a().whileTrue(turret.sysIdTest(SysIdTestType.QUASISTATIC, edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction.kForward));
-    operator.b().whileTrue(hood.goToTestCommand(Radians.of(2)));
+    operator.b().whileTrue(hood.goToTestCommand(Degrees.of(53)));
 
     
 

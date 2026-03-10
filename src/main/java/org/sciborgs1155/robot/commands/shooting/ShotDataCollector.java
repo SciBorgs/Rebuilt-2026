@@ -10,17 +10,20 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.robot.Constants;
 import org.sciborgs1155.robot.hood.Hood;
 import org.sciborgs1155.robot.indexer.Indexer;
 import org.sciborgs1155.robot.shooter.Shooter;
 
-public class ShotDataCollector {
+public class ShotDataCollector implements AutoCloseable {
   private final Shooter shooter;
   private final Indexer indexer;
   private final Hood hood;
@@ -37,10 +40,15 @@ public class ShotDataCollector {
   private static final long MAX_LOG = 500;
   private static final long MAX_TIMESTEPS = Math.round(300 / ANALYSIS_PERIOD);
 
-  private static final AtomicBoolean RUNNING = new AtomicBoolean(false);
+  private final AtomicBoolean running = new AtomicBoolean(false);
 
-  protected int timestep;
-  private BufferedWriter dataWriter;
+  protected final AtomicInteger timestep = new AtomicInteger(0);
+  private Optional<BufferedWriter> dataWriter = Optional.empty();
+  private final AtomicReference<CachedState> cachedState =
+      new AtomicReference<>(new CachedState(false, 0.0, 0.0));
+
+  // Snapshot of subsystem state written on the main thread, read on the executor thread.
+  private record CachedState(boolean blocked, double velocity, double angle) {}
 
   /** Creates a ShotDataCollector that logs shooter data to a file. */
   public ShotDataCollector(Shooter shooter, Indexer indexer, Hood hood) {
@@ -57,8 +65,8 @@ public class ShotDataCollector {
 
     executorService.scheduleAtFixedRate(
         () -> {
-          LoggingUtils.log("Shooting/DataLog TimeStep", timestep);
-          LoggingUtils.log("Shooting/DataLog Status", RUNNING.get());
+          LoggingUtils.log("Shooting/DataLog TimeStep", timestep.get());
+          LoggingUtils.log("Shooting/DataLog Status", running.get());
         },
         Math.round(INITIAL_DELAY * 1000),
         Math.round(Constants.PERIOD.in(Milliseconds)),
@@ -72,12 +80,23 @@ public class ShotDataCollector {
 
     try {
       dataWriter =
-          Files.newBufferedWriter(
-              Paths.get("resources/" + PATH + LOG_NAME + logIndex + ".ankit"),
-              StandardCharsets.UTF_8);
+          Optional.of(
+              Files.newBufferedWriter(
+                  Paths.get("resources/" + PATH + LOG_NAME + logIndex + ".ankit"),
+                  StandardCharsets.UTF_8));
     } catch (IOException exception) {
-      exception.printStackTrace();
+      DriverStation.reportError(
+          "ShotDataCollector: failed to open log file: " + exception.getMessage(), false);
     }
+  }
+
+  /**
+   * Caches the current subsystem state for use by the background logging thread. Call this once per
+   * main robot loop iteration.
+   */
+  public void update() {
+    cachedState.set(
+        new CachedState(indexer.blocked.getAsBoolean(), shooter.getVelocity(), hood.angle()));
   }
 
   /** Returns a command that begins data logging. */
@@ -85,7 +104,7 @@ public class ShotDataCollector {
     return Commands.runOnce(
         () -> {
           DriverStation.reportWarning("Started Ankit Log!", false);
-          RUNNING.set(true);
+          running.set(true);
         });
   }
 
@@ -94,27 +113,43 @@ public class ShotDataCollector {
     return Commands.runOnce(
         () -> {
           DriverStation.reportWarning("Ended Ankit Log!", false);
-          RUNNING.set(false);
+          running.set(false);
         });
   }
 
   private void logTimestep() {
-    if (!RUNNING.get() || dataWriter == null) return;
+    if (!running.get() || dataWriter.isEmpty()) return;
+
+    BufferedWriter writer = dataWriter.get();
+    CachedState state = cachedState.get();
 
     try {
-      dataWriter.write(
-          indexer.blocked.getAsBoolean() + "," + shooter.getVelocity() + "," + hood.angle());
-      dataWriter.newLine();
-      timestep++;
+      writer.write(state.blocked() + "," + state.velocity() + "," + state.angle());
+      writer.newLine();
 
-      if (timestep > MAX_TIMESTEPS) {
-        timestep = 0;
-
+      if (timestep.incrementAndGet() > MAX_TIMESTEPS) {
+        timestep.set(0);
         executorService.shutdown();
-        dataWriter.close();
+        writer.close();
+        dataWriter = Optional.empty();
       }
     } catch (IOException exception) {
-      endLogging();
+      running.set(false);
     }
+  }
+
+  @Override
+  public void close() {
+    executorService.shutdownNow();
+    dataWriter.ifPresent(
+        writer -> {
+          try {
+            writer.close();
+          } catch (IOException exception) {
+            DriverStation.reportError(
+                "ShotDataCollector: failed to close log file: " + exception.getMessage(), false);
+          }
+        });
+    dataWriter = Optional.empty();
   }
 }

@@ -1,5 +1,6 @@
 package org.sciborgs1155.robot.turret;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
@@ -219,7 +220,8 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
         };
 
     Angle stopAngle =
-        direction == Direction.kForward ? MAX_ANGLE.minus(TOLERANCE) : MIN_ANGLE.plus(TOLERANCE);
+        direction == Direction.kForward ? MAX_ANGLE.minus(Degrees.of(20)) : MIN_ANGLE.plus(Degrees.of(20));
+    // decently far away from max angle to avoid anything breaking should there be an issue
 
     return test.until(
         () ->

@@ -1,7 +1,6 @@
 package org.sciborgs1155.robot.turret;
 
 import static edu.wpi.first.units.Units.Amps;
-import static edu.wpi.first.units.Units.Rotations;
 import static org.sciborgs1155.robot.Constants.SHOOTING_CANIVORE;
 import static org.sciborgs1155.robot.Ports.Turret.*;
 import static org.sciborgs1155.robot.turret.TurretConstants.*;
@@ -15,8 +14,6 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.lib.TalonUtils;
-import yams.units.EasyCRT;
-import yams.units.EasyCRTConfig;
 
 /** Real hardware interface for the {@code Turret} subsystem. */
 public class RealTurret implements TurretIO {
@@ -25,18 +22,6 @@ public class RealTurret implements TurretIO {
 
   private final CANcoder encoderA = new CANcoder(ENCODER_A, SHOOTING_CANIVORE);
   private final CANcoder encoderB = new CANcoder(ENCODER_B, SHOOTING_CANIVORE);
-
-  private double lastGoodPositionRad;
-  private double failCount;
-
-  private final EasyCRTConfig crtConfig =
-      new EasyCRTConfig(() -> Rotations.of(encoderA()), () -> Rotations.of(encoderB()))
-          .withEncoderRatios(TURRET_GEARING / ENCODER_A_GEARING, TURRET_GEARING / ENCODER_B_GEARING)
-          .withMechanismRange(MIN_ANGLE, MAX_ANGLE)
-          .withMatchTolerance(CRT_MATCH_TOLERANCE)
-          .withAbsoluteEncoderInversions(true, true);
-
-  private final EasyCRT solverCRT = new EasyCRT(crtConfig);
 
   /** Real hardware interface for the {@code Turret} subsystem. */
   public RealTurret() {

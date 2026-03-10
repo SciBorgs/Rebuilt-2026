@@ -108,24 +108,16 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
             new Mechanism(voltage -> hardware.setVoltage(voltage.in(Volts)), null, this));
     SmartDashboard.putData(
         "Robot/hood/quasistatic forward",
-        sysIdRoutine
-            .quasistatic(Direction.kForward)
-            .withName("hood quasistatic forward"));
+        sysIdRoutine.quasistatic(Direction.kForward).withName("hood quasistatic forward"));
     SmartDashboard.putData(
         "Robot/hood/quasistatic backward",
-        sysIdRoutine
-            .quasistatic(Direction.kReverse)
-            .withName("hood quasistatic backward"));
+        sysIdRoutine.quasistatic(Direction.kReverse).withName("hood quasistatic backward"));
     SmartDashboard.putData(
         "Robot/hood/dynamic forward",
-        sysIdRoutine
-            .dynamic(Direction.kForward)
-            .withName("hood dynamic forward"));
+        sysIdRoutine.dynamic(Direction.kForward).withName("hood dynamic forward"));
     SmartDashboard.putData(
         "Robot/hood/dynamic backward",
-        sysIdRoutine
-            .dynamic(Direction.kReverse)
-            .withName("hood dynamic backward"));
+        sysIdRoutine.dynamic(Direction.kReverse).withName("hood dynamic backward"));
   }
 
   /**

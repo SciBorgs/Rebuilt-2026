@@ -1,9 +1,8 @@
 package org.sciborgs1155.robot.turret;
 
 import org.sciborgs1155.lib.FaultLogger;
-import org.sciborgs1155.lib.FaultLogger.Fault;
-import org.sciborgs1155.lib.FaultLogger.FaultType;
 import org.sciborgs1155.lib.TalonUtils;
+import static org.sciborgs1155.robot.Constants.SHOOTING_CANIVORE;
 import static org.sciborgs1155.robot.Ports.Turret.ENCODER_A;
 import static org.sciborgs1155.robot.Ports.Turret.ENCODER_B;
 import static org.sciborgs1155.robot.Ports.Turret.MOTOR;
@@ -17,33 +16,15 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.MathUtil;
 import static edu.wpi.first.units.Units.Amps;
-import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.Rotations;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import yams.units.EasyCRT;
-import yams.units.EasyCRTConfig;
 
 /** Real hardware interface for the {@code Turret} subsystem. */
 public class RealTurret implements TurretIO {
   /** Motor controller that operates a motor which is used to rotate the turret. */
-  private final TalonFX hardware = new TalonFX(MOTOR);
+  private final TalonFX hardware = new TalonFX(MOTOR, SHOOTING_CANIVORE);
 
-  private final CANcoder encoderA = new CANcoder(ENCODER_A);
-  private final CANcoder encoderB = new CANcoder(ENCODER_B);
-
-  private double lastGoodPositionRad;
-  private double failCount;
-
-  private final EasyCRTConfig crtConfig =
-      new EasyCRTConfig(() -> Rotations.of(encoderA()), () -> Rotations.of(encoderB()))
-          .withEncoderRatios(
-              (double) TURRET_GEARING / ENCODER_A_GEARING,
-              (double) TURRET_GEARING / ENCODER_B_GEARING)
-          .withMechanismRange(MIN_ANGLE, MAX_ANGLE)
-          .withMatchTolerance(CRT_MATCH_TOLERANCE)
-          .withAbsoluteEncoderInversions(true, true);
-
-  private final EasyCRT solverCRT = new EasyCRT(crtConfig);
+  private final CANcoder encoderA = new CANcoder(ENCODER_A, SHOOTING_CANIVORE);
+  private final CANcoder encoderB = new CANcoder(ENCODER_B, SHOOTING_CANIVORE);
 
   /** Real hardware interface for the {@code Turret} subsystem. */
   public RealTurret() {
@@ -85,7 +66,7 @@ public class RealTurret implements TurretIO {
    * resets, so it should only be used for testing.
    */
   public double encoderADerived() {
-    double encoderRot = trueAngleRot() * ((double) TURRET_GEARING / ENCODER_A_GEARING);
+    double encoderRot = trueAngleRot() * (TURRET_GEARING / ENCODER_A_GEARING);
 
     return MathUtil.inputModulus(encoderRot, 0.0, 1.0);
   }
@@ -95,7 +76,7 @@ public class RealTurret implements TurretIO {
    * resets, so it should only be used for testing.
    */
   public double encoderBDerived() {
-    double encoderRot = trueAngleRot() * ((double) TURRET_GEARING / ENCODER_B_GEARING);
+    double encoderRot = trueAngleRot() * (TURRET_GEARING / ENCODER_B_GEARING);
 
     return MathUtil.inputModulus(encoderRot, 0.0, 1.0);
   }
@@ -113,31 +94,6 @@ public class RealTurret implements TurretIO {
   @Override
   public void setVoltage(double voltage) {
     hardware.setVoltage(voltage);
-  }
-
-  @Override
-  public double position() {
-    return solverCRT
-        .getAngleOptional()
-        .map(
-            a -> {
-              lastGoodPositionRad = a.in(Radians);
-              failCount = 0;
-              return lastGoodPositionRad;
-            })
-        .orElseGet(
-            () -> {
-              failCount++;
-              if (failCount % 10 == 0) {
-                FaultLogger.report(
-                    new Fault(
-                        "Turret CRT failure: >10 consecutive failures",
-                        "Unable to solve turret position with CRT, using stale position - fail count: "
-                            + failCount,
-                        FaultType.WARNING));
-              }
-              return lastGoodPositionRad;
-            });
   }
 
   @Override

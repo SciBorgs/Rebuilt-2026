@@ -28,7 +28,7 @@ import edu.wpi.first.units.measure.Voltage;
 public class TurretConstants {
   public static final Current CURRENT_LIMIT = Amps.of(30);
 
-  public static final double GEAR_RATIO = 686 / 15; // 686 / 15
+  public static final double GEAR_RATIO = 686.0 / 15; // 686 / 15
   public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.0872);
   public static final AngularVelocity MAX_VELOCITY = RadiansPerSecond.of(3);
   public static final AngularAcceleration MAX_ACCELERATION = RadiansPerSecondPerSecond.of(6);
@@ -37,8 +37,8 @@ public class TurretConstants {
           MAX_VELOCITY.in(RadiansPerSecond),
           MAX_ACCELERATION.in(RadiansPerSecondPerSecond)); // TODO: Update.
 
-  public static final Angle MAX_ANGLE = Degrees.of(175);
-  public static final Angle MIN_ANGLE = Degrees.of(-175);
+  public static final Angle MAX_ANGLE = Degrees.of(360);
+  public static final Angle MIN_ANGLE = Degrees.of(-90);
   public static final Angle START_ANGLE = Radians.of(0);
 
   public static final Distance TURRET_RADIUS = Inches.of(6.91);
@@ -50,9 +50,9 @@ public class TurretConstants {
   public static final Voltage STEP_VOLTAGE = Volts.of(2);
   public static final Time TIME_OUT = Seconds.of(6);
 
-  public static final int TURRET_GEARING = 84;
-  public static final int ENCODER_A_GEARING = 12;
-  public static final int ENCODER_B_GEARING = 13;
+  public static final double TURRET_GEARING = 84.;
+  public static final double ENCODER_A_GEARING = 12.;
+  public static final double ENCODER_B_GEARING = 13.;
 
   public static final Angle CRT_MATCH_TOLERANCE = Degrees.of(1);
 

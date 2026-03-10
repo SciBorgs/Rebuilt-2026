@@ -2,6 +2,7 @@ package org.sciborgs1155.robot.shooter;
 
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static org.sciborgs1155.robot.Constants.SHOOTING_CANIVORE;
 import static org.sciborgs1155.robot.Ports.Shooter.*;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.*;
 
@@ -19,8 +20,8 @@ public class RealWheel implements WheelIO {
 
   /** Sets the TalonFX motor configurations */
   public RealWheel() {
-    leader = new TalonFX(LEADER);
-    follower = new TalonFX(FOLLOWER);
+    leader = new TalonFX(LEADER, SHOOTING_CANIVORE);
+    follower = new TalonFX(FOLLOWER, SHOOTING_CANIVORE);
     TalonFXConfiguration config = new TalonFXConfiguration();
 
     config.CurrentLimits.StatorCurrentLimit = STATOR_CURRENT_LIMIT.in(Amps);

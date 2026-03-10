@@ -38,8 +38,8 @@ public class ShooterConstants {
     public static final double I = Robot.isReal() ? 0.0 : 0.000000001;
     public static final double D = Robot.isReal() ? 0.0 : 0.000000001;
 
-    public static final double S = Robot.isReal() ? 0.0 : 0.000000001;
-    public static final double V = Robot.isReal() ? 0.15318 : 0.023880;
-    public static final double A = Robot.isReal() ? 0.066883 : 0.001000;
+    public static final double S = Robot.isReal() ? 0.19071 : 0.000000001;
+    public static final double V = Robot.isReal() ? 0.023602 : 0.023880;
+    public static final double A = Robot.isReal() ? 0.0024145 : 0.001000;
   }
 }

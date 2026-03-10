@@ -1,6 +1,7 @@
 package org.sciborgs1155.robot.hopper;
 
 import static edu.wpi.first.units.Units.Amps;
+import static org.sciborgs1155.robot.Constants.INTAKE_CANIVORE;
 import static org.sciborgs1155.robot.Ports.Hopper.*;
 import static org.sciborgs1155.robot.hopper.HopperConstants.*;
 
@@ -37,7 +38,7 @@ public final class Hopper extends SubsystemBase implements AutoCloseable {
    * @return A simple motor with hardware configurations
    */
   private static SimpleMotor realMotor() {
-    TalonFX motor = new TalonFX(MOTOR);
+    TalonFX motor = new TalonFX(MOTOR, INTAKE_CANIVORE);
     TalonFXConfiguration config = new TalonFXConfiguration();
 
     config.CurrentLimits.SupplyCurrentLimit = CURRENT_LIMIT.in(Amps);

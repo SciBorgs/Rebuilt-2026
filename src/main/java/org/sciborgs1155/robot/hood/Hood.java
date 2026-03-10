@@ -96,7 +96,6 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
     this.hardware = hardware;
 
     fb.setTolerance(POSITION_TOLERANCE.in(Radians));
-    // fb.reset(null);
     setDefaultCommand(run(() -> hardware.setVoltage(0)));
 
     sysIdRoutine =
@@ -109,28 +108,16 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
             new Mechanism(voltage -> hardware.setVoltage(voltage.in(Volts)), null, this));
     SmartDashboard.putData(
         "Robot/hood/quasistatic forward",
-        sysIdRoutine
-            .quasistatic(Direction.kForward)
-            // .until(() -> atPosition(MAX_ANGLE.in(Radians)))
-            .withName("hood quasistatic forward"));
+        sysIdRoutine.quasistatic(Direction.kForward).withName("hood quasistatic forward"));
     SmartDashboard.putData(
         "Robot/hood/quasistatic backward",
-        sysIdRoutine
-            .quasistatic(Direction.kReverse)
-            // .until(() -> atPosition(MIN_ANGLE.in(Radians)))
-            .withName("hood quasistatic backward"));
+        sysIdRoutine.quasistatic(Direction.kReverse).withName("hood quasistatic backward"));
     SmartDashboard.putData(
         "Robot/hood/dynamic forward",
-        sysIdRoutine
-            .dynamic(Direction.kForward)
-            // .until(() -> atPosition(MAX_ANGLE.in(Radians)))
-            .withName("hood dynamic forward"));
+        sysIdRoutine.dynamic(Direction.kForward).withName("hood dynamic forward"));
     SmartDashboard.putData(
         "Robot/hood/dynamic backward",
-        sysIdRoutine
-            .dynamic(Direction.kReverse)
-            // .until(() -> atPosition(MIN_ANGLE.in(Radians)))
-            .withName("hood dynamic backward"));
+        sysIdRoutine.dynamic(Direction.kReverse).withName("hood dynamic backward"));
   }
 
   /**

@@ -2,6 +2,7 @@ package org.sciborgs1155.robot.slapdown;
 
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Radians;
+import static org.sciborgs1155.robot.Constants.INTAKE_CANIVORE;
 import static org.sciborgs1155.robot.Ports.Slapdown.*;
 import static org.sciborgs1155.robot.slapdown.SlapdownConstants.*;
 import static org.sciborgs1155.robot.slapdown.SlapdownConstants.GEARING;
@@ -17,14 +18,14 @@ public class RealSlapdown implements SlapdownIO {
 
   /** Configures the motors */
   public RealSlapdown() {
-    motor = new TalonFX(EXTENSION);
+    motor = new TalonFX(EXTENSION, INTAKE_CANIVORE);
 
     // Rollers - Kraken X44
     // Check how integrated encoder works
 
     TalonFXConfiguration motorConfig = new TalonFXConfiguration();
 
-    motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     motorConfig.CurrentLimits.SupplyCurrentLimit = CURRENT_LIMIT.in(Amps);
     motorConfig.Feedback.SensorToMechanismRatio = GEARING;
 

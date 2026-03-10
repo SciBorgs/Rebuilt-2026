@@ -80,12 +80,12 @@ public final class Ports {
 
   public static final class Hopper {
     public static final int MOTOR = 21;
-    public static final int BEAMBREAK = 8;
+    public static final int BEAMBREAK = 0;
   }
 
   public static final class Indexer {
     public static final int MOTOR = 23;
-    public static final int BEAMBREAK = 7;
+    public static final int BEAMBREAK = 9;
   }
 
   public static final class Turret {

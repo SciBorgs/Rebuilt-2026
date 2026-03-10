@@ -1,5 +1,6 @@
 package org.sciborgs1155.robot;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Second;
@@ -40,13 +41,18 @@ import org.littletonrobotics.urcl.URCL;
 import org.sciborgs1155.lib.CommandRobot;
 import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.lib.InputStream;
+import org.sciborgs1155.lib.ShiftTracker;
 import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.lib.Tracer;
 import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
+import org.sciborgs1155.robot.commands.shooting.ShotDataCollector;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.hood.Hood;
+import org.sciborgs1155.robot.hopper.Hopper;
+import org.sciborgs1155.robot.indexer.Indexer;
+import org.sciborgs1155.robot.intake.Intake;
 import org.sciborgs1155.robot.shooter.Shooter;
 import org.sciborgs1155.robot.slapdown.Slapdown;
 import org.sciborgs1155.robot.turret.Turret;
@@ -67,15 +73,19 @@ public class Robot extends CommandRobot {
   private final PowerDistribution pdh = new PowerDistribution();
 
   // SUBSYSTEMS
-  private final Drive drive = Drive.none();
-  private final Hood hood = Hood.create();
-  private final Vision vision = Vision.none();
-  private final Shooter shooter = Shooter.create();
+  private final Drive drive = Drive.create();
+  private final Vision vision = Vision.create();
   private final Turret turret = Turret.create();
+  private final Hood hood = Hood.create();
+  private final Shooter shooter = Shooter.create();
+  private final Indexer indexer = Indexer.create();
+  private final Hopper hopper = Hopper.create();
   private final Slapdown slapdown = Slapdown.create();
+  private final Intake intake = Intake.create();
 
   // COMMANDS
   private final Alignment align = new Alignment(drive);
+  private final ShotDataCollector shotDataCollector = new ShotDataCollector(shooter, indexer, hood);
 
   @NotLogged private final SendableChooser<Command> autos = Autos.configureAutos(drive);
 
@@ -109,6 +119,11 @@ public class Robot extends CommandRobot {
 
     FaultLogger.register(pdh);
     SmartDashboard.putData("Auto Chooser", autos);
+
+    if (isReal()) {
+      teleop().onTrue(shotDataCollector.startLogging());
+      teleop().onFalse(shotDataCollector.endLogging());
+    }
 
     if (TUNING) {
       addPeriodic(
@@ -152,6 +167,8 @@ public class Robot extends CommandRobot {
 
   /** Configures trigger -> command bindings. */
   private void configureBindings() {
+    teleop().onTrue(ShiftTracker.startTracking());
+
     // x and y are switched: we use joystick Y axis to control field x motion
     InputStream rawX = InputStream.of(driver::getLeftY).log("/Robot/raw x").negate();
     InputStream rawY = InputStream.of(driver::getLeftX).log("/Robot/raw y").negate();
@@ -210,16 +227,12 @@ public class Robot extends CommandRobot {
         .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
 
     // TODO: Add any additional bindings.
-    // driver.y().whileTrue(hood.goTo(HoodConstants.MAX_ANGLE));
-    // driver.leftTrigger().whileTrue(turret.goLeft());
-    // driver.rightTrigger().whileTrue(turret.goRight());
-    // driver.a().whileTrue(hood.goTo(Degrees.of(30)));
-    // driver.x().whileTrue(turret.goTo(() -> Math.PI / 4));
-    // driver.b().whileTrue(turret.goTo(() -> -Math.PI / 4));
-    driver.leftTrigger().whileTrue(turret.goLeft());
-    driver.rightTrigger().whileTrue(turret.goRight());
-    driver.x().whileTrue(hood.manualHood(InputStream.of(driver::getLeftY)));
-    driver.y().whileTrue(shooter.runShooter(342));
+    operator.leftTrigger().whileTrue(turret.goLeft());
+    operator.rightTrigger().whileTrue(turret.goRight());
+    operator.x().whileTrue(hood.goTo(Degrees.of(45)));
+    operator.b().whileTrue(hood.goTo(Degrees.of(25)));
+    operator.y().whileTrue(shooter.runShooter(100));
+    operator.a().whileTrue(shooter.runShooter(250));
   }
 
   /**

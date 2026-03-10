@@ -1,18 +1,16 @@
 package org.sciborgs1155.robot.turret;
 
-import org.sciborgs1155.lib.FaultLogger;
-import org.sciborgs1155.lib.FaultLogger.Fault;
-import org.sciborgs1155.lib.FaultLogger.FaultType;
 import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.turret.TurretConstants.*;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.system.plant.DCMotor;
-import static edu.wpi.first.units.Units.*;
+import static edu.wpi.first.units.Units.KilogramSquareMeters;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.Seconds;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import yams.units.EasyCRT;
-import yams.units.EasyCRTConfig;
 
 /** Simulated hardware interface for the {@code Turret} subsystem. */
 public class SimTurret implements TurretIO {
@@ -27,20 +25,6 @@ public class SimTurret implements TurretIO {
       false, // GRAVITY DISBLAED
       START_ANGLE.in(Radians)); // STARTING ANGLE
 
-  /** Cached last valid CRT solution */
-  private double lastGoodPositionRad = START_ANGLE.in(Radians);
-
-  private double failCount;
-
-  /** EasyCRT solver */
-  private final EasyCRTConfig crtConfig = new EasyCRTConfig(() -> Rotations.of(encoderA()),
-      () -> Rotations.of(encoderB()))
-      .withCommonDriveGear(1, TURRET_GEARING, ENCODER_A_GEARING, ENCODER_B_GEARING)
-      .withMechanismRange(MIN_ANGLE, MAX_ANGLE)
-      .withMatchTolerance(CRT_MATCH_TOLERANCE);
-
-  private final EasyCRT solverCRT = new EasyCRT(crtConfig);
-
   /** True turret angle in radians (mechanism space). */
   public double trueAngleRad() {
     return simulation.getAngleRads();
@@ -49,49 +33,23 @@ public class SimTurret implements TurretIO {
   @Override
   public double encoderA() {
     double turretRot = trueAngleRad() / (2.0 * Math.PI);
-    double encoderRot = turretRot * ((double) TURRET_GEARING / ENCODER_A_GEARING);
+    double encoderRot = turretRot * (TURRET_GEARING / ENCODER_A_GEARING);
 
-    return MathUtil.inputModulus(encoderRot, 0.0, 1.0);
+    return 1.0 - MathUtil.inputModulus(encoderRot, 0.0, 1.0);
   }
 
   @Override
   public double encoderB() {
     double turretRot = trueAngleRad() / (2.0 * Math.PI);
-    double encoderRot = turretRot * ((double) TURRET_GEARING / ENCODER_B_GEARING);
+    double encoderRot = turretRot * (TURRET_GEARING / ENCODER_B_GEARING);
 
-    return MathUtil.inputModulus(encoderRot, 0.0, 1.0);
+    return 1.0 - MathUtil.inputModulus(encoderRot, 0.0, 1.0);
   }
 
   @Override
   public void setVoltage(double voltage) {
     simulation.setInputVoltage(voltage);
-    System.out.println(crtConfig.getUniqueCoverage().get().in(Rotations));
     simulation.update(PERIOD.in(Seconds));
-  }
-
-  @Override
-  public double position() {
-    return solverCRT
-        .getAngleOptional()
-        .map(
-            a -> {
-              lastGoodPositionRad = a.in(Radians);
-              failCount = 0;
-              return lastGoodPositionRad;
-            })
-        .orElseGet(
-            () -> {
-              failCount++;
-              if (failCount % 10 == 0) {
-                FaultLogger.report(
-                    new Fault(
-                        "Turret CRT failure: >10 consecutive failures",
-                        "Unable to solve turret position with CRT, using stale position - fail count: "
-                            + failCount,
-                        FaultType.WARNING));
-              }
-              return lastGoodPositionRad;
-            });
   }
 
   @Override

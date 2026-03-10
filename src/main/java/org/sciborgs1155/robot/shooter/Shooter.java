@@ -1,37 +1,44 @@
 package org.sciborgs1155.robot.shooter;
 
-import static edu.wpi.first.units.Units.*;
+import java.util.Set;
+import java.util.function.DoubleSupplier;
+
+import org.sciborgs1155.lib.Assertion.EqualityAssertion;
 import static org.sciborgs1155.lib.Assertion.eAssert;
+import org.sciborgs1155.lib.InputStream;
+import org.sciborgs1155.lib.LoggingUtils;
+import org.sciborgs1155.lib.Test;
+import org.sciborgs1155.lib.Tuning;
 import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.Constants.TUNING;
+import org.sciborgs1155.robot.Robot;
+import static org.sciborgs1155.robot.shooter.ShooterConstants.ControlConstants.*;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.*;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.ControlConstants.*;
 
 import com.ctre.phoenix6.SignalLogger;
+
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.networktables.DoubleEntry;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.Second;
+import static edu.wpi.first.units.Units.Seconds;
+import static edu.wpi.first.units.Units.Volts;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import java.util.Set;
-import java.util.function.DoubleSupplier;
-import org.sciborgs1155.lib.Assertion.EqualityAssertion;
-import org.sciborgs1155.lib.InputStream;
-import org.sciborgs1155.lib.LoggingUtils;
-import org.sciborgs1155.lib.Test;
-import org.sciborgs1155.lib.Tuning;
-import org.sciborgs1155.robot.Robot;
 
 public final class Shooter extends SubsystemBase implements AutoCloseable {
   private final WheelIO hardware;
 
-  @Logged private final PIDController controller = new PIDController(P, I, D);
+  @Logged private final ProfiledPIDController controller = new ProfiledPIDController(P, I, D, new TrapezoidProfile.Constraints(MAX_ACCELERATION, MAX_JERK));
   private final SimpleMotorFeedforward feedforward =
       new SimpleMotorFeedforward(S, V, A, PERIOD.in(Seconds));
   private final SysIdRoutine characterization;
@@ -92,15 +99,6 @@ public final class Shooter extends SubsystemBase implements AutoCloseable {
     setDefaultCommand(runShooter(IDLE_VELOCITY.in(RadiansPerSecond)).withName("Idle"));
   }
 
-  /**
-   * Returns the velocity of the motor.
-   *
-   * @return Return the value of the velocity in radians per second.
-   */
-  @Logged
-  public double getVelocity() {
-    return hardware.velocity();
-  }
 
   /**
    * Updates the velocity setpoint of the motor.
@@ -113,9 +111,8 @@ public final class Shooter extends SubsystemBase implements AutoCloseable {
             velocitySetpoint,
             -MAX_VELOCITY.in(RadiansPerSecond),
             MAX_VELOCITY.in(RadiansPerSecond));
-    double last = controller.getSetpoint();
-    double pidVolts = controller.calculate(getVelocity(), velocity);
-    double ffVolts = feedforward.calculateWithVelocities(last, velocity); // feedforward
+    double pidVolts = controller.calculate(velocity(), velocity);
+    double ffVolts = feedforward.calculate(velocity);
     hardware.setVoltage(MathUtil.clamp(pidVolts + ffVolts, -MAX_VOLTAGE, MAX_VOLTAGE));
   }
 
@@ -135,7 +132,7 @@ public final class Shooter extends SubsystemBase implements AutoCloseable {
    * @return true or false
    */
   public boolean atVelocity(double velocity) {
-    return Math.abs(velocity - getVelocity()) < VELOCITY_TOLERANCE.in(RadiansPerSecond);
+    return Math.abs(velocity - velocity()) < VELOCITY_TOLERANCE.in(RadiansPerSecond);
   }
 
   /**
@@ -143,7 +140,7 @@ public final class Shooter extends SubsystemBase implements AutoCloseable {
    */
   @Logged
   public double setpoint() {
-    return controller.getSetpoint();
+    return controller.getSetpoint().position;
   }
 
   /**
@@ -186,7 +183,7 @@ public final class Shooter extends SubsystemBase implements AutoCloseable {
                 .deadband(.15, 1)
                 .scale(MAX_VELOCITY.in(RadiansPerSecond))
                 .scale(PERIOD.in(Seconds))
-                .add(() -> controller.getSetpoint()))
+                .add(() -> controller.getSetpoint().position))
         .withName("manual shooter");
   }
 
@@ -201,7 +198,7 @@ public final class Shooter extends SubsystemBase implements AutoCloseable {
         eAssert(
             "Shooter Syst Check Speed",
             () -> goal.getAsDouble(),
-            this::getVelocity,
+            this::velocity,
             VELOCITY_TOLERANCE.in(RadiansPerSecond));
     return new Test(testCommand.withTimeout(5), Set.of(atGoal));
   }

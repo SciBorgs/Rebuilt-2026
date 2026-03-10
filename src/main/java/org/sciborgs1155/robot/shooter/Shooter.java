@@ -1,23 +1,16 @@
 package org.sciborgs1155.robot.shooter;
 
-import java.util.Set;
-import java.util.function.DoubleSupplier;
-
-import org.sciborgs1155.lib.Assertion.EqualityAssertion;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.Second;
+import static edu.wpi.first.units.Units.Seconds;
+import static edu.wpi.first.units.Units.Volts;
 import static org.sciborgs1155.lib.Assertion.eAssert;
-import org.sciborgs1155.lib.InputStream;
-import org.sciborgs1155.lib.LoggingUtils;
-import org.sciborgs1155.lib.Test;
-import org.sciborgs1155.lib.Tuning;
 import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.Constants.TUNING;
-import org.sciborgs1155.robot.Robot;
-import static org.sciborgs1155.robot.shooter.ShooterConstants.ControlConstants.*;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.*;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.ControlConstants.*;
 
 import com.ctre.phoenix6.SignalLogger;
-
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.MathUtil;
@@ -25,20 +18,28 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.networktables.DoubleEntry;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.Second;
-import static edu.wpi.first.units.Units.Seconds;
-import static edu.wpi.first.units.Units.Volts;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import java.util.Set;
+import java.util.function.DoubleSupplier;
+import org.sciborgs1155.lib.Assertion.EqualityAssertion;
+import org.sciborgs1155.lib.InputStream;
+import org.sciborgs1155.lib.LoggingUtils;
+import org.sciborgs1155.lib.Test;
+import org.sciborgs1155.lib.Tuning;
+import org.sciborgs1155.robot.Robot;
 
 public final class Shooter extends SubsystemBase implements AutoCloseable {
   private final WheelIO hardware;
 
-  @Logged private final ProfiledPIDController controller = new ProfiledPIDController(P, I, D, new TrapezoidProfile.Constraints(MAX_ACCELERATION, MAX_JERK));
+  @Logged
+  private final ProfiledPIDController controller =
+      new ProfiledPIDController(
+          P, I, D, new TrapezoidProfile.Constraints(MAX_ACCELERATION, MAX_JERK));
+
   private final SimpleMotorFeedforward feedforward =
       new SimpleMotorFeedforward(S, V, A, PERIOD.in(Seconds));
   private final SysIdRoutine characterization;
@@ -98,7 +99,6 @@ public final class Shooter extends SubsystemBase implements AutoCloseable {
 
     setDefaultCommand(runShooter(IDLE_VELOCITY.in(RadiansPerSecond)).withName("Idle"));
   }
-
 
   /**
    * Updates the velocity setpoint of the motor.

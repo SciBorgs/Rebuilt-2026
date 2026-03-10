@@ -49,7 +49,7 @@ public final class VisionConstants {
 
   public static final CameraConfig F_CAMERA = // CAMERA 4
       new CameraConfig(
-          "front cam",
+          "F cam",
           78,
           new Transform3d(
               Inches.of(13.327756),
@@ -60,7 +60,7 @@ public final class VisionConstants {
 
   public static final CameraConfig B_CAMERA = // CAMERA 2
       new CameraConfig(
-          "intake cam",
+          "B cam",
           78,
           new Transform3d(
               Inches.of(1.827756),

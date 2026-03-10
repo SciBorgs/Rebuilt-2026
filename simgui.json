@@ -50,7 +50,7 @@
       "Robot/drive/rotationController": "PIDController",
       "Robot/drive/translationController": "ProfiledPIDController",
       "Robot/hood/fb": "ProfiledPIDController",
-      "Robot/shooter/controller": "PIDController",
+      "Robot/shooter/controller": "ProfiledPIDController",
       "Robot/slapdown/pid": "ProfiledPIDController",
       "Robot/turret/controller": "ProfiledPIDController"
     }
@@ -73,9 +73,6 @@
         }
       }
     }
-  },
-  "NetworkTables Info": {
-    "visible": true
   },
   "Plot": {
     "Plot <0>": {
@@ -124,12 +121,11 @@
             0.0,
             0.8500000238418579
           ],
-          "height": 332
+          "height": 334
         }
       ],
       "window": {
-        "name": "Shooter!",
-        "visible": false
+        "name": "Shooter!"
       }
     },
     "Plot <2>": {

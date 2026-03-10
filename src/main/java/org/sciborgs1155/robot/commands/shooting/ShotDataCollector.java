@@ -96,7 +96,7 @@ public class ShotDataCollector implements AutoCloseable {
    */
   public void update() {
     cachedState.set(
-        new CachedState(indexer.blocked.getAsBoolean(), shooter.getVelocity(), hood.angle()));
+        new CachedState(indexer.blocked.getAsBoolean(), shooter.velocity(), hood.angle()));
   }
 
   /** Returns a command that begins data logging. */

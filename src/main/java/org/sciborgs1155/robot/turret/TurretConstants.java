@@ -28,7 +28,7 @@ import edu.wpi.first.units.measure.Voltage;
 public class TurretConstants {
   public static final Current CURRENT_LIMIT = Amps.of(30);
 
-  public static final double GEAR_RATIO = 686 / 15; // 686 / 15
+  public static final double GEAR_RATIO = 686.0 / 15; // 686 / 15
   public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.0872);
   public static final AngularVelocity MAX_VELOCITY = RadiansPerSecond.of(3);
   public static final AngularAcceleration MAX_ACCELERATION = RadiansPerSecondPerSecond.of(6);

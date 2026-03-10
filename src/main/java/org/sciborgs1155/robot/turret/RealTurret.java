@@ -1,7 +1,6 @@
 package org.sciborgs1155.robot.turret;
 
 import static edu.wpi.first.units.Units.Amps;
-import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Rotations;
 import static org.sciborgs1155.robot.Constants.SHOOTING_CANIVORE;
 import static org.sciborgs1155.robot.Ports.Turret.*;
@@ -15,8 +14,6 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.sciborgs1155.lib.FaultLogger;
-import org.sciborgs1155.lib.FaultLogger.Fault;
-import org.sciborgs1155.lib.FaultLogger.FaultType;
 import org.sciborgs1155.lib.TalonUtils;
 import yams.units.EasyCRT;
 import yams.units.EasyCRTConfig;
@@ -34,9 +31,7 @@ public class RealTurret implements TurretIO {
 
   private final EasyCRTConfig crtConfig =
       new EasyCRTConfig(() -> Rotations.of(encoderA()), () -> Rotations.of(encoderB()))
-          .withEncoderRatios(
-              TURRET_GEARING / ENCODER_A_GEARING,
-              TURRET_GEARING / ENCODER_B_GEARING)
+          .withEncoderRatios(TURRET_GEARING / ENCODER_A_GEARING, TURRET_GEARING / ENCODER_B_GEARING)
           .withMechanismRange(MIN_ANGLE, MAX_ANGLE)
           .withMatchTolerance(CRT_MATCH_TOLERANCE)
           .withAbsoluteEncoderInversions(true, true);
@@ -111,31 +106,6 @@ public class RealTurret implements TurretIO {
   @Override
   public void setVoltage(double voltage) {
     hardware.setVoltage(voltage);
-  }
-
-  @Override
-  public double position() {
-    return solverCRT
-        .getAngleOptional()
-        .map(
-            a -> {
-              lastGoodPositionRad = a.in(Radians);
-              failCount = 0;
-              return lastGoodPositionRad;
-            })
-        .orElseGet(
-            () -> {
-              failCount++;
-              if (failCount % 10 == 0) {
-                FaultLogger.report(
-                    new Fault(
-                        "Turret CRT failure: >10 consecutive failures",
-                        "Unable to solve turret position with CRT, using stale position - fail count: "
-                            + failCount,
-                        FaultType.WARNING));
-              }
-              return lastGoodPositionRad;
-            });
   }
 
   @Override

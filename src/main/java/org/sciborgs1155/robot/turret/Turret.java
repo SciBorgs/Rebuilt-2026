@@ -3,6 +3,7 @@ package org.sciborgs1155.robot.turret;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
+import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 import static org.sciborgs1155.lib.Assertion.tAssert;
@@ -27,11 +28,16 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import java.util.Set;
 import java.util.function.DoubleSupplier;
 import org.sciborgs1155.lib.Assertion;
+import org.sciborgs1155.lib.FaultLogger;
+import org.sciborgs1155.lib.FaultLogger.Fault;
+import org.sciborgs1155.lib.FaultLogger.FaultType;
 import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.lib.Tuning;
 import org.sciborgs1155.robot.Robot;
+import yams.units.EasyCRT;
+import yams.units.EasyCRTConfig;
 
 /**
  * The {@code Turret} subsystem consists of a single motor that is used to aim a variable hood
@@ -64,6 +70,13 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
   @NotLogged private final DoubleEntry tuningV = Tuning.entry("Robot/tuning/turret/V", V);
   @NotLogged private final DoubleEntry tuningA = Tuning.entry("Robot/tuning/turret/A", A);
 
+  private double lastGoodPositionRad;
+  private double failCount;
+
+  private final EasyCRTConfig crtConfig;
+
+  private final EasyCRT solverCRT;
+
   /** Creates real or simulated turret based on {@link Robot#isReal()}. */
   @NotLogged
   public static Turret create() {
@@ -90,6 +103,17 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
     hardware = turretIO;
 
     controller.setTolerance(TOLERANCE.in(Radians));
+
+    crtConfig =
+        new EasyCRTConfig(
+                () -> Rotations.of(hardware.encoderA()), () -> Rotations.of(hardware.encoderB()))
+            .withEncoderRatios(
+                TURRET_GEARING / ENCODER_A_GEARING, TURRET_GEARING / ENCODER_B_GEARING)
+            .withMechanismRange(MIN_ANGLE, MAX_ANGLE)
+            .withMatchTolerance(CRT_MATCH_TOLERANCE)
+            .withAbsoluteEncoderInversions(true, true);
+
+    solverCRT = new EasyCRT(crtConfig);
 
     sysIdRoutine =
         new SysIdRoutine(
@@ -130,7 +154,27 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
    */
   @Logged
   public double position() {
-    return hardware.position();
+    return solverCRT
+        .getAngleOptional()
+        .map(
+            a -> {
+              lastGoodPositionRad = a.in(Radians);
+              failCount = 0;
+              return lastGoodPositionRad;
+            })
+        .orElseGet(
+            () -> {
+              failCount++;
+              if (failCount % 10 == 0) {
+                FaultLogger.report(
+                    new Fault(
+                        "Turret CRT failure: >10 consecutive failures",
+                        "Unable to solve turret position with CRT, using stale position - fail count: "
+                            + failCount,
+                        FaultType.WARNING));
+              }
+              return lastGoodPositionRad;
+            });
   }
 
   /**
@@ -180,8 +224,8 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
     return test.until(
         () ->
             direction == Direction.kForward
-                ? hardware.position() >= stopAngle.in(Radians)
-                : hardware.position() <= stopAngle.in(Radians));
+                ? position() >= stopAngle.in(Radians)
+                : position() <= stopAngle.in(Radians));
   }
 
   /**
@@ -209,7 +253,7 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
   public void update(double positionSetpoint) {
     double pidVolts =
         controller.calculate(
-            hardware.position(),
+            position(),
             MathUtil.clamp(positionSetpoint, MIN_ANGLE.in(Radians), MAX_ANGLE.in(Radians)));
     double ffdVolts = feedforward.calculate(controller.getSetpoint().velocity);
 
@@ -240,7 +284,7 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
                 () ->
                     String.format(
                         "Turret goal check: current=%.3f rad, goal=%.3f rad, tolerance=%.3f rad",
-                        hardware.position(), goal.getAsDouble(), TOLERANCE.in(Radians))));
+                        position(), goal.getAsDouble(), TOLERANCE.in(Radians))));
     return new Test(testCommand, assertions);
   }
 
@@ -263,8 +307,7 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
     }
 
     // VISUALIZATION
-    visualizer.update(
-        hardware.position(), controller.getGoal().position, controller.getSetpoint().position);
+    visualizer.update(position(), controller.getGoal().position, controller.getSetpoint().position);
   }
 
   @Override

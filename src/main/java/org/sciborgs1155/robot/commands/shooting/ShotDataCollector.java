@@ -2,6 +2,7 @@ package org.sciborgs1155.robot.commands.shooting;
 
 import static edu.wpi.first.units.Units.Milliseconds;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import java.io.BufferedWriter;
@@ -13,7 +14,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-
 import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.robot.Constants;
 import org.sciborgs1155.robot.hood.Hood;
@@ -37,11 +37,12 @@ public class ShotDataCollector {
   private static final long MAX_LOG = 500;
   private static final long MAX_TIMESTEPS = Math.round(300 / ANALYSIS_PERIOD);
 
-  private static final AtomicBoolean running = new AtomicBoolean(false);
+  private static final AtomicBoolean RUNNING = new AtomicBoolean(false);
 
   protected int timestep;
   private BufferedWriter dataWriter;
 
+  /** Creates a ShotDataCollector that logs shooter data to a file. */
   public ShotDataCollector(Shooter shooter, Indexer indexer, Hood hood) {
     this.shooter = shooter;
     this.indexer = indexer;
@@ -57,12 +58,12 @@ public class ShotDataCollector {
     executorService.scheduleAtFixedRate(
         () -> {
           LoggingUtils.log("Shooting/DataLog TimeStep", timestep);
-          LoggingUtils.log("Shooting/DataLog Status", running.get());
+          LoggingUtils.log("Shooting/DataLog Status", RUNNING.get());
         },
         Math.round(INITIAL_DELAY * 1000),
         Math.round(Constants.PERIOD.in(Milliseconds)),
         TimeUnit.MILLISECONDS);
-    
+
     executorService.scheduleAtFixedRate(
         this::logTimestep,
         Math.round(INITIAL_DELAY * 1000),
@@ -79,22 +80,26 @@ public class ShotDataCollector {
     }
   }
 
+  /** Returns a command that begins data logging. */
   public Command startLogging() {
-    return Commands.runOnce(() -> {
-      System.out.println("Started Ankit Log!");
-      running.set(true);
-    });       
+    return Commands.runOnce(
+        () -> {
+          DriverStation.reportWarning("Started Ankit Log!", false);
+          RUNNING.set(true);
+        });
   }
 
+  /** Returns a command that ends data logging. */
   public Command endLogging() {
-    return Commands.runOnce(() -> {
-      System.out.println("Ended Ankit Log!");
-      running.set(false);
-    });
+    return Commands.runOnce(
+        () -> {
+          DriverStation.reportWarning("Ended Ankit Log!", false);
+          RUNNING.set(false);
+        });
   }
 
   private void logTimestep() {
-    if (!running.get() || dataWriter == null) return;
+    if (!RUNNING.get() || dataWriter == null) return;
 
     try {
       dataWriter.write(

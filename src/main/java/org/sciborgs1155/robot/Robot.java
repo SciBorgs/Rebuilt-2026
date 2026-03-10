@@ -120,11 +120,10 @@ public class Robot extends CommandRobot {
     FaultLogger.register(pdh);
     SmartDashboard.putData("Auto Chooser", autos);
 
-    if (isReal()){ 
+    if (isReal()) {
       teleop().onTrue(shotDataCollector.startLogging());
       teleop().onFalse(shotDataCollector.endLogging());
     }
-
 
     if (TUNING) {
       addPeriodic(

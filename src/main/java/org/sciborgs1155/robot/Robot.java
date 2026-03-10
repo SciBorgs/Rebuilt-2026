@@ -227,12 +227,6 @@ public class Robot extends CommandRobot {
         .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
 
     // TODO: Add any additional bindings.
-    // driver.y().whileTrue(hood.goTo(HoodConstants.MAX_ANGLE));
-    // driver.leftTrigger().whileTrue(turret.goLeft());
-    // driver.rightTrigger().whileTrue(turret.goRight());
-    // driver.a().whileTrue(hood.goTo(Degrees.of(30)));
-    // driver.x().whileTrue(turret.goTo(() -> Math.PI / 4));
-    // driver.b().whileTrue(turret.goTo(() -> -Math.PI / 4));
     operator.leftTrigger().whileTrue(turret.goLeft());
     operator.rightTrigger().whileTrue(turret.goRight());
     operator.x().whileTrue(hood.goTo(Degrees.of(45)));

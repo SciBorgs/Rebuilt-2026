@@ -35,8 +35,8 @@ public class RealTurret implements TurretIO {
   private final EasyCRTConfig crtConfig =
       new EasyCRTConfig(() -> Rotations.of(encoderA()), () -> Rotations.of(encoderB()))
           .withEncoderRatios(
-              (double) TURRET_GEARING / ENCODER_A_GEARING,
-              (double) TURRET_GEARING / ENCODER_B_GEARING)
+              TURRET_GEARING / ENCODER_A_GEARING,
+              TURRET_GEARING / ENCODER_B_GEARING)
           .withMechanismRange(MIN_ANGLE, MAX_ANGLE)
           .withMatchTolerance(CRT_MATCH_TOLERANCE)
           .withAbsoluteEncoderInversions(true, true);
@@ -83,7 +83,7 @@ public class RealTurret implements TurretIO {
    * resets, so it should only be used for testing.
    */
   public double encoderADerived() {
-    double encoderRot = trueAngleRot() * ((double) TURRET_GEARING / ENCODER_A_GEARING);
+    double encoderRot = trueAngleRot() * (TURRET_GEARING / ENCODER_A_GEARING);
 
     return MathUtil.inputModulus(encoderRot, 0.0, 1.0);
   }
@@ -93,7 +93,7 @@ public class RealTurret implements TurretIO {
    * resets, so it should only be used for testing.
    */
   public double encoderBDerived() {
-    double encoderRot = trueAngleRot() * ((double) TURRET_GEARING / ENCODER_B_GEARING);
+    double encoderRot = trueAngleRot() * (TURRET_GEARING / ENCODER_B_GEARING);
 
     return MathUtil.inputModulus(encoderRot, 0.0, 1.0);
   }

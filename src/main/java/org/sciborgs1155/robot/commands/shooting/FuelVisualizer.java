@@ -1,7 +1,9 @@
 package org.sciborgs1155.robot.commands.shooting;
 
+import static edu.wpi.first.units.Units.Meters;
 import static org.sciborgs1155.robot.Constants.Robot.ROBOT_TO_SHOOTER;
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.*;
+import static org.sciborgs1155.robot.hood.HoodConstants.HOOD_RADIUS;
 
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import java.util.function.DoubleSupplier;
@@ -44,7 +46,7 @@ public class FuelVisualizer extends ProjectileVisualizer {
     Supplier<double[]> shotVelocity = () -> robotRelativeShotVelocity(launchParameters.get());
     Supplier<ChassisSpeeds> chassisSpeeds = () -> drive.fieldRelativeChassisSpeeds();
 
-    return new FuelVisualizer(() -> initialTranslation(fromTranslation(drive.pose3d().getTranslation()), heading.getAsDouble()),
+    return new FuelVisualizer(() -> initialTranslation(fromTranslation(drive.pose3d().getTranslation()), shotVelocity.get(), heading.getAsDouble()),
      () -> initialVelocity(shotVelocity.get(), heading.getAsDouble(), chassisSpeeds.get().vxMetersPerSecond, chassisSpeeds.get().vyMetersPerSecond, chassisSpeeds.get().omegaRadiansPerSecond), 
      () -> initialRotation(shotVelocity.get(), heading.getAsDouble()), () -> initialRotationalVelocity());
   }
@@ -91,25 +93,38 @@ public class FuelVisualizer extends ProjectileVisualizer {
     };
   }
 
-  protected static double[] initialTranslation(double[] robotTranslation, double heading) {
+  protected static double[] shooterToInitial(double[] shotVelocity, double heading) {
+    double pitch = Math.asin(shotVelocity[Z] / norm(shotVelocity));
+    double hoodAngle = Math.PI/2 - pitch;
+
+    double x = HOOD_RADIUS.in(Meters) * Math.cos(hoodAngle);
+    double z = HOOD_RADIUS.in(Meters) * Math.sin(hoodAngle);
+
+    double yaw = Math.atan2(shotVelocity[Y], shotVelocity[X]);
+
+    return fieldRelative(fieldRelative(new double[]{x, 0, z}, yaw), heading);
+  }
+
+  protected static double[] initialTranslation(double[] robotTranslation, double[] shotVelocity, double heading) {
     double[] robotToShooter = robotToShooter(heading);
+    double[] shooterToInitial = shooterToInitial(shotVelocity, heading);
 
     return new double[] {
-      robotToShooter[X] + robotTranslation[X],
-      robotToShooter[Y] + robotTranslation[Y],
-      robotToShooter[Z] + robotTranslation[Z]
+      robotToShooter[X] + robotTranslation[X] + shooterToInitial[X],
+      robotToShooter[Y] + robotTranslation[Y] + shooterToInitial[Y],
+      robotToShooter[Z] + robotTranslation[Z] + shooterToInitial[Z]
     };
   }
 
   protected static double[] initialVelocity(double[] shotVelocity, double heading, double robotVx, double robotVy, double robotOmega) {
-    double[] fieldRelative = fieldRelativeShotVelocity(shotVelocity, heading);
+    double[] fieldRelative = fieldRelative(shotVelocity, heading);
     double[] shooterVelocity = shooterVelocity(robotVx, robotVy, robotOmega, heading);
 
     return new double[] {fieldRelative[X] + shooterVelocity[X], fieldRelative[Y] + shooterVelocity[Y], fieldRelative[Z] + shooterVelocity[Z]};
   }
 
   protected static double[] initialRotation(double[] shotVelocity, double heading) {
-    double[] fieldRelative = fieldRelativeShotVelocity(shotVelocity, heading);
+    double[] fieldRelative = fieldRelative(shotVelocity, heading);
     return new double[] {0, 0, Math.atan2(fieldRelative[Y], fieldRelative[X])};
   }
 
@@ -124,13 +139,6 @@ public class FuelVisualizer extends ProjectileVisualizer {
     double shooterVy = robotVy + robotOmega * robotToShooter[X];
 
     return new double[]{shooterVx, shooterVy, 0};
-  }
-
-  protected static double[] fieldRelativeShotVelocity(double[] shotVelocity, double heading) {
-    double fieldRelativeX = shotVelocity[X] * Math.cos(heading) - shotVelocity[Y] * Math.sin(heading);
-    double fieldRelativeY = shotVelocity[X] * Math.sin(heading) + shotVelocity[Y] * Math.cos(heading);
-
-    return new double[]{fieldRelativeX, fieldRelativeY, shotVelocity[Z]};
   }
 
   protected static double[] robotRelativeShotVelocity(double[] launchParameters) {
@@ -157,6 +165,20 @@ public class FuelVisualizer extends ProjectileVisualizer {
     double pitch = Math.asin(shotVelocity[Z] / speed);
 
     return new double[] {speed, pitch, yaw};
+  }
+
+  protected static double[] fieldRelative(double[] robotRelative, double heading) {
+    double fieldRelativeX = robotRelative[X] * Math.cos(heading) - robotRelative[Y] * Math.sin(heading);
+    double fieldRelativeY = robotRelative[X] * Math.sin(heading) + robotRelative[Y] * Math.cos(heading);
+
+    return new double[]{fieldRelativeX, fieldRelativeY, robotRelative[Z]};
+  }
+
+  protected static double[] robotRelative(double[] fieldRelative, double heading) {
+    double fieldRelativeX = fieldRelative[X] * Math.cos(-heading) - fieldRelative[Y] * Math.sin(-heading);
+    double fieldRelativeY = fieldRelative[X] * Math.sin(-heading) + fieldRelative[Y] * Math.cos(-heading);
+
+    return new double[]{fieldRelativeX, fieldRelativeY, fieldRelative[Z]};
   }
 
   public static class Fuel extends Projectile {

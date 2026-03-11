@@ -14,18 +14,10 @@
       "/SmartDashboard/Robot/hood/dynamic forward": "Command",
       "/SmartDashboard/Robot/hood/quasistatic backward": "Command",
       "/SmartDashboard/Robot/hood/quasistatic forward": "Command",
-      "/SmartDashboard/Robot/rotation/dynamic backward": "Command",
-      "/SmartDashboard/Robot/rotation/dynamic forward": "Command",
-      "/SmartDashboard/Robot/rotation/quasistatic backward": "Command",
-      "/SmartDashboard/Robot/rotation/quasistatic forward": "Command",
       "/SmartDashboard/Robot/slapdown/dynamic backward": "Command",
       "/SmartDashboard/Robot/slapdown/dynamic forward": "Command",
       "/SmartDashboard/Robot/slapdown/quasistatic backward": "Command",
       "/SmartDashboard/Robot/slapdown/quasistatic forward": "Command",
-      "/SmartDashboard/Robot/translation/dynamic backward": "Command",
-      "/SmartDashboard/Robot/translation/dynamic forward": "Command",
-      "/SmartDashboard/Robot/translation/quasistatic backward": "Command",
-      "/SmartDashboard/Robot/translation/quasistatic forward": "Command",
       "/SmartDashboard/Turret dynamic clockwise": "Command",
       "/SmartDashboard/Turret dynamic counterclockwise": "Command",
       "/SmartDashboard/Turret quasistatic clockwise": "Command",
@@ -42,6 +34,8 @@
       "Robot/shooter/controller": "PIDController",
       "Robot/slapdown/pid": "ProfiledPIDController",
       "Robot/turret/controller": "ProfiledPIDController"
+<<<<<<< HEAD
+=======
       "Robot/turret/controller": "ProfiledPIDController"
     },
     "windows": {
@@ -137,44 +131,10 @@
           }
         }
       }
+>>>>>>> shooting-competition-ankit
     }
   },
   "NetworkTables Info": {
     "visible": true
-  },
-  "Plot": {
-    "Plot <0>": {
-      "plots": [
-        {
-          "backgroundColor": [
-            0.0,
-            0.0,
-            0.0,
-            0.8500000238418579
-          ],
-          "height": 0,
-          "series": [
-            {
-              "color": [
-                0.2980392277240753,
-                0.44705885648727417,
-                0.6901960968971252,
-                1.0
-              ],
-              "id": "NT:Robot/slapdown/position"
-            },
-            {
-              "color": [
-                0.8666667342185974,
-                0.5176470875740051,
-                0.32156863808631897,
-                1.0
-              ],
-              "id": "NT:Robot/slapdown/setpoint"
-            }
-          ]
-        }
-      ]
-    }
   }
 }

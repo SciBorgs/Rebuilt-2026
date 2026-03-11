@@ -1,5 +1,6 @@
 package org.sciborgs1155.robot.commands.shooting;
 
+
 import static edu.wpi.first.units.Units.Radians;
 import static org.sciborgs1155.robot.Constants.Robot.ROBOT_TO_SHOOTER;
 import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.*;
@@ -132,14 +133,14 @@ public final class ShotGenerator {
     double[] stationaryLaunchParameters = {directLaunchParameters[SPEED], directLaunchParameters[PITCH], yaw};
 
     double[] robotRelativeShotVelocity = robotRelativeShotVelocity(stationaryLaunchParameters);
-    double[] stationaryShotVelocity = fieldRelativeShotVelocity(robotRelativeShotVelocity, heading);
+    double[] stationaryShotVelocity = fieldRelative(robotRelativeShotVelocity, heading);
     double[] shooterVelocity = shooterVelocity(robotVelocity.vxMetersPerSecond, robotVelocity.vyMetersPerSecond, robotVelocity.omegaRadiansPerSecond, heading);
 
-    return launchParameters(fieldRelativeShotVelocity(new double[] {
+    return launchParameters(robotRelative(new double[] {
       stationaryShotVelocity[X] - shooterVelocity[X],
       stationaryShotVelocity[Y] - shooterVelocity[Y],
       stationaryShotVelocity[Z] - shooterVelocity[Z]
-    }, -heading));
+    }, heading));
   }
 
   public static ProjectileVisualizer createVisualizer(Drive drive) {

@@ -1,6 +1,5 @@
 package org.sciborgs1155.robot.commands.shooting;
 
-
 import static edu.wpi.first.units.Units.Radians;
 import static org.sciborgs1155.robot.Constants.Robot.ROBOT_TO_SHOOTER;
 import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.*;
@@ -17,7 +16,6 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.sciborgs1155.robot.FieldConstants.Hub;
 import org.sciborgs1155.robot.commands.shooting.FuelVisualizer.Fuel;
 import org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile;
@@ -43,14 +41,15 @@ public final class ShotGenerator {
   private static double[][] trajectoryBuffer = new double[0][];
 
   static final double MAX_SPEED = 20;
-  static final double MIN_PITCH = Math.PI/2 - MAX_ANGLE.in(Radians);
-  static final double MAX_PITCH = Math.PI/2 - MIN_ANGLE.in(Radians);
+  static final double MIN_PITCH = Math.PI / 2 - MAX_ANGLE.in(Radians);
+  static final double MAX_PITCH = Math.PI / 2 - MIN_ANGLE.in(Radians);
 
   static final double[] GOAL = fromTranslation(Hub.TOP_CENTER_POINT);
 
   private static final Projectile projectile =
-      new Fuel().withScoringParameters(GOAL, SCORE_RADIUS, SCORE_DEPTH)
-        .config(TRAJECTORY_RESOLUTION, true, DRAG_ENABLED, false, LIFT_ENABLED);
+      new Fuel()
+          .withScoringParameters(GOAL, SCORE_RADIUS, SCORE_DEPTH)
+          .config(TRAJECTORY_RESOLUTION, true, DRAG_ENABLED, false, LIFT_ENABLED);
 
   private ShotGenerator() {}
 
@@ -59,12 +58,13 @@ public final class ShotGenerator {
     final List<double[]> poseList = new ArrayList<>();
 
     double[] shotVelocity = robotRelativeShotVelocity(launchParameters);
-    double[] initialVelocity = initialVelocity(shotVelocity, 0,0,0,0);
+    double[] initialVelocity = initialVelocity(shotVelocity, 0, 0, 0, 0);
     double[] initialTranslation = {GOAL[X] - distance, GOAL[Y], ROBOT_TO_SHOOTER.getZ()};
     double[] initialRotation = initialRotation(shotVelocity, 0);
     double initialRotationalVelocity = initialRotationalVelocity();
 
-    projectile.launch(initialTranslation, initialVelocity, initialRotation, initialRotationalVelocity);
+    projectile.launch(
+        initialTranslation, initialVelocity, initialRotation, initialRotationalVelocity);
 
     int frames = 0;
     double maxFrames = TRAJECTORY_RESOLUTION * MAX_AIR_TIME;
@@ -93,7 +93,7 @@ public final class ShotGenerator {
   protected static double[] optimizedLaunchParameters(double distance) {
     for (double testPitch = MIN_PITCH; testPitch < MAX_PITCH; testPitch += PITCH_PRECISION) {
       // CHECK IF SHOT IS POSSIBLE
-      generateDirectTrajectory(distance, new double[]{MAX_SPEED, testPitch, 0});
+      generateDirectTrajectory(distance, new double[] {MAX_SPEED, testPitch, 0});
       double[] maxDistance = trajectoryBuffer[trajectoryBuffer.length - 1];
       if (maxDistance[X] - GOAL[X] < 0 || maxDistance[Z] < FUEL_RADIUS) continue;
 
@@ -101,7 +101,7 @@ public final class ShotGenerator {
       double speed = optimizeForSpeed(distance, MAX_SPEED, testPitch);
 
       // CHECK CLEARANCE
-      generateDirectTrajectory(distance, new double[]{speed, testPitch, 0});
+      generateDirectTrajectory(distance, new double[] {speed, testPitch, 0});
 
       boolean cleared = false;
       for (int index = trajectoryBuffer.length - 1; index >= 0; index--) {
@@ -130,23 +130,35 @@ public final class ShotGenerator {
     double yaw = Math.atan2(y, x) - heading;
 
     double[] directLaunchParameters = TableGenerator.directLaunchParameters(distance);
-    double[] stationaryLaunchParameters = {directLaunchParameters[SPEED], directLaunchParameters[PITCH], yaw};
+    double[] stationaryLaunchParameters = {
+      directLaunchParameters[SPEED], directLaunchParameters[PITCH], yaw
+    };
 
     double[] robotRelativeShotVelocity = robotRelativeShotVelocity(stationaryLaunchParameters);
     double[] stationaryShotVelocity = fieldRelative(robotRelativeShotVelocity, heading);
-    double[] shooterVelocity = shooterVelocity(robotVelocity.vxMetersPerSecond, robotVelocity.vyMetersPerSecond, robotVelocity.omegaRadiansPerSecond, heading);
+    double[] shooterVelocity =
+        shooterVelocity(
+            robotVelocity.vxMetersPerSecond,
+            robotVelocity.vyMetersPerSecond,
+            robotVelocity.omegaRadiansPerSecond,
+            heading);
 
-    return launchParameters(robotRelative(new double[] {
-      stationaryShotVelocity[X] - shooterVelocity[X],
-      stationaryShotVelocity[Y] - shooterVelocity[Y],
-      stationaryShotVelocity[Z] - shooterVelocity[Z]
-    }, heading));
+    return launchParameters(
+        robotRelative(
+            new double[] {
+              stationaryShotVelocity[X] - shooterVelocity[X],
+              stationaryShotVelocity[Y] - shooterVelocity[Y],
+              stationaryShotVelocity[Z] - shooterVelocity[Z]
+            },
+            heading));
   }
 
   public static ProjectileVisualizer createVisualizer(Drive drive) {
-    return fromLaunchParameters(() -> movingLaunchParameters(drive.pose3d(), drive.fieldRelativeChassisSpeeds()), drive).withScoringParameters(GOAL, SCORE_RADIUS, SCORE_DEPTH)
-      .configPhysics(true, DRAG_ENABLED, false, LIFT_ENABLED)
-      .configGeneration(0.05, MAX_AIR_TIME, TRAJECTORY_RESOLUTION * 30, TRAJECTORY_RESOLUTION)
-      .config(true, true);
+    return fromLaunchParameters(
+            () -> movingLaunchParameters(drive.pose3d(), drive.fieldRelativeChassisSpeeds()), drive)
+        .withScoringParameters(GOAL, SCORE_RADIUS, SCORE_DEPTH)
+        .configPhysics(true, DRAG_ENABLED, false, LIFT_ENABLED)
+        .configGeneration(0.05, MAX_AIR_TIME, TRAJECTORY_RESOLUTION * 30, TRAJECTORY_RESOLUTION)
+        .config(true, true);
   }
 }

@@ -194,7 +194,10 @@ public abstract class ProjectileVisualizer {
         this::updateLaunchSimulation, 0, (long) (launchDt * 1000000), TimeUnit.MICROSECONDS);
 
     executor.scheduleAtFixedRate(
-        this::updateTrajectorySimulation, 0, (long) (trajectoryDt * 1000000), TimeUnit.MICROSECONDS);
+        this::updateTrajectorySimulation,
+        0,
+        (long) (trajectoryDt * 1000000),
+        TimeUnit.MICROSECONDS);
   }
 
   public void endSimulation() {

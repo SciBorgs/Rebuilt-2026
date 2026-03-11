@@ -2,7 +2,6 @@ package org.sciborgs1155.robot;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.MetersPerSecond;
-import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
@@ -14,7 +13,6 @@ import static org.sciborgs1155.lib.LoggingUtils.log;
 import static org.sciborgs1155.robot.Constants.DEADBAND;
 import static org.sciborgs1155.robot.Constants.FULL_SPEED_MULTIPLIER;
 import static org.sciborgs1155.robot.Constants.PERIOD;
-import static org.sciborgs1155.robot.Constants.ROBOT_TYPE;
 import static org.sciborgs1155.robot.Constants.SLOW_SPEED_MULTIPLIER;
 import static org.sciborgs1155.robot.Constants.TUNING;
 import static org.sciborgs1155.robot.drive.DriveConstants.MAX_ANGULAR_ACCEL;
@@ -41,22 +39,26 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import java.util.Arrays;
 import java.util.Set;
-
 import org.littletonrobotics.urcl.URCL;
 import org.sciborgs1155.lib.CommandRobot;
 import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.lib.InputStream;
+import org.sciborgs1155.lib.ShiftTracker;
 import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.lib.Tracer;
 import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
+import org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer;
+import org.sciborgs1155.robot.commands.shooting.Shooting;
+import org.sciborgs1155.robot.commands.shooting.ShotGenerator;
+import org.sciborgs1155.robot.commands.shooting.TableGenerator;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.hood.Hood;
+import org.sciborgs1155.robot.hopper.Hopper;
+import org.sciborgs1155.robot.indexer.Indexer;
 import org.sciborgs1155.robot.shooter.Shooter;
-import org.sciborgs1155.robot.slapdown.Slapdown;
 import org.sciborgs1155.robot.turret.Turret;
-import org.sciborgs1155.robot.turret.Turret.SysIdTestType;
 import org.sciborgs1155.robot.vision.Vision;
 
 /**
@@ -79,21 +81,18 @@ public class Robot extends CommandRobot {
   private final Vision vision = Vision.create();
   private final Shooter shooter = Shooter.create();
   private final Turret turret = Turret.create();
+  private final Hopper hopper = Hopper.create();
+  private final Indexer indexer = Indexer.create();
 
   // COMMANDS
   private final Alignment align = new Alignment(drive);
-
+  private final Shooting shooting = new Shooting(turret, hood, drive);
   @NotLogged private final SendableChooser<Command> autos = Autos.configureAutos(drive);
 
-  @Logged private double speedMultiplier = FULL_SPEED_MULTIPLIER;
+  @NotLogged
+  private final ProjectileVisualizer fuelVisualizer = ShotGenerator.createVisualizer(drive);
 
-  @Logged
-  @SuppressWarnings("PMD.TooFewBranchesForSwitch") // will be more values in the future
-  private final Slapdown slapdown =
-      switch (ROBOT_TYPE) {
-        case FULL -> Slapdown.create();
-        default -> Slapdown.none();
-      };
+  @Logged private double speedMultiplier = FULL_SPEED_MULTIPLIER;
 
   /** The robot contains subsystems, OI devices, and commands. */
   public Robot() {
@@ -162,6 +161,9 @@ public class Robot extends CommandRobot {
       log("RobotModel/hopperOrigin", new Transform3d(0,0,0, new Rotation3d()), Transform3d.struct);
       log("RobotModel/intakeOrigin", new Transform3d(0,0,0, new Rotation3d()), Transform3d.struct);
       log("RobotModel/driveOrigin", drive.pose3d(), Pose3d.struct);
+
+      log("test/angle", hood.angle() * 180 / Math.PI);
+      log("test/FuelExitPos", ShotGenerator.fuelExitPosition(hood.angle(), drive.pose3d()));
     }, PERIOD);
 
     RobotController.setBrownoutVoltage(6.0);
@@ -172,12 +174,16 @@ public class Robot extends CommandRobot {
       pdh.setSwitchableChannel(true);
     } else {
       DriverStation.silenceJoystickConnectionWarning(true);
-      addPeriodic(() -> vision.simulationPeriodic(drive.pose()), PERIOD.in(Seconds));
+
+      fuelVisualizer.startSimulation();
+      addPeriodic(fuelVisualizer::updateLogging, PERIOD);
     }
   }
 
   /** Configures trigger -> command bindings. */
   private void configureBindings() {
+    teleop().onTrue(ShiftTracker.startTracking());
+
     // x and y are switched: we use joystick Y axis to control field x motion
     InputStream rawX = InputStream.of(driver::getLeftY).log("/Robot/raw x").negate();
     InputStream rawY = InputStream.of(driver::getLeftX).log("/Robot/raw y").negate();
@@ -235,12 +241,12 @@ public class Robot extends CommandRobot {
         .onTrue(Commands.runOnce(() -> speedMultiplier = SLOW_SPEED_MULTIPLIER))
         .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
 
-    operator.a().whileTrue(turret.sysIdTest(SysIdTestType.QUASISTATIC, edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction.kForward));
-    operator.b().whileTrue(hood.goToTestCommand(Degrees.of(53)));
+    teleop().whileTrue(shooting.runShooter());
 
-    
+    operator.a().whileTrue(fuelVisualizer.launchProjectiles());
+    operator.x().onTrue(TableGenerator.createTable());
+    operator.x().onTrue(TableGenerator.loadTable());
 
-    // TODO: Add any additional bindings.
   }
 
   /**

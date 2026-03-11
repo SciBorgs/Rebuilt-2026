@@ -24,9 +24,9 @@ public class HoodConstants {
   public static final Angle STARTING_ANGLE = MIN_ANGLE;
   public static final Current SUPPLY_LIMIT = Amps.of(30);
   public static final Current STATOR_LIMIT = Amps.of(30);
-  public static final AngularAcceleration MAX_ACCEL = RadiansPerSecondPerSecond.of(1);
-  public static final AngularVelocity MAX_VELOCITY = RadiansPerSecond.of(1);
-  public static final Angle POSITION_TOLERANCE = Radians.of(0.01);
+  public static final AngularAcceleration MAX_ACCEL = RadiansPerSecondPerSecond.of(3);
+  public static final AngularVelocity MAX_VELOCITY = RadiansPerSecond.of(7);
+  public static final Angle POSITION_TOLERANCE = Radians.of(.03);
   public static final Angle SHOOTING_ANGLE_OFFSET = Degrees.of(90);
 
   // Sysid constants
@@ -47,11 +47,11 @@ public class HoodConstants {
   public static Pose3d with_axis = currentPose3d.rotateAround(POINT_OF_ROTATION, new Rotation3d());
 
   public class PID {
-    public static final double P = 10;
+    public static final double P = 3;
     public static final double I = 0;
-    public static final double D = .2;
+    public static final double D = 0.1;
     public static final double S = 0;
-    public static final double V = 0;
+    public static final double V = .3;
     public static final double G = .1;
     public static final double A = 0;
   }

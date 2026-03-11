@@ -2,8 +2,9 @@ package org.sciborgs1155.robot.commands.shooting;
 
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.PITCH;
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.SPEED;
-import static org.sciborgs1155.robot.commands.shooting.ShotGenerator.MAXIMUM_ANGLE;
-import static org.sciborgs1155.robot.commands.shooting.ShotGenerator.MINIMUM_ANGLE;
+import static org.sciborgs1155.robot.commands.shooting.ShotGenerator.MAX_PITCH;
+import static org.sciborgs1155.robot.commands.shooting.ShotGenerator.MAX_SPEED;
+import static org.sciborgs1155.robot.commands.shooting.ShotGenerator.MIN_PITCH;
 
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -16,7 +17,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Scanner;
 import org.sciborgs1155.lib.LoggingUtils;
-import org.sciborgs1155.lib.Tracer;
 
 public final class TableGenerator {
   private static final double MIN_DISTANCE = 0.1;
@@ -43,10 +43,9 @@ public final class TableGenerator {
     return Commands.runOnce(() -> createTable(MIN_DISTANCE, MAX_DISTANCE, INCREMENT, PATH));
   }
 
-  static void createTable(
+  private static void createTable(
       double minDistance, double maxDistance, double increment, String tablePath) {
     try {
-      Tracer.startTrace("lookup table generation");
       LoggingUtils.log("Shooting/Entries Generated", 0);
       BufferedWriter fileWriter =
           Files.newBufferedWriter(
@@ -59,9 +58,11 @@ public final class TableGenerator {
         double speed = launchParameters[SPEED];
         double angle = launchParameters[PITCH];
 
+        if (speed > MAX_SPEED) continue;
         if (speed < SPEED_DEADBAND) continue;
-        if (angle < MINIMUM_ANGLE) continue;
-        if (angle > MAXIMUM_ANGLE) continue;
+
+        if (angle < MIN_PITCH) continue;
+        if (angle > MAX_PITCH) continue;
 
         // FORMAT: [DISTANCE]/[SPEED]/[ANGLE](SPACE)
         fileWriter.write(distance + "," + speed + "," + angle);
@@ -72,7 +73,6 @@ public final class TableGenerator {
       }
 
       fileWriter.close();
-      Tracer.endTrace();
     } catch (IOException exception) {
       exception.printStackTrace();
     }
@@ -87,12 +87,11 @@ public final class TableGenerator {
     return Commands.runOnce(() -> loadTable(PATH));
   }
 
-  static void loadTable(String tablePath) {
+  private static void loadTable(String tablePath) {
     SPEED_TABLE.clear();
     ANGLE_TABLE.clear();
 
     try {
-      Tracer.startTrace("lookup table loading");
       LoggingUtils.log("Shooting/Entries Loaded", 0);
       Scanner fileScanner =
           new Scanner(new File("resources/" + tablePath + ".ankit"), StandardCharsets.UTF_8);
@@ -116,19 +115,18 @@ public final class TableGenerator {
       }
 
       fileScanner.close();
-      Tracer.endTrace();
     } catch (Exception exception) {
       exception.printStackTrace();
     }
   }
 
-  static double[] directLaunchParameters(double distance) {
+  public static double[] directLaunchParameters(double distance) {
     try {
       LoggingUtils.log("Shooting/LookUp Table Status", true);
-      return new double[] {distance, SPEED_TABLE.get(distance), ANGLE_TABLE.get(distance), 0};
+      return new double[] {SPEED_TABLE.get(distance), ANGLE_TABLE.get(distance), 0};
     } catch (Exception e) {
       LoggingUtils.log("Shooting/LookUp Table Status", false);
-      return new double[] {distance, 0, 0, 0};
+      return new double[] {0, 0, 0};
     }
   }
 }

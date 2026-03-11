@@ -69,7 +69,7 @@ public abstract class ProjectileVisualizer {
   private final double[] lastInitialTranslation = new double[3];
 
   private final double[] lastInitialVelocity = new double[3];
-  private final double[] lastInitialRotation = new double[4];
+  private final double[] lastInitialRotation = new double[3];
   private double lastInitialRotationalVelocity;
 
   private boolean launchStateInitialized = false;
@@ -191,10 +191,10 @@ public abstract class ProjectileVisualizer {
     if (!running.compareAndSet(false, true)) return;
 
     executor.scheduleAtFixedRate(
-        this::updateLaunchSimulation, 0, (long) (launchDt * 1000), TimeUnit.MILLISECONDS);
+        this::updateLaunchSimulation, 0, (long) (launchDt * 1000000), TimeUnit.MICROSECONDS);
 
     executor.scheduleAtFixedRate(
-        this::updateTrajectorySimulation, 0, (long) (trajectoryDt * 1000), TimeUnit.MILLISECONDS);
+        this::updateTrajectorySimulation, 0, (long) (trajectoryDt * 1000000), TimeUnit.MICROSECONDS);
   }
 
   public void endSimulation() {
@@ -431,9 +431,10 @@ public abstract class ProjectileVisualizer {
   // =========================================================
 
   protected abstract static class Projectile {
+    protected static final double GRAVITY = -9.80665;
 
     protected static final int X = 0, Y = 1, Z = 2;
-    protected static final int DISTANCE = 0, SPEED = 1, PITCH = 2, YAW = 3;
+    protected static final int SPEED = 0, PITCH = 1, YAW = 2;
 
     protected int frames;
 
@@ -465,7 +466,9 @@ public abstract class ProjectileVisualizer {
     // PHYSICS MODEL HOOKS
     // =============================
 
-    protected abstract double[] weight();
+    protected double weight() {
+      return GRAVITY;
+    }
 
     protected abstract double[] drag();
 
@@ -549,12 +552,7 @@ public abstract class ProjectileVisualizer {
       ax = ay = az = 0;
 
       // weight
-      if (weightEnabled) {
-        double[] w = weight();
-        ax += w[X];
-        ay += w[Y];
-        az += w[Z];
-      }
+      if (weightEnabled) az += GRAVITY;
 
       // drag
       if (dragEnabled) {
@@ -608,6 +606,18 @@ public abstract class ProjectileVisualizer {
       alpha = 0;
 
       frames = 0;
+    }
+
+    protected static double norm(double[] vector) {
+      double x = vector[X];
+      double y = vector[Y];
+      double z = vector[Z];
+
+      return Math.sqrt(x * x + y * y + z * z);
+    }
+
+    protected static double[] fromTranslation(Translation3d translation) {
+      return new double[] {translation.getX(), translation.getY(), translation.getZ()};
     }
   }
 }

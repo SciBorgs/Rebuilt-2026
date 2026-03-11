@@ -54,11 +54,10 @@ public class Shooting {
   }
 
   public ProjectileVisualizer createVisualizer() {
-    return ShotGenerator.configureVisualizer(
-        FuelVisualizer.fromLaunchParameters(
-            () -> launchParameters[SPEED],
-            () -> Math.PI / 2 - hood.angle(),
-            () -> turret.position(),
-            drive));
+    return FuelVisualizer.fromLaunchParameters(
+      () -> launchParameters[SPEED],
+      () -> Math.PI / 2 - hood.angle(),
+      () -> turret.position(),
+      drive);
   }
 }

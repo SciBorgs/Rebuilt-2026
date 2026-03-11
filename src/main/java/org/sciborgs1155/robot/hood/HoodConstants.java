@@ -15,7 +15,6 @@ import edu.wpi.first.units.measure.Voltage;
 import org.sciborgs1155.robot.Robot;
 
 public class HoodConstants {
-
   public static final Angle MIN_ANGLE = Degrees.of(15);
   public static final Angle MAX_ANGLE = Degrees.of(53);
   public static final Mass MASS = Pounds.of(1.307);

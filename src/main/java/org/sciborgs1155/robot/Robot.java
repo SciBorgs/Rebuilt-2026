@@ -121,8 +121,8 @@ public class Robot extends CommandRobot {
     SmartDashboard.putData("Auto Chooser", autos);
 
     if (isReal()) {
-      teleop().onTrue(shotDataCollector.startLogging());
-      teleop().onFalse(shotDataCollector.endLogging());
+      // teleop().onTrue(shotDataCollector.startLogging());
+      // teleop().onFalse(shotDataCollector.endLogging());
     }
 
     if (TUNING) {
@@ -229,12 +229,12 @@ public class Robot extends CommandRobot {
     // TODO: Add any additional bindings.
     operator.leftTrigger().whileTrue(turret.goLeft());
     operator.rightTrigger().whileTrue(turret.goRight());
-    operator.x().whileTrue(hood.goTo(Degrees.of(45)));
-    operator.b().whileTrue(hood.goTo(Degrees.of(25)));
+    operator.x().whileTrue(hood.goTo(Degrees.of(45)).withName("goto 45"));
+    operator.b().whileTrue(hood.goTo(Degrees.of(25)).withName("goto 25"));
 
     
     operator.leftBumper().whileTrue(shooter.runShooter(100));
-    operator.rightBumper().whileTrue(shooter.runShooter(250));
+    operator.rightBumper().whileTrue(shooter.runShooter(300));
     operator.y().whileTrue(hood.setVoltage(0.8));
     operator.a().whileTrue(hood.setVoltage(-0.8));
   }

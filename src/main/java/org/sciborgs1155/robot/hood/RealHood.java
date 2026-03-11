@@ -6,7 +6,7 @@ import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static org.sciborgs1155.robot.Constants.SHOOTING_CANIVORE;
 import static org.sciborgs1155.robot.Ports.Hood.MOTOR_PORT;
 import static org.sciborgs1155.robot.hood.HoodConstants.GEARING;
-import static org.sciborgs1155.robot.hood.HoodConstants.MIN_ANGLE;
+import static org.sciborgs1155.robot.hood.HoodConstants.STARTING_ANGLE;
 import static org.sciborgs1155.robot.hood.HoodConstants.STATOR_LIMIT;
 import static org.sciborgs1155.robot.hood.HoodConstants.SUPPLY_LIMIT;
 
@@ -34,7 +34,7 @@ public class RealHood implements HoodIO {
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     config.Feedback.SensorToMechanismRatio = GEARING;
     config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
-    motor.setPosition(MIN_ANGLE);
+    motor.setPosition(STARTING_ANGLE);
     motor.getConfigurator().apply(config);
 
     TalonUtils.addMotor(motor);

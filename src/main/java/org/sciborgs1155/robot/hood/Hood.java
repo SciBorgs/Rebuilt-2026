@@ -97,7 +97,7 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
     this.hardware = hardware;
 
     fb.setTolerance(POSITION_TOLERANCE.in(Radians));
-    setDefaultCommand(run(() -> hardware.setVoltage(0)));
+    setDefaultCommand(run(() -> hardware.setVoltage(0)).withName("Default"));
 
     sysIdRoutine =
         new SysIdRoutine(
@@ -142,7 +142,7 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
   }
 
   public Command setVoltage(double voltage) {
-    return Commands.run(() -> hardware.setVoltage(voltage));
+    return Commands.run(() -> hardware.setVoltage(voltage)).withName("direct voltage");
   }
 
   /**
@@ -214,7 +214,7 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
   public Command goToShootingAngle(DoubleSupplier goal) {
     return run(() -> update(goal.getAsDouble() - SHOOTING_ANGLE_OFFSET.in(Radians)))
         .until(this::atGoal)
-        .withName("Hood GoTo Angle");
+        .withName("Hood GoTo Shooting Angle");
   }
 
   /**

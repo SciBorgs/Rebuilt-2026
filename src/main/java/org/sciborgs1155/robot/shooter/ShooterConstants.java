@@ -9,6 +9,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
+import org.sciborgs1155.robot.Robot;
 
 public class ShooterConstants {
   public static final double GEARING = 1 / 0.8;
@@ -21,8 +22,8 @@ public class ShooterConstants {
 
   public static final AngularVelocity IDLE_VELOCITY = RadiansPerSecond.of(0);
   public static final AngularVelocity MAX_VELOCITY = RadiansPerSecond.of(400);
-  public static final double MAX_ACCELERATION = 200;
-  public static final double MAX_JERK = 100;
+  public static final double MAX_ACCELERATION = 5000;
+  public static final double MAX_JERK = 2000;
 
   public static final Current STATOR_CURRENT_LIMIT = Amps.of(100);
   public static final Current SUPPLY_CURRENT_LIMIT = Amps.of(100);

@@ -9,7 +9,6 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
-import org.sciborgs1155.robot.Robot;
 
 public class ShooterConstants {
   public static final double GEARING = 1 / 0.8;

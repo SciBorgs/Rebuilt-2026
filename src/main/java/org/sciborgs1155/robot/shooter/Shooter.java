@@ -111,8 +111,9 @@ public final class Shooter extends SubsystemBase implements AutoCloseable {
             velocitySetpoint,
             -MAX_VELOCITY.in(RadiansPerSecond),
             MAX_VELOCITY.in(RadiansPerSecond));
+    double lastVelocity = controller.getSetpoint().position;
     double pidVolts = controller.calculate(velocity(), velocity);
-    double ffVolts = feedforward.calculate(velocity);
+    double ffVolts = feedforward.calculateWithVelocities(lastVelocity, controller.getSetpoint().position);
     hardware.setVoltage(MathUtil.clamp(pidVolts + ffVolts, -MAX_VOLTAGE, MAX_VOLTAGE));
   }
 

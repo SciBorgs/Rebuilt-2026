@@ -36,7 +36,7 @@ public class HoodTest {
     reset(hood);
   }
 
-  /** Tests whether changing the orientation of the slapdown works correctly. */
+  /** Tests whether changing the position of the hood tracks correctly. */
   @RepeatedTest(5)
   public void orientation() {
     double setpoint = random.nextDouble(MIN_ANGLE.in(Radians), MAX_ANGLE.in(Radians));

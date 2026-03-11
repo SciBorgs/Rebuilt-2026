@@ -3,7 +3,6 @@ package org.sciborgs1155.robot;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Seconds;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.sciborgs1155.lib.Test.toCommand;
 import static org.sciborgs1155.lib.UnitTestingUtil.*;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -60,7 +59,7 @@ public class SwerveTest {
   @Disabled
   @Test
   public void systemCheck() {
-    runToCompletion(toCommand(drive.systemsCheck()));
+    runToCompletion(drive.systemsCheck());
   }
 
   /** Tests that the robot reaches the commanded velocity. */

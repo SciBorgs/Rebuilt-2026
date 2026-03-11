@@ -37,7 +37,7 @@ public class TurretConstants {
           MAX_VELOCITY.in(RadiansPerSecond),
           MAX_ACCELERATION.in(RadiansPerSecondPerSecond)); // TODO: Update.
 
-  public static final Angle MAX_ANGLE = Degrees.of(360);
+  public static final Angle MAX_ANGLE = Degrees.of(90);
   public static final Angle MIN_ANGLE = Degrees.of(-90);
   public static final Angle START_ANGLE = Radians.of(0);
 

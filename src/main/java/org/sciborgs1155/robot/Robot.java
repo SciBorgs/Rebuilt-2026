@@ -233,10 +233,10 @@ public class Robot extends CommandRobot {
     operator.b().whileTrue(hood.goTo(Degrees.of(25)).withName("goto 25"));
 
     
-    operator.leftBumper().whileTrue(shooter.runShooter(100));
-    operator.rightBumper().whileTrue(shooter.runShooter(300));
-    operator.y().whileTrue(hood.setVoltage(0.8));
-    operator.a().whileTrue(hood.setVoltage(-0.8));
+    operator.a().whileTrue(shooter.runShooter(100));
+    operator.y().whileTrue(shooter.runShooter(300));
+    // operator.y().whileTrue(hood.setVoltage(0.8));
+    // operator.a().whileTrue(hood.setVoltage(-0.8));
   }
   /**
    * Command factory to make both controllers rumble.

@@ -63,8 +63,7 @@ public class TurretTest {
       CommandScheduler.getInstance().schedule(turret.goTo(() -> Degrees.of(startDeg).in(Radians)));
       fastForward(Seconds.of(10));
     }
-    CommandScheduler.getInstance()
-        .schedule(turret.goToYaw(() -> Rotation2d.fromDegrees(yawDeg)));
+    CommandScheduler.getInstance().schedule(turret.goToYaw(() -> Rotation2d.fromDegrees(yawDeg)));
     fastForward(Seconds.of(5));
     assertEquals(Degrees.of(expectedDeg).in(Radians), turret.position(), TOLERANCE.in(Radians));
   }

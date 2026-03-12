@@ -90,12 +90,12 @@ public final class Shooter extends SubsystemBase implements AutoCloseable {
                 v -> hardware.setVoltage(v.in(Volts)), null, this, "shooter"));
 
     SmartDashboard.putData(
-        "shooter quasistatic backward", characterization.quasistatic(Direction.kReverse));
+        "Robot/shooter/shooter quasistatic backward", characterization.quasistatic(Direction.kReverse));
     SmartDashboard.putData(
-        "shooter quasistatic forward", characterization.quasistatic(Direction.kForward));
+        "Robot/shooter/shooter quasistatic forward", characterization.quasistatic(Direction.kForward));
     SmartDashboard.putData(
-        "shooter dynamic backward", characterization.dynamic(Direction.kReverse));
-    SmartDashboard.putData("shooter dynamic forward", characterization.dynamic(Direction.kForward));
+        "Robot/shooter/shooter dynamic backward", characterization.dynamic(Direction.kReverse));
+    SmartDashboard.putData("Robot/shooter/shooter dynamic forward", characterization.dynamic(Direction.kForward));
 
     setDefaultCommand(runShooter(IDLE_VELOCITY.in(RadiansPerSecond)).withName("Idle"));
   }

@@ -140,11 +140,6 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
     return hardware.getVoltage();
   }
 
-  /** direct voltage control for testing */
-  public Command controlVoltage(double voltage) {
-    return run(() -> hardware.setVoltage(voltage)).withName("direct voltage");
-  }
-
   /**
    * returns the angle setpoint of the hood
    *

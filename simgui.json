@@ -70,6 +70,9 @@
           "shooter": {
             "open": true
           }
+        },
+        "turret": {
+          "open": true
         }
       }
     }
@@ -87,7 +90,7 @@
             0.0,
             0.8500000238418579
           ],
-          "height": 412,
+          "height": 270,
           "series": [
             {
               "color": [
@@ -106,13 +109,30 @@
                 1.0
               ],
               "id": "NT:Robot/hood/angle"
+            },
+            {
+              "color": [
+                0.3333333432674408,
+                0.658823549747467,
+                0.4078431725502014,
+                1.0
+              ],
+              "id": "NT:Robot/turret/position"
+            },
+            {
+              "color": [
+                0.7686275243759155,
+                0.30588236451148987,
+                0.32156863808631897,
+                1.0
+              ],
+              "id": "NT:Robot/turret/setpoint"
             }
           ]
         }
       ],
       "window": {
-        "name": "Hood",
-        "visible": false
+        "name": "Hood"
       }
     },
     "Plot <1>": {
@@ -148,7 +168,8 @@
         }
       ],
       "window": {
-        "name": "Shooter!"
+        "name": "Shooter!",
+        "visible": false
       }
     },
     "Plot <2>": {

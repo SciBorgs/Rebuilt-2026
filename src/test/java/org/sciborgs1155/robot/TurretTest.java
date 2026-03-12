@@ -57,12 +57,8 @@ public class TurretTest {
    * theta plus 360 valid (start 0, yaw -120, expect 240).
    */
   @ParameterizedTest
-  @CsvSource({"0, -45, -45", "350, -45, 315", "0, 90, 90", "0, -120, 240"})
+  @CsvSource({"0, 45, 45", "-350, 45, -315", "0, -90, -90", "0, 120, -240"})
   public void goToYaw(double startDeg, double yawDeg, double expectedDeg) {
-    if (startDeg != 0) {
-      CommandScheduler.getInstance().schedule(turret.goTo(() -> Degrees.of(startDeg).in(Radians)));
-      fastForward(Seconds.of(5));
-    }
     CommandScheduler.getInstance().schedule(turret.goToYaw(Rotation2d.fromDegrees(yawDeg)));
     fastForward(Seconds.of(5));
     assertEquals(Degrees.of(expectedDeg).in(Radians), turret.position(), TOLERANCE.in(Radians));

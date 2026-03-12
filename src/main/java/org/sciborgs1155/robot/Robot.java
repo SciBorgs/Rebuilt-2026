@@ -120,10 +120,10 @@ public class Robot extends CommandRobot {
     FaultLogger.register(pdh);
     SmartDashboard.putData("Auto Chooser", autos);
 
-    if (isReal()) {
-      // teleop().onTrue(shotDataCollector.startLogging());
-      // teleop().onFalse(shotDataCollector.endLogging());
-    }
+    // if (isReal()) {
+    //   teleop().onTrue(shotDataCollector.startLogging());
+    //   teleop().onFalse(shotDataCollector.endLogging());
+    // }
 
     if (TUNING) {
       addPeriodic(
@@ -232,12 +232,12 @@ public class Robot extends CommandRobot {
     operator.x().whileTrue(hood.goTo(Degrees.of(45)).withName("goto 45"));
     operator.b().whileTrue(hood.goTo(Degrees.of(25)).withName("goto 25"));
 
-    
     operator.leftBumper().whileTrue(shooter.runShooter(100));
     operator.rightBumper().whileTrue(shooter.runShooter(300));
-    operator.y().whileTrue(hood.setVoltage(0.8));
-    operator.a().whileTrue(hood.setVoltage(-0.8));
+    operator.y().whileTrue(hood.controlVoltage(0.8));
+    operator.a().whileTrue(hood.controlVoltage(-0.8));
   }
+
   /**
    * Command factory to make both controllers rumble.
    *

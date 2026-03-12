@@ -20,7 +20,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
@@ -141,8 +140,9 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
     return hardware.getVoltage();
   }
 
-  public Command setVoltage(double voltage) {
-    return Commands.run(() -> hardware.setVoltage(voltage)).withName("direct voltage");
+  /** direct voltage control for testing */
+  public Command controlVoltage(double voltage) {
+    return run(() -> hardware.setVoltage(voltage)).withName("direct voltage");
   }
 
   /**

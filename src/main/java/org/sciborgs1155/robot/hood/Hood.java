@@ -142,7 +142,7 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
   }
 
   public Command setVoltage(double voltage) {
-    return Commands.run(() -> hardware.setVoltage(voltage)).withName("direct voltage");
+    return run(() -> hardware.setVoltage(voltage)).withName("direct voltage");
   }
 
   /**

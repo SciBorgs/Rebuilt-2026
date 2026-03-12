@@ -25,6 +25,10 @@
       "/SmartDashboard/Robot/rotation/dynamic forward": "Command",
       "/SmartDashboard/Robot/rotation/quasistatic backward": "Command",
       "/SmartDashboard/Robot/rotation/quasistatic forward": "Command",
+      "/SmartDashboard/Robot/shooter/shooter dynamic backward": "Command",
+      "/SmartDashboard/Robot/shooter/shooter dynamic forward": "Command",
+      "/SmartDashboard/Robot/shooter/shooter quasistatic backward": "Command",
+      "/SmartDashboard/Robot/shooter/shooter quasistatic forward": "Command",
       "/SmartDashboard/Robot/slapdown/dynamic backward": "Command",
       "/SmartDashboard/Robot/slapdown/dynamic forward": "Command",
       "/SmartDashboard/Robot/slapdown/quasistatic backward": "Command",
@@ -33,6 +37,11 @@
       "/SmartDashboard/Robot/translation/dynamic forward": "Command",
       "/SmartDashboard/Robot/translation/quasistatic backward": "Command",
       "/SmartDashboard/Robot/translation/quasistatic forward": "Command",
+      "/SmartDashboard/Robot/turret/TurretVisualizer": "Mechanism2d",
+      "/SmartDashboard/Robot/turret/dynamic clockwise": "Command",
+      "/SmartDashboard/Robot/turret/dynamic counterclockwise": "Command",
+      "/SmartDashboard/Robot/turret/quasistatic clockwise": "Command",
+      "/SmartDashboard/Robot/turret/quasistatic counterclockwise": "Command",
       "/SmartDashboard/Turret dynamic clockwise": "Command",
       "/SmartDashboard/Turret dynamic counterclockwise": "Command",
       "/SmartDashboard/Turret quasistatic clockwise": "Command",
@@ -53,6 +62,18 @@
       "Robot/shooter/controller": "ProfiledPIDController",
       "Robot/slapdown/pid": "ProfiledPIDController",
       "Robot/turret/controller": "ProfiledPIDController"
+    },
+    "windows": {
+      "/SmartDashboard//Robot/hood/measurement": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard//Robot/hood/setpoint": {
+        "window": {
+          "visible": true
+        }
+      }
     }
   },
   "NetworkTables": {
@@ -74,6 +95,9 @@
       }
     }
   },
+  "NetworkTables Info": {
+    "visible": true
+  },
   "Plot": {
     "Plot <0>": {
       "plots": [
@@ -84,7 +108,7 @@
             0.0,
             0.8500000238418579
           ],
-          "height": 412,
+          "height": 290,
           "series": [
             {
               "color": [
@@ -108,8 +132,7 @@
         }
       ],
       "window": {
-        "name": "Hood",
-        "visible": false
+        "name": "Hood"
       }
     },
     "Plot <1>": {
@@ -121,7 +144,7 @@
             0.0,
             0.8500000238418579
           ],
-          "height": 334,
+          "height": 299,
           "series": [
             {
               "color": [

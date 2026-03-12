@@ -130,14 +130,14 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
     setDefaultCommand(run(() -> hardware.setVoltage(0)).withName("stop"));
 
     SmartDashboard.putData(
-        "Turret quasistatic clockwise", sysIdTest(SysIdTestType.QUASISTATIC, Direction.kForward));
+        "Robot/turret/quasistatic clockwise", sysIdTest(SysIdTestType.QUASISTATIC, Direction.kForward));
     SmartDashboard.putData(
-        "Turret quasistatic counterclockwise",
+        "Robot/turret/quasistatic counterclockwise",
         sysIdTest(SysIdTestType.QUASISTATIC, Direction.kReverse));
     SmartDashboard.putData(
-        "Turret dynamic clockwise", sysIdTest(SysIdTestType.DYNAMIC, Direction.kForward));
+        "Robot/turret/dynamic clockwise", sysIdTest(SysIdTestType.DYNAMIC, Direction.kForward));
     SmartDashboard.putData(
-        "Turret dynamic counterclockwise", sysIdTest(SysIdTestType.DYNAMIC, Direction.kReverse));
+        "Robot/turret/dynamic counterclockwise", sysIdTest(SysIdTestType.DYNAMIC, Direction.kReverse));
   }
 
   /** manual control to test the turret, makes it go left. */

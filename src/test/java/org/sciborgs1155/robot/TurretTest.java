@@ -52,14 +52,19 @@ public class TurretTest {
   /**
    * Tests that goToYaw picks the valid turret position closest to the current position.
    *
-   * <p>Cases: overlap zone from near side (start 0, yaw -45, expect -45), overlap zone from far
-   * side (start 350, yaw -45, expect 315), only theta valid (start 0, yaw 90, expect 90), only
-   * theta plus 360 valid (start 0, yaw -120, expect 240).
+   * <p>Cases: overlap zone from near side (start 0, yaw 45, expect 45), overlap zone from far side
+   * (start -350, yaw 45, expect -315), only theta valid (start 0, yaw -90, expect -90), only theta
+   * minus 360 valid (start 0, yaw 120, expect -240).
    */
   @ParameterizedTest
   @CsvSource({"0, 45, 45", "-350, 45, -315", "0, -90, -90", "0, 120, -240"})
   public void goToYaw(double startDeg, double yawDeg, double expectedDeg) {
-    CommandScheduler.getInstance().schedule(turret.goToYaw(Rotation2d.fromDegrees(yawDeg)));
+    if (startDeg != 0) {
+      CommandScheduler.getInstance().schedule(turret.goTo(() -> Degrees.of(startDeg).in(Radians)));
+      fastForward(Seconds.of(10));
+    }
+    CommandScheduler.getInstance()
+        .schedule(turret.goToYaw(() -> Rotation2d.fromDegrees(yawDeg)));
     fastForward(Seconds.of(5));
     assertEquals(Degrees.of(expectedDeg).in(Radians), turret.position(), TOLERANCE.in(Radians));
   }

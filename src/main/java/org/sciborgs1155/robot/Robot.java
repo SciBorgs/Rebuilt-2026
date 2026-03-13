@@ -48,7 +48,6 @@ import org.sciborgs1155.lib.Tracer;
 import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
-import org.sciborgs1155.robot.commands.shooting.ShotDataCollector;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.hood.Hood;
 import org.sciborgs1155.robot.hopper.Hopper;
@@ -87,7 +86,6 @@ public class Robot extends CommandRobot {
 
   // COMMANDS
   private final Alignment align = new Alignment(drive);
-  private final ShotDataCollector shotDataCollector = new ShotDataCollector(shooter, indexer, hood);
 
   @NotLogged private final SendableChooser<Command> autos = Autos.configureAutos(drive);
 
@@ -121,11 +119,6 @@ public class Robot extends CommandRobot {
 
     FaultLogger.register(pdh);
     SmartDashboard.putData("Auto Chooser", autos);
-
-    // if (isReal()) {
-    //   teleop().onTrue(shotDataCollector.startLogging());
-    //   teleop().onFalse(shotDataCollector.endLogging());
-    // }
 
     if (TUNING) {
       addPeriodic(

@@ -16,7 +16,13 @@ import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.sciborgs1155.lib.LoggingUtils;
 
-@SuppressWarnings("PMD.OneDeclarationPerLine")
+@SuppressWarnings({
+  "PMD.GodClass",
+  "PMD.AvoidUsingVolatile",
+  "PMD.TooManyFields",
+  "PMD.OneDeclarationPerLine",
+  "PMD.AvoidSynchronizedStatement"
+})
 public abstract class ProjectileVisualizer {
   /** Tolerance used to detect input changes. */
   protected static final double EPS = 1e-6;
@@ -57,9 +63,7 @@ public abstract class ProjectileVisualizer {
   /** Reusable trajectory buffer. */
   private final List<Pose3d> trajectoryBuffer = new ArrayList<>(512);
 
-  /** Cached launch state for change detection. */
   private final double[] lastInitialTranslation = new double[3];
-
   private final double[] lastInitialVelocity = new double[3];
   private final double[] lastInitialRotation = new double[3];
   private double lastInitialRotationalVelocity;
@@ -101,8 +105,14 @@ public abstract class ProjectileVisualizer {
     trajectoryDt = 1.0 / trajectoryResolution;
   }
 
-  private static boolean diff(double a, double b) {
-    return Math.abs(a - b) > EPS;
+  private static boolean diff(double number1, double number2) {
+    return Math.abs(number1 - number2) > EPS;
+  }
+
+  private static boolean diff(double[] vector1, double[] vector2) {
+    return diff(vector1[X], vector2[X])
+        || diff(vector1[Y], vector2[Y])
+        || diff(vector1[Z], vector2[Z]);
   }
 
   private void checkLaunchState() {
@@ -112,18 +122,11 @@ public abstract class ProjectileVisualizer {
     double rotationalVelocity = initialRotationalVelocity.getAsDouble();
 
     boolean changed = false;
-
     if (launchStateInitialized) {
-      if (diff(translation[X], lastInitialTranslation[X])
-          || diff(translation[Y], lastInitialTranslation[Y])
-          || diff(translation[Z], lastInitialTranslation[Z])) changed = true;
-      else if (diff(velocity[X], lastInitialVelocity[X])
-          || diff(velocity[Y], lastInitialVelocity[Y])
-          || diff(velocity[Z], lastInitialVelocity[Z])) changed = true;
-      else if (diff(rotation[X], lastInitialRotation[X])
-          || diff(rotation[Y], lastInitialRotation[Y])
-          || diff(rotation[Z], lastInitialRotation[Z])) changed = true;
-      else if (diff(rotationalVelocity, lastInitialRotationalVelocity)) changed = true;
+      if (diff(translation, lastInitialTranslation)
+          || diff(velocity, lastInitialVelocity)
+          || diff(rotation, lastInitialRotation)
+          || diff(rotationalVelocity, lastInitialRotationalVelocity)) changed = true;
     } else {
       changed = true;
       launchStateInitialized = true;

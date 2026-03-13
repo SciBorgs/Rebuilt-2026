@@ -21,7 +21,6 @@ import org.sciborgs1155.robot.commands.shooting.FuelVisualizer.Fuel;
 import org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile;
 import org.sciborgs1155.robot.drive.Drive;
 
-@SuppressWarnings("PMD")
 public final class ShotGenerator {
   private static final boolean DRAG_ENABLED = true;
   private static final boolean LIFT_ENABLED = false;
@@ -47,7 +46,7 @@ public final class ShotGenerator {
 
   static final double[] GOAL = fromTranslation(Hub.TOP_CENTER_POINT);
 
-  private static final Projectile projectile =
+  private static Projectile projectile =
       new Fuel()
           .withScoringParameters(GOAL, SCORE_RADIUS, SCORE_DEPTH)
           .config(TRAJECTORY_RESOLUTION, true, DRAG_ENABLED, false, LIFT_ENABLED);
@@ -79,19 +78,21 @@ public final class ShotGenerator {
   }
 
   private static double optimizeForSpeed(double distance, double speed, double angle) {
+    double optimalSpeed = speed;
+
     for (int iterations = 0; iterations < OPTIMIZATION_RESOLUTION; iterations++) {
       generateDirectTrajectory(distance, new double[] {speed, angle, 0});
       double finalDisplacement = trajectoryBuffer[trajectoryBuffer.length - 1][X] - GOAL[X];
       double finalDistance = Math.abs(finalDisplacement);
 
-      if (finalDisplacement > 0) speed -= SPEED_PRECISION * finalDistance;
-      if (finalDisplacement < 0) speed += SPEED_PRECISION * finalDistance;
+      if (finalDisplacement > 0) optimalSpeed -= SPEED_PRECISION * finalDistance;
+      if (finalDisplacement < 0) optimalSpeed += SPEED_PRECISION * finalDistance;
     }
 
-    return speed;
+    return optimalSpeed;
   }
 
-  protected static double[] optimizedLaunchParameters(double distance) {
+  static double[] optimizedLaunchParameters(double distance) {
     for (double testPitch = MIN_PITCH; testPitch < MAX_PITCH; testPitch += PITCH_PRECISION) {
       // CHECK IF SHOT IS POSSIBLE
       generateDirectTrajectory(distance, new double[] {MAX_SPEED, testPitch, 0});
@@ -113,13 +114,13 @@ public final class ShotGenerator {
       }
 
       // RETURN FIRST ACCEPTABLE SHOT
-      if (!cleared) continue;
-      return new double[] {speed, testPitch, 0};
+      if (cleared) return new double[] {speed, testPitch, 0};
     }
 
     return new double[] {0, 0, 0};
   }
 
+  /** Calculates the launch parameters required to shoot on the move (speed, pitch, yaw). */
   public static double[] movingLaunchParameters(Pose3d robotPose, ChassisSpeeds robotVelocity) {
     double heading = robotPose.getRotation().getZ();
     double[] robotToShooter = robotToShooter(heading);
@@ -154,6 +155,9 @@ public final class ShotGenerator {
             heading));
   }
 
+  /**
+   * Creates a FuelVisualizer with the settings used to generate shots for the shooting algorithm.
+   */
   public static ProjectileVisualizer createVisualizer(Drive drive) {
     return fromLaunchParameters(
             () -> movingLaunchParameters(drive.pose3d(), drive.fieldRelativeChassisSpeeds()), drive)

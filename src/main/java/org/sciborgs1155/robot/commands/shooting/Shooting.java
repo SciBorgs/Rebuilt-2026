@@ -16,26 +16,25 @@ import org.sciborgs1155.robot.shooter.ShooterConstants;
 import org.sciborgs1155.robot.turret.Turret;
 import org.sciborgs1155.robot.turret.TurretConstants;
 
-@SuppressWarnings("PMD")
 public class Shooting {
   private final Turret turret;
   private final Hood hood;
   private final Drive drive;
 
   private double[] launchParameters = {
-    0,
     ShooterConstants.IDLE_VELOCITY.in(RadiansPerSecond),
     HoodConstants.DEFAULT_ANGLE.in(Radians),
     TurretConstants.START_ANGLE.in(Radians)
   };
 
+  /** A command factory for the shooting algorithm. */
   public Shooting(Turret turret, Hood hood, Drive drive) {
     this.turret = turret;
     this.hood = hood;
     this.drive = drive;
   }
 
-  public Command updateLaunchParameters() {
+  private Command updateLaunchParameters() {
     return Commands.run(
         () -> {
           launchParameters =
@@ -47,6 +46,10 @@ public class Shooting {
         });
   }
 
+  /**
+   * Simultaneously calculates new launch parameters and passes those parameters into the
+   * subsystems.
+   */
   public Command runShooter() {
     return Commands.parallel(
         updateLaunchParameters(),
@@ -54,6 +57,7 @@ public class Shooting {
         hood.goTo(() -> Math.PI / 2 - launchParameters[PITCH]));
   }
 
+  /** Creates a visualizer that utilizes the subsystem positions to predict a trajectory. */
   public ProjectileVisualizer createVisualizer() {
     return FuelVisualizer.fromLaunchParameters(
         () -> launchParameters[SPEED],

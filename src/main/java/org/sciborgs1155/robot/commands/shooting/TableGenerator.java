@@ -18,7 +18,6 @@ import java.nio.file.Paths;
 import java.util.Scanner;
 import org.sciborgs1155.lib.LoggingUtils;
 
-@SuppressWarnings("PMD")
 public final class TableGenerator {
   private static final double MIN_DISTANCE = 0.1;
   private static final double MAX_DISTANCE = 20;
@@ -121,11 +120,15 @@ public final class TableGenerator {
     }
   }
 
+  /**
+   * Returns the launch parameters (speed, pitch, yaw) required to shoot from a certain planar
+   * distance into the hub. Distance is to the origin of the shooter.
+   */
   public static double[] directLaunchParameters(double distance) {
     try {
       LoggingUtils.log("Shooting/LookUp Table Status", true);
       return new double[] {SPEED_TABLE.get(distance), ANGLE_TABLE.get(distance), 0};
-    } catch (Exception e) {
+    } catch (Exception exception) {
       LoggingUtils.log("Shooting/LookUp Table Status", false);
       return new double[] {0, 0, 0};
     }

@@ -18,10 +18,7 @@ import org.sciborgs1155.lib.LoggingUtils;
 
 @SuppressWarnings("PMD.OneDeclarationPerLine")
 public abstract class ProjectileVisualizer {
-
-  private static final Pose3d[] EMPTY_POSES = new Pose3d[0];
-
-  /** tolerance used to detect input changes */
+  /** Tolerance used to detect input changes. */
   protected static final double EPS = 1e-6;
 
   private double airTime;
@@ -33,24 +30,19 @@ public abstract class ProjectileVisualizer {
 
   private boolean weightEnabled = true;
   private boolean dragEnabled = true;
-  private boolean torqueEnabled = false;
-  private boolean liftEnabled = false;
+  private boolean torqueEnabled = true;
+  private boolean liftEnabled = true;
 
   private double launchResolution = 100;
   private double trajectoryResolution = 100;
   private double cooldown = 0.05;
   private double maxAirTime = 3.0;
 
-  private int maxLaunchFrames;
-  private int maxTrajectoryFrames;
+  private int maxLaunchFrames, maxTrajectoryFrames;
+  private double launchDt, trajectoryDt;
+  private Pose3d initial, ending;
 
-  private double launchDt;
-  private double trajectoryDt;
-
-  private Pose3d initial;
-  private Pose3d ending;
-
-  private volatile Pose3d[] trajectory = EMPTY_POSES;
+  private volatile Pose3d[] trajectory = new Pose3d[0];
 
   private final Supplier<double[]> initialTranslation;
   private final Supplier<double[]> initialVelocity;
@@ -59,21 +51,20 @@ public abstract class ProjectileVisualizer {
 
   private final List<Projectile> projectiles = new ArrayList<>();
 
-  /** object pool for projectiles */
-  private final ArrayDeque<Projectile> projectilePool = new ArrayDeque<>();
+  /** Object pool for projectiles. */
+  private final Deque<Projectile> projectilePool = new ArrayDeque<>();
 
-  /** reusable trajectory buffer */
+  /** Reusable trajectory buffer. */
   private final List<Pose3d> trajectoryBuffer = new ArrayList<>(512);
 
-  /** cached launch state for change detection */
+  /** Cached launch state for change detection. */
   private final double[] lastInitialTranslation = new double[3];
 
   private final double[] lastInitialVelocity = new double[3];
   private final double[] lastInitialRotation = new double[3];
   private double lastInitialRotationalVelocity;
 
-  private boolean launchStateInitialized = false;
-
+  private boolean launchStateInitialized;
   private volatile boolean trajectoryDirty = true;
 
   private final ScheduledExecutorService executor =
@@ -89,12 +80,11 @@ public abstract class ProjectileVisualizer {
 
   protected abstract Projectile createProjectile();
 
-  public ProjectileVisualizer(
+  protected ProjectileVisualizer(
       Supplier<double[]> initialTranslation,
       Supplier<double[]> initialVelocity,
       Supplier<double[]> initialRotation,
       DoubleSupplier initialRotationalVelocity) {
-
     this.initialTranslation = initialTranslation;
     this.initialVelocity = initialVelocity;
     this.initialRotation = initialRotation;
@@ -104,7 +94,6 @@ public abstract class ProjectileVisualizer {
   }
 
   private void recomputeFrameLimits() {
-
     maxLaunchFrames = (int) (maxAirTime * launchResolution);
     maxTrajectoryFrames = (int) (maxAirTime * trajectoryResolution);
 
@@ -112,16 +101,11 @@ public abstract class ProjectileVisualizer {
     trajectoryDt = 1.0 / trajectoryResolution;
   }
 
-  // ------------------------------------------------
-  // LAUNCH STATE CHANGE DETECTION
-  // ------------------------------------------------
-
   private static boolean diff(double a, double b) {
     return Math.abs(a - b) > EPS;
   }
 
   private void checkLaunchState() {
-
     double[] translation = initialTranslation.get();
     double[] velocity = initialVelocity.get();
     double[] rotation = initialRotation.get();
@@ -129,46 +113,33 @@ public abstract class ProjectileVisualizer {
 
     boolean changed = false;
 
-    if (!launchStateInitialized) {
-
-      changed = true;
-      launchStateInitialized = true;
-
-    } else {
-
+    if (launchStateInitialized) {
       if (diff(translation[X], lastInitialTranslation[X])
           || diff(translation[Y], lastInitialTranslation[Y])
           || diff(translation[Z], lastInitialTranslation[Z])) changed = true;
-
-      if (diff(velocity[X], lastInitialVelocity[X])
+      else if (diff(velocity[X], lastInitialVelocity[X])
           || diff(velocity[Y], lastInitialVelocity[Y])
           || diff(velocity[Z], lastInitialVelocity[Z])) changed = true;
-
-      if (diff(rotation[X], lastInitialRotation[X])
+      else if (diff(rotation[X], lastInitialRotation[X])
           || diff(rotation[Y], lastInitialRotation[Y])
           || diff(rotation[Z], lastInitialRotation[Z])) changed = true;
-
-      if (diff(rotationalVelocity, lastInitialRotationalVelocity)) changed = true;
+      else if (diff(rotationalVelocity, lastInitialRotationalVelocity)) changed = true;
+    } else {
+      changed = true;
+      launchStateInitialized = true;
     }
 
     if (changed) {
-
       System.arraycopy(translation, 0, lastInitialTranslation, 0, 3);
       System.arraycopy(velocity, 0, lastInitialVelocity, 0, 3);
       System.arraycopy(rotation, 0, lastInitialRotation, 0, 3);
 
       lastInitialRotationalVelocity = rotationalVelocity;
-
       trajectoryDirty = true;
     }
   }
 
-  // ------------------------------------------------
-  // OBJECT POOL
-  // ------------------------------------------------
-
   private Projectile obtainProjectile() {
-
     Projectile projectile = projectilePool.pollFirst();
     if (projectile == null) projectile = createProjectile();
 
@@ -182,12 +153,11 @@ public abstract class ProjectileVisualizer {
     projectilePool.addFirst(projectile);
   }
 
-  // ------------------------------------------------
-  // SIMULATION CONTROL
-  // ------------------------------------------------
-
+  /**
+   * Starts the simulation thread. Note that once the thread has been started, no further changes
+   * can be made to the simulation resolutions.
+   */
   public void startSimulation() {
-
     if (!running.compareAndSet(false, true)) return;
 
     executor.scheduleAtFixedRate(
@@ -200,17 +170,24 @@ public abstract class ProjectileVisualizer {
         TimeUnit.MICROSECONDS);
   }
 
+  /**
+   * Ends the simulation thread. Note that once the thread has been ended, it may not be started
+   * again.
+   */
   public void endSimulation() {
     running.set(false);
   }
 
-  // ------------------------------------------------
-  // CONFIGURATION
-  // ------------------------------------------------
-
+  /**
+   * Configures physics settings.
+   *
+   * @param weight whether or not to simulate gravity
+   * @param drag whether or not to simulate drag
+   * @param torque whether or not to simulate torque
+   * @param lift whether or not to simulate lift (magnus force)
+   */
   public ProjectileVisualizer configPhysics(
       boolean weight, boolean drag, boolean torque, boolean lift) {
-
     weightEnabled = weight;
     dragEnabled = drag;
     torqueEnabled = torque;
@@ -221,37 +198,50 @@ public abstract class ProjectileVisualizer {
     return this;
   }
 
+  /**
+   * Configures generation settings.
+   *
+   * @param delay the minimum delay between projectile launches. Requires launch mode to be enabled
+   * @param air the maximum amount of time a projectile can spend in air before being deleted
+   *     (seconds)
+   * @param launch the resolution of the launched projectiles (steps per second). Requires launch
+   *     mode to be enabled. Note that once the thread has been started, no further changes can be
+   *     made to the simulation resolutions.
+   * @param trajectory the resolution of the trajectory (steps per second). Requires trajectory mode
+   *     to be enabled. Note that once the thread has been started, no further changes can be made
+   *     to the simulation resolutions.
+   */
   public ProjectileVisualizer configGeneration(
       double delay, double air, double launch, double trajectory) {
-
     cooldown = delay;
     maxAirTime = air;
+
     launchResolution = launch;
     trajectoryResolution = trajectory;
 
     recomputeFrameLimits();
-
     trajectoryDirty = true;
 
     return this;
   }
 
+  /**
+   * Configures whether or not launch mode/trajectory mode is enabled. Both can be enabled
+   * simultaneously.
+   *
+   * @param launch Launch mode allows for the launching of individual projectiles in real time
+   * @param trajectory Trajectory mode allows for the generation of a complete trajectory ahead of
+   *     time (x50 more resource intensive)
+   */
   public ProjectileVisualizer config(boolean launch, boolean trajectory) {
-
     launchEnabled = launch;
     trajectoryEnabled = trajectory;
 
     return this;
   }
 
-  // ------------------------------------------------
-  // PROJECTILE LAUNCH
-  // ------------------------------------------------
-
-  public void launchProjectile() {
-
+  private void launchProjectile() {
     if (!running.get()) return;
-
     Projectile projectile = obtainProjectile();
 
     projectile.launch(
@@ -267,29 +257,24 @@ public abstract class ProjectileVisualizer {
     initial = projectile.pose();
   }
 
+  /** A command to launch projectiles continuously with a set delay. */
   public Command launchProjectiles() {
-
     return Commands.repeatingSequence(
         Commands.runOnce(this::launchProjectile).andThen(Commands.waitSeconds(cooldown)));
   }
 
-  // ------------------------------------------------
-  // SIMULATION LOOPS
-  // ------------------------------------------------
-
   private void updateLaunchSimulation() {
-
     if (!launchEnabled) return;
 
     synchronized (projectiles) {
-      for (int i = projectiles.size() - 1; i >= 0; i--) {
+      for (int index = projectiles.size() - 1; index >= 0; index--) {
 
-        Projectile projectile = projectiles.get(i);
+        Projectile projectile = projectiles.get(index);
 
         if (projectile.willMiss()) {
           misses++;
           ending = projectile.pose();
-          projectiles.remove(i);
+          projectiles.remove(index);
           recycleProjectile(projectile);
           continue;
         }
@@ -297,14 +282,14 @@ public abstract class ProjectileVisualizer {
         if (projectile.willScore()) {
           scores++;
           ending = projectile.pose();
-          projectiles.remove(i);
+          projectiles.remove(index);
           recycleProjectile(projectile);
           continue;
         }
 
         if (projectile.frames >= maxLaunchFrames) {
           ending = projectile.pose();
-          projectiles.remove(i);
+          projectiles.remove(index);
           recycleProjectile(projectile);
           continue;
         }
@@ -315,26 +300,16 @@ public abstract class ProjectileVisualizer {
   }
 
   private void updateTrajectorySimulation() {
-
     checkLaunchState();
-
     if (!trajectoryEnabled || !trajectoryDirty) return;
 
     trajectory = generateTrajectory();
-
     trajectoryDirty = false;
   }
 
-  // ------------------------------------------------
-  // TRAJECTORY GENERATION
-  // ------------------------------------------------
-
-  public Pose3d[] generateTrajectory() {
-
+  private Pose3d[] generateTrajectory() {
     trajectoryBuffer.clear();
-
     Projectile projectile = obtainProjectile();
-
     projectile.config(trajectoryResolution, weightEnabled, dragEnabled, torqueEnabled, liftEnabled);
 
     projectile.launch(
@@ -346,34 +321,23 @@ public abstract class ProjectileVisualizer {
     initial = projectile.pose();
 
     int frames = 0;
-
     while (!projectile.willMiss() && !projectile.willScore() && frames <= maxTrajectoryFrames) {
-
       trajectoryBuffer.add(projectile.pose());
-
       projectile.periodic();
-
       frames++;
     }
 
     ending = projectile.pose();
-
     willMiss = projectile.willMiss();
     willScore = projectile.willScore();
-
     airTime = frames / trajectoryResolution;
 
     recycleProjectile(projectile);
-
     return trajectoryBuffer.toArray(new Pose3d[0]);
   }
 
-  // ------------------------------------------------
-  // DATA ACCESS
-  // ------------------------------------------------
-
+  /** The poses of the projectiles being simulated. Requires launch mode to be enabled. */
   public Pose3d[] poses() {
-
     synchronized (projectiles) {
       Pose3d[] poses = new Pose3d[projectiles.size()];
 
@@ -384,40 +348,66 @@ public abstract class ProjectileVisualizer {
     }
   }
 
+  /**
+   * The trajectory of the projectile when launched with the current parameters. Requires trajectory
+   * to be enabled.
+   */
   public Pose3d[] trajectory() {
     return trajectory.clone();
   }
 
+  /** The initial pose of the projectile. */
   public Pose3d initial() {
     return initial;
   }
 
+  /** The final pose of the projectile. */
   public Pose3d ending() {
     return ending;
   }
 
+  /**
+   * Whether or not the projectile will hit the goal when launched with the current parameters.
+   * Requires trajectory to be enabled.
+   */
   public boolean willScore() {
     return willScore;
   }
 
+  /**
+   * Whether or not the projectile will miss the goal when launched with the current parameters.
+   * Requires trajectory to be enabled.
+   */
   public boolean willMiss() {
     return willMiss;
   }
 
+  /**
+   * The amount of time the projectile spends in the air (seconds). Requires trajectory to be
+   * enabled.
+   */
   public double airTime() {
     return airTime;
   }
 
+  /**
+   * The amount of time a projectile has been launched and scored into the goal. Requires launch to
+   * be enabled.
+   */
   public int scores() {
     return scores;
   }
 
+  /**
+   * The amount of time a projectile has been launched and missed the goal. Requires launch to be
+   * enabled.
+   */
   public int misses() {
     return misses;
   }
 
+  /** Logs visualizer data to NetworkTables. */
   public void updateLogging() {
-
     LoggingUtils.log("Projectile Visualizer/Trajectory", trajectory(), Pose3d.struct);
     LoggingUtils.log("Projectile Visualizer/Will score", willScore);
     LoggingUtils.log("Projectile Visualizer/Will miss", willMiss);
@@ -429,45 +419,23 @@ public abstract class ProjectileVisualizer {
     LoggingUtils.log("Projectile Visualizer/Ending pose", ending, Pose3d.struct);
   }
 
-  // =========================================================
-  // PROJECTILE PHYSICS
-  // =========================================================
-
   protected abstract static class Projectile {
     protected static final double GRAVITY = -9.80665;
+    protected static final double AIR_DENSITY = 1.225;
 
     protected static final int X = 0, Y = 1, Z = 2;
     protected static final int SPEED = 0, PITCH = 1, YAW = 2;
 
     protected int frames;
 
-    protected double resolution;
-    protected double dt;
-
-    protected boolean weightEnabled;
-    protected boolean dragEnabled;
-    protected boolean torqueEnabled;
-    protected boolean liftEnabled;
-
-    // =============================
-    // PHYSICS STATE (NO ARRAYS)
-    // =============================
-
+    protected double resolution, delta;
+    protected boolean weightEnabled, dragEnabled, torqueEnabled, liftEnabled;
     protected double x, y, z;
     protected double vx, vy, vz;
     protected double ax, ay, az;
-
-    // Euler rotation
-    protected double roll;
-    protected double pitch;
-    protected double yaw;
-
+    protected double roll, pitch, yaw;
     protected double omega;
     protected double alpha;
-
-    // =============================
-    // PHYSICS MODEL HOOKS
-    // =============================
 
     protected double weight() {
       return GRAVITY;
@@ -475,27 +443,18 @@ public abstract class ProjectileVisualizer {
 
     protected abstract double[] drag();
 
-    protected double torque() {
-      return 0;
-    }
+    protected abstract double[] lift();
 
-    protected double[] lift() {
-      return new double[] {0, 0, 0};
-    }
+    protected abstract double torque();
 
     protected abstract boolean willScore();
 
     protected abstract boolean willMiss();
 
-    // =============================
-    // CONFIGURATION
-    // =============================
-
     protected Projectile config(
         double fps, boolean weight, boolean drag, boolean torque, boolean lift) {
-
       resolution = fps;
-      dt = 1.0 / fps;
+      delta = 1.0 / fps;
 
       weightEnabled = weight;
       dragEnabled = drag;
@@ -505,105 +464,96 @@ public abstract class ProjectileVisualizer {
       return this;
     }
 
-    // =============================
-    // LAUNCH
-    // =============================
-
     protected void launch(
-        double[] launchTranslation,
-        double[] launchVelocity,
-        double[] launchRotation,
-        double launchRotationalVelocity) {
+        double[] initialTranslation,
+        double[] initialVelocity,
+        double[] initialRotation,
+        double initialRotationalVelocity) {
+      x = initialTranslation[X];
+      y = initialTranslation[Y];
+      z = initialTranslation[Z];
 
-      x = launchTranslation[X];
-      y = launchTranslation[Y];
-      z = launchTranslation[Z];
+      vx = initialVelocity[X];
+      vy = initialVelocity[Y];
+      vz = initialVelocity[Z];
 
-      vx = launchVelocity[X];
-      vy = launchVelocity[Y];
-      vz = launchVelocity[Z];
+      ax = 0;
+      ay = 0;
+      az = 0;
 
-      ax = ay = az = 0;
+      roll = initialRotation[X];
+      pitch = initialRotation[Y];
+      yaw = initialRotation[Z];
 
-      roll = launchRotation[0];
-      pitch = launchRotation[1];
-      yaw = launchRotation[2];
-
-      omega = launchRotationalVelocity;
+      omega = initialRotationalVelocity;
       alpha = 0;
 
       frames = 0;
     }
 
-    // =============================
-    // PHYSICS STEP
-    // =============================
-
     protected void periodic() {
-
       // integrate position
-      x += vx * dt;
-      y += vy * dt;
-      z += vz * dt;
+      x += vx * delta;
+      y += vy * delta;
+      z += vz * delta;
 
       // integrate velocity
-      vx += ax * dt;
-      vy += ay * dt;
-      vz += az * dt;
+      vx += ax * delta;
+      vy += ay * delta;
+      vz += az * delta;
 
       // reset acceleration
-      ax = ay = az = 0;
+      ax = 0;
+      ay = 0;
+      az = 0;
 
       // weight
       if (weightEnabled) az += GRAVITY;
 
       // drag
       if (dragEnabled) {
-        double[] d = drag();
-        ax += d[X];
-        ay += d[Y];
-        az += d[Z];
+        double[] drag = drag();
+        ax += drag[X];
+        ay += drag[Y];
+        az += drag[Z];
       }
 
       // lift
       if (liftEnabled) {
-        double[] l = lift();
-        ax += l[X];
-        ay += l[Y];
-        az += l[Z];
+        double[] lift = lift();
+        ax += lift[X];
+        ay += lift[Y];
+        az += lift[Z];
       }
 
       // integrate rotation (pitch)
-      pitch += omega * dt;
-
-      omega += alpha * dt;
+      pitch += omega * delta;
+      omega += alpha * delta;
       alpha = torqueEnabled ? torque() : 0;
 
       frames++;
     }
 
-    // =============================
-    // POSE OUTPUT
-    // =============================
-
     protected Pose3d pose() {
-
       return new Pose3d(new Translation3d(x, y, z), new Rotation3d(roll, pitch, yaw));
     }
 
-    // =============================
-    // RESET FOR OBJECT POOL
-    // =============================
-
     protected void reset() {
+      x = 0;
+      y = 0;
+      z = 0;
 
-      x = y = z = 0;
+      vx = 0;
+      vy = 0;
+      vz = 0;
 
-      vx = vy = vz = 0;
+      ax = 0;
+      ay = 0;
+      az = 0;
 
-      ax = ay = az = 0;
-
-      roll = pitch = yaw = 0;
+      roll = 0;
+      pitch = 0;
+      yaw = 0;
 
       omega = 0;
       alpha = 0;

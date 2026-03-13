@@ -12,16 +12,15 @@ import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.robot.FieldConstants.Hub;
 import org.sciborgs1155.robot.drive.Drive;
 
-@SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
-public class FuelVisualizer extends ProjectileVisualizer {
+@SuppressWarnings("PMD.OneDeclarationPerLine")
+public final class FuelVisualizer extends ProjectileVisualizer {
+  static final double FUEL_MASS = 0.225;
+  static final double FUEL_RADIUS = 0.075;
+
   private double scoreTolerance = Hub.INNER_WIDTH / 2;
   private double scoreDepth;
   private double[] targetPose = fromTranslation(Hub.TOP_CENTER_POINT);
-
-  protected static final double FUEL_MASS = 0.225;
-  protected static final double FUEL_RADIUS = 0.075;
-
-  protected static final double AIR_DENSITY = 1.225;
+  private static final double SCORE_WINDOW = FUEL_RADIUS / 2;
 
   /** Multiplied by velocity squared to compute drag acceleration. */
   private static final double DRAG_CONSTANT =
@@ -31,9 +30,7 @@ public class FuelVisualizer extends ProjectileVisualizer {
   private static final double LIFT_CONSTANT =
       4.0 / 3.0 * Math.PI * FUEL_RADIUS * FUEL_RADIUS * FUEL_RADIUS * AIR_DENSITY / FUEL_MASS;
 
-  private static final double SCORE_WINDOW = FUEL_RADIUS / 2;
-
-  protected FuelVisualizer(
+  private FuelVisualizer(
       Supplier<double[]> initialTranslation,
       Supplier<double[]> initialVelocity,
       Supplier<double[]> initialRotation,
@@ -41,6 +38,7 @@ public class FuelVisualizer extends ProjectileVisualizer {
     super(initialTranslation, initialVelocity, initialRotation, initialRotationalVelocity);
   }
 
+  /** Creates a new visualizer from a supplier of launch parameters (speed, pitch, yaw). */
   public static FuelVisualizer fromLaunchParameters(
       Supplier<double[]> launchParameters, Drive drive) {
     DoubleSupplier heading = () -> drive.pose3d().getRotation().getZ();
@@ -64,12 +62,20 @@ public class FuelVisualizer extends ProjectileVisualizer {
         () -> initialRotationalVelocity());
   }
 
+  /** Creates a new visualizer from a supplier of launch parameters (speed, pitch, yaw). */
   public static FuelVisualizer fromLaunchParameters(
       DoubleSupplier speed, DoubleSupplier pitch, DoubleSupplier yaw, Drive drive) {
     return fromLaunchParameters(
         () -> new double[] {speed.getAsDouble(), pitch.getAsDouble(), yaw.getAsDouble()}, drive);
   }
 
+  /**
+   * Configures visualizer scoring parameters.
+   *
+   * @param goal the translation of the goal
+   * @param tolerance the planar tolerance to be considered 'scored'
+   * @param depth the vertical distance below the goal to check for scoring/missing
+   */
   public FuelVisualizer withScoringParameters(double[] goal, double tolerance, double depth) {
     targetPose = goal.clone();
     scoreDepth = depth;
@@ -181,7 +187,7 @@ public class FuelVisualizer extends ProjectileVisualizer {
 
   protected static double[] launchParameters(double[] shotVelocity) {
     double speed = norm(shotVelocity);
-    if (speed < 1e-6) return new double[4];
+    if (speed < EPS) return new double[4];
 
     double yaw = Math.atan2(shotVelocity[Y] / speed, shotVelocity[X] / speed);
     double pitch = Math.asin(shotVelocity[Z] / speed);
@@ -207,19 +213,19 @@ public class FuelVisualizer extends ProjectileVisualizer {
     return new double[] {fieldRelativeX, fieldRelativeY, fieldRelative[Z]};
   }
 
-  public static class Fuel extends Projectile {
+  protected static class Fuel extends Projectile {
     protected double scoreDepth;
     protected double[] targetPose = fromTranslation(Hub.TOP_CENTER_POINT);
 
     protected double scoreRadius = Hub.INNER_WIDTH + FUEL_RADIUS;
     protected double scoreRadiusSq = scoreRadius * scoreRadius;
 
-    protected boolean inScoringPlane = false;
-    protected boolean inScoringRadius = false;
+    protected boolean inScoringPlane, inScoringRadius;
 
     protected final double[] drag = new double[3];
+    protected final double[] lift = new double[3];
 
-    public Fuel withScoringParameters(double[] goal, double tolerance, double depth) {
+    protected Fuel withScoringParameters(double[] goal, double tolerance, double depth) {
       targetPose = goal.clone();
       scoreDepth = depth;
       scoreRadius = tolerance + FUEL_RADIUS;
@@ -232,13 +238,29 @@ public class FuelVisualizer extends ProjectileVisualizer {
     protected double[] drag() {
       // https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/drag-of-a-sphere/
       double scale = -DRAG_CONSTANT * Math.sqrt(vx * vx + vy * vy + vz * vz);
-      return new double[] {vx * scale, vy * scale, vz * scale};
+
+      drag[X] = vx * scale;
+      drag[Y] = vy * scale;
+      drag[Z] = vz * scale;
+
+      return drag.clone();
     }
 
     @Override
     protected double[] lift() {
       // https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/ideal-lift-of-a-spinning-ball/
-      return new double[] {LIFT_CONSTANT * (-omega * vx), 0, LIFT_CONSTANT * (omega * vz)};
+      double scale = LIFT_CONSTANT * omega;
+
+      lift[X] = scale * -vx;
+      lift[Y] = 0;
+      lift[Z] = scale * vz;
+
+      return lift.clone();
+    }
+
+    @Override
+    protected double torque() {
+      return 0;
     }
 
     @Override

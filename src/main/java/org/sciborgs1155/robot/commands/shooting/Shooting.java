@@ -16,6 +16,7 @@ import org.sciborgs1155.robot.shooter.ShooterConstants;
 import org.sciborgs1155.robot.turret.Turret;
 import org.sciborgs1155.robot.turret.TurretConstants;
 
+@SuppressWarnings("PMD")
 public class Shooting {
   private final Turret turret;
   private final Hood hood;

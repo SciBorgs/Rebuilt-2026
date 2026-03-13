@@ -2,8 +2,6 @@ package org.sciborgs1155.robot.hood;
 
 import static edu.wpi.first.units.Units.*;
 
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.units.measure.Angle;
@@ -42,9 +40,6 @@ public class HoodConstants {
 
   public static final Translation3d POINT_OF_ROTATION =
       new Translation3d(0.14006, 0.13983, 0.3586252);
-
-  public static Pose3d currentPose3d = new Pose3d(0, 0, 0, new Rotation3d());
-  public static Pose3d with_axis = currentPose3d.rotateAround(POINT_OF_ROTATION, new Rotation3d());
 
   public class PID {
     public static final double P = 3;

@@ -18,6 +18,7 @@ import java.nio.file.Paths;
 import java.util.Scanner;
 import org.sciborgs1155.lib.LoggingUtils;
 
+@SuppressWarnings("PMD")
 public final class TableGenerator {
   private static final double MIN_DISTANCE = 0.1;
   private static final double MAX_DISTANCE = 20;

@@ -21,6 +21,7 @@ import org.sciborgs1155.robot.commands.shooting.FuelVisualizer.Fuel;
 import org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile;
 import org.sciborgs1155.robot.drive.Drive;
 
+@SuppressWarnings("PMD")
 public final class ShotGenerator {
   private static final boolean DRAG_ENABLED = true;
   private static final boolean LIFT_ENABLED = false;

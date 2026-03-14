@@ -6,13 +6,13 @@ import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.Constants.TUNING;
 import static org.sciborgs1155.robot.hood.HoodConstants.*;
 import static org.sciborgs1155.robot.hood.HoodConstants.PID.*;
-import static org.sciborgs1155.robot.shooter.ShooterConstants.VELOCITY_TOLERANCE;
 
 import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.networktables.DoubleEntry;
@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
@@ -43,13 +44,12 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
   private final HoodIO hardware;
 
   @Logged
-  private final ProfiledPIDController fb =
-      new ProfiledPIDController(
+  private final PIDController fb =
+      new PIDController(
           P,
           I,
-          D,
-          new TrapezoidProfile.Constraints(
-              MAX_VELOCITY.in(RadiansPerSecond), MAX_ACCEL.in(RadiansPerSecondPerSecond)));
+          D
+          );
 
   /** Arm feed forward controller. */
   private final ArmFeedforward ff = new ArmFeedforward(S, G, V, A);
@@ -97,8 +97,8 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
     this.hardware = hardware;
 
     fb.setTolerance(POSITION_TOLERANCE.in(Radians));
-    fb.reset(STARTING_ANGLE.in(Radians));
     setDefaultCommand(run(() -> hardware.setVoltage(0)).withName("Default"));
+    fb.setSetpoint(STARTING_ANGLE.in(Radians));
 
     sysIdRoutine =
         new SysIdRoutine(
@@ -149,7 +149,7 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
    */
   @Logged
   public double angleSetpoint() {
-    return fb.getSetpoint().position;
+    return fb.getSetpoint();
   }
 
   /**
@@ -163,23 +163,13 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * Returns the velocity setpoint of the hood
-   *
-   * @return The velocity of the setpoint
-   */
-  @Logged
-  public double velocitySetpoint() {
-    return fb.getSetpoint().velocity;
-  }
-
-  /**
    * Checks whether the hood is at a set desired state
    *
    * @return Whether or not the hood is at its desired state.
    */
   @Logged
   public boolean atGoal() {
-    return fb.atGoal();
+    return fb.atSetpoint();
   }
 
   /** Checks if the hood is at a certain position within tolerance */
@@ -208,13 +198,14 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
    * @return a command to zero the hood.
    */
   public Command homingSequence() {
-    return run(() -> hardware.setVoltage(-0.5))
+    return run(() -> hardware.setVoltage(-1))
         .until(() -> hardware.velocity() < VELOCITY_TOLERANCE.in(RadiansPerSecond))
         .andThen(
-            () -> {
-              hardware.resetPosition();
-              resetSetpoint();
-            });
+            Commands.runOnce(
+                () -> {
+                  hardware.resetPosition();
+                  resetSetpoint();
+                }));
   }
 
   /**
@@ -244,8 +235,8 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
    *
    * @return The command to set the feedback to the starting angle.
    */
-  public Command resetSetpoint() {
-    return run(() -> fb.reset(STARTING_ANGLE.in(Radians)));
+  public void resetSetpoint() {
+    fb.setSetpoint(STARTING_ANGLE.in(Radians));
   }
 
   /**
@@ -260,7 +251,7 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
             .scale(MAX_VELOCITY.in(RadiansPerSecond))
             .scale(PERIOD.in(Seconds))
             .rateLimit(MAX_ACCEL.in(RadiansPerSecondPerSecond))
-            .add(() -> fb.getGoal().position))
+            .add(() -> fb.getSetpoint()))
         .withName("manual hood");
   }
 
@@ -272,7 +263,7 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
   private void update(double position) {
     double goal = MathUtil.clamp(position, MIN_ANGLE.in(Radians), MAX_ANGLE.in(Radians));
     double feedback = fb.calculate(angle(), goal);
-    double feedforward = ff.calculate(fb.getSetpoint().position, fb.getSetpoint().velocity);
+    double feedforward = ff.calculate(fb.getSetpoint(),0);
     hardware.setVoltage(feedback + feedforward);
   }
 

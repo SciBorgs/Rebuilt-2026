@@ -55,7 +55,7 @@ public final class VisionConstants {
               Inches.of(13.327756),
               Inches.of(2.755270),
               Inches.of(10.815961),
-              yawPitchRoll(0, 0, 180)),
+              yawPitchRoll(0, 0, 0)),
           PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
 
   public static final CameraConfig B_CAMERA = // CAMERA 2

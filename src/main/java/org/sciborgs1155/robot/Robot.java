@@ -224,7 +224,7 @@ public class Robot extends CommandRobot {
     // operator.y().whileTrue(turret.goTo(() -> TurretConstants.MAX_ANGLE.in(Radians)));
     operator.x().whileTrue(hood.goTo(Degrees.of(45)).withName("goto 45"));
     operator.b().whileTrue(hood.goTo(Degrees.of(25)).withName("goto 25"));
-    operator.a().onTrue(hood.resetSetpoint());
+    operator.a().whileTrue(hood.homingSequence());
 
     operator.leftBumper().whileTrue(shooter.runShooter(100));
     operator.rightBumper().whileTrue(shooter.runShooter(300));

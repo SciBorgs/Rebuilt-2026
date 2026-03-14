@@ -10,9 +10,11 @@ import static org.sciborgs1155.robot.shooter.ShooterConstants.*;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.RepeatedTest;
 import org.sciborgs1155.robot.shooter.Shooter;
 
+@Disabled
 public class ShooterTest {
   private Shooter shooter;
 

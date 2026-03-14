@@ -33,8 +33,8 @@ public class ShooterConstants {
   public static final AngularVelocity VELOCITY_TOLERANCE = RadiansPerSecond.of(3);
 
   public static final class ControlConstants {
-    public static final double P = 0.000001;
-    public static final double I = 0.7;
+    public static final double P = 0.01;
+    public static final double I = 0.0;
     public static final double D = 0.000003;
 
     public static final double S = 0.19071;

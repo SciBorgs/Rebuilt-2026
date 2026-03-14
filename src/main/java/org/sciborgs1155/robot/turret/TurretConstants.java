@@ -63,9 +63,9 @@ public class TurretConstants {
     public static final double D = 0;
 
     // FEEDFORWARD CONSTANTS (VELOCITY IN RAD/SEC)
-    public static final double S = 0; // TODO: Update.
-    public static final double V = 0; // TODO: Update.
-    public static final double A = 0; // TODO: Update.
+    public static final double S = 0.17153;
+    public static final double V = 0.87866;
+    public static final double A = 0.016369;
 
     // TOLERANCES
     public static final Angle TOLERANCE = Degree.of(3);

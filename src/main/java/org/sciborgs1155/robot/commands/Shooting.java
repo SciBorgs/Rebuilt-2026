@@ -109,7 +109,10 @@ public class Shooting {
                 .deadlineFor(
                     hopper.intake(),
                     indexer.forward(),
-                    Commands.runOnce(() -> fuelVisualizer.launchProjectile())))
+                    Commands.runOnce(
+                        () -> {
+                          if (fuelVisualizer != null) fuelVisualizer.launchProjectile();
+                        })))
         .deadlineFor(
             runShooterSuperstructure(() -> calculateShot(HUB_TARGET)),
             drive.drive(
@@ -143,7 +146,7 @@ public class Shooting {
                     RADS_TEST.get(),
                     HOOD_DEGREES_TEST.get() * Math.PI / 180,
                     calculateShot(HUB_TARGET).turretAngle))
-        .alongWith(fuelVisualizer.launchProjectiles());
+        .alongWith(fuelVisualizer != null ? fuelVisualizer.launchProjectiles() : Commands.none());
   }
 
   /**

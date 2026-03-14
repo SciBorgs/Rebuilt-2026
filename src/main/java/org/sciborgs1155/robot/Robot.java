@@ -54,7 +54,6 @@ import org.sciborgs1155.robot.commands.Shooting;
 import org.sciborgs1155.robot.commands.shooting.FuelVisualizer;
 import org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer;
 import org.sciborgs1155.robot.commands.shooting.ShootingAlgorithm;
-import org.sciborgs1155.robot.commands.shooting.ShotDataCollector;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.hood.Hood;
 import org.sciborgs1155.robot.hopper.Hopper;
@@ -94,23 +93,24 @@ public class Robot extends CommandRobot {
 
   // COMMANDS
   private final Alignment align = new Alignment(drive);
-  private final ShotDataCollector shotDataCollector = new ShotDataCollector(shooter, indexer, hood);
 
   @NotLogged private final SendableChooser<Command> autos = Autos.configureAutos(drive);
 
   @NotLogged
   private final ProjectileVisualizer fuelVisualizer =
-      new FuelVisualizer(
-              ShootingAlgorithm.toShotVelocitySupplier(
-                  () -> shooter.velocity() * ShooterConstants.RADIUS.in(Meters),
-                  () -> Math.PI / 2 - hood.angle(),
-                  () -> turret.position(),
-                  drive::pose3d),
-              () -> drive.pose3d().plus(CENTER_TO_SHOOTER),
-              drive::fieldRelativeChassisSpeeds)
-          .configPhysics(true, true, false, false)
-          .configGeneration(.5, 80, 60)
-          .config(true, true);
+      isReal()
+          ? null
+          : new FuelVisualizer(
+                  ShootingAlgorithm.toShotVelocitySupplier(
+                      () -> shooter.velocity() * ShooterConstants.RADIUS.in(Meters),
+                      () -> Math.PI / 2 - hood.angle(),
+                      () -> turret.position(),
+                      drive::pose3d),
+                  () -> drive.pose3d().plus(CENTER_TO_SHOOTER),
+                  drive::fieldRelativeChassisSpeeds)
+              .configPhysics(true, true, false, false)
+              .configGeneration(.5, 80, 60)
+              .config(true, true);
 
   private final Shooting shooting =
       new Shooting(shooter, turret, hood, drive, hopper, indexer, fuelVisualizer);

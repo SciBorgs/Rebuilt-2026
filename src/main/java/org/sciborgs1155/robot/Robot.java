@@ -275,7 +275,7 @@ public class Robot extends CommandRobot {
 
     // SCORING FALL BACK (FIXED POSITION)
     driver
-        .rightTrigger()
+        .y()
         .whileTrue(
             Commands.run(() -> {})
                 .alongWith(slapdown.squeeze(), Commands.none(), leds.blink(Color.kOrange)));

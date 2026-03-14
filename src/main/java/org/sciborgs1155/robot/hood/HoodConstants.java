@@ -21,8 +21,8 @@ public class HoodConstants {
   public static final Angle STARTING_ANGLE = MIN_ANGLE;
   public static final Current SUPPLY_LIMIT = Amps.of(30);
   public static final Current STATOR_LIMIT = Amps.of(30);
-  public static final AngularAcceleration MAX_ACCEL = RadiansPerSecondPerSecond.of(6);
-  public static final AngularVelocity MAX_VELOCITY = RadiansPerSecond.of(7);
+  public static final AngularAcceleration MAX_ACCEL = RadiansPerSecondPerSecond.of(10);
+  public static final AngularVelocity MAX_VELOCITY = RadiansPerSecond.of(10);
   public static final Angle POSITION_TOLERANCE = Radians.of(0.01);
   public static final Angle SHOOTING_ANGLE_OFFSET = Degrees.of(90);
 

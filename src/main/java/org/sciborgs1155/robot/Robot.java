@@ -2,7 +2,6 @@ package org.sciborgs1155.robot;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.MetersPerSecond;
-import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
@@ -56,7 +55,6 @@ import org.sciborgs1155.robot.intake.Intake;
 import org.sciborgs1155.robot.shooter.Shooter;
 import org.sciborgs1155.robot.slapdown.Slapdown;
 import org.sciborgs1155.robot.turret.Turret;
-import org.sciborgs1155.robot.turret.TurretConstants;
 import org.sciborgs1155.robot.vision.Vision;
 
 /**
@@ -226,6 +224,7 @@ public class Robot extends CommandRobot {
     // operator.y().whileTrue(turret.goTo(() -> TurretConstants.MAX_ANGLE.in(Radians)));
     operator.x().whileTrue(hood.goTo(Degrees.of(45)).withName("goto 45"));
     operator.b().whileTrue(hood.goTo(Degrees.of(25)).withName("goto 25"));
+    operator.a().onTrue(hood.resetSetpoint());
 
     operator.leftBumper().whileTrue(shooter.runShooter(100));
     operator.rightBumper().whileTrue(shooter.runShooter(300));

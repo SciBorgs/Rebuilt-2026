@@ -36,7 +36,7 @@ public class SlapdownConstants {
       new TrapezoidProfile.Constraints(
           MAX_VELOCITY.in(RadiansPerSecond), MAX_ACCELERATION.in(RadiansPerSecondPerSecond));
 
-  public static final DCMotor GEARBOX = DCMotor.getKrakenX44(1);
+  public static final DCMotor GEARBOX = DCMotor.getKrakenX60(1);
   public static final double GEARING = 27; // ratio of gearing
   public static final double MOI = 0.2135396026; // moment of inertia
   public static final Distance LENGTH = Inches.of(18.5);

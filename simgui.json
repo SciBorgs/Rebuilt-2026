@@ -1,4 +1,11 @@
 {
+  "HALProvider": {
+    "Other Devices": {
+      "window": {
+        "visible": false
+      }
+    }
+  },
   "NTProvider": {
     "types": {
       "/FMSInfo": "FMSInfo",
@@ -18,18 +25,33 @@
       "/SmartDashboard/Robot/rotation/dynamic forward": "Command",
       "/SmartDashboard/Robot/rotation/quasistatic backward": "Command",
       "/SmartDashboard/Robot/rotation/quasistatic forward": "Command",
+      "/SmartDashboard/Robot/shooter/shooter dynamic backward": "Command",
+      "/SmartDashboard/Robot/shooter/shooter dynamic forward": "Command",
+      "/SmartDashboard/Robot/shooter/shooter quasistatic backward": "Command",
+      "/SmartDashboard/Robot/shooter/shooter quasistatic forward": "Command",
+      "/SmartDashboard/Robot/slapdown/dynamic backward": "Command",
+      "/SmartDashboard/Robot/slapdown/dynamic forward": "Command",
+      "/SmartDashboard/Robot/slapdown/quasistatic backward": "Command",
+      "/SmartDashboard/Robot/slapdown/quasistatic forward": "Command",
       "/SmartDashboard/Robot/translation/dynamic backward": "Command",
       "/SmartDashboard/Robot/translation/dynamic forward": "Command",
       "/SmartDashboard/Robot/translation/quasistatic backward": "Command",
       "/SmartDashboard/Robot/translation/quasistatic forward": "Command",
-      "/SmartDashboard/Scheduler": "Scheduler",
-      "/SmartDashboard/Turret PID Controller": "ProfiledPIDController",
+      "/SmartDashboard/Robot/turret/TurretVisualizer": "Mechanism2d",
+      "/SmartDashboard/Robot/turret/dynamic clockwise": "Command",
+      "/SmartDashboard/Robot/turret/dynamic counterclockwise": "Command",
+      "/SmartDashboard/Robot/turret/quasistatic clockwise": "Command",
+      "/SmartDashboard/Robot/turret/quasistatic counterclockwise": "Command",
       "/SmartDashboard/Turret dynamic clockwise": "Command",
       "/SmartDashboard/Turret dynamic counterclockwise": "Command",
       "/SmartDashboard/Turret quasistatic clockwise": "Command",
       "/SmartDashboard/Turret quasistatic counterclockwise": "Command",
       "/SmartDashboard/TurretVisualizer": "Mechanism2d",
       "/SmartDashboard/VisionSystemSim-main/Sim Field": "Field2d",
+      "/SmartDashboard/shooter dynamic backward": "Command",
+      "/SmartDashboard/shooter dynamic forward": "Command",
+      "/SmartDashboard/shooter quasistatic backward": "Command",
+      "/SmartDashboard/shooter quasistatic forward": "Command",
       "/SmartDashboard/shooter top dynamic backward": "Command",
       "/SmartDashboard/shooter top dynamic forward": "Command",
       "/SmartDashboard/shooter top quasistatic backward": "Command",
@@ -37,47 +59,17 @@
       "Robot/drive/rotationController": "PIDController",
       "Robot/drive/translationController": "ProfiledPIDController",
       "Robot/hood/fb": "ProfiledPIDController",
-      "Robot/shooter/controller": "PIDController",
+      "Robot/shooter/controller": "ProfiledPIDController",
       "Robot/slapdown/pid": "ProfiledPIDController",
       "Robot/turret/controller": "ProfiledPIDController"
     },
     "windows": {
-      "/Robot/drive/field2d": {
-        "bottom": 1914,
-        "height": 8.069275856018066,
-        "left": 245,
-        "module- FL": {
-          "style": "Line"
-        },
-        "module- RR": {
-          "style": "Line"
-        },
-        "module-FR": {
-          "style": "Line"
-        },
-        "module-RL": {
-          "style": "Line"
-        },
-        "right": 3942,
-        "top": 118,
-        "width": 16.54119300842285,
+      "/SmartDashboard//Robot/hood/measurement": {
         "window": {
           "visible": true
         }
       },
-      "/SmartDashboard/Auto Chooser": {
-        "width": 17.54825210571289,
-        "window": {
-          "visible": true
-        }
-      },
-      "/SmartDashboard/Drive Field": {
-        "bottom": 1914,
-        "height": 8.069275856018066,
-        "left": 245,
-        "right": 3942,
-        "top": 118,
-        "width": 16.54119300842285,
+      "/SmartDashboard//Robot/hood/setpoint": {
         "window": {
           "visible": true
         }
@@ -91,14 +83,20 @@
         "shooter": {
           "open": true
         },
+        "shooter": {
+          "open": true
+        },
         "slapdown": {
           "open": true
         },
         "tuning": {
           "open": true,
-          "slapdown": {
+          "shooter": {
             "open": true
           }
+        },
+        "turret": {
+          "open": true
         }
       }
     }
@@ -116,6 +114,101 @@
             0.0,
             0.8500000238418579
           ],
+<<<<<<< HEAD
+          "height": 270,
+=======
+          "height": 290,
+>>>>>>> refs/remotes/origin/testing-2/15
+          "series": [
+            {
+              "color": [
+                0.2980392277240753,
+                0.44705885648727417,
+                0.6901960968971252,
+                1.0
+              ],
+              "id": "NT:Robot/hood/angleSetpoint"
+            },
+            {
+              "color": [
+                0.8666667342185974,
+                0.5176470875740051,
+                0.32156863808631897,
+                1.0
+              ],
+              "id": "NT:Robot/hood/angle"
+            },
+            {
+              "color": [
+                0.3333333432674408,
+                0.658823549747467,
+                0.4078431725502014,
+                1.0
+              ],
+              "id": "NT:Robot/turret/position"
+            },
+            {
+              "color": [
+                0.7686275243759155,
+                0.30588236451148987,
+                0.32156863808631897,
+                1.0
+              ],
+              "id": "NT:Robot/turret/setpoint"
+            }
+          ]
+        }
+      ],
+      "window": {
+        "name": "Hood"
+      }
+    },
+    "Plot <1>": {
+      "plots": [
+        {
+          "backgroundColor": [
+            0.0,
+            0.0,
+            0.0,
+            0.8500000238418579
+          ],
+          "height": 299,
+          "series": [
+            {
+              "color": [
+                0.2980392277240753,
+                0.44705885648727417,
+                0.6901960968971252,
+                1.0
+              ],
+              "id": "NT:Robot/shooter/setpoint"
+            },
+            {
+              "color": [
+                0.8666667342185974,
+                0.5176470875740051,
+                0.32156863808631897,
+                1.0
+              ],
+              "id": "NT:Robot/shooter/velocity"
+            }
+          ]
+        }
+      ],
+      "window": {
+        "name": "Shooter!",
+        "visible": false
+      }
+    },
+    "Plot <2>": {
+      "plots": [
+        {
+          "backgroundColor": [
+            0.0,
+            0.0,
+            0.0,
+            0.8500000238418579
+          ],
           "height": 0,
           "series": [
             {
@@ -125,7 +218,7 @@
                 0.6901960968971252,
                 1.0
               ],
-              "id": "NT:Robot/slapdown/position"
+              "id": "NT:Robot/shooter/setpoint"
             },
             {
               "color": [
@@ -134,11 +227,14 @@
                 0.32156863808631897,
                 1.0
               ],
-              "id": "NT:Robot/slapdown/setpoint"
+              "id": "NT:Robot/shooter/velocity"
             }
           ]
         }
-      ]
+      ],
+      "window": {
+        "visible": false
+      }
     }
   }
 }

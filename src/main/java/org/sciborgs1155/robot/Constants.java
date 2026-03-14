@@ -24,13 +24,6 @@ import org.sciborgs1155.robot.drive.DriveConstants;
  * @see Units
  */
 public final class Constants {
-
-  /** The current robot state, as in the type. Remember to update! */
-  public static final RobotType ROBOT_TYPE = RobotType.FULL;
-
-  /** States if we are in tuning mode. Ideally, keep it at false when not used. */
-  public static final boolean TUNING = false;
-
   public static final Time PERIOD = Seconds.of(0.02); // roborio tickrate (s)
   public static final Time ODOMETRY_PERIOD = Seconds.of(1.0 / 20.0); // 4 ms (speedy!)
   public static final double DEADBAND = 0.15;
@@ -41,8 +34,15 @@ public final class Constants {
   public static final double FULL_SPEED_MULTIPLIER = 1.0;
 
   // The name of seperate canivore, set to rio if no seperate canivore
-  public static final CANBus DRIVE_CANIVORE = new CANBus("drivetrain");
-  public static final CANBus TURRET_CANIVORE = new CANBus("turret");
+  public static final CANBus DRIVE_CANIVORE = new CANBus("");
+  public static final CANBus INTAKE_CANIVORE = new CANBus("intake");
+  public static final CANBus SHOOTING_CANIVORE = new CANBus("shooting");
+
+  /** The current robot state, as in the type. Remember to update! */
+  public static final RobotType ROBOT_TYPE = RobotType.FULL;
+
+  /** States if we are in tuning mode. Ideally, keep it at false when not used. */
+  public static final boolean TUNING = true;
 
   // Prevents instantiation
   private Constants() {}

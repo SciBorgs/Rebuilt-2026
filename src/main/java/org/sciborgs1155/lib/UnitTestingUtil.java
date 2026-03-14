@@ -18,6 +18,7 @@ public final class UnitTestingUtil {
   /** Sets up DS and initializes HAL with default values and asserts that it doesn't fail. */
   public static void setupTests() {
     assert HAL.initialize(500, 0);
+    CommandScheduler.getInstance().getDefaultButtonLoop().clear();
     DriverStationSim.resetData();
     DriverStationSim.setEnabled(true);
     DriverStationSim.setTest(true);

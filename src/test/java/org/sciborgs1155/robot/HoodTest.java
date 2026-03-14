@@ -4,8 +4,7 @@ import static edu.wpi.first.units.Units.Radians;
 import static org.sciborgs1155.lib.Test.runUnitTest;
 import static org.sciborgs1155.lib.UnitTestingUtil.reset;
 import static org.sciborgs1155.lib.UnitTestingUtil.setupTests;
-import static org.sciborgs1155.robot.hood.HoodConstants.MAX_ANGLE;
-import static org.sciborgs1155.robot.hood.HoodConstants.MIN_ANGLE;
+import static org.sciborgs1155.robot.hood.HoodConstants.*;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;

@@ -9,11 +9,6 @@ public class NoTurret implements TurretIO {
   public void setVoltage(double voltage) {}
 
   @Override
-  public double position() {
-    return 0;
-  }
-
-  @Override
   public double velocity() {
     return 0;
   }

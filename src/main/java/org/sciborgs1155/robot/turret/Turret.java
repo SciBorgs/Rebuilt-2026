@@ -3,7 +3,7 @@ package org.sciborgs1155.robot.turret;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
-import static org.sciborgs1155.lib.Assertion.eAssert;
+import static org.sciborgs1155.lib.Assertion.tAssert;
 import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.Constants.TUNING;
 import static org.sciborgs1155.robot.turret.TurretConstants.*;
@@ -213,7 +213,14 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
   public Test goToTest(DoubleSupplier goal) {
     Command testCommand = goTo(goal).until(this::atGoal).withTimeout(5);
     Set<Assertion> assertions =
-        Set.of(eAssert("Hood system check", goal, this::position, TOLERANCE.in(Radians)));
+        Set.of(
+            tAssert(
+                this::atGoal,
+                "Turret system check",
+                () ->
+                    String.format(
+                        "Turret goal check: current=%.3f rad, goal=%.3f rad, tolerance=%.3f rad",
+                        hardware.position(), goal.getAsDouble(), TOLERANCE.in(Radians))));
     return new Test(testCommand, assertions);
   }
 

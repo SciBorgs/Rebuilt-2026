@@ -22,9 +22,6 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
 // Constants from 6328
 public final class FieldConstants {
-  // Prevents instantiation
-  private FieldConstants() {}
-
   public static final String FIELD_TYPE = "welded";
 
   // AprilTag related constants
@@ -299,6 +296,9 @@ public final class FieldConstants {
     public static final Translation2d CENTER_POINT =
         new Translation2d(0, FIELD_LAYOUT.getTagPose(29).get().getY());
   }
+
+  // Prevents instantiation
+  private FieldConstants() {}
 
   /** Returns whether the provided position is within the boundaries of the field. */
   public static boolean inField(Pose3d pose) {

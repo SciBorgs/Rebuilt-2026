@@ -11,12 +11,10 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.geometry.Twist2d;
-import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
-import edu.wpi.first.math.interpolation.InterpolatingTreeMap;
-import edu.wpi.first.math.interpolation.InverseInterpolator;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N2;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.networktables.DoubleEntry;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -28,6 +26,8 @@ import org.sciborgs1155.lib.Tuning;
 import org.sciborgs1155.robot.FieldConstants;
 import org.sciborgs1155.robot.Robot;
 import org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer;
+import org.sciborgs1155.robot.commands.shooting.ShootingAlgorithm;
+import org.sciborgs1155.robot.commands.shooting.TOFIteration;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.drive.DriveConstants;
 import org.sciborgs1155.robot.hood.Hood;
@@ -51,30 +51,11 @@ public class Shooting {
   public static final Distance MAX_DISTANCE = Meters.of(100);
   public static final Distance MIN_DISTANCE = Meters.of(.2);
 
-  private static final InterpolatingDoubleTreeMap DISTANCE_TO_RADS =
-      new InterpolatingDoubleTreeMap();
-  private static final InterpolatingDoubleTreeMap DISTANCE_TO_TOF =
-      new InterpolatingDoubleTreeMap();
-  private static final InterpolatingTreeMap<Double, Rotation2d> DISTANCE_TO_HOOD_ANGLE =
-      new InterpolatingTreeMap<>(InverseInterpolator.forDouble(), Rotation2d::interpolate);
+  /** Field-relative position of the hub target. */
+  public static final Translation2d HUB_TARGET =
+      FieldConstants.Hub.TOP_CENTER_POINT.toTranslation2d();
 
-  static {
-    DISTANCE_TO_HOOD_ANGLE.put(1.7, Rotation2d.fromDegrees(15));
-    DISTANCE_TO_RADS.put(1.7, 125.0);
-    DISTANCE_TO_TOF.put(1.7, 1.133);
-
-    DISTANCE_TO_HOOD_ANGLE.put(3.5, Rotation2d.fromDegrees(20));
-    DISTANCE_TO_RADS.put(3.5, 150.0);
-    DISTANCE_TO_TOF.put(3.5, 1.4);
-
-    DISTANCE_TO_HOOD_ANGLE.put(5.5, Rotation2d.fromDegrees(27));
-    DISTANCE_TO_RADS.put(5.5, 160.0);
-    DISTANCE_TO_TOF.put(5.5, 1.43);  
-
-    DISTANCE_TO_HOOD_ANGLE.put(11.0, Rotation2d.fromDegrees(40));
-    DISTANCE_TO_RADS.put(11.0, 200.0);
-    DISTANCE_TO_TOF.put(11.0, 1.583);
-  }
+  private final ShootingAlgorithm algorithm = new TOFIteration();
 
   private final Shooter shooter;
   private final Turret turret;
@@ -107,17 +88,13 @@ public class Shooting {
     this.fuelVisualizer = fuelVisualizer;
   }
 
-  // Constants I want somewhere else
-
+  /** Parameters to command the shooter superstructure. */
   public record ShooterParams(double RADS, double hoodAngle, double turretAngle) {}
-
-  public static final Translation2d HUB_TARGET =
-      FieldConstants.Hub.TOP_CENTER_POINT.toTranslation2d();
 
   /**
    * Shoots the ball at the hub. Can do it while driving.
    *
-   * @return
+   * @return a command that shoots at the hub while driving
    */
   public Command shootHubDriving(InputStream vx, InputStream vy, InputStream omega) {
     return Commands.waitUntil(
@@ -170,53 +147,28 @@ public class Shooting {
   }
 
   /**
-   * Calculates a shot for any x, y, z of hub. Because our shooting is data driven, the z can't
-   * change, but it can still be used for feeding
+   * Calculates a shot at the given target. Accounts for robot velocity and latency.
    *
-   * @param target the x and y location of the target (with hub height)
-   * @return the parameters to command relevant subsystems to
+   * @param target field-relative x/y position of the target
+   * @return parameters to command the shooter superstructure to
    */
   public ShooterParams calculateShot(Translation2d target) {
-    Pose2d turretPose = projectTurretPose(target);
-    LoggingUtils.log("/ShootingData/Projected Turret Pose", turretPose, Pose2d.struct);
-    double distance = turretPose.getTranslation().getDistance(target);
-    LoggingUtils.log("/ShootingData/Distance", distance);
-
-    double turretAngle = turretPose.getRotation().getRadians();
-    double hoodAngle = DISTANCE_TO_HOOD_ANGLE.get(distance).getRadians();
-    double rads = DISTANCE_TO_RADS.get(distance);
-
-    return new ShooterParams(rads, hoodAngle, turretAngle);
-  }
-
-  /**
-   * Projects the turret pose forward in time using the ToF as a dt. Allows us to preform a static
-   * shot from this new position to account for velocity on the ball.
-   *
-   * @return the projected turret pose.
-   */
-  private Pose2d projectTurretPose(Translation2d target) {
-    ChassisSpeeds relativeSpeeds = drive.robotRelativeChassisSpeeds();
+    // Latency-compensated robot pose
     Pose2d latencyPose =
-        drive
-            .pose()
-            .exp(
-                new Twist2d(
-                    relativeSpeeds.vxMetersPerSecond * LATENCY_TIME.get(),
-                    relativeSpeeds.vyMetersPerSecond * LATENCY_TIME.get(),
-                    relativeSpeeds.omegaRadiansPerSecond * LATENCY_TIME.get()));
+        drive.pose().exp(drive.robotRelativeChassisSpeeds().toTwist2d(LATENCY_TIME.get()));
     LoggingUtils.log("/ShootingData/Latency Pose", latencyPose, Pose2d.struct);
+
+    // Turret position at the latency-compensated pose
+
     Pose2d turretPose =
         latencyPose.transformBy(
             new Transform2d(
-                CENTER_TO_SHOOTER.getX(),
-                CENTER_TO_SHOOTER.getY(),
+                CENTER_TO_SHOOTER.getTranslation().toTranslation2d(),
                 CENTER_TO_SHOOTER.getRotation().toRotation2d()));
+    LoggingUtils.log("/ShootingData/Projected Turret Pose", turretPose, Pose2d.struct);
 
-    Pose2d lookAhead = turretPose;
-
+    // Field-relative turret velocity: translational + tangential from rotation
     ChassisSpeeds speeds = drive.fieldRelativeChassisSpeeds();
-
     Vector<N2> translationSpeeds =
         VecBuilder.fill(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
     Vector<N2> rotationSpeeds =
@@ -227,19 +179,25 @@ public class Shooting {
             .toVector()
             .times(speeds.omegaRadiansPerSecond);
     Vector<N2> turretSpeeds = translationSpeeds.plus(rotationSpeeds);
-    // ToF iterative solver
-    for (int i = 0; i < 25; i++) {
-      double distance = target.getDistance(lookAhead.getTranslation());
-      double tof = DISTANCE_TO_TOF.get(distance);
-      Translation2d projection =
-          turretPose
-              .getTranslation()
-              .plus(new Translation2d(tof * turretSpeeds.get(0), tof * turretSpeeds.get(1)));
-      lookAhead =
-          new Pose2d(
-              projection, target.minus(projection).getAngle().minus(drive.pose().getRotation()));
-    }
 
-    return lookAhead;
+    // Displacement from turret to target
+    Translation2d turretTranslation = turretPose.getTranslation();
+    Translation3d displacement = new Translation3d(target.minus(turretPose.getTranslation()));
+
+    // Run the shooting algorithm to get field-relative firing vector
+    Vector<N3> firingVec = algorithm.calculate(displacement, turretSpeeds);
+
+    double vx = firingVec.get(0);
+    double vy = firingVec.get(1);
+    double vz = firingVec.get(2);
+
+    double rads = firingVec.norm();
+    double hoodAngle = Math.atan2(vz, Math.hypot(vx, vy));
+    double fieldYaw = Math.atan2(vy, vx);
+    double turretAngle = fieldYaw - drive.pose().getRotation().getRadians();
+
+    LoggingUtils.log("/ShootingData/Distance", turretTranslation.getDistance(target));
+
+    return new ShooterParams(rads, hoodAngle, turretAngle);
   }
 }

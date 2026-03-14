@@ -5,6 +5,9 @@ import static edu.wpi.first.units.Units.*;
 import com.ctre.phoenix6.CANBus;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
+import edu.wpi.first.math.interpolation.InterpolatingTreeMap;
+import edu.wpi.first.math.interpolation.InverseInterpolator;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.Mass;
@@ -63,6 +66,34 @@ public final class Constants {
     FULL,
     CHASSIS,
     NONE
+  }
+
+  /** Lookup tables mapping shot distance (meters) to shooter parameters. */
+  public static class ShootingData {
+    public static final InterpolatingDoubleTreeMap DISTANCE_TO_RADS =
+        new InterpolatingDoubleTreeMap();
+    public static final InterpolatingDoubleTreeMap DISTANCE_TO_TOF =
+        new InterpolatingDoubleTreeMap();
+    public static final InterpolatingTreeMap<Double, Rotation2d> DISTANCE_TO_HOOD_ANGLE =
+        new InterpolatingTreeMap<>(InverseInterpolator.forDouble(), Rotation2d::interpolate);
+
+    static {
+      DISTANCE_TO_HOOD_ANGLE.put(1.7, Rotation2d.fromDegrees(15));
+      DISTANCE_TO_RADS.put(1.7, 125.0);
+      DISTANCE_TO_TOF.put(1.7, 1.133);
+
+      DISTANCE_TO_HOOD_ANGLE.put(3.5, Rotation2d.fromDegrees(20));
+      DISTANCE_TO_RADS.put(3.5, 150.0);
+      DISTANCE_TO_TOF.put(3.5, 1.4);
+
+      DISTANCE_TO_HOOD_ANGLE.put(5.5, Rotation2d.fromDegrees(27));
+      DISTANCE_TO_RADS.put(5.5, 160.0);
+      DISTANCE_TO_TOF.put(5.5, 1.43);
+
+      DISTANCE_TO_HOOD_ANGLE.put(11.0, Rotation2d.fromDegrees(40));
+      DISTANCE_TO_RADS.put(11.0, 200.0);
+      DISTANCE_TO_TOF.put(11.0, 1.583);
+    }
   }
 
   // TODO: UPDATE ALL OF THESE VALUES.

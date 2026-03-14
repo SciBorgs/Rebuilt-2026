@@ -96,6 +96,11 @@ public class RealTurret implements TurretIO {
   }
 
   @Override
+  public double voltage() {
+    return hardware.getMotorVoltage().getValueAsDouble();
+  }
+
+  @Override
   public double velocity() {
     return hardware.getVelocity().getValueAsDouble() * 2 * Math.PI;
   }

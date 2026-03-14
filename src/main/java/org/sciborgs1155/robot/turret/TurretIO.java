@@ -30,6 +30,8 @@ public interface TurretIO extends AutoCloseable {
    */
   double encoderB();
 
+  double voltage();
+
   /** Called once per robot loop. Override to update internal state. */
   default void periodic() {}
 }

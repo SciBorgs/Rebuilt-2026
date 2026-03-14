@@ -22,6 +22,11 @@ public class NoTurret implements TurretIO {
   public double encoderB() {
     return 0;
   }
+  
+  @Override
+  public double voltage() {
+    return 0;
+  }
 
   @Override
   public void close() throws Exception {}

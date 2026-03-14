@@ -50,15 +50,15 @@ public class TurretConstants {
   public static final Voltage STEP_VOLTAGE = Volts.of(2);
   public static final Time TIME_OUT = Seconds.of(6);
 
-  public static final double TURRET_GEARING = 84.;
-  public static final double ENCODER_A_GEARING = 12.;
-  public static final double ENCODER_B_GEARING = 13.;
+  public static final double TURRET_GEARING = 84.0;
+  public static final double ENCODER_A_GEARING = 12.0;
+  public static final double ENCODER_B_GEARING = 13.0;
 
   public static final Angle CRT_MATCH_TOLERANCE = Degrees.of(1);
 
   public static final class ControlConstants {
     // PID CONSTANTS
-    public static final double P = 6.7;
+    public static final double P = 0;
     public static final double I = 0;
     public static final double D = 0;
 

@@ -99,11 +99,6 @@
           "visible": true
         }
       },
-      "/SmartDashboard/Robot/climb/setpoint visualizer": {
-        "window": {
-          "visible": true
-        }
-      },
       "/SmartDashboard/TurretVisualizer": {
         "window": {
           "visible": true
@@ -151,7 +146,7 @@
             0.0,
             0.8500000238418579
           ],
-          "height": -8,
+          "height": 0,
           "series": [
             {
               "color": [
@@ -173,7 +168,10 @@
             }
           ]
         }
-      ]
+      ],
+      "window": {
+        "visible": false
+      }
     }
   }
 }

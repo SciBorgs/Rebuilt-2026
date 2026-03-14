@@ -278,10 +278,8 @@ public class Robot extends CommandRobot {
         .rightTrigger()
         .whileTrue(
             Commands.run(() -> {})
-                .alongWith(
-                    slapdown.squeeze(),
-                    Commands.none(),
-                    leds.blink(Color.kOrange)));
+                .alongWith(slapdown.squeeze(), Commands.none(), leds.blink(Color.kOrange)));
+
     // CLIMB
     operator
         .y()

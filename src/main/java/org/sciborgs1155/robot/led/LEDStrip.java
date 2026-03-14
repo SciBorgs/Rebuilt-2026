@@ -46,7 +46,7 @@ public class LEDStrip extends SubsystemBase implements AutoCloseable {
             () ->
                 update(
                     LEDPattern.rainbow(225, 225)
-                        .scrollAtAbsoluteSpeed(MetersPerSecond.of(0.5), LED_SPACING))));
+                        .scrollAtAbsoluteSpeed(MetersPerSecond.of(invert?-0.5:0.5), LED_SPACING))));
   }
 
   /** Rainbow LEDs, scrolling at 0.5 m/s. Very cool. */

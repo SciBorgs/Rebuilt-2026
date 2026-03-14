@@ -230,7 +230,7 @@ public class Robot extends CommandRobot {
         .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
 
     // INTAKE TOGGLE
-    driver.a().toggleOnTrue(slapdown.extend().alongWith(intake.intake()));
+    driver.x().toggleOnTrue(slapdown.extend().alongWith(intake.intake()));
 
     // FEED CONTINUOUS (LEFT SIDE)
     driver
@@ -273,6 +273,15 @@ public class Robot extends CommandRobot {
                                 / FULL_ANGLE_RANGE.in(Radians),
                         Degrees.of(2).in(Radians))));
 
+    // SCORING FALL BACK (FIXED POSITION)
+    driver
+        .rightTrigger()
+        .whileTrue(
+            Commands.run(() -> {})
+                .alongWith(
+                    slapdown.squeeze(),
+                    Commands.none(),
+                    leds.blink(Color.kOrange)));
     // CLIMB
     operator
         .y()

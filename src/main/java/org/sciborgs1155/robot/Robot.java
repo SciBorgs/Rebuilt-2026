@@ -226,7 +226,6 @@ public class Robot extends CommandRobot {
 
     driver
         .leftTrigger()
-        .or(driver.rightBumper())
         .onTrue(Commands.runOnce(() -> speedMultiplier = SLOW_SPEED_MULTIPLIER))
         .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
 
@@ -239,6 +238,7 @@ public class Robot extends CommandRobot {
         .whileTrue(
             Commands.run(() -> {})
                 .alongWith(
+                    slapdown.squeeze(),
                     leds.error(
                         () ->
                             Math.abs(turret.position() - turret.goal())
@@ -251,6 +251,7 @@ public class Robot extends CommandRobot {
         .whileTrue(
             Commands.run(() -> {})
                 .alongWith(
+                    slapdown.squeeze(),
                     Commands.none(),
                     leds.error(
                         () ->
@@ -264,6 +265,7 @@ public class Robot extends CommandRobot {
         .whileTrue(
             Commands.run(() -> {})
                 .alongWith(
+                    slapdown.squeeze(),
                     Commands.none(),
                     leds.error(
                         () ->

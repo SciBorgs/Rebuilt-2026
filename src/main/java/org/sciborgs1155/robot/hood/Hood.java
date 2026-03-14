@@ -163,16 +163,6 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * returns the angle goal of the hood trapezoid profile
-   *
-   * @return the position of the goal
-   */
-  @Logged
-  public double angleGoal() {
-    return fb.getGoal().position;
-  }
-
-  /**
    * Gets the current velocity of the hood
    *
    * @return Current velocity of the hood

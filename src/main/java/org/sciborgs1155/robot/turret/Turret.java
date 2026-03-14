@@ -1,19 +1,25 @@
 package org.sciborgs1155.robot.turret;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
+import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
-import static org.sciborgs1155.lib.Assertion.eAssert;
+import static org.sciborgs1155.lib.Assertion.tAssert;
 import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.Constants.TUNING;
 import static org.sciborgs1155.robot.turret.TurretConstants.*;
 import static org.sciborgs1155.robot.turret.TurretConstants.ControlConstants.*;
 
+import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.DoubleEntry;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -23,11 +29,18 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import java.util.Set;
 import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 import org.sciborgs1155.lib.Assertion;
+import org.sciborgs1155.lib.FaultLogger;
+import org.sciborgs1155.lib.FaultLogger.Fault;
+import org.sciborgs1155.lib.FaultLogger.FaultType;
+import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.lib.Tuning;
 import org.sciborgs1155.robot.Robot;
+import yams.units.EasyCRT;
+import yams.units.EasyCRTConfig;
 
 /**
  * The {@code Turret} subsystem consists of a single motor that is used to aim a variable hood
@@ -60,6 +73,13 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
   @NotLogged private final DoubleEntry tuningV = Tuning.entry("Robot/tuning/turret/V", V);
   @NotLogged private final DoubleEntry tuningA = Tuning.entry("Robot/tuning/turret/A", A);
 
+  private double lastGoodPositionRad;
+  private double failCount;
+
+  private final EasyCRTConfig crtConfig;
+
+  private final EasyCRT solverCRT;
+
   /** Creates real or simulated turret based on {@link Robot#isReal()}. */
   @NotLogged
   public static Turret create() {
@@ -87,25 +107,49 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
 
     controller.setTolerance(TOLERANCE.in(Radians));
 
+    crtConfig =
+        new EasyCRTConfig(
+                () -> Rotations.of(hardware.encoderA()), () -> Rotations.of(hardware.encoderB()))
+            .withEncoderRatios(
+                TURRET_GEARING / ENCODER_A_GEARING, TURRET_GEARING / ENCODER_B_GEARING)
+            .withMechanismRange(MIN_ANGLE, MAX_ANGLE)
+            .withMatchTolerance(CRT_MATCH_TOLERANCE)
+            .withAbsoluteEncoderInversions(true, true);
+
+    solverCRT = new EasyCRT(crtConfig);
+
     sysIdRoutine =
         new SysIdRoutine(
-            new SysIdRoutine.Config(RAMP_RATE, STEP_VOLTAGE, TIME_OUT),
-            new SysIdRoutine.Mechanism(
-                v -> hardware.setVoltage(v.in(Volts)),
-                log -> {
-                  log.motor("turret");
-                },
-                this));
+            new SysIdRoutine.Config(
+                RAMP_RATE,
+                STEP_VOLTAGE,
+                TIME_OUT,
+                (state) -> SignalLogger.writeString("turret state", state.toString())),
+            new SysIdRoutine.Mechanism(v -> hardware.setVoltage(v.in(Volts)), null, this));
+
+    setDefaultCommand(run(() -> hardware.setVoltage(0)).withName("stop"));
 
     SmartDashboard.putData(
-        "Turret quasistatic clockwise", sysIdTest(SysIdTestType.QUASISTATIC, Direction.kForward));
+        "Robot/turret/quasistatic clockwise",
+        sysIdTest(SysIdTestType.QUASISTATIC, Direction.kForward));
     SmartDashboard.putData(
-        "Turret quasistatic counterclockwise",
+        "Robot/turret/quasistatic counterclockwise",
         sysIdTest(SysIdTestType.QUASISTATIC, Direction.kReverse));
     SmartDashboard.putData(
-        "Turret dynamic clockwise", sysIdTest(SysIdTestType.DYNAMIC, Direction.kForward));
+        "Robot/turret/dynamic clockwise", sysIdTest(SysIdTestType.DYNAMIC, Direction.kForward));
     SmartDashboard.putData(
-        "Turret dynamic counterclockwise", sysIdTest(SysIdTestType.DYNAMIC, Direction.kReverse));
+        "Robot/turret/dynamic counterclockwise",
+        sysIdTest(SysIdTestType.DYNAMIC, Direction.kReverse));
+  }
+
+  /** manual control to test the turret, makes it go left. */
+  public Command goLeft() {
+    return run(() -> hardware.setVoltage(1));
+  }
+
+  /** manual control to test the turret, makes it go right. */
+  public Command goRight() {
+    return run(() -> hardware.setVoltage(-1));
   }
 
   /**
@@ -115,7 +159,27 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
    */
   @Logged
   public double position() {
-    return hardware.position();
+    return solverCRT
+        .getAngleOptional()
+        .map(
+            a -> {
+              lastGoodPositionRad = a.in(Radians);
+              failCount = 0;
+              return lastGoodPositionRad;
+            })
+        .orElseGet(
+            () -> {
+              failCount++;
+              if (failCount % 10 == 0) {
+                FaultLogger.report(
+                    new Fault(
+                        "Turret CRT failure: >10 consecutive failures",
+                        "Unable to solve turret position with CRT, using stale position - fail count: "
+                            + failCount,
+                        FaultType.WARNING));
+              }
+              return lastGoodPositionRad;
+            });
   }
 
   /**
@@ -170,13 +234,33 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
         };
 
     Angle stopAngle =
-        direction == Direction.kForward ? MAX_ANGLE.minus(TOLERANCE) : MIN_ANGLE.plus(TOLERANCE);
+        direction == Direction.kForward
+            ? MAX_ANGLE.minus(Degrees.of(20))
+            : MIN_ANGLE.plus(Degrees.of(20));
+    // decently far away from max angle to avoid anything breaking should there be an issue
 
     return test.until(
         () ->
             direction == Direction.kForward
-                ? hardware.position() >= stopAngle.in(Radians)
-                : hardware.position() <= stopAngle.in(Radians));
+                ? position() >= stopAngle.in(Radians)
+                : position() <= stopAngle.in(Radians));
+  }
+
+  /**
+   * manual control of the turret with an controller, which will be used for operator control and
+   * testing
+   *
+   * @param input The controller value to use for manual control.
+   */
+  public Command manualTurret(InputStream input) {
+    return goTo(input
+            .deadband(.15, 1)
+            .scale(MAX_VELOCITY.in(RadiansPerSecond))
+            .scale(2)
+            .scale(PERIOD.in(Seconds))
+            .rateLimit(MAX_ACCELERATION.in(RadiansPerSecondPerSecond))
+            .add(() -> controller.getGoal().position))
+        .withName("manual elevator");
   }
 
   /**
@@ -185,15 +269,50 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
    * @param double The position setpoint in radians.
    */
   public void update(double positionSetpoint) {
-    double lastVelocity = controller.getSetpoint().velocity;
+    double pos = position();
     double pidVolts =
         controller.calculate(
-            hardware.position(),
-            MathUtil.clamp(positionSetpoint, MIN_ANGLE.in(Radians), MAX_ANGLE.in(Radians)));
-    double ffdVolts =
-        feedforward.calculateWithVelocities(lastVelocity, controller.getSetpoint().velocity);
+            pos, MathUtil.clamp(positionSetpoint, MIN_ANGLE.in(Radians), MAX_ANGLE.in(Radians)));
+    double ffdVolts = feedforward.calculate(controller.getSetpoint().velocity);
 
-    hardware.setVoltage(pidVolts + ffdVolts);
+    double voltage = pidVolts + ffdVolts;
+
+    if (pos >= MAX_ANGLE.in(Radians)) voltage = Math.min(voltage, 0);
+    if (pos <= MIN_ANGLE.in(Radians)) voltage = Math.max(voltage, 0);
+
+    hardware.setVoltage(voltage);
+  }
+
+  /**
+   * Moves the turret to the closest valid position matching the given yaw supplier, handling the
+   * 90° overlap region by choosing whichever equivalent position requires less travel.
+   *
+   * @param yaw The target yaw as a Rotation2d supplier.
+   */
+  public Command goToYaw(Supplier<Rotation2d> yaw) {
+    return goTo(
+        () -> {
+          double theta = yaw.get().getRadians();
+          double c1 = theta;
+          double c2 = theta - 2 * Math.PI;
+          boolean c1Valid = c1 >= MIN_ANGLE.in(Radians) && c1 <= MAX_ANGLE.in(Radians);
+          boolean c2Valid = c2 >= MIN_ANGLE.in(Radians) && c2 <= MAX_ANGLE.in(Radians);
+          if (c1Valid && c2Valid) {
+            double pos = position();
+            return Math.abs(c1 - pos) <= Math.abs(c2 - pos) ? c1 : c2;
+          }
+          return c1Valid ? c1 : c2;
+        });
+  }
+
+  /**
+   * Moves the turret to the closest valid position matching the given yaw supplier, handling the
+   * 90° overlap region by choosing whichever equivalent position requires less travel.
+   *
+   * @param yaw The target yaw as a Rotation2d.
+   */
+  public Command goToYaw(Rotation2d yaw) {
+    return goToYaw(() -> yaw);
   }
 
   /**
@@ -213,7 +332,14 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
   public Test goToTest(DoubleSupplier goal) {
     Command testCommand = goTo(goal).until(this::atGoal).withTimeout(5);
     Set<Assertion> assertions =
-        Set.of(eAssert("Hood system check", goal, this::position, TOLERANCE.in(Radians)));
+        Set.of(
+            tAssert(
+                this::atGoal,
+                "Turret system check",
+                () ->
+                    String.format(
+                        "Turret goal check: current=%.3f rad, goal=%.3f rad, tolerance=%.3f rad",
+                        position(), goal.getAsDouble(), TOLERANCE.in(Radians))));
     return new Test(testCommand, assertions);
   }
 
@@ -223,6 +349,8 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
     LoggingUtils.log("Robot/turret/current command", command != null ? command.getName() : "None");
     LoggingUtils.log("Robot/turret/encoder A position", hardware.encoderA());
     LoggingUtils.log("Robot/turret/encoder B position", hardware.encoderB());
+
+    hardware.periodic();
 
     if (TUNING) {
       controller.setP(tuningP.get());
@@ -234,8 +362,7 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
     }
 
     // VISUALIZATION
-    visualizer.update(
-        hardware.position(), controller.getGoal().position, controller.getSetpoint().position);
+    visualizer.update(position(), controller.getGoal().position, controller.getSetpoint().position);
   }
 
   @Override

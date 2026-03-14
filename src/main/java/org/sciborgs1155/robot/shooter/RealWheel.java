@@ -1,47 +1,60 @@
 package org.sciborgs1155.robot.shooter;
 
 import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static org.sciborgs1155.robot.Constants.SHOOTING_CANIVORE;
 import static org.sciborgs1155.robot.Ports.Shooter.*;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.*;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.lib.TalonUtils;
 
 public class RealWheel implements WheelIO {
-  private final TalonFX motor;
+  private final TalonFX leader;
+  private final TalonFX follower;
 
   /** Sets the TalonFX motor configurations */
   public RealWheel() {
-    motor = new TalonFX(SHOOTER_MOTOR);
+    leader = new TalonFX(LEADER, SHOOTING_CANIVORE);
+    follower = new TalonFX(FOLLOWER, SHOOTING_CANIVORE);
     TalonFXConfiguration config = new TalonFXConfiguration();
 
     config.CurrentLimits.StatorCurrentLimit = STATOR_CURRENT_LIMIT.in(Amps);
     config.CurrentLimits.SupplyCurrentLimit = SUPPLY_CURRENT_LIMIT.in(Amps);
 
-    config.Feedback.SensorToMechanismRatio = SENSOR_MECHANISM_RATIO;
+    config.Feedback.SensorToMechanismRatio = GEARING;
 
     config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+    follower.setControl(new Follower(LEADER, MotorAlignmentValue.Aligned));
 
-    motor.getConfigurator().apply(config);
-    FaultLogger.register(motor);
-    TalonUtils.addMotor(motor);
+    leader.getConfigurator().apply(config);
+    follower.getConfigurator().apply(config);
+
+    FaultLogger.register(leader);
+    FaultLogger.register(follower);
+
+    TalonUtils.addMotor(leader);
+    TalonUtils.addMotor(follower);
   }
 
   @Override
   public void setVoltage(double voltage) {
-    motor.setVoltage(voltage);
+    leader.setVoltage(voltage);
   }
 
   @Override
   public double velocity() {
-    return motor.getVelocity().getValueAsDouble();
+    return leader.getVelocity().getValue().in(RadiansPerSecond);
   }
 
   @Override
   public void close() throws Exception {
-    motor.close();
+    leader.close();
+    follower.close();
   }
 }

@@ -12,9 +12,9 @@ import edu.wpi.first.units.measure.Mass;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.units.measure.Voltage;
+import org.sciborgs1155.robot.Robot;
 
 public class HoodConstants {
-
   public static final Angle MIN_ANGLE = Degrees.of(15);
   public static final Angle MAX_ANGLE = Degrees.of(53);
   public static final Mass MASS = Pounds.of(1.307);
@@ -28,21 +28,21 @@ public class HoodConstants {
 
   // Sysid constants
   public static final Velocity<VoltageUnit> RAMP_RATE = Volts.of(0.5).per(Second);
-  public static final Voltage STEP_VOLTAGE = Volts.of(0.3);
-  public static final Time TIME_OUT = Seconds.of(3);
+  public static final Voltage STEP_VOLTAGE = Volts.of(0.5);
+  public static final Time TIME_OUT = Seconds.of(6);
 
   public static final Distance HOOD_RADIUS = Inches.of(9.29);
   public static final double MOI = 0.0045821517; // kg*m^2
 
   public static final Angle DEFAULT_ANGLE = STARTING_ANGLE;
-  public static final double GEARING = 12.0 / 44.0 * 18.0 / 14.0 * 182.0 / 10.0;
+  public static final double GEARING = 95.33333;
 
   public class PID {
-    public static final double P = 3;
-    public static final double I = 0;
-    public static final double D = 0.1;
+    public static final double P = Robot.isReal() ? 0 : 10;
+    public static final double I = Robot.isReal() ? 0 : 0.000001;
+    public static final double D = Robot.isReal() ? 0 : 0.000001;
     public static final double S = 0;
-    public static final double V = .3;
+    public static final double V = 0;
     public static final double G = .1;
     public static final double A = 0;
   }

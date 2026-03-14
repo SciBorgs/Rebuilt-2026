@@ -2,10 +2,12 @@ package org.sciborgs1155.robot.hood;
 
 import static edu.wpi.first.units.Units.*;
 import static org.sciborgs1155.lib.Assertion.eAssert;
+import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.Constants.TUNING;
 import static org.sciborgs1155.robot.hood.HoodConstants.*;
 import static org.sciborgs1155.robot.hood.HoodConstants.PID.*;
 
+import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.MathUtil;
@@ -27,6 +29,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.DoubleSupplier;
 import org.sciborgs1155.lib.Assertion;
+import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.lib.Tuning;
@@ -93,37 +96,28 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
     this.hardware = hardware;
 
     fb.setTolerance(POSITION_TOLERANCE.in(Radians));
-    fb.reset(angle());
-    setDefaultCommand(goTo(DEFAULT_ANGLE));
+    setDefaultCommand(run(() -> hardware.setVoltage(0)).withName("Default"));
 
     sysIdRoutine =
         new SysIdRoutine(
-            new Config(RAMP_RATE, STEP_VOLTAGE, TIME_OUT),
+            new Config(
+                RAMP_RATE,
+                STEP_VOLTAGE,
+                TIME_OUT,
+                (state) -> SignalLogger.writeString("hood state", state.toString())),
             new Mechanism(voltage -> hardware.setVoltage(voltage.in(Volts)), null, this));
     SmartDashboard.putData(
         "Robot/hood/quasistatic forward",
-        sysIdRoutine
-            .quasistatic(Direction.kForward)
-            .until(() -> atPosition(MAX_ANGLE.in(Radians)))
-            .withName("hood quasistatic forward"));
+        sysIdRoutine.quasistatic(Direction.kForward).withName("hood quasistatic forward"));
     SmartDashboard.putData(
         "Robot/hood/quasistatic backward",
-        sysIdRoutine
-            .quasistatic(Direction.kReverse)
-            .until(() -> atPosition(MIN_ANGLE.in(Radians)))
-            .withName("hood quasistatic backward"));
+        sysIdRoutine.quasistatic(Direction.kReverse).withName("hood quasistatic backward"));
     SmartDashboard.putData(
         "Robot/hood/dynamic forward",
-        sysIdRoutine
-            .dynamic(Direction.kForward)
-            .until(() -> atPosition(MAX_ANGLE.in(Radians)))
-            .withName("hood dynamic forward"));
+        sysIdRoutine.dynamic(Direction.kForward).withName("hood dynamic forward"));
     SmartDashboard.putData(
         "Robot/hood/dynamic backward",
-        sysIdRoutine
-            .dynamic(Direction.kReverse)
-            .until(() -> atPosition(MIN_ANGLE.in(Radians)))
-            .withName("hood dynamic backward"));
+        sysIdRoutine.dynamic(Direction.kReverse).withName("hood dynamic backward"));
   }
 
   /**
@@ -134,6 +128,16 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
   @Logged
   public double angle() {
     return hardware.angle();
+  }
+
+  /**
+   * gets the current voltage of the hood motor
+   *
+   * @return the voltage in volts
+   */
+  @Logged
+  public double voltage() {
+    return hardware.getVoltage();
   }
 
   /**
@@ -215,7 +219,7 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
   public Command goToShootingAngle(DoubleSupplier goal) {
     return run(() -> update(goal.getAsDouble() - SHOOTING_ANGLE_OFFSET.in(Radians)))
         .until(this::atGoal)
-        .withName("Hood GoTo Angle");
+        .withName("Hood GoTo Shooting Angle");
   }
 
   /**
@@ -226,6 +230,22 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
    */
   public Command goToShootingAngle(Angle goal) {
     return goToShootingAngle(() -> goal.in(Radians));
+  }
+
+  /**
+   * manual control of the hood with an controler, which will be used for operator control and
+   * testing
+   *
+   * @param input The controller value to use for manual control.
+   */
+  public Command manualHood(InputStream input) {
+    return goTo(input
+            .deadband(.15, 1)
+            .scale(MAX_VELOCITY.in(RadiansPerSecond))
+            .scale(PERIOD.in(Seconds))
+            .rateLimit(MAX_ACCEL.in(RadiansPerSecondPerSecond))
+            .add(() -> fb.getGoal().position))
+        .withName("manual hood");
   }
 
   /**

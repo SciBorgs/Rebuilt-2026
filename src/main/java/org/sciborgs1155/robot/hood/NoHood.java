@@ -18,4 +18,9 @@ public class NoHood implements HoodIO {
 
   @Override
   public void close() throws Exception {}
+
+  @Override
+  public double getVoltage() {
+    return 0;
+  }
 }

@@ -3,8 +3,10 @@ package org.sciborgs1155.robot.hood;
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static org.sciborgs1155.robot.Constants.SHOOTING_CANIVORE;
 import static org.sciborgs1155.robot.Ports.Hood.MOTOR_PORT;
 import static org.sciborgs1155.robot.hood.HoodConstants.GEARING;
+import static org.sciborgs1155.robot.hood.HoodConstants.STARTING_ANGLE;
 import static org.sciborgs1155.robot.hood.HoodConstants.STATOR_LIMIT;
 import static org.sciborgs1155.robot.hood.HoodConstants.SUPPLY_LIMIT;
 
@@ -23,7 +25,7 @@ public class RealHood implements HoodIO {
 
   /** constructor for real hood */
   public RealHood() {
-    motor = new TalonFX(MOTOR_PORT);
+    motor = new TalonFX(MOTOR_PORT, SHOOTING_CANIVORE);
 
     config = new TalonFXConfiguration();
 
@@ -32,8 +34,9 @@ public class RealHood implements HoodIO {
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     config.Feedback.SensorToMechanismRatio = GEARING;
     config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
-
+    motor.setPosition(STARTING_ANGLE);
     motor.getConfigurator().apply(config);
+
     TalonUtils.addMotor(motor);
     FaultLogger.register(motor);
   }
@@ -59,5 +62,10 @@ public class RealHood implements HoodIO {
   @Override
   public void close() throws Exception {
     motor.close();
+  }
+
+  @Override
+  public double getVoltage() {
+    return motor.getMotorVoltage().getValueAsDouble();
   }
 }

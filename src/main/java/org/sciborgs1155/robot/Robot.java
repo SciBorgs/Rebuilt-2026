@@ -1,7 +1,9 @@
 package org.sciborgs1155.robot;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
@@ -42,6 +44,7 @@ import org.littletonrobotics.urcl.URCL;
 import org.sciborgs1155.lib.CommandRobot;
 import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.lib.InputStream;
+import org.sciborgs1155.lib.ShiftTracker;
 import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.lib.Tracer;
 import org.sciborgs1155.robot.Ports.OI;
@@ -51,13 +54,17 @@ import org.sciborgs1155.robot.commands.Shooting;
 import org.sciborgs1155.robot.commands.shooting.FuelVisualizer;
 import org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer;
 import org.sciborgs1155.robot.commands.shooting.ShootingAlgorithm;
+import org.sciborgs1155.robot.commands.shooting.ShotDataCollector;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.hood.Hood;
 import org.sciborgs1155.robot.hopper.Hopper;
 import org.sciborgs1155.robot.indexer.Indexer;
+import org.sciborgs1155.robot.intake.Intake;
 import org.sciborgs1155.robot.shooter.Shooter;
 import org.sciborgs1155.robot.shooter.ShooterConstants;
+import org.sciborgs1155.robot.slapdown.Slapdown;
 import org.sciborgs1155.robot.turret.Turret;
+import org.sciborgs1155.robot.turret.TurretConstants;
 import org.sciborgs1155.robot.vision.Vision;
 
 /**
@@ -76,22 +83,26 @@ public class Robot extends CommandRobot {
 
   // SUBSYSTEMS
   private final Drive drive = Drive.create();
-  private final Hood hood = Hood.create();
   private final Vision vision = Vision.create();
-  private final Shooter shooter = Shooter.create();
   private final Turret turret = Turret.create();
-  private final Hopper hopper = Hopper.create();
+  private final Hood hood = Hood.create();
+  private final Shooter shooter = Shooter.create();
   private final Indexer indexer = Indexer.create();
+  private final Hopper hopper = Hopper.create();
+  private final Slapdown slapdown = Slapdown.create();
+  private final Intake intake = Intake.create();
 
   // COMMANDS
   private final Alignment align = new Alignment(drive);
+  private final ShotDataCollector shotDataCollector = new ShotDataCollector(shooter, indexer, hood);
+
   @NotLogged private final SendableChooser<Command> autos = Autos.configureAutos(drive);
 
   @NotLogged
   private final ProjectileVisualizer fuelVisualizer =
       new FuelVisualizer(
               ShootingAlgorithm.toShotVelocitySupplier(
-                  () -> shooter.getVelocity() * ShooterConstants.RADIUS.in(Meters),
+                  () -> shooter.velocity() * ShooterConstants.RADIUS.in(Meters),
                   () -> Math.PI / 2 - hood.angle(),
                   () -> turret.position(),
                   drive::pose3d),
@@ -134,6 +145,11 @@ public class Robot extends CommandRobot {
 
     FaultLogger.register(pdh);
     SmartDashboard.putData("Auto Chooser", autos);
+
+    // if (isReal()) {
+    //   teleop().onTrue(shotDataCollector.startLogging());
+    //   teleop().onFalse(shotDataCollector.endLogging());
+    // }
 
     if (TUNING) {
       addPeriodic(
@@ -187,6 +203,8 @@ public class Robot extends CommandRobot {
 
   /** Configures trigger -> command bindings. */
   private void configureBindings() {
+    teleop().onTrue(ShiftTracker.startTracking());
+
     // x and y are switched: we use joystick Y axis to control field x motion
     InputStream rawX = InputStream.of(driver::getLeftY).log("/Robot/raw x").negate();
     InputStream rawY = InputStream.of(driver::getLeftX).log("/Robot/raw y").negate();
@@ -237,15 +255,21 @@ public class Robot extends CommandRobot {
 
     test().whileTrue(systemsCheck());
 
-    driver.b().whileTrue(drive.zeroHeading());
+    // driver.b().whileTrue(drive.zeroHeading());
     driver
         .leftBumper()
         .or(driver.rightBumper())
         .onTrue(Commands.runOnce(() -> speedMultiplier = SLOW_SPEED_MULTIPLIER))
         .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
 
-    operator.a().whileTrue(shooting.shootHubDriving(x, y, omega).repeatedly());
-    operator.b().toggleOnTrue(shooting.shootWithTestData());
+    // TODO: Add any additional bindings.
+    operator.a().whileTrue(turret.goTo(() -> TurretConstants.MIN_ANGLE.in(Radians)));
+    operator.y().whileTrue(turret.goTo(() -> TurretConstants.MAX_ANGLE.in(Radians)));
+    operator.x().whileTrue(hood.goTo(Degrees.of(45)).withName("goto 45"));
+    operator.b().whileTrue(hood.goTo(Degrees.of(25)).withName("goto 25"));
+
+    operator.leftBumper().whileTrue(shooter.runShooter(100));
+    operator.rightBumper().whileTrue(shooter.runShooter(300));
   }
 
   /**

@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
 import java.util.Set;
+import java.util.function.DoubleSupplier;
 import org.sciborgs1155.lib.Assertion;
 import org.sciborgs1155.lib.Assertion.EqualityAssertion;
 import org.sciborgs1155.lib.Test;
@@ -110,6 +111,16 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
    */
   public Command goTo(double angle) {
     return run(() -> update(angle)).withName("go to angle");
+  }
+
+  /**
+   * Command Factory
+   *
+   * @param angle go to angle
+   * @return command to make the Slapdown go to the angle
+   */
+  public Command goTo(DoubleSupplier angle) {
+    return run(() -> update(angle.getAsDouble())).withName("go to angle");
   }
 
   /**

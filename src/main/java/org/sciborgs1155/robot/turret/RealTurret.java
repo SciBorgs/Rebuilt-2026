@@ -1,40 +1,29 @@
 package org.sciborgs1155.robot.turret;
 
 import static edu.wpi.first.units.Units.Amps;
-import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.Rotations;
-import static org.sciborgs1155.robot.Constants.TURRET_CANIVORE;
-import static org.sciborgs1155.robot.Ports.Turret.*;
+import static org.sciborgs1155.robot.Constants.SHOOTING_CANIVORE;
+import static org.sciborgs1155.robot.Ports.Turret.ENCODER_A;
+import static org.sciborgs1155.robot.Ports.Turret.ENCODER_B;
+import static org.sciborgs1155.robot.Ports.Turret.MOTOR;
 import static org.sciborgs1155.robot.turret.TurretConstants.*;
 
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.lib.TalonUtils;
-import yams.units.EasyCRT;
-import yams.units.EasyCRTConfig;
 
 /** Real hardware interface for the {@code Turret} subsystem. */
 public class RealTurret implements TurretIO {
   /** Motor controller that operates a motor which is used to rotate the turret. */
-  private final TalonFX hardware = new TalonFX(MOTOR, TURRET_CANIVORE);
+  private final TalonFX hardware = new TalonFX(MOTOR, SHOOTING_CANIVORE);
 
-  private final CANcoder encoderA = new CANcoder(ENCODER_A);
-  private final CANcoder encoderB = new CANcoder(ENCODER_B);
-
-  private double lastGoodPositionRad;
-
-  private final EasyCRTConfig crtConfig =
-      new EasyCRTConfig(() -> Rotations.of(encoderA()), () -> Rotations.of(encoderB()))
-          .withEncoderRatios(
-              (double) TURRET_GEARING / ENCODER_A_GEARING,
-              (double) TURRET_GEARING / ENCODER_B_GEARING)
-          .withMechanismRange(MIN_ANGLE, MAX_ANGLE)
-          .withMatchTolerance(CRT_MATCH_TOLERANCE);
-
-  private final EasyCRT solverCRT = new EasyCRT(crtConfig);
+  private final CANcoder encoderA = new CANcoder(ENCODER_A, SHOOTING_CANIVORE);
+  private final CANcoder encoderB = new CANcoder(ENCODER_B, SHOOTING_CANIVORE);
 
   /** Real hardware interface for the {@code Turret} subsystem. */
   public RealTurret() {
@@ -46,39 +35,64 @@ public class RealTurret implements TurretIO {
     configuration.CurrentLimits.SupplyCurrentLimit = CURRENT_LIMIT.in(Amps);
 
     hardware.getConfigurator().apply(configuration);
+    hardware.setPosition(0);
+
+    final CANcoderConfiguration encoderConfig = new CANcoderConfiguration();
+    encoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1;
+
+    encoderA.getConfigurator().apply(encoderConfig);
+    encoderB.getConfigurator().apply(encoderConfig);
 
     // TALON UTILS
     TalonUtils.addMotor(hardware);
 
     // FAULT LOGGER
     FaultLogger.register(hardware);
+    FaultLogger.register(encoderA);
+    FaultLogger.register(encoderB);
+  }
+
+  /**
+   * Uses integrated motor encoder to get what encoder values should be (for testing, note that it
+   * will not save pass resets)
+   */
+  public double trueAngleRot() {
+    return hardware.getPosition().getValueAsDouble();
+  }
+
+  /**
+   * Derives encoder values from the integrated motor encoder. Note that this will not save pass
+   * resets, so it should only be used for testing.
+   */
+  public double encoderADerived() {
+    double encoderRot = trueAngleRot() * (TURRET_GEARING / ENCODER_A_GEARING);
+
+    return MathUtil.inputModulus(encoderRot, 0.0, 1.0);
+  }
+
+  /**
+   * Derives encoder values from the integrated motor encoder. Note that this will not save pass
+   * resets, so it should only be used for testing.
+   */
+  public double encoderBDerived() {
+    double encoderRot = trueAngleRot() * (TURRET_GEARING / ENCODER_B_GEARING);
+
+    return MathUtil.inputModulus(encoderRot, 0.0, 1.0);
   }
 
   @Override
   public double encoderA() {
-    return (encoderA.getAbsolutePosition().getValueAsDouble() + 1) / 2;
+    return 1 - encoderA.getAbsolutePosition().getValueAsDouble();
   }
 
   @Override
   public double encoderB() {
-    return (encoderB.getAbsolutePosition().getValueAsDouble() + 1) / 2;
+    return 1 - encoderB.getAbsolutePosition().getValueAsDouble();
   }
 
   @Override
   public void setVoltage(double voltage) {
     hardware.setVoltage(voltage);
-  }
-
-  @Override
-  public double position() {
-    return solverCRT
-        .getAngleOptional()
-        .map(
-            a -> {
-              lastGoodPositionRad = a.in(Radians);
-              return lastGoodPositionRad;
-            })
-        .orElse(lastGoodPositionRad);
   }
 
   @Override
@@ -89,5 +103,12 @@ public class RealTurret implements TurretIO {
   @Override
   public void close() throws Exception {
     hardware.close();
+  }
+
+  @Override
+  public void periodic() {
+    SmartDashboard.putNumber("trueAngleRot", trueAngleRot());
+    SmartDashboard.putNumber("encoderADerived", encoderADerived());
+    SmartDashboard.putNumber("encoderBDerived", encoderBDerived());
   }
 }

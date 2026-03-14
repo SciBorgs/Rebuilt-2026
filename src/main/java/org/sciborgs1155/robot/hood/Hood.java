@@ -153,9 +153,9 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * gets the current velocity of the hood
+   * Gets the current velocity of the hood
    *
-   * @return current velocity of the hood
+   * @return Current velocity of the hood
    */
   @Logged
   public double velocity() {
@@ -163,9 +163,9 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * returns the velocity setpoint of the hood
+   * Returns the velocity setpoint of the hood
    *
-   * @return the velocity of the setpoint
+   * @return The velocity of the setpoint
    */
   @Logged
   public double velocitySetpoint() {
@@ -173,7 +173,7 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * checks whether the hood is at a set desired state
+   * Checks whether the hood is at a set desired state
    *
    * @return Whether or not the hood is at its desired state.
    */
@@ -182,13 +182,13 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
     return fb.atGoal();
   }
 
-  /** checks if the hood is at a certain position within tolerance */
+  /** Checks if the hood is at a certain position within tolerance */
   public boolean atPosition(double angle) {
     return Math.abs(angle - angle()) < POSITION_TOLERANCE.in(Radians);
   }
 
   /**
-   * moves the hood to a specified angle
+   * Moves the hood to a specified angle
    *
    * @param goal
    * @return a goTo command set the hood to goal angle
@@ -197,30 +197,31 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
     return goTo(() -> goal.in(Radians));
   }
 
-  /** makes hood go to a set goal position */
+  /** Makes hood go to a set goal position */
   public Command goTo(DoubleSupplier goal) {
     return run(() -> update(goal.getAsDouble())).withName("Hood GoTo");
   }
 
   /**
-   * runs a homing sequence to zero the hood.
+   * Runs a homing sequence to zero the hood.
    *
    * @return a command to zero the hood.
    */
   public Command homingSequence() {
     return run(() -> hardware.setVoltage(-0.5))
         .until(() -> hardware.velocity() < VELOCITY_TOLERANCE.in(RadiansPerSecond))
-        .andThen(() -> {
-          hardware.resetPosition();
-          resetSetpoint();
-        });
+        .andThen(
+            () -> {
+              hardware.resetPosition();
+              resetSetpoint();
+            });
   }
 
   /**
-   * goes to an angle so that the fuel is launch out at said angle
+   * Goes to an angle so that the fuel is launch out at said angle
    *
-   * @param angle angle to shoot at
-   * @return a command to go to the shooting angle
+   * @param angle Supplied angle to shoot at
+   * @return A command to go to the shooting angle
    */
   public Command goToShootingAngle(DoubleSupplier goal) {
     return run(() -> update(goal.getAsDouble() - SHOOTING_ANGLE_OFFSET.in(Radians)))
@@ -229,15 +230,20 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * goes to an angle so that the fuel is launch out at said angle
+   * Goes to an angle so that the fuel is launch out at said angle.
    *
-   * @param angle angle to shoot at
-   * @return a command to go to the shooting angle
+   * @param angle Angle to shoot at
+   * @return A command to go to the shooting angle
    */
   public Command goToShootingAngle(Angle goal) {
     return goToShootingAngle(() -> goal.in(Radians));
   }
 
+  /**
+   * Resets feedback to the starting angle.
+   *
+   * @return The command to set the feedback to the starting angle.
+   */
   public Command resetSetpoint() {
     return run(() -> fb.reset(STARTING_ANGLE.in(Radians)));
   }

@@ -133,10 +133,10 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
    * @return The repeating sequence.
    */
   public Command squeeze() {
-    return Commands.run(() -> {});
-    // return Commands.repeatingSequence(
-    //     retract().until(() -> atGoal()).withTimeout(SQUEEZE_RETRACT),
-    //     extend().until(() -> atGoal()).withTimeout(SQUEEZE_EXTEND));
+    return Commands.sequence(
+            retract().until(() -> atGoal()).withTimeout(SQUEEZE_RETRACT),
+            extend().until(() -> atGoal()).withTimeout(SQUEEZE_EXTEND))
+        .repeatedly();
   }
 
   /**

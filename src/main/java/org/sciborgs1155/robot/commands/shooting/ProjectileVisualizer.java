@@ -105,11 +105,11 @@ public abstract class ProjectileVisualizer {
     trajectoryDt = 1.0 / trajectoryResolution;
   }
 
-  private static boolean diff(double number1, double number2) {
+  protected static boolean diff(double number1, double number2) {
     return Math.abs(number1 - number2) > EPS;
   }
 
-  private static boolean diff(double[] vector1, double[] vector2) {
+  protected static boolean diff(double[] vector1, double[] vector2) {
     return diff(vector1[X], vector2[X])
         || diff(vector1[Y], vector2[Y])
         || diff(vector1[Z], vector2[Z]);

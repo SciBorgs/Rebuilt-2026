@@ -14,23 +14,30 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Scanner;
 import org.sciborgs1155.lib.LoggingUtils;
+import org.sciborgs1155.robot.FieldConstants.Hub;
 
 public final class TableGenerator {
-  private static final double MIN_DISTANCE = 0.1;
+  private static final double MIN_DISTANCE = Hub.WIDTH / 2;
   private static final double MAX_DISTANCE = 20;
 
   private static final double INCREMENT = 0.005;
   private static final String PATH = "shooting/ParameterLookUp";
 
   private static final double SPEED_DEADBAND = 0.01;
+  private static final double ERROR_THRESHOLD = 1.5;
 
-  private static final InterpolatingDoubleTreeMap SPEED_TABLE = new InterpolatingDoubleTreeMap();
-  private static final InterpolatingDoubleTreeMap ANGLE_TABLE = new InterpolatingDoubleTreeMap();
+  static final InterpolatingDoubleTreeMap SPEED_TABLE = new InterpolatingDoubleTreeMap();
+  static final InterpolatingDoubleTreeMap PITCH_TABLE = new InterpolatingDoubleTreeMap();
+  static final InterpolatingDoubleTreeMap ERROR_TABLE = new InterpolatingDoubleTreeMap();
+
+  private static boolean loaded = false;
 
   private static final int MAX_TABLE_SIZE = 5000;
+  private static final int ERROR = 3;
 
   private TableGenerator() {}
 
@@ -47,25 +54,30 @@ public final class TableGenerator {
       double minDistance, double maxDistance, double increment, String tablePath) {
     try {
       LoggingUtils.log("Shooting/Entries Generated", 0);
-      BufferedWriter fileWriter =
-          Files.newBufferedWriter(
-              Paths.get("resources/" + tablePath + ".ankit"), StandardCharsets.UTF_8);
+
+      Path path = Paths.get("resources/" + tablePath + ".ankit");
+      BufferedWriter fileWriter = Files.newBufferedWriter(path, StandardCharsets.UTF_8);
 
       int tableIndex = 0;
+      double totalError = 0;
       for (double distance = minDistance; distance < maxDistance; distance += increment) {
         double[] launchParameters = ShotGenerator.optimizedLaunchParameters(distance);
 
         double speed = launchParameters[SPEED];
-        double angle = launchParameters[PITCH];
+        double pitch = launchParameters[PITCH];
+        double error = launchParameters[ERROR];
 
         if (speed > MAX_SPEED) continue;
         if (speed < SPEED_DEADBAND) continue;
 
-        if (angle < MIN_PITCH) continue;
-        if (angle > MAX_PITCH) continue;
+        if (pitch < MIN_PITCH) continue;
+        if (pitch > MAX_PITCH) continue;
 
-        // FORMAT: [DISTANCE]/[SPEED]/[ANGLE](SPACE)
-        fileWriter.write(distance + "," + speed + "," + angle);
+        double averageError = totalError / tableIndex;
+        if (Math.abs(error - averageError) > ERROR_THRESHOLD) continue;
+
+        totalError += error;
+        fileWriter.write(distance + "," + speed + "," + pitch + "," + error);
         fileWriter.newLine();
 
         tableIndex++;
@@ -89,7 +101,8 @@ public final class TableGenerator {
 
   private static void loadTable(String tablePath) {
     SPEED_TABLE.clear();
-    ANGLE_TABLE.clear();
+    PITCH_TABLE.clear();
+    ERROR_TABLE.clear();
 
     try {
       LoggingUtils.log("Shooting/Entries Loaded", 0);
@@ -97,24 +110,31 @@ public final class TableGenerator {
           new Scanner(new File("resources/" + tablePath + ".ankit"), StandardCharsets.UTF_8);
 
       int tableIndex = 0;
+      double totalError = 0;
       while (tableIndex < MAX_TABLE_SIZE && fileScanner.hasNextLine()) {
         String entry = fileScanner.nextLine();
 
         int comma1Index = entry.indexOf(',');
         int comma2Index = entry.indexOf(',', comma1Index + 1);
+        int comma3Index = entry.indexOf(',', comma2Index + 1);
 
         double distance = Double.parseDouble(entry.substring(0, comma1Index));
         double speed = Double.parseDouble(entry.substring(comma1Index + 1, comma2Index));
-        double angle = Double.parseDouble(entry.substring(comma2Index + 1));
+        double pitch = Double.parseDouble(entry.substring(comma2Index + 1, comma3Index));
+        double error = Double.parseDouble(entry.substring(comma3Index + 1));
+        totalError += error;
 
         SPEED_TABLE.put(distance, speed);
-        ANGLE_TABLE.put(distance, angle);
+        PITCH_TABLE.put(distance, pitch);
+        ERROR_TABLE.put(distance, error);
 
         tableIndex++;
         LoggingUtils.log("Shooting/Entries Loaded", tableIndex);
       }
 
+      LoggingUtils.log("Shooting/Average Error", totalError / tableIndex);
       fileScanner.close();
+      if (tableIndex > 0) loaded = true;
     } catch (Exception exception) {
       exception.printStackTrace();
     }
@@ -125,12 +145,13 @@ public final class TableGenerator {
    * distance into the hub. Distance is to the origin of the shooter.
    */
   public static double[] directLaunchParameters(double distance) {
-    try {
-      LoggingUtils.log("Shooting/LookUp Table Status", true);
-      return new double[] {SPEED_TABLE.get(distance), ANGLE_TABLE.get(distance), 0};
-    } catch (Exception exception) {
-      LoggingUtils.log("Shooting/LookUp Table Status", false);
-      return new double[] {0, 0, 0};
-    }
+    LoggingUtils.log("Shooting/LookUp Table Status", loaded);
+
+    if (loaded) return new double[] {SPEED_TABLE.get(distance), PITCH_TABLE.get(distance), 0};
+    else return new double[] {0, 0, 0};
+  }
+
+  static boolean loaded() {
+    return loaded;
   }
 }

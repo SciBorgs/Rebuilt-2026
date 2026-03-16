@@ -598,10 +598,11 @@ public class Drive extends SubsystemBase implements AutoCloseable {
    * @param mode The control loop used to achieve those speeds.
    */
   public void setChassisSpeeds(ChassisSpeeds desired, ControlMode mode) {
+    ChassisSpeeds speeds = robotRelativeChassisSpeeds();
     Vector<N2> currentVelocity =
         VecBuilder.fill(
-            robotRelativeChassisSpeeds().vxMetersPerSecond,
-            robotRelativeChassisSpeeds().vyMetersPerSecond);
+            speeds.vxMetersPerSecond,
+            speeds.vyMetersPerSecond);
 
     Vector<N2> deltaV =
         VecBuilder.fill(desired.vxMetersPerSecond, desired.vyMetersPerSecond)
@@ -738,21 +739,21 @@ public class Drive extends SubsystemBase implements AutoCloseable {
   /**
    * @return If the robot is skidding.
    */
-  @Logged
-  public boolean isSkidding() {
-    DoubleSummaryStatistics diffs =
-        Arrays.stream(moduleStates())
-            .mapToDouble(
-                s ->
-                    FieldConstants.fromPolarCoords(s.speedMetersPerSecond, s.angle)
-                        .minus(
-                            VecBuilder.fill(
-                                robotRelativeChassisSpeeds().vxMetersPerSecond,
-                                robotRelativeChassisSpeeds().vyMetersPerSecond))
-                        .norm())
-            .summaryStatistics();
-    return diffs.getMax() - diffs.getMin() > Skid.THRESHOLD.in(MetersPerSecond);
-  }
+  // @Logged
+  // public boolean isSkidding() {
+  //   DoubleSummaryStatistics diffs =
+  //       Arrays.stream(moduleStates())
+  //           .mapToDouble(
+  //               s ->
+  //                   FieldConstants.fromPolarCoords(s.speedMetersPerSecond, s.angle)
+  //                       .minus(
+  //                           VecBuilder.fill(
+  //                               robotRelativeChassisSpeeds().vxMetersPerSecond,
+  //                               robotRelativeChassisSpeeds().vyMetersPerSecond))
+  //                       .norm())
+  //           .summaryStatistics();
+  //   return diffs.getMax() - diffs.getMin() > Skid.THRESHOLD.in(MetersPerSecond);
+  // }
 
   /**
    * @return If the robot is colliding.
@@ -767,7 +768,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
    *
    * @return If any module is stalling.
    */
-  @Logged
+  // @Logged
   public boolean isStalling() {
     return Arrays.stream(modulesStalling)
         .map(bs -> bs.getAsBoolean())
@@ -793,6 +794,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
   @Logged
   public SwerveModuleState[] moduleStates() {
     return modules.stream().map(ModuleIO::state).toArray(SwerveModuleState[]::new);
+    
   }
 
   /** Returns the module states. */

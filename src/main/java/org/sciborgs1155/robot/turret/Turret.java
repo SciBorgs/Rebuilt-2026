@@ -16,7 +16,7 @@ import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.DoubleEntry;
@@ -52,7 +52,8 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
   @NotLogged public final TurretIO hardware;
 
   /** {@code PIDController} used to orient the turret to a specified angle. */
-  @Logged private final PIDController controller = new PIDController(P, I, D);
+  @Logged
+  private final ProfiledPIDController controller = new ProfiledPIDController(P, I, D, CONSTRAINTS);
 
   /** {@code Feedforward} used to aid in orienting the turret to a specified angle. */
   @Logged
@@ -192,7 +193,7 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
    */
   @Logged
   public double setpoint() {
-    return controller.getSetpoint();
+    return controller.getSetpoint().position;
   }
 
   /**
@@ -202,7 +203,7 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
    */
   @Logged
   public boolean atGoal() {
-    return controller.atSetpoint();
+    return controller.atGoal();
   }
 
   /** Enum used to specify the type of sysId test. */
@@ -224,8 +225,8 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
             .scale(2)
             .scale(PERIOD.in(Seconds))
             .rateLimit(MAX_ACCELERATION.in(RadiansPerSecondPerSecond))
-            .add(() -> controller.getSetpoint()))
-        .withName("manual elevator");
+            .add(() -> controller.getSetpoint().position))
+        .withName("manual turret");
   }
 
   /**
@@ -238,7 +239,7 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
     double pidVolts =
         controller.calculate(
             pos, MathUtil.clamp(positionSetpoint, MIN_ANGLE.in(Radians), MAX_ANGLE.in(Radians)));
-    double ffdVolts = feedforward.calculate(0);
+    double ffdVolts = feedforward.calculate(controller.getSetpoint().velocity);
 
     double voltage = pidVolts + ffdVolts;
 
@@ -327,7 +328,7 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
     }
 
     // VISUALIZATION
-    visualizer.update(position(), controller.getSetpoint(), controller.getSetpoint());
+    visualizer.update(position(), controller.getGoal().position, controller.getSetpoint().position);
   }
 
   @Override

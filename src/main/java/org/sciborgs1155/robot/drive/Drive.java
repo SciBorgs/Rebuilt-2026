@@ -51,7 +51,6 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import java.util.Arrays;
-import java.util.DoubleSummaryStatistics;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -72,13 +71,11 @@ import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.lib.Tracer;
 import org.sciborgs1155.lib.Tuning;
-import org.sciborgs1155.robot.FieldConstants;
 import org.sciborgs1155.robot.Robot;
 import org.sciborgs1155.robot.drive.DriveConstants.Assisted;
 import org.sciborgs1155.robot.drive.DriveConstants.ControlMode;
 import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Driving;
 import org.sciborgs1155.robot.drive.DriveConstants.Rotation;
-import org.sciborgs1155.robot.drive.DriveConstants.Skid;
 import org.sciborgs1155.robot.drive.DriveConstants.Translation;
 import org.sciborgs1155.robot.vision.Vision.PoseEstimate;
 
@@ -600,9 +597,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
   public void setChassisSpeeds(ChassisSpeeds desired, ControlMode mode) {
     ChassisSpeeds speeds = robotRelativeChassisSpeeds();
     Vector<N2> currentVelocity =
-        VecBuilder.fill(
-            speeds.vxMetersPerSecond,
-            speeds.vyMetersPerSecond);
+        VecBuilder.fill(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
 
     Vector<N2> deltaV =
         VecBuilder.fill(desired.vxMetersPerSecond, desired.vyMetersPerSecond)
@@ -793,20 +788,37 @@ public class Drive extends SubsystemBase implements AutoCloseable {
   /** Returns the module states. */
   @Logged
   public SwerveModuleState[] moduleStates() {
-    return modules.stream().map(ModuleIO::state).toArray(SwerveModuleState[]::new);
-    
+    SwerveModuleState[] states = new SwerveModuleState[modules.size()];
+    for (int i = 0; i < modules.size(); i++) {
+      states[i] = modules.get(i).state();
+    }
+    // return modules.stream().map(ModuleIO::state).toArray(SwerveModuleState[]::new);
+    return states;
   }
 
   /** Returns the module states. */
   @Logged
   public SwerveModuleState[] moduleSetpoints() {
-    return modules.stream().map(ModuleIO::desiredState).toArray(SwerveModuleState[]::new);
+    SwerveModuleState[] states = new SwerveModuleState[modules.size()];
+    for (int i = 0; i < modules.size(); i++) {
+      states[i] = modules.get(i).desiredState();
+    }
+    // return modules.stream().map(ModuleIO::state).toArray(SwerveModuleState[]::new);
+    return states;
+    // return modules.stream().map(ModuleIO::desiredState).toArray(SwerveModuleState[]::new);
   }
 
   /** Returns the module positions. */
   @Logged
   public SwerveModulePosition[] modulePositions() {
-    return modules.stream().map(ModuleIO::position).toArray(SwerveModulePosition[]::new);
+    SwerveModulePosition[] positions = new SwerveModulePosition[modules.size()];
+    for (int i = 0; i < modules.size(); i++) {
+      positions[i] = modules.get(i).position();
+    }
+    // return modules.stream().map(ModuleIO::state).toArray(SwerveModuleState[]::new);
+    return positions;
+
+    // return modules.stream().map(ModuleIO::position).toArray(SwerveModulePosition[]::new);
   }
 
   /** Returns the robot-relative chassis speeds. */

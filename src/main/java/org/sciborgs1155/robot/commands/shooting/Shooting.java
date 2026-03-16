@@ -2,10 +2,29 @@ package org.sciborgs1155.robot.commands.shooting;
 
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.PITCH;
-import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.SPEED;
-import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.YAW;
+import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.fieldRelative;
+import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.fromLaunchParameters;
+import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.launchParameters;
+import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.robotRelative;
+import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.robotRelativeShotVelocity;
+import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.robotToShooter;
+import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.shooterVelocity;
+import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.X;
+import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.Y;
+import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.Z;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.DRAG_ENABLED;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.GOAL;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.LIFT_ENABLED;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.MAX_AIR_TIME;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PITCH;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.SCORE_DEPTH;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.SCORE_RADIUS;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.SPEED;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.TRAJECTORY_RESOLUTION;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.YAW;
 
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import org.sciborgs1155.lib.LoggingUtils;
@@ -38,8 +57,7 @@ public class Shooting {
     return Commands.run(
         () -> {
           launchParameters =
-              ShotGenerator.movingLaunchParameters(
-                  drive.pose3d(), drive.fieldRelativeChassisSpeeds());
+              movingLaunchParameters(drive.pose3d(), drive.fieldRelativeChassisSpeeds());
           LoggingUtils.log("Shooting/Parameters/SPEED", launchParameters[SPEED]);
           LoggingUtils.log("Shooting/Parameters/PITCH", launchParameters[PITCH]);
           LoggingUtils.log("Shooting/Parameters/YAW", launchParameters[YAW]);
@@ -60,9 +78,58 @@ public class Shooting {
   /** Creates a visualizer that utilizes the subsystem positions to predict a trajectory. */
   public ProjectileVisualizer createVisualizer() {
     return FuelVisualizer.fromLaunchParameters(
-        () -> launchParameters[SPEED],
-        () -> Math.PI / 2 - hood.angle(),
-        () -> turret.position(),
-        drive);
+            () -> launchParameters[SPEED],
+            () -> Math.PI / 2 - hood.angle(),
+            () -> turret.position(),
+            drive)
+        .withScoringParameters(GOAL, SCORE_RADIUS, SCORE_DEPTH)
+        .configPhysics(true, DRAG_ENABLED, false, LIFT_ENABLED)
+        .configGeneration(0.05, MAX_AIR_TIME, TRAJECTORY_RESOLUTION, TRAJECTORY_RESOLUTION)
+        .config(true, true);
+  }
+
+  /**
+   * Creates a FuelVisualizer with the settings used to generate shots for the shooting algorithm.
+   */
+  public static ProjectileVisualizer createVectorVisualizer(Drive drive) {
+    return fromLaunchParameters(
+            () -> movingLaunchParameters(drive.pose3d(), drive.fieldRelativeChassisSpeeds()), drive)
+        .withScoringParameters(GOAL, SCORE_RADIUS, SCORE_DEPTH)
+        .configPhysics(true, DRAG_ENABLED, false, LIFT_ENABLED)
+        .configGeneration(0.05, MAX_AIR_TIME, TRAJECTORY_RESOLUTION, TRAJECTORY_RESOLUTION)
+        .config(true, true);
+  }
+
+  /** Calculates the launch parameters required to shoot on the move (speed, pitch, yaw). */
+  public static double[] movingLaunchParameters(Pose3d robotPose, ChassisSpeeds robotVelocity) {
+    double heading = robotPose.getRotation().getZ();
+    double[] robotToShooter = robotToShooter(heading);
+
+    double x = GOAL[X] - robotToShooter[X] - robotPose.getX();
+    double y = GOAL[Y] - robotToShooter[Y] - robotPose.getY();
+
+    double distance = Math.sqrt(x * x + y * y);
+    double yaw = Math.atan2(y, x) - heading;
+
+    double[] robotRelativeShotVelocity =
+        robotRelativeShotVelocity(
+            new double[] {ShotLookUpTable.speed(distance), ShotLookUpTable.pitch(distance), yaw});
+
+    double[] stationaryShotVelocity = fieldRelative(robotRelativeShotVelocity, heading);
+    double[] shooterVelocity =
+        shooterVelocity(
+            robotVelocity.vxMetersPerSecond,
+            robotVelocity.vyMetersPerSecond,
+            robotVelocity.omegaRadiansPerSecond,
+            heading);
+
+    return launchParameters(
+        robotRelative(
+            new double[] {
+              stationaryShotVelocity[X] - shooterVelocity[X],
+              stationaryShotVelocity[Y] - shooterVelocity[Y],
+              stationaryShotVelocity[Z] - shooterVelocity[Z]
+            },
+            heading));
   }
 }

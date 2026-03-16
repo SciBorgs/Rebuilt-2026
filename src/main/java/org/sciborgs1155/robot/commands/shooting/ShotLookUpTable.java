@@ -1,10 +1,6 @@
 package org.sciborgs1155.robot.commands.shooting;
 
-import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.PITCH;
-import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.SPEED;
-import static org.sciborgs1155.robot.commands.shooting.ShotGenerator.MAX_PITCH;
-import static org.sciborgs1155.robot.commands.shooting.ShotGenerator.MAX_SPEED;
-import static org.sciborgs1155.robot.commands.shooting.ShotGenerator.MIN_PITCH;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.*;
 
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -18,39 +14,26 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Scanner;
 import org.sciborgs1155.lib.LoggingUtils;
-import org.sciborgs1155.robot.FieldConstants.Hub;
 
-public final class TableGenerator {
-  private static final double MIN_DISTANCE = Hub.WIDTH / 2;
-  private static final double MAX_DISTANCE = 20;
+public final class ShotLookUpTable {
+  private static final InterpolatingDoubleTreeMap speedLookUp = new InterpolatingDoubleTreeMap();
+  private static final InterpolatingDoubleTreeMap pitchLookUp = new InterpolatingDoubleTreeMap();
+  private static final InterpolatingDoubleTreeMap errorLookUp = new InterpolatingDoubleTreeMap();
 
-  private static final double INCREMENT = 0.005;
-  private static final String PATH = "shooting/ParameterLookUp";
+  private static boolean status = false;
 
-  private static final double SPEED_DEADBAND = 0.01;
-  private static final double ERROR_THRESHOLD = 1.5;
-
-  static final InterpolatingDoubleTreeMap SPEED_TABLE = new InterpolatingDoubleTreeMap();
-  static final InterpolatingDoubleTreeMap PITCH_TABLE = new InterpolatingDoubleTreeMap();
-  static final InterpolatingDoubleTreeMap ERROR_TABLE = new InterpolatingDoubleTreeMap();
-
-  private static boolean loaded = false;
-
-  private static final int MAX_TABLE_SIZE = 5000;
-  private static final int ERROR = 3;
-
-  private TableGenerator() {}
+  private ShotLookUpTable() {}
 
   /**
    * Generates a new lookup table.
    *
    * @return a command to generate the lookup table
    */
-  public static Command createTable() {
-    return Commands.runOnce(() -> createTable(MIN_DISTANCE, MAX_DISTANCE, INCREMENT, PATH));
+  public static Command generate() {
+    return Commands.runOnce(() -> generateTable(MIN_DISTANCE, MAX_DISTANCE, INCREMENT, PATH));
   }
 
-  private static void createTable(
+  private static void generateTable(
       double minDistance, double maxDistance, double increment, String tablePath) {
     try {
       LoggingUtils.log("Shooting/Entries Generated", 0);
@@ -61,7 +44,7 @@ public final class TableGenerator {
       int tableIndex = 0;
       double totalError = 0;
       for (double distance = minDistance; distance < maxDistance; distance += increment) {
-        double[] launchParameters = ShotGenerator.optimizedLaunchParameters(distance);
+        double[] launchParameters = ShotOptimizer.optimizedLaunchParameters(distance);
 
         double speed = launchParameters[SPEED];
         double pitch = launchParameters[PITCH];
@@ -95,14 +78,14 @@ public final class TableGenerator {
    *
    * @return a command to load the lookup table
    */
-  public static Command loadTable() {
+  public static Command load() {
     return Commands.runOnce(() -> loadTable(PATH));
   }
 
   private static void loadTable(String tablePath) {
-    SPEED_TABLE.clear();
-    PITCH_TABLE.clear();
-    ERROR_TABLE.clear();
+    speedLookUp.clear();
+    pitchLookUp.clear();
+    errorLookUp.clear();
 
     try {
       LoggingUtils.log("Shooting/Entries Loaded", 0);
@@ -124,9 +107,9 @@ public final class TableGenerator {
         double error = Double.parseDouble(entry.substring(comma3Index + 1));
         totalError += error;
 
-        SPEED_TABLE.put(distance, speed);
-        PITCH_TABLE.put(distance, pitch);
-        ERROR_TABLE.put(distance, error);
+        speedLookUp.put(distance, speed);
+        pitchLookUp.put(distance, pitch);
+        errorLookUp.put(distance, error);
 
         tableIndex++;
         LoggingUtils.log("Shooting/Entries Loaded", tableIndex);
@@ -134,24 +117,25 @@ public final class TableGenerator {
 
       LoggingUtils.log("Shooting/Average Error", totalError / tableIndex);
       fileScanner.close();
-      if (tableIndex > 0) loaded = true;
+      if (tableIndex > 0) status = true;
     } catch (Exception exception) {
       exception.printStackTrace();
     }
   }
 
-  /**
-   * Returns the launch parameters (speed, pitch, yaw) required to shoot from a certain planar
-   * distance into the hub. Distance is to the origin of the shooter.
-   */
-  public static double[] directLaunchParameters(double distance) {
-    LoggingUtils.log("Shooting/LookUp Table Status", loaded);
-
-    if (loaded) return new double[] {SPEED_TABLE.get(distance), PITCH_TABLE.get(distance), 0};
-    else return new double[] {0, 0, 0};
+  public static double speed(double distance) {
+    if (!status()) return 0;
+    LoggingUtils.log("Shooting/LookUp Table Status", status);
+    return speedLookUp.get(distance);
   }
 
-  static boolean loaded() {
-    return loaded;
+  public static double pitch(double distance) {
+    if (!status()) return MIN_PITCH;
+    LoggingUtils.log("Shooting/LookUp Table Status", status);
+    return pitchLookUp.get(distance);
+  }
+
+  public static boolean status() {
+    return status;
   }
 }

@@ -1,8 +1,8 @@
 package org.sciborgs1155.robot.commands.shooting;
 
 import static edu.wpi.first.units.Units.Meters;
-import static org.sciborgs1155.robot.Constants.Robot.ROBOT_TO_SHOOTER;
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.*;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.*;
 import static org.sciborgs1155.robot.hood.HoodConstants.HOOD_RADIUS;
 
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -14,21 +14,9 @@ import org.sciborgs1155.robot.drive.Drive;
 
 @SuppressWarnings("PMD.OneDeclarationPerLine")
 public final class FuelVisualizer extends ProjectileVisualizer {
-  static final double FUEL_MASS = 0.225;
-  static final double FUEL_RADIUS = 0.075;
-
   private double scoreTolerance = Hub.INNER_WIDTH / 2;
-  private double scoreDepth;
   private double[] targetPose = fromTranslation(Hub.TOP_CENTER_POINT);
-  private static final double SCORE_WINDOW = FUEL_RADIUS / 2;
-
-  /** Multiplied by velocity squared to compute drag acceleration. */
-  private static final double DRAG_CONSTANT =
-      0.5 * 0.47 * AIR_DENSITY * Math.PI * FUEL_RADIUS * FUEL_RADIUS / FUEL_MASS;
-
-  /** Multiplied by spin and velocity to produce magnus acceleration. */
-  private static final double LIFT_CONSTANT =
-      4.0 / 3.0 * Math.PI * FUEL_RADIUS * FUEL_RADIUS * FUEL_RADIUS * AIR_DENSITY / FUEL_MASS;
+  private double scoreDepth;
 
   private FuelVisualizer(
       Supplier<double[]> initialTranslation,
@@ -94,11 +82,11 @@ public final class FuelVisualizer extends ProjectileVisualizer {
     super.updateLogging();
 
     if (ending() == null) return;
-    LoggingUtils.log(
-        "Projectile Visualizer/Distance From Goal",
-        Math.hypot(
-            targetPose[X] - ending().getTranslation().getX(),
-            targetPose[Y] - ending().getTranslation().getY()));
+    double deltaX = targetPose[X] - ending().getTranslation().getX();
+    double deltaY = targetPose[Y] - ending().getTranslation().getY();
+    double distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+    LoggingUtils.log("Projectile Visualizer/Distance From Goal", distance);
   }
 
   protected static double[] robotToShooter(double heading) {

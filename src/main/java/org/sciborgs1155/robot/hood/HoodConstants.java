@@ -2,7 +2,6 @@ package org.sciborgs1155.robot.hood;
 
 import static edu.wpi.first.units.Units.*;
 
-import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
@@ -15,7 +14,6 @@ import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.units.measure.Voltage;
 
 public class HoodConstants {
-
   public static final Angle MIN_ANGLE = Degrees.of(15);
   public static final Angle MAX_ANGLE = Degrees.of(53);
   public static final Mass MASS = Pounds.of(1.307);
@@ -37,9 +35,6 @@ public class HoodConstants {
 
   public static final Angle DEFAULT_ANGLE = STARTING_ANGLE;
   public static final double GEARING = 12.0 / 44.0 * 18.0 / 14.0 * 182.0 / 10.0;
-
-  public static final Translation3d POINT_OF_ROTATION =
-      new Translation3d(0.14006, 0.13983, 0.3586252);
 
   public class PID {
     public static final double P = 3;

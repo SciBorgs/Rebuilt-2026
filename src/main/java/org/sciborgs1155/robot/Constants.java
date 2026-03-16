@@ -4,9 +4,7 @@ import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.CANBus;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.Mass;
 import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.units.measure.Time;
@@ -70,9 +68,5 @@ public final class Constants {
   public static class Robot {
     public static final Mass MASS = Pounds.of(110);
     public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.2);
-    public static final Distance SHOOTER_TO_FLYWHEEL = Meters.of(0.105803);
-    public static final Distance FLYWHEEL_LIFT = Meters.of(0.061220);
-    public static final Translation3d ROBOT_TO_SHOOTER =
-        new Translation3d(0.14006, 0.13983, 0.3286252);
   }
 }

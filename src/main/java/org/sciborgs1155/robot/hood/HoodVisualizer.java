@@ -13,7 +13,6 @@ import edu.wpi.first.wpilibj.util.Color8Bit;
 public class HoodVisualizer {
   private final Mechanism2d mech;
   private final MechanismLigament2d hood;
-  private final MechanismLigament2d fuelTrajectory;
   private final String name;
 
   /**
@@ -31,8 +30,7 @@ public class HoodVisualizer {
         chassis.append(
             new MechanismLigament2d(
                 "hood", HOOD_RADIUS.in(Inches) * 5, STARTING_ANGLE.in(Degrees), 3, hoodColor));
-    fuelTrajectory =
-        hood.append(new MechanismLigament2d("Fuel Trajectory", 25, 90, 2, fuelTrajColor));
+    hood.append(new MechanismLigament2d("Fuel Trajectory", 25, 90, 2, fuelTrajColor));
   }
 
   /**

@@ -1,9 +1,5 @@
 package org.sciborgs1155.robot.commands.shooting;
 
-import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.X;
-import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.Y;
-import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.Z;
-
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -110,9 +106,9 @@ public abstract class ProjectileVisualizer {
   }
 
   protected static boolean diff(double[] vector1, double[] vector2) {
-    return diff(vector1[X], vector2[X])
-        || diff(vector1[Y], vector2[Y])
-        || diff(vector1[Z], vector2[Z]);
+    return diff(vector1[Projectile.X], vector2[Projectile.X])
+        || diff(vector1[Projectile.Y], vector2[Projectile.Y])
+        || diff(vector1[Projectile.Z], vector2[Projectile.Z]);
   }
 
   private void checkLaunchState() {
@@ -427,7 +423,6 @@ public abstract class ProjectileVisualizer {
     protected static final double AIR_DENSITY = 1.225;
 
     protected static final int X = 0, Y = 1, Z = 2;
-    protected static final int SPEED = 0, PITCH = 1, YAW = 2;
 
     protected int frames;
 

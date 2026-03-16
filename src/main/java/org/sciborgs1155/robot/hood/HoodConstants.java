@@ -2,6 +2,7 @@ package org.sciborgs1155.robot.hood;
 
 import static edu.wpi.first.units.Units.*;
 
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
@@ -31,6 +32,7 @@ public class HoodConstants {
   public static final Time TIME_OUT = Seconds.of(3);
 
   public static final Distance HOOD_RADIUS = Inches.of(9.29);
+  public static final Translation3d HOOD_ORIGIN = new Translation3d(0.14006, 0.13983, 0.4086252);
   public static final double MOI = 0.0045821517; // kg*m^2
 
   public static final Angle DEFAULT_ANGLE = STARTING_ANGLE;

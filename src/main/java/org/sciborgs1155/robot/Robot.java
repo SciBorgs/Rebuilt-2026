@@ -14,11 +14,11 @@ import static org.sciborgs1155.robot.Constants.FULL_SPEED_MULTIPLIER;
 import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.Constants.SLOW_SPEED_MULTIPLIER;
 import static org.sciborgs1155.robot.Constants.TUNING;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.HOOD_ORIGIN;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ROBOT_TO_SHOOTER;
 import static org.sciborgs1155.robot.drive.DriveConstants.MAX_ANGULAR_ACCEL;
 import static org.sciborgs1155.robot.drive.DriveConstants.MAX_SPEED;
 import static org.sciborgs1155.robot.drive.DriveConstants.TELEOP_ANGULAR_SPEED;
+import static org.sciborgs1155.robot.hood.HoodConstants.HOOD_ORIGIN;
+import static org.sciborgs1155.robot.shooter.ShooterConstants.CENTER_TO_SHOOTER;
 
 import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.epilogue.Epilogue;
@@ -155,7 +155,8 @@ public class Robot extends CommandRobot {
         () -> {
           log(
               "RobotModel/turretOrigin",
-              new Transform3d(ROBOT_TO_SHOOTER, new Rotation3d(0, 0, turret.position())),
+              new Transform3d(
+                  CENTER_TO_SHOOTER.getTranslation(), new Rotation3d(0, 0, turret.position())),
               Transform3d.struct);
           log(
               "RobotModel/hoodOrigin",

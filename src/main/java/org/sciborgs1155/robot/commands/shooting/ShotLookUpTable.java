@@ -35,11 +35,12 @@ public final class ShotLookUpTable {
    * @return a command to generate the lookup table
    */
   public static Command generate() {
-    return Commands.runOnce(() -> generateTable(MIN_DISTANCE, MAX_DISTANCE, INCREMENT, PATH));
+    return Commands.runOnce(
+        () -> generateTable(MIN_DISTANCE, MAX_DISTANCE, DISTANCE_RESOLUTION, TABLE_PATH));
   }
 
   private static void generateTable(
-      double minDistance, double maxDistance, double increment, String tablePath) {
+      double minDistance, double maxDistance, double resolution, String tablePath) {
     try {
       LoggingUtils.log("Shooting/Entries Generated", 0);
 
@@ -48,21 +49,19 @@ public final class ShotLookUpTable {
 
       int tableIndex = 0;
       double totalError = 0;
-      for (double distance = minDistance; distance < maxDistance; distance += increment) {
+      double increment = 1 / resolution;
+
+      for (double distance = maxDistance; distance >= minDistance; distance -= increment) {
         double[] launchParameters = ShotOptimizer.optimizedLaunchParameters(distance);
 
         double speed = launchParameters[SPEED];
         double pitch = launchParameters[PITCH];
         double error = launchParameters[ERROR];
 
-        if (speed > MAX_SPEED) continue;
-        if (speed < SPEED_DEADBAND) continue;
-
-        if (pitch < MIN_PITCH) continue;
-        if (pitch > MAX_PITCH) continue;
-
+        if (speed > MAX_SPEED || speed < MIN_SPEED) continue;
+        if (pitch < MIN_PITCH || pitch > MAX_PITCH) continue;
         double averageError = totalError / tableIndex;
-        if (Math.abs(error - averageError) > ERROR_THRESHOLD) continue;
+        if (Math.abs(error - averageError) > MAX_ERROR) continue;
 
         totalError += error;
         fileWriter.write(distance + "," + speed + "," + pitch + "," + error);
@@ -84,7 +83,7 @@ public final class ShotLookUpTable {
    * @return a command to load the lookup table
    */
   public static Command load() {
-    return Commands.runOnce(() -> loadTable(PATH));
+    return Commands.runOnce(() -> loadTable(TABLE_PATH));
   }
 
   private static void loadTable(String tablePath) {
@@ -99,7 +98,7 @@ public final class ShotLookUpTable {
 
       int tableIndex = 0;
       double totalError = 0;
-      while (tableIndex < MAX_TABLE_SIZE && fileScanner.hasNextLine()) {
+      while (tableIndex < MAX_LOOKUP_TABLE_SIZE && fileScanner.hasNextLine()) {
         String entry = fileScanner.nextLine();
 
         int comma1Index = entry.indexOf(',');

@@ -93,7 +93,7 @@ public final class FuelVisualizer extends ProjectileVisualizer {
     double cosHeading = Math.cos(heading);
     double sinHeading = Math.sin(heading);
 
-    double[] robotRelativeShooterPose = fromTranslation(ROBOT_TO_SHOOTER);
+    double[] robotRelativeShooterPose = ROBOT_TO_SHOOTER.clone();
 
     return new double[] {
       robotRelativeShooterPose[X] * cosHeading - robotRelativeShooterPose[Y] * sinHeading,

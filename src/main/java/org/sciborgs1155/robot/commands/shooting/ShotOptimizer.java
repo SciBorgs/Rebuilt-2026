@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.sciborgs1155.robot.commands.shooting.FuelVisualizer.Fuel;
 import org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile;
+import org.sciborgs1155.robot.shooter.ShooterConstants;
 
 /**
  * A utility class used to generate accurate launch parameters for launches from a given distance.
@@ -20,6 +21,9 @@ import org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile;
 public final class ShotOptimizer {
   /** Cached speed value used in 'optimizedLaunchParameters' method. */
   private static double speedCache;
+
+  /** Cached pitch value used in 'optimizedLaunchParameters' method. */
+  private static double pitchCache;
 
   /** Cached launch parameters used in 'generateDirectTrajectory' method. */
   private static double[] launchParameterCache = new double[3];
@@ -37,10 +41,10 @@ public final class ShotOptimizer {
     double lastDisplacement = distance;
     double optimalSpeed = startingSpeed;
 
-    for (int iterations = 0; iterations < OPTIMIZATION_RESOLUTION; iterations++) {
+    for (int iterations = 0; iterations <= MAX_OPTIMIZER_ITERATIONS; iterations++) {
       generateDirectTrajectory(distance, new double[] {optimalSpeed, pitch, 0});
       double finalDisplacement = trajectoryBuffer[trajectoryBuffer.length - 1][X] - GOAL[X];
-      if (Math.abs(finalDisplacement) < OPTIMIZATION_THRESHOLD) return optimalSpeed;
+      if (Math.abs(finalDisplacement) <= OPTIMIZATION_THRESHOLD) return optimalSpeed;
 
       double proportional = SPEED_KP * -finalDisplacement;
       double derivative = SPEED_KD * (lastDisplacement - finalDisplacement);
@@ -55,15 +59,18 @@ public final class ShotOptimizer {
 
   /** Returns the optimal launch parameters for the given distance (minimal airtime). */
   public static double[] optimizedLaunchParameters(double distance) {
-    double startingPitch = MIN_PITCH;
+    double increment = Math.PI * 2 / PITCH_RESOLUTION;
+    double startingPitch = pitchCache == 0 ? MIN_PITCH : pitchCache;
 
-    for (double testPitch = startingPitch; testPitch < MAX_PITCH; testPitch += PITCH_PRECISION)
+    for (double testPitch = startingPitch; testPitch <= MAX_PITCH; testPitch += increment)
       if (reaches(distance, new double[] {MAX_SPEED, testPitch, 0})) {
         double startingSpeed = speedCache == 0 ? MAX_SPEED : speedCache;
         double testSpeed = optimizedSpeed(distance, startingSpeed, testPitch);
         double[] launchParameters = {testSpeed, testPitch, 0};
+
         if (clears(distance, launchParameters)) {
           speedCache = testSpeed;
+          pitchCache = testPitch;
 
           return new double[] {testSpeed, testPitch, 0, error(distance, launchParameters)};
         }
@@ -115,7 +122,9 @@ public final class ShotOptimizer {
 
     double[] shotVelocity = robotRelativeShotVelocity(launchParameters);
     double[] shooterToInitial = shooterToInitial(shotVelocity, 0);
-    double[] shooterTranslation = {GOAL[X] - distance, GOAL[Y], ROBOT_TO_SHOOTER.getZ()};
+    double[] shooterTranslation = {
+      GOAL[X] - distance, GOAL[Y], ShooterConstants.CENTER_TO_SHOOTER.getZ()
+    };
 
     double initialRotationalVelocity = initialRotationalVelocity();
 
@@ -129,7 +138,8 @@ public final class ShotOptimizer {
         new double[3],
         initialRotationalVelocity);
 
-    for (int frames = 0; frames < MAX_FRAMES; frames++) {
+    double maxFrames = TRAJECTORY_RESOLUTION * MAX_AIR_TIME;
+    for (int frames = 0; frames <= maxFrames; frames++) {
       poseList.add(new double[] {projectile.x, projectile.y, projectile.z});
       projectile.periodic();
 

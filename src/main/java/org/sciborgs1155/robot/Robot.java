@@ -74,7 +74,7 @@ public class Robot extends CommandRobot {
   private final PowerDistribution pdh = new PowerDistribution();
 
   // SUBSYSTEMS
-  private final Drive drive = Drive.create();
+  private final Drive drive = Drive.none();
   private final Vision vision = Vision.create();
   private final Turret turret = Turret.create();
   private final Hood hood = Hood.create();

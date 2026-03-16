@@ -1,6 +1,5 @@
 package org.sciborgs1155.robot.turret;
 
-import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
@@ -17,11 +16,10 @@ import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.DoubleEntry;
-import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -29,7 +27,6 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
-
 import java.util.Set;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
@@ -55,8 +52,7 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
   @NotLogged public final TurretIO hardware;
 
   /** {@code PIDController} used to orient the turret to a specified angle. */
-  @Logged
-  private final ProfiledPIDController controller = new ProfiledPIDController(P, I, D, CONSTRAINTS);
+  @Logged private final PIDController controller = new PIDController(P, I, D);
 
   /** {@code Feedforward} used to aid in orienting the turret to a specified angle. */
   @Logged
@@ -113,15 +109,18 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
     crtConfig =
         new EasyCRTConfig(
                 () -> Rotations.of(hardware.encoderA()), () -> Rotations.of(hardware.encoderB()))
-            .withEncoderRatios(
-                TURRET_GEARING / ENCODER_A_GEARING, TURRET_GEARING / ENCODER_B_GEARING)
+            .withCommonDriveGear(
+                1.0, (int) TURRET_GEARING, (int) ENCODER_A_GEARING, (int) ENCODER_B_GEARING)
             .withMechanismRange(MIN_ANGLE, MAX_ANGLE)
             .withMatchTolerance(CRT_MATCH_TOLERANCE)
             .withAbsoluteEncoderInversions(true, true);
 
     solverCRT = new EasyCRT(crtConfig);
 
-    sysIdRoutine = new SysIdRoutine(
+    solverCRT.getAngleOptional();
+
+    sysIdRoutine =
+        new SysIdRoutine(
             new Config(
                 RAMP_RATE,
                 STEP_VOLTAGE,
@@ -133,7 +132,9 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
         sysIdRoutine.quasistatic(Direction.kForward).withName("turret quasistatic clockwise"));
     SmartDashboard.putData(
         "Robot/turret/quasistatic counterclockwise",
-        sysIdRoutine.quasistatic(Direction.kReverse).withName("turret quasistatic counterclockwise"));
+        sysIdRoutine
+            .quasistatic(Direction.kReverse)
+            .withName("turret quasistatic counterclockwise"));
     SmartDashboard.putData(
         "Robot/turret/dynamic clockwise",
         sysIdRoutine.dynamic(Direction.kForward).withName("turret dynamic clockwise"));
@@ -155,7 +156,7 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * Returns the angular position of the turret.
+   * Returns the angular position of the turret in radians.
    *
    * @return The angular position of the turret.
    */
@@ -172,7 +173,7 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
         .orElseGet(
             () -> {
               failCount++;
-              if (failCount % 10 == 0) {
+              if (failCount % 100 == 0) {
                 FaultLogger.report(
                     new Fault(
                         "Turret CRT failure: >10 consecutive failures",
@@ -191,7 +192,7 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
    */
   @Logged
   public double setpoint() {
-    return controller.getSetpoint().position;
+    return controller.getSetpoint();
   }
 
   /**
@@ -201,7 +202,7 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
    */
   @Logged
   public boolean atGoal() {
-    return controller.atGoal();
+    return controller.atSetpoint();
   }
 
   /** Enum used to specify the type of sysId test. */
@@ -223,7 +224,7 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
             .scale(2)
             .scale(PERIOD.in(Seconds))
             .rateLimit(MAX_ACCELERATION.in(RadiansPerSecondPerSecond))
-            .add(() -> controller.getGoal().position))
+            .add(() -> controller.getSetpoint()))
         .withName("manual elevator");
   }
 
@@ -237,7 +238,7 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
     double pidVolts =
         controller.calculate(
             pos, MathUtil.clamp(positionSetpoint, MIN_ANGLE.in(Radians), MAX_ANGLE.in(Radians)));
-    double ffdVolts = feedforward.calculate(controller.getSetpoint().velocity);
+    double ffdVolts = feedforward.calculate(0);
 
     double voltage = pidVolts + ffdVolts;
 
@@ -326,7 +327,7 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
     }
 
     // VISUALIZATION
-    visualizer.update(position(), controller.getGoal().position, controller.getSetpoint().position);
+    visualizer.update(position(), controller.getSetpoint(), controller.getSetpoint());
   }
 
   @Override

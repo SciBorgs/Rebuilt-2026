@@ -222,14 +222,16 @@ public class Robot extends CommandRobot {
         .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
 
     // TODO: Add any additional bindings.
-    operator.a().whileTrue(turret.goTo(() -> TurretConstants.MIN_ANGLE.plus(Degrees.of(20)).in(Radians)));
-    operator.y().whileTrue(turret.goTo(() -> TurretConstants.MAX_ANGLE.minus(Degrees.of(20)).in(Radians)));
+    operator
+        .a()
+        .whileTrue(turret.goTo(() -> TurretConstants.MIN_ANGLE.plus(Degrees.of(20)).in(Radians)));
+    operator.y().whileTrue(turret.goTo(() -> 0));
     // operator.x().whileTrue(hood.goTo(Degrees.of(45)).withName("goto 45"));
     // operator.b().whileTrue(hood.goTo(Degrees.of(25)).withName("goto 25"));
     // operator.a().whileTrue(hood.homingSequence());
 
-    operator.leftBumper().whileTrue(shooter.runShooter(100));
-    operator.rightBumper().whileTrue(shooter.runShooter(300));
+    operator.leftBumper().whileTrue(turret.goLeft());
+    operator.rightBumper().whileTrue(turret.goRight());
   }
 
   /**

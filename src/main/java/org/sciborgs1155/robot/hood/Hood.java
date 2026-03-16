@@ -13,8 +13,6 @@ import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.networktables.DoubleEntry;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -43,13 +41,7 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
 
   private final HoodIO hardware;
 
-  @Logged
-  private final PIDController fb =
-      new PIDController(
-          P,
-          I,
-          D
-          );
+  @Logged private final PIDController fb = new PIDController(P, I, D);
 
   /** Arm feed forward controller. */
   private final ArmFeedforward ff = new ArmFeedforward(S, G, V, A);
@@ -263,7 +255,7 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
   private void update(double position) {
     double goal = MathUtil.clamp(position, MIN_ANGLE.in(Radians), MAX_ANGLE.in(Radians));
     double feedback = fb.calculate(angle(), goal);
-    double feedforward = ff.calculate(fb.getSetpoint(),0);
+    double feedforward = ff.calculate(fb.getSetpoint(), 0);
     hardware.setVoltage(feedback + feedforward);
   }
 

@@ -15,12 +15,17 @@ import java.nio.file.Paths;
 import java.util.Scanner;
 import org.sciborgs1155.lib.LoggingUtils;
 
+/**
+ * A utility class used to generate a distance/speed/pitch lookup table which can be referenced when
+ * calculating launch parameters for shooting.
+ */
+@SuppressWarnings("PMD.FieldNamingConventions")
 public final class ShotLookUpTable {
   private static final InterpolatingDoubleTreeMap speedLookUp = new InterpolatingDoubleTreeMap();
   private static final InterpolatingDoubleTreeMap pitchLookUp = new InterpolatingDoubleTreeMap();
   private static final InterpolatingDoubleTreeMap errorLookUp = new InterpolatingDoubleTreeMap();
 
-  private static boolean status = false;
+  private static boolean status;
 
   private ShotLookUpTable() {}
 
@@ -123,18 +128,24 @@ public final class ShotLookUpTable {
     }
   }
 
+  /** The speed returned from the lookup table for the given distance. */
   public static double speed(double distance) {
     if (!status()) return 0;
     LoggingUtils.log("Shooting/LookUp Table Status", status);
     return speedLookUp.get(distance);
   }
 
+  /** The pitch returned from the lookup table for the given distance. */
   public static double pitch(double distance) {
     if (!status()) return MIN_PITCH;
     LoggingUtils.log("Shooting/LookUp Table Status", status);
     return pitchLookUp.get(distance);
   }
 
+  /**
+   * Whether or not a lookup table has been loaded (calls to 'speed' and 'pitch' require a loaded
+   * lookup table).
+   */
   public static boolean status() {
     return status;
   }

@@ -35,6 +35,7 @@ import org.sciborgs1155.robot.shooter.ShooterConstants;
 import org.sciborgs1155.robot.turret.Turret;
 import org.sciborgs1155.robot.turret.TurretConstants;
 
+/** A command factory for the shooting algorithm. */
 public class Shooting {
   private final Turret turret;
   private final Hood hood;
@@ -51,53 +52,6 @@ public class Shooting {
     this.turret = turret;
     this.hood = hood;
     this.drive = drive;
-  }
-
-  private Command updateLaunchParameters() {
-    return Commands.run(
-        () -> {
-          launchParameters =
-              movingLaunchParameters(drive.pose3d(), drive.fieldRelativeChassisSpeeds());
-          LoggingUtils.log("Shooting/Parameters/SPEED", launchParameters[SPEED]);
-          LoggingUtils.log("Shooting/Parameters/PITCH", launchParameters[PITCH]);
-          LoggingUtils.log("Shooting/Parameters/YAW", launchParameters[YAW]);
-        });
-  }
-
-  /**
-   * Simultaneously calculates new launch parameters and passes those parameters into the
-   * subsystems.
-   */
-  public Command runShooter() {
-    return Commands.parallel(
-        updateLaunchParameters(),
-        turret.goTo(() -> launchParameters[YAW]),
-        hood.goTo(() -> Math.PI / 2 - launchParameters[PITCH]));
-  }
-
-  /** Creates a visualizer that utilizes the subsystem positions to predict a trajectory. */
-  public ProjectileVisualizer createVisualizer() {
-    return FuelVisualizer.fromLaunchParameters(
-            () -> launchParameters[SPEED],
-            () -> Math.PI / 2 - hood.angle(),
-            () -> turret.position(),
-            drive)
-        .withScoringParameters(GOAL, SCORE_RADIUS, SCORE_DEPTH)
-        .configPhysics(true, DRAG_ENABLED, false, LIFT_ENABLED)
-        .configGeneration(0.05, MAX_AIR_TIME, TRAJECTORY_RESOLUTION, TRAJECTORY_RESOLUTION)
-        .config(true, true);
-  }
-
-  /**
-   * Creates a FuelVisualizer with the settings used to generate shots for the shooting algorithm.
-   */
-  public static ProjectileVisualizer createVectorVisualizer(Drive drive) {
-    return fromLaunchParameters(
-            () -> movingLaunchParameters(drive.pose3d(), drive.fieldRelativeChassisSpeeds()), drive)
-        .withScoringParameters(GOAL, SCORE_RADIUS, SCORE_DEPTH)
-        .configPhysics(true, DRAG_ENABLED, false, LIFT_ENABLED)
-        .configGeneration(0.05, MAX_AIR_TIME, TRAJECTORY_RESOLUTION, TRAJECTORY_RESOLUTION)
-        .config(true, true);
   }
 
   /** Calculates the launch parameters required to shoot on the move (speed, pitch, yaw). */
@@ -131,5 +85,48 @@ public class Shooting {
               stationaryShotVelocity[Z] - shooterVelocity[Z]
             },
             heading));
+  }
+
+  /**
+   * Simultaneously calculates new launch parameters and passes those parameters into the
+   * subsystems.
+   */
+  public Command runShooter() {
+    return Commands.parallel(
+        Commands.run(
+            () -> {
+              launchParameters =
+                  movingLaunchParameters(drive.pose3d(), drive.fieldRelativeChassisSpeeds());
+              LoggingUtils.log("Shooting/Parameters/SPEED", launchParameters[SPEED]);
+              LoggingUtils.log("Shooting/Parameters/PITCH", launchParameters[PITCH]);
+              LoggingUtils.log("Shooting/Parameters/YAW", launchParameters[YAW]);
+            }),
+        turret.goTo(() -> launchParameters[YAW]),
+        hood.goTo(() -> Math.PI / 2 - launchParameters[PITCH]));
+  }
+
+  /** Creates a visualizer that utilizes the subsystem positions to predict a trajectory. */
+  public ProjectileVisualizer createVisualizer() {
+    return fromLaunchParameters(
+            () -> launchParameters[SPEED],
+            () -> Math.PI / 2 - hood.angle(),
+            () -> turret.position(),
+            drive)
+        .withScoringParameters(GOAL, SCORE_RADIUS, SCORE_DEPTH)
+        .configPhysics(true, DRAG_ENABLED, false, LIFT_ENABLED)
+        .configGeneration(0.05, MAX_AIR_TIME, TRAJECTORY_RESOLUTION, TRAJECTORY_RESOLUTION)
+        .config(true, true);
+  }
+
+  /**
+   * Creates a FuelVisualizer with the settings used to generate shots for the shooting algorithm.
+   */
+  public static ProjectileVisualizer createVectorVisualizer(Drive drive) {
+    return fromLaunchParameters(
+            () -> movingLaunchParameters(drive.pose3d(), drive.fieldRelativeChassisSpeeds()), drive)
+        .withScoringParameters(GOAL, SCORE_RADIUS, SCORE_DEPTH)
+        .configPhysics(true, DRAG_ENABLED, false, LIFT_ENABLED)
+        .configGeneration(0.05, MAX_AIR_TIME, TRAJECTORY_RESOLUTION, TRAJECTORY_RESOLUTION)
+        .config(true, true);
   }
 }

@@ -14,9 +14,16 @@ import java.util.List;
 import org.sciborgs1155.robot.commands.shooting.FuelVisualizer.Fuel;
 import org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile;
 
+/**
+ * A utility class used to generate accurate launch parameters for launches from a given distance.
+ */
 public final class ShotOptimizer {
+  /** Cached speed value used in 'optimizedLaunchParameters' method. */
   private static double speedCache;
+
+  /** Cached launch parameters used in 'generateDirectTrajectory' method. */
   private static double[] launchParameterCache = new double[3];
+
   private static double[][] trajectoryBuffer = new double[0][];
   private static Projectile projectile =
       new Fuel()
@@ -26,7 +33,7 @@ public final class ShotOptimizer {
   private ShotOptimizer() {}
 
   /** Calculates the launch speed given a launch pitch and a planar distance from the target. */
-  public static double optimize(double distance, double startingSpeed, double pitch) {
+  public static double optimizedSpeed(double distance, double startingSpeed, double pitch) {
     double lastDisplacement = distance;
     double optimalSpeed = startingSpeed;
 
@@ -46,24 +53,57 @@ public final class ShotOptimizer {
     return optimalSpeed;
   }
 
+  /** Returns the optimal launch parameters for the given distance (minimal airtime). */
   public static double[] optimizedLaunchParameters(double distance) {
     double startingPitch = MIN_PITCH;
 
     for (double testPitch = startingPitch; testPitch < MAX_PITCH; testPitch += PITCH_PRECISION)
-      if (ShotOptimizer.reaches(distance, new double[] {MAX_SPEED, testPitch, 0})) {
+      if (reaches(distance, new double[] {MAX_SPEED, testPitch, 0})) {
         double startingSpeed = speedCache == 0 ? MAX_SPEED : speedCache;
-        double testSpeed = ShotOptimizer.optimize(distance, startingSpeed, testPitch);
-        double[] launchParameters = new double[] {testSpeed, testPitch, 0};
-        if (ShotOptimizer.clears(distance, launchParameters)) {
+        double testSpeed = optimizedSpeed(distance, startingSpeed, testPitch);
+        double[] launchParameters = {testSpeed, testPitch, 0};
+        if (clears(distance, launchParameters)) {
           speedCache = testSpeed;
 
-          return new double[] {
-            testSpeed, testPitch, 0, ShotOptimizer.error(distance, launchParameters)
-          };
+          return new double[] {testSpeed, testPitch, 0, error(distance, launchParameters)};
         }
       }
 
     return new double[] {0, 0, 0, 0};
+  }
+
+  /**
+   * Whether or not the projectile is able to reach the planar target origin when launched with the
+   * given parameters.
+   */
+  public static boolean reaches(double distance, double[] launchParameters) {
+    generateDirectTrajectory(distance, launchParameters);
+
+    double[] maxDistance = trajectoryBuffer[trajectoryBuffer.length - 1];
+    return !(maxDistance[X] - GOAL[X] < 0 || maxDistance[Z] < FUEL_RADIUS);
+  }
+
+  /** The final planar distance from the target origin when launched with the given parameters. */
+  public static double error(double distance, double[] launchParameters) {
+    generateDirectTrajectory(distance, launchParameters);
+    return trajectoryBuffer[trajectoryBuffer.length - 1][X] - GOAL[X];
+  }
+
+  /**
+   * Whether or not the projectile clears the specified height over the rim of the target when
+   * launched with the given parameters.
+   */
+  public static boolean clears(double distance, double[] launchParameters) {
+    generateDirectTrajectory(distance, launchParameters);
+
+    for (int index = trajectoryBuffer.length - 1; index >= 0; index--) {
+      double[] translation = trajectoryBuffer[index];
+
+      if (translation[X] - GOAL[X] <= -CLEARANCE_CHECK) return false;
+      if (translation[Z] > GOAL[Z] + CLEARANCE) return true;
+    }
+
+    return false;
   }
 
   private static void generateDirectTrajectory(double distance, double[] launchParameters) {
@@ -98,30 +138,5 @@ public final class ShotOptimizer {
     }
 
     trajectoryBuffer = poseList.toArray(new double[0][]);
-  }
-
-  public static boolean clears(double distance, double[] launchParameters) {
-    generateDirectTrajectory(distance, launchParameters);
-
-    for (int index = trajectoryBuffer.length - 1; index >= 0; index--) {
-      double[] translation = trajectoryBuffer[index];
-
-      if (translation[X] - GOAL[X] <= -CLEARANCE_CHECK) return false;
-      if (translation[Z] > GOAL[Z] + CLEARANCE) return true;
-    }
-
-    return false;
-  }
-
-  public static boolean reaches(double distance, double[] launchParameters) {
-    generateDirectTrajectory(distance, launchParameters);
-
-    double[] maxDistance = trajectoryBuffer[trajectoryBuffer.length - 1];
-    return !(maxDistance[X] - GOAL[X] < 0 || maxDistance[Z] < FUEL_RADIUS);
-  }
-
-  public static double error(double distance, double[] launchParameters) {
-    generateDirectTrajectory(distance, launchParameters);
-    return trajectoryBuffer[trajectoryBuffer.length - 1][X] - GOAL[X];
   }
 }

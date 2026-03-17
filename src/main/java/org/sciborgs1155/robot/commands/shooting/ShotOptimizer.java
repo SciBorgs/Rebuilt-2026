@@ -32,7 +32,7 @@ public final class ShotOptimizer {
   private static Projectile projectile =
       new Fuel()
           .withScoringParameters(GOAL, SCORE_RADIUS, SCORE_DEPTH)
-          .config(TRAJECTORY_RESOLUTION, true, DRAG_ENABLED, false, LIFT_ENABLED);
+          .config(OPTIMIZER_RESOLUTION, true, DRAG_ENABLED, false, LIFT_ENABLED);
 
   private ShotOptimizer() {}
 
@@ -115,7 +115,7 @@ public final class ShotOptimizer {
 
   private static void generateDirectTrajectory(double distance, double[] launchParameters) {
     if (!diff(launchParameters, launchParameterCache)) return;
-    launchParameterCache = launchParameters.clone();
+    System.arraycopy(launchParameters, 0, launchParameterCache, 0, 3);
 
     projectile.reset();
     final List<double[]> poseList = new ArrayList<>();
@@ -128,7 +128,7 @@ public final class ShotOptimizer {
 
     double initialRotationalVelocity = initialRotationalVelocity();
 
-    projectile.launch(
+    projectile.initialize(
         new double[] {
           shooterTranslation[X] + shooterToInitial[X],
           shooterTranslation[Y] + shooterToInitial[Y],
@@ -138,10 +138,10 @@ public final class ShotOptimizer {
         new double[3],
         initialRotationalVelocity);
 
-    double maxFrames = TRAJECTORY_RESOLUTION * MAX_AIR_TIME;
+    double maxFrames = OPTIMIZER_RESOLUTION * MAX_AIR_TIME;
     for (int frames = 0; frames <= maxFrames; frames++) {
       poseList.add(new double[] {projectile.x, projectile.y, projectile.z});
-      projectile.periodic();
+      projectile.step();
 
       if (projectile.willScore()) break;
       if (projectile.willMiss()) break;

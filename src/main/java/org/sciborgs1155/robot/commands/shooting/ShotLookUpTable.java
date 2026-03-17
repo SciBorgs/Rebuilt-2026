@@ -51,7 +51,10 @@ public final class ShotLookUpTable {
       double totalError = 0;
       double increment = 1 / resolution;
 
-      for (double distance = maxDistance; distance >= minDistance; distance -= increment) {
+      for (double distance = maxDistance;
+          distance >= minDistance;
+          distance -= increment, tableIndex++) {
+        if (tableIndex > MAX_LOOKUP_TABLE_SIZE) break;
         double[] launchParameters = ShotOptimizer.optimizedLaunchParameters(distance);
 
         double speed = launchParameters[SPEED];
@@ -67,7 +70,6 @@ public final class ShotLookUpTable {
         fileWriter.write(distance + "," + speed + "," + pitch + "," + error);
         fileWriter.newLine();
 
-        tableIndex++;
         LoggingUtils.log("Shooting/Entries Generated", tableIndex);
       }
 

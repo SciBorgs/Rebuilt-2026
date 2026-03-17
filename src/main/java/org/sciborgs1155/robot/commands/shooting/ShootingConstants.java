@@ -24,7 +24,21 @@ public class ShootingConstants {
   protected static final Distance FLYWHEEL_LIFT = Meters.of(0.061220);
 
   protected static final double MAX_AIR_TIME = 10;
-  protected static final int TRAJECTORY_RESOLUTION = 200;
+
+  /** The amount of FUEL able to be launched per second. */
+  protected static final int SHOOTING_SPEED = 5;
+
+  /** The resolution of the trajectory used in the ShotOptimizer. */
+  protected static final int OPTIMIZER_RESOLUTION = 5000;
+
+  /** The resolution of the visualizer's trajectory simulation. */
+  protected static final int TRAJECTORY_RESOLUTION = 100;
+  protected static final boolean TRAJECTORY_ENABLED = false;
+
+  /** The resolution of the visualizer's launch simulation. */
+  protected static final int LAUNCH_RESOLUTION = 5000;
+
+  protected static final boolean LAUNCH_ENABLED = true;
 
   protected static final boolean DRAG_ENABLED = true;
   protected static final boolean LIFT_ENABLED = false;
@@ -35,7 +49,7 @@ public class ShootingConstants {
   protected static final double SCORE_DEPTH = 0;
   protected static final double SCORE_RADIUS = Hub.INNER_WIDTH / 2;
 
-  protected static final int MAX_LOOKUP_TABLE_SIZE = 5000;
+  protected static final int MAX_LOOKUP_TABLE_SIZE = 50000;
 
   // OPTIMIZATION CONSTANTS
   protected static final double SPEED_KP = 0.5;
@@ -50,11 +64,11 @@ public class ShootingConstants {
   /** The resolution of the lookup table, in entries per meter. */
   protected static final double DISTANCE_RESOLUTION = 100;
 
-  protected static final double MIN_DISTANCE = Hub.WIDTH / 2;
-  protected static final double MAX_DISTANCE = 20;
+  protected static final double MIN_DISTANCE = Hub.WIDTH / 2 + 0.8128;
+  protected static final double MAX_DISTANCE = 10;
 
   /** The resolution of the pitches in the lookup table, in samples per 2pi radians. */
-  protected static final double PITCH_RESOLUTION = 512;
+  protected static final double PITCH_RESOLUTION = 1024;
 
   protected static final double MIN_PITCH = Math.PI / 2 - HoodConstants.MAX_ANGLE.in(Radians);
   protected static final double MAX_PITCH = Math.PI / 2 - HoodConstants.MIN_ANGLE.in(Radians);
@@ -69,7 +83,7 @@ public class ShootingConstants {
   protected static final String TABLE_PATH = "shooting/ParameterLookUp";
 
   /** LookUp Table entries with errors greater than this are removed from the table. */
-  protected static final double MAX_ERROR = 1.5;
+  protected static final double MAX_ERROR = SCORE_RADIUS;
 
   /** The translation from the center of the robot the center of the turret */
   public static final double[] ROBOT_TO_SHOOTER = {

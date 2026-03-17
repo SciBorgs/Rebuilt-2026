@@ -14,12 +14,16 @@ import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Proj
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.Z;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.DRAG_ENABLED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.GOAL;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.LAUNCH_ENABLED;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.LAUNCH_RESOLUTION;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.LIFT_ENABLED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.MAX_AIR_TIME;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PITCH;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.SCORE_DEPTH;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.SCORE_RADIUS;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.SHOOTING_SPEED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.SPEED;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.TRAJECTORY_ENABLED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.TRAJECTORY_RESOLUTION;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.YAW;
 
@@ -114,8 +118,9 @@ public class Shooting {
             drive)
         .withScoringParameters(GOAL, SCORE_RADIUS, SCORE_DEPTH)
         .configPhysics(true, DRAG_ENABLED, false, LIFT_ENABLED)
-        .configGeneration(0.05, MAX_AIR_TIME, TRAJECTORY_RESOLUTION, TRAJECTORY_RESOLUTION)
-        .config(true, true);
+        .configGeneration(
+            1 / SHOOTING_SPEED, MAX_AIR_TIME, TRAJECTORY_RESOLUTION, LAUNCH_RESOLUTION)
+        .config(LAUNCH_ENABLED, TRAJECTORY_ENABLED);
   }
 
   /**
@@ -126,7 +131,8 @@ public class Shooting {
             () -> movingLaunchParameters(drive.pose3d(), drive.fieldRelativeChassisSpeeds()), drive)
         .withScoringParameters(GOAL, SCORE_RADIUS, SCORE_DEPTH)
         .configPhysics(true, DRAG_ENABLED, false, LIFT_ENABLED)
-        .configGeneration(0.05, MAX_AIR_TIME, TRAJECTORY_RESOLUTION, TRAJECTORY_RESOLUTION)
-        .config(true, true);
+        .configGeneration(
+            1 / SHOOTING_SPEED, MAX_AIR_TIME, TRAJECTORY_RESOLUTION, LAUNCH_RESOLUTION)
+        .config(LAUNCH_ENABLED, TRAJECTORY_ENABLED);
   }
 }

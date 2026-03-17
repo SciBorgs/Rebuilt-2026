@@ -65,7 +65,7 @@ public final class FuelVisualizer extends ProjectileVisualizer {
    * @param depth the vertical distance below the goal to check for scoring/missing
    */
   public FuelVisualizer withScoringParameters(double[] goal, double tolerance, double depth) {
-    targetPose = goal.clone();
+    System.arraycopy(goal, 0, targetPose, 0, 3);
     scoreDepth = depth;
     scoreTolerance = tolerance;
 
@@ -93,12 +93,10 @@ public final class FuelVisualizer extends ProjectileVisualizer {
     double cosHeading = Math.cos(heading);
     double sinHeading = Math.sin(heading);
 
-    double[] robotRelativeShooterPose = ROBOT_TO_SHOOTER.clone();
-
     return new double[] {
-      robotRelativeShooterPose[X] * cosHeading - robotRelativeShooterPose[Y] * sinHeading,
-      robotRelativeShooterPose[X] * sinHeading + robotRelativeShooterPose[Y] * cosHeading,
-      robotRelativeShooterPose[Z]
+      ROBOT_TO_SHOOTER[X] * cosHeading - ROBOT_TO_SHOOTER[Y] * sinHeading,
+      ROBOT_TO_SHOOTER[X] * sinHeading + ROBOT_TO_SHOOTER[Y] * cosHeading,
+      ROBOT_TO_SHOOTER[Z]
     };
   }
 
@@ -175,7 +173,7 @@ public final class FuelVisualizer extends ProjectileVisualizer {
 
   protected static double[] launchParameters(double[] shotVelocity) {
     double speed = norm(shotVelocity);
-    if (speed < EPS) return new double[4];
+    if (speed < EPS) return new double[3];
 
     double yaw = Math.atan2(shotVelocity[Y] / speed, shotVelocity[X] / speed);
     double pitch = Math.asin(shotVelocity[Z] / speed);
@@ -214,7 +212,8 @@ public final class FuelVisualizer extends ProjectileVisualizer {
     protected final double[] lift = new double[3];
 
     protected Fuel withScoringParameters(double[] goal, double tolerance, double depth) {
-      targetPose = goal.clone();
+      System.arraycopy(goal, 0, targetPose, 0, 3);
+
       scoreDepth = depth;
       scoreRadius = tolerance + FUEL_RADIUS;
       scoreRadiusSq = scoreRadius * scoreRadius;
@@ -231,7 +230,9 @@ public final class FuelVisualizer extends ProjectileVisualizer {
       drag[Y] = vy * scale;
       drag[Z] = vz * scale;
 
-      return drag.clone();
+      double[] output = new double[3];
+      System.arraycopy(drag, 0, output, 0, 3);
+      return output;
     }
 
     @Override
@@ -243,7 +244,9 @@ public final class FuelVisualizer extends ProjectileVisualizer {
       lift[Y] = 0;
       lift[Z] = scale * vz;
 
-      return lift.clone();
+      double[] output = new double[3];
+      System.arraycopy(lift, 0, output, 0, 3);
+      return output;
     }
 
     @Override
@@ -252,8 +255,8 @@ public final class FuelVisualizer extends ProjectileVisualizer {
     }
 
     @Override
-    protected void periodic() {
-      super.periodic();
+    protected void step() {
+      super.step();
 
       double deltaX = x - targetPose[X];
       double deltaY = y - targetPose[Y];

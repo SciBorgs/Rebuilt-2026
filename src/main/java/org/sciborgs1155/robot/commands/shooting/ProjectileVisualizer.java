@@ -111,6 +111,19 @@ public abstract class ProjectileVisualizer {
         || diff(vector1[Projectile.Z], vector2[Projectile.Z]);
   }
 
+  protected static void validate(double[] vector) {
+    if (vector == null) vector = new double[3];
+    if (vector.length < 3) vector = new double[3];
+
+    double x = vector[Projectile.X];
+    double y = vector[Projectile.Y];
+    double z = vector[Projectile.Z];
+
+    if (x != x) vector[Projectile.X] = 0;
+    if (y != y) vector[Projectile.Y] = 0;
+    if (z != z) vector[Projectile.Z] = 0;
+  }
+
   private void checkLaunchState() {
     double[] translation = initialTranslation.get();
     double[] velocity = initialVelocity.get();
@@ -243,7 +256,7 @@ public abstract class ProjectileVisualizer {
     if (!running.get()) return;
     Projectile projectile = obtainProjectile();
 
-    projectile.launch(
+    projectile.initialize(
         initialTranslation.get(),
         initialVelocity.get(),
         initialRotation.get(),
@@ -267,7 +280,6 @@ public abstract class ProjectileVisualizer {
 
     synchronized (projectiles) {
       for (int index = projectiles.size() - 1; index >= 0; index--) {
-
         Projectile projectile = projectiles.get(index);
 
         if (projectile.willMiss()) {
@@ -293,7 +305,7 @@ public abstract class ProjectileVisualizer {
           continue;
         }
 
-        projectile.periodic();
+        projectile.step();
       }
     }
   }
@@ -311,7 +323,7 @@ public abstract class ProjectileVisualizer {
     Projectile projectile = obtainProjectile();
     projectile.config(trajectoryResolution, weightEnabled, dragEnabled, torqueEnabled, liftEnabled);
 
-    projectile.launch(
+    projectile.initialize(
         initialTranslation.get(),
         initialVelocity.get(),
         initialRotation.get(),
@@ -322,7 +334,7 @@ public abstract class ProjectileVisualizer {
     int frames = 0;
     while (!projectile.willMiss() && !projectile.willScore() && frames <= maxTrajectoryFrames) {
       trajectoryBuffer.add(projectile.pose());
-      projectile.periodic();
+      projectile.step();
       frames++;
     }
 
@@ -352,7 +364,9 @@ public abstract class ProjectileVisualizer {
    * to be enabled.
    */
   public Pose3d[] trajectory() {
-    return trajectory.clone();
+    Pose3d[] output = new Pose3d[trajectory.length];
+    System.arraycopy(trajectory, 0, output, 0, trajectory.length);
+    return output;
   }
 
   /** The initial pose of the projectile. */
@@ -462,11 +476,16 @@ public abstract class ProjectileVisualizer {
       return this;
     }
 
-    protected void launch(
+    protected void initialize(
         double[] initialTranslation,
         double[] initialVelocity,
         double[] initialRotation,
         double initialRotationalVelocity) {
+      // INPUT VALIDATION
+      validate(initialTranslation);
+      validate(initialVelocity);
+      validate(initialRotation);
+
       x = initialTranslation[X];
       y = initialTranslation[Y];
       z = initialTranslation[Z];
@@ -483,32 +502,35 @@ public abstract class ProjectileVisualizer {
       pitch = initialRotation[Y];
       yaw = initialRotation[Z];
 
+      // INPUT VALIDATION
+      if (initialRotationalVelocity != initialRotationalVelocity) initialRotationalVelocity = 0;
+
       omega = initialRotationalVelocity;
       alpha = 0;
 
       frames = 0;
     }
 
-    protected void periodic() {
-      // integrate position
+    protected void step() {
+      // INTEGRATE POSITION
       x += vx * delta;
       y += vy * delta;
       z += vz * delta;
 
-      // integrate velocity
+      // INTEGRATE VELOCITY
       vx += ax * delta;
       vy += ay * delta;
       vz += az * delta;
 
-      // reset acceleration
+      // RESET ACCELERATION
       ax = 0;
       ay = 0;
       az = 0;
 
-      // weight
+      // WEIGHT
       if (weightEnabled) az += GRAVITY;
 
-      // drag
+      // DRAG
       if (dragEnabled) {
         double[] drag = drag();
         ax += drag[X];
@@ -516,7 +538,7 @@ public abstract class ProjectileVisualizer {
         az += drag[Z];
       }
 
-      // lift
+      // LIFT
       if (liftEnabled) {
         double[] lift = lift();
         ax += lift[X];
@@ -524,7 +546,7 @@ public abstract class ProjectileVisualizer {
         az += lift[Z];
       }
 
-      // integrate rotation (pitch)
+      // INTEGRATE ROTATION
       pitch += omega * delta;
       omega += alpha * delta;
       alpha = torqueEnabled ? torque() : 0;

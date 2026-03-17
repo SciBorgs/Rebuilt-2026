@@ -55,8 +55,8 @@ public class TurretConstants {
   public static final double ENCODER_A_GEARING = 12.0;
   public static final double ENCODER_B_GEARING = 13.0;
 
-  public static final Angle ENCODER_A_OFFSET = Rotations.of(0);
-  public static final Angle ENCODER_B_OFFSET = Rotations.of(0);
+  public static final Angle ENCODER_A_OFFSET = Rotations.of(0.5);
+  public static final Angle ENCODER_B_OFFSET = Rotations.of(0.5);
 
   public static final Angle CRT_MATCH_TOLERANCE = Degrees.of(2);
   public static final Angle CRT_BIG_TOLERANCE = Degrees.of(180 + 45);

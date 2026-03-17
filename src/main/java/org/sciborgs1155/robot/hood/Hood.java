@@ -1,19 +1,32 @@
 package org.sciborgs1155.robot.hood;
 
-import static edu.wpi.first.units.Units.*;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.DoubleSupplier;
+
+import org.sciborgs1155.lib.Assertion;
 import static org.sciborgs1155.lib.Assertion.eAssert;
+import org.sciborgs1155.lib.InputStream;
+import org.sciborgs1155.lib.LoggingUtils;
+import org.sciborgs1155.lib.Test;
+import org.sciborgs1155.lib.Tuning;
 import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.Constants.TUNING;
+import org.sciborgs1155.robot.Robot;
+import static org.sciborgs1155.robot.hood.HoodConstants.PID.*;
 import static org.sciborgs1155.robot.hood.HoodConstants.*;
 import static org.sciborgs1155.robot.hood.HoodConstants.PID.*;
 
 import com.ctre.phoenix6.SignalLogger;
+
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
-import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.networktables.DoubleEntry;
+import static edu.wpi.first.units.Units.*;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
@@ -25,15 +38,6 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.DoubleSupplier;
-import org.sciborgs1155.lib.Assertion;
-import org.sciborgs1155.lib.InputStream;
-import org.sciborgs1155.lib.LoggingUtils;
-import org.sciborgs1155.lib.Test;
-import org.sciborgs1155.lib.Tuning;
-import org.sciborgs1155.robot.Robot;
 
 /** Hood subsystem for adjusting vertical shooting angle of the fuel */
 @Logged
@@ -41,7 +45,7 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
 
   private final HoodIO hardware;
 
-  @Logged private final PIDController fb = new PIDController(P, I, D);
+  @Logged private final ProfiledPIDController fb = new ProfiledPIDController(P, I, D, new Constraints(MAX_VELOCITY.in(RadiansPerSecond), MAX_ACCEL.in(RadiansPerSecondPerSecond)));
 
   /** Arm feed forward controller. */
   private final ArmFeedforward ff = new ArmFeedforward(S, G, V, A);
@@ -90,7 +94,7 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
 
     fb.setTolerance(POSITION_TOLERANCE.in(Radians));
     setDefaultCommand(run(() -> hardware.setVoltage(0)).withName("Default"));
-    fb.setSetpoint(STARTING_ANGLE.in(Radians));
+    fb.reset(STARTING_ANGLE.in(Radians));
 
     sysIdRoutine =
         new SysIdRoutine(
@@ -141,7 +145,7 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
    */
   @Logged
   public double angleSetpoint() {
-    return fb.getSetpoint();
+    return fb.getSetpoint().position;
   }
 
   /**
@@ -228,7 +232,7 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
    * @return The command to set the feedback to the starting angle.
    */
   public void resetSetpoint() {
-    fb.setSetpoint(STARTING_ANGLE.in(Radians));
+    fb.reset(STARTING_ANGLE.in(Radians));
   }
 
   /**
@@ -243,7 +247,7 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
             .scale(MAX_VELOCITY.in(RadiansPerSecond))
             .scale(PERIOD.in(Seconds))
             .rateLimit(MAX_ACCEL.in(RadiansPerSecondPerSecond))
-            .add(() -> fb.getSetpoint()))
+            .add(() -> fb.getSetpoint().position))
         .withName("manual hood");
   }
 
@@ -255,7 +259,7 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
   private void update(double position) {
     double goal = MathUtil.clamp(position, MIN_ANGLE.in(Radians), MAX_ANGLE.in(Radians));
     double feedback = fb.calculate(angle(), goal);
-    double feedforward = ff.calculate(fb.getSetpoint(), 0);
+    double feedforward = ff.calculate(fb.getSetpoint().position, fb.getSetpoint().velocity);
     hardware.setVoltage(feedback + feedforward);
   }
 

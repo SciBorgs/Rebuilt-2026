@@ -258,18 +258,22 @@ public class Robot extends CommandRobot {
         .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
 
     // TODO: Add any additional bindings.
-    operator
-        .a()
-        .whileTrue(turret.goTo(() -> TurretConstants.MIN_ANGLE.plus(Degrees.of(20)).in(Radians)));
-    operator.y().whileTrue(turret.goTo(() -> 0));
-    operator.leftTrigger().whileTrue(hood.goTo(Degrees.of(45)).withName("goto 45"));
-    operator.rightTrigger().whileTrue(hood.goTo(Degrees.of(25)).withName("goto 25"));
-    operator.a().whileTrue(hood.homingSequence());
+    // operator
+    //     .a()
+    //     .whileTrue(turret.goTo(() -> TurretConstants.MIN_ANGLE.plus(Degrees.of(20)).in(Radians)));
+    // operator.y().whileTrue(turret.goTo(() -> 0));
+    // operator.leftTrigger().whileTrue(hood.goTo(Degrees.of(45)).withName("goto 45"));
+    // operator.rightTrigger().whileTrue(hood.goTo(Degrees.of(25)).withName("goto 25"));
+    // operator.a().whileTrue(hood.homingSequence());
 
-    operator
-        .leftBumper()
-        .or(operator.rightBumper())
-        .whileTrue(turret.manualTurret(InputStream.of(() -> operator.getLeftX())));
+    // operator
+    //     .leftBumper()
+    //     .or(operator.rightBumper())
+    //     .whileTrue(turret.manualTurret(InputStream.of(() -> operator.getLeftX())));
+    
+    operator.a().toggleOnTrue(shooting.shootWithTestData());
+    operator.b().whileTrue(shooting.shootHubDriving(x, y, omega));
+    operator.x().whileTrue(hopper.intake().alongWith(indexer.forward()));
   }
 
   /**

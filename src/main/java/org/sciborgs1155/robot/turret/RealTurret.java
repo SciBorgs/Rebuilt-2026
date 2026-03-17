@@ -86,12 +86,12 @@ public class RealTurret implements TurretIO {
 
   @Override
   public double encoderA() {
-    return encoderA.getAbsolutePosition().getValueAsDouble();
+    return (1 + encoderA.getAbsolutePosition().getValueAsDouble()) / 2;
   }
 
   @Override
   public double encoderB() {
-    return encoderB.getAbsolutePosition().getValueAsDouble();
+    return (1 + encoderB.getAbsolutePosition().getValueAsDouble()) / 2;
   }
 
   @Override

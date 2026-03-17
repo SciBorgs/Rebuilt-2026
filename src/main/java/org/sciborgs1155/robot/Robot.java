@@ -226,12 +226,14 @@ public class Robot extends CommandRobot {
         .a()
         .whileTrue(turret.goTo(() -> TurretConstants.MIN_ANGLE.plus(Degrees.of(20)).in(Radians)));
     operator.y().whileTrue(turret.goTo(() -> 0));
-    // operator.x().whileTrue(hood.goTo(Degrees.of(45)).withName("goto 45"));
-    // operator.b().whileTrue(hood.goTo(Degrees.of(25)).withName("goto 25"));
-    // operator.a().whileTrue(hood.homingSequence());
+    operator.leftTrigger().whileTrue(hood.goTo(Degrees.of(45)).withName("goto 45"));
+    operator.rightTrigger().whileTrue(hood.goTo(Degrees.of(25)).withName("goto 25"));
+    operator.a().whileTrue(hood.homingSequence());
 
-    operator.leftBumper().whileTrue(turret.goLeft());
-    operator.rightBumper().whileTrue(turret.goRight());
+    operator
+        .leftBumper()
+        .or(operator.rightBumper())
+        .whileTrue(turret.manualTurret(InputStream.of(() -> operator.getLeftX())));
   }
 
   /**

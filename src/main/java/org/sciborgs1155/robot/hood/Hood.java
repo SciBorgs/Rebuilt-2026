@@ -92,7 +92,7 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
 
     fb.setTolerance(POSITION_TOLERANCE.in(Radians));
     setDefaultCommand(run(() -> hardware.setVoltage(0)).withName("Default"));
-    fb.setSetpoint(STARTING_ANGLE.in(Radians));
+    fb.reset(STARTING_ANGLE.in(Radians));
 
     sysIdRoutine =
         new SysIdRoutine(
@@ -146,15 +146,6 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
     return fb.getSetpoint().position;
   }
 
-  /**
-   * returns the angle goal of the hood trapezoid profile
-   *
-   * @return the position of the goal
-   */
-  @Logged
-  public double angleGoal() {
-    return fb.getGoal().position;
-  }
 
   /**
    * returns the angle goal of the hood trapezoid profile
@@ -250,7 +241,7 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
    * @return The command to set the feedback to the starting angle.
    */
   public void resetSetpoint() {
-    fb.setSetpoint(STARTING_ANGLE.in(Radians));
+    fb.reset(STARTING_ANGLE.in(Radians));
   }
 
   /**
@@ -265,7 +256,7 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
             .scale(MAX_VELOCITY.in(RadiansPerSecond))
             .scale(PERIOD.in(Seconds))
             .rateLimit(MAX_ACCEL.in(RadiansPerSecondPerSecond))
-            .add(() -> fb.getSetpoint()))
+            .add(() -> fb.getSetpoint().position))
         .withName("manual hood");
   }
 
@@ -277,7 +268,7 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
   private void update(double position) {
     double goal = MathUtil.clamp(position, MIN_ANGLE.in(Radians), MAX_ANGLE.in(Radians));
     double feedback = fb.calculate(angle(), goal);
-    double feedforward = ff.calculate(fb.getSetpoint(), 0);
+    double feedforward = ff.calculate(fb.getSetpoint().position, fb.getSetpoint().velocity);
     hardware.setVoltage(feedback + feedforward);
   }
 

@@ -28,10 +28,10 @@ import edu.wpi.first.units.measure.Voltage;
 public class TurretConstants {
   public static final Current CURRENT_LIMIT = Amps.of(30);
 
-  public static final double GEAR_RATIO = 686.0 / 15; // 686 / 15
+  public static final double GEAR_RATIO = 686.0 / 15.0; // 686 / 15
   public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.0872);
   public static final AngularVelocity MAX_VELOCITY = RadiansPerSecond.of(3);
-  public static final AngularAcceleration MAX_ACCELERATION = RadiansPerSecondPerSecond.of(6);
+  public static final AngularAcceleration MAX_ACCELERATION = RadiansPerSecondPerSecond.of(12);
   public static final Constraints CONSTRAINTS =
       new Constraints(
           MAX_VELOCITY.in(RadiansPerSecond),
@@ -50,22 +50,23 @@ public class TurretConstants {
   public static final Voltage STEP_VOLTAGE = Volts.of(2);
   public static final Time TIME_OUT = Seconds.of(6);
 
-  public static final double TURRET_GEARING = 84.;
-  public static final double ENCODER_A_GEARING = 12.;
-  public static final double ENCODER_B_GEARING = 13.;
+  public static final double TURRET_GEARING = 84.0;
+  public static final double ENCODER_A_GEARING = 12.0;
+  public static final double ENCODER_B_GEARING = 13.0;
 
-  public static final Angle CRT_MATCH_TOLERANCE = Degrees.of(1);
+  public static final Angle CRT_MATCH_TOLERANCE = Degrees.of(2);
+  public static final Angle CRT_BIG_TOLERANCE = Degrees.of(180 + 45);
 
   public static final class ControlConstants {
     // PID CONSTANTS
-    public static final double P = 20;
+    public static final double P = 3;
     public static final double I = 0;
-    public static final double D = 0.2;
+    public static final double D = 0.01;
 
     // FEEDFORWARD CONSTANTS (VELOCITY IN RAD/SEC)
-    public static final double S = 0; // TODO: Update.
-    public static final double V = 0; // TODO: Update.
-    public static final double A = 0; // TODO: Update.
+    public static final double S = 0.65;
+    public static final double V = 0.3;
+    public static final double A = 0.016369;
 
     // TOLERANCES
     public static final Angle TOLERANCE = Degree.of(3);

@@ -55,7 +55,7 @@ public final class VisionConstants {
               Inches.of(13.327756),
               Inches.of(2.755270),
               Inches.of(10.815961),
-              yawPitchRoll(0, 0, 180)),
+              yawPitchRoll(0, 0, 0)),
           PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
 
   public static final CameraConfig B_CAMERA = // CAMERA 2
@@ -82,7 +82,6 @@ public final class VisionConstants {
   public static final double MAX_ANGLE = Math.PI;
   public static final double MAX_AMBIGUITY = 0.20;
 
-  /** TODO: Modify AprilTag information as needed. */
   // Total of 32 AprilTags
   // Reference: https://firstfrc.blob.core.windows.net/frc2026/Manual/2026GameManual.pdf (page 33)
   // Red Climb 15, 16

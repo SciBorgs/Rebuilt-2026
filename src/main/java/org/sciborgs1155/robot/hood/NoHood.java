@@ -23,4 +23,7 @@ public class NoHood implements HoodIO {
   public double getVoltage() {
     return 0;
   }
+
+  @Override
+  public void resetPosition() {}
 }

@@ -1,6 +1,5 @@
 package org.sciborgs1155.robot.turret;
 
-import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
@@ -21,12 +20,13 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.DoubleEntry;
-import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
 import java.util.Set;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
@@ -110,36 +110,41 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
     crtConfig =
         new EasyCRTConfig(
                 () -> Rotations.of(hardware.encoderA()), () -> Rotations.of(hardware.encoderB()))
-            .withEncoderRatios(
-                TURRET_GEARING / ENCODER_A_GEARING, TURRET_GEARING / ENCODER_B_GEARING)
+            .withCommonDriveGear(
+                1.0, (int) TURRET_GEARING, (int) ENCODER_A_GEARING, (int) ENCODER_B_GEARING)
             .withMechanismRange(MIN_ANGLE, MAX_ANGLE)
             .withMatchTolerance(CRT_MATCH_TOLERANCE)
-            .withAbsoluteEncoderInversions(true, true);
+            .withAbsoluteEncoderInversions(true, true)
+            .withAbsoluteEncoderOffsets(Rotations.of(0.655518), Rotations.of(0.804443));
 
     solverCRT = new EasyCRT(crtConfig);
 
+    solverCRT.getAngleOptional().ifPresent(angle -> hardware.setPosition(angle.in(Rotations)));
+
     sysIdRoutine =
         new SysIdRoutine(
-            new SysIdRoutine.Config(
+            new Config(
                 RAMP_RATE,
                 STEP_VOLTAGE,
                 TIME_OUT,
                 (state) -> SignalLogger.writeString("turret state", state.toString())),
-            new SysIdRoutine.Mechanism(v -> hardware.setVoltage(v.in(Volts)), null, this));
-
-    setDefaultCommand(run(() -> hardware.setVoltage(0)).withName("stop"));
-
+            new Mechanism(voltage -> hardware.setVoltage(voltage.in(Volts)), null, this));
     SmartDashboard.putData(
         "Robot/turret/quasistatic clockwise",
-        sysIdTest(SysIdTestType.QUASISTATIC, Direction.kForward));
+        sysIdRoutine.quasistatic(Direction.kForward).withName("turret quasistatic clockwise"));
     SmartDashboard.putData(
         "Robot/turret/quasistatic counterclockwise",
-        sysIdTest(SysIdTestType.QUASISTATIC, Direction.kReverse));
+        sysIdRoutine
+            .quasistatic(Direction.kReverse)
+            .withName("turret quasistatic counterclockwise"));
     SmartDashboard.putData(
-        "Robot/turret/dynamic clockwise", sysIdTest(SysIdTestType.DYNAMIC, Direction.kForward));
+        "Robot/turret/dynamic clockwise",
+        sysIdRoutine.dynamic(Direction.kForward).withName("turret dynamic clockwise"));
     SmartDashboard.putData(
         "Robot/turret/dynamic counterclockwise",
-        sysIdTest(SysIdTestType.DYNAMIC, Direction.kReverse));
+        sysIdRoutine.dynamic(Direction.kReverse).withName("turret dynamic counterclockwise"));
+
+    setDefaultCommand(run(() -> hardware.setVoltage(0)).withName("stop"));
   }
 
   /** manual control to test the turret, makes it go left. */
@@ -153,7 +158,7 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * Returns the angular position of the turret.
+   * Returns the angular position of the turret in radians.
    *
    * @return The angular position of the turret.
    */
@@ -170,7 +175,7 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
         .orElseGet(
             () -> {
               failCount++;
-              if (failCount % 10 == 0) {
+              if (failCount % 100 == 0) {
                 FaultLogger.report(
                     new Fault(
                         "Turret CRT failure: >10 consecutive failures",
@@ -219,34 +224,6 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * Runs system identification test given the type and direction.
-   *
-   * @param type Type of sysId test. Either quasistatic or dynamic. (SysIdTestType Enum)
-   * @param direction Direction of the motor. Forward is clockwise while reverse is
-   *     counterclockwise.
-   */
-  @NotLogged
-  public Command sysIdTest(SysIdTestType type, Direction direction) {
-    Command test =
-        switch (type) {
-          case QUASISTATIC -> sysIdRoutine.quasistatic(direction);
-          case DYNAMIC -> sysIdRoutine.dynamic(direction);
-        };
-
-    Angle stopAngle =
-        direction == Direction.kForward
-            ? MAX_ANGLE.minus(Degrees.of(20))
-            : MIN_ANGLE.plus(Degrees.of(20));
-    // decently far away from max angle to avoid anything breaking should there be an issue
-
-    return test.until(
-        () ->
-            direction == Direction.kForward
-                ? position() >= stopAngle.in(Radians)
-                : position() <= stopAngle.in(Radians));
-  }
-
-  /**
    * manual control of the turret with an controller, which will be used for operator control and
    * testing
    *
@@ -259,8 +236,8 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
             .scale(2)
             .scale(PERIOD.in(Seconds))
             .rateLimit(MAX_ACCELERATION.in(RadiansPerSecondPerSecond))
-            .add(() -> controller.getGoal().position))
-        .withName("manual elevator");
+            .add(() -> controller.getSetpoint().position))
+        .withName("manual turret");
   }
 
   /**

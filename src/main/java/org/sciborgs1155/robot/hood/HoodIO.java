@@ -30,6 +30,9 @@ public interface HoodIO extends AutoCloseable {
    */
   double getVoltage();
 
+  /** resets the position of the hood. */
+  void resetPosition();
+
   @Override
   void close() throws Exception;
 }

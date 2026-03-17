@@ -1,6 +1,7 @@
 package org.sciborgs1155.robot.turret;
 
 import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static org.sciborgs1155.robot.Constants.SHOOTING_CANIVORE;
 import static org.sciborgs1155.robot.Ports.Turret.ENCODER_A;
 import static org.sciborgs1155.robot.Ports.Turret.ENCODER_B;
@@ -82,12 +83,12 @@ public class RealTurret implements TurretIO {
 
   @Override
   public double encoderA() {
-    return 1 - encoderA.getAbsolutePosition().getValueAsDouble();
+    return encoderA.getAbsolutePosition().getValueAsDouble();
   }
 
   @Override
   public double encoderB() {
-    return 1 - encoderB.getAbsolutePosition().getValueAsDouble();
+    return encoderB.getAbsolutePosition().getValueAsDouble();
   }
 
   @Override
@@ -96,8 +97,13 @@ public class RealTurret implements TurretIO {
   }
 
   @Override
+  public double voltage() {
+    return hardware.getMotorVoltage().getValueAsDouble();
+  }
+
+  @Override
   public double velocity() {
-    return hardware.getVelocity().getValueAsDouble() * 2 * Math.PI;
+    return hardware.getVelocity().getValue().in(RadiansPerSecond);
   }
 
   @Override
@@ -110,5 +116,10 @@ public class RealTurret implements TurretIO {
     SmartDashboard.putNumber("trueAngleRot", trueAngleRot());
     SmartDashboard.putNumber("encoderADerived", encoderADerived());
     SmartDashboard.putNumber("encoderBDerived", encoderBDerived());
+  }
+
+  @Override
+  public void setPosition(double pos) {
+    hardware.setPosition(pos);
   }
 }

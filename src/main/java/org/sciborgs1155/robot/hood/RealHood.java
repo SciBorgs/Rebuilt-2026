@@ -37,8 +37,8 @@ public class RealHood implements HoodIO {
     motor.setPosition(STARTING_ANGLE);
     motor.getConfigurator().apply(config);
 
-    TalonUtils.addMotor(motor);
     FaultLogger.register(motor);
+    TalonUtils.addMotor(motor);
   }
 
   /** gets the hood angle in rads */
@@ -57,6 +57,11 @@ public class RealHood implements HoodIO {
   @Override
   public double velocity() {
     return motor.getVelocity().getValue().in(RadiansPerSecond);
+  }
+
+  @Override
+  public void resetPosition() {
+    motor.setPosition(STARTING_ANGLE);
   }
 
   @Override

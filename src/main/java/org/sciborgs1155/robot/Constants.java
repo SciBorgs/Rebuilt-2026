@@ -37,7 +37,7 @@ public final class Constants {
   public static final double FULL_SPEED_MULTIPLIER = 1.0;
 
   // The name of seperate canivore, set to rio if no seperate canivore
-  public static final CANBus DRIVE_CANIVORE = new CANBus("drive");
+  public static final CANBus DRIVE_CANIVORE = new CANBus("");
   public static final CANBus INTAKE_CANIVORE = new CANBus("intake");
   public static final CANBus SHOOTING_CANIVORE = new CANBus("shooting");
 

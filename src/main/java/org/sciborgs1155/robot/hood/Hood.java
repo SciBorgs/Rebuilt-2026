@@ -1,21 +1,32 @@
 package org.sciborgs1155.robot.hood;
 
-import static edu.wpi.first.units.Units.*;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.DoubleSupplier;
+
+import org.sciborgs1155.lib.Assertion;
 import static org.sciborgs1155.lib.Assertion.eAssert;
+import org.sciborgs1155.lib.InputStream;
+import org.sciborgs1155.lib.LoggingUtils;
+import org.sciborgs1155.lib.Test;
+import org.sciborgs1155.lib.Tuning;
 import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.Constants.TUNING;
+import org.sciborgs1155.robot.Robot;
+import static org.sciborgs1155.robot.hood.HoodConstants.PID.*;
 import static org.sciborgs1155.robot.hood.HoodConstants.*;
 import static org.sciborgs1155.robot.hood.HoodConstants.PID.*;
 
 import com.ctre.phoenix6.SignalLogger;
+
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.networktables.DoubleEntry;
+import static edu.wpi.first.units.Units.*;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
@@ -27,15 +38,6 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.DoubleSupplier;
-import org.sciborgs1155.lib.Assertion;
-import org.sciborgs1155.lib.InputStream;
-import org.sciborgs1155.lib.LoggingUtils;
-import org.sciborgs1155.lib.Test;
-import org.sciborgs1155.lib.Tuning;
-import org.sciborgs1155.robot.Robot;
 
 /** Hood subsystem for adjusting vertical shooting angle of the fuel */
 @Logged

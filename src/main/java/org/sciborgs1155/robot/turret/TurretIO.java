@@ -17,22 +17,13 @@ public interface TurretIO extends AutoCloseable {
   double velocity();
 
   /**
-   * Returns the angular position of encoder A in rotations.
+   * Returns the current angle of the turret in radians.
    *
-   * @return The angular position of encoder A in rotations.
-   */
-  double encoderA();
-
-  /**
-   * Returns the angular position of encoder B in rotations.
-   *
-   * @return The angular position of encoder B in rotations.
-   */
-  double encoderB();
+   * @return The current angle of the turret in radians.
+   */  
+  double angle();
 
   double voltage();
-
-  void setPosition(double pos);
 
   /** Called once per robot loop. Override to update internal state. */
   default void periodic() {}

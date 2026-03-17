@@ -14,23 +14,15 @@ public class NoTurret implements TurretIO {
   }
 
   @Override
-  public double encoderA() {
-    return 0;
-  }
-
-  @Override
-  public double encoderB() {
-    return 0;
-  }
-
-  @Override
   public double voltage() {
     return 0;
   }
 
   @Override
-  public void close() throws Exception {}
+  public double angle() {
+    return 0;
+  }
 
   @Override
-  public void setPosition(double pos) {}
+  public void close() throws Exception {}
 }

@@ -78,21 +78,13 @@ public final class Constants {
         new InterpolatingTreeMap<>(InverseInterpolator.forDouble(), Rotation2d::interpolate);
 
     static {
-      DISTANCE_TO_HOOD_ANGLE.put(1.7, Rotation2d.fromDegrees(15));
-      DISTANCE_TO_RADS.put(1.7, 125.0);
-      DISTANCE_TO_TOF.put(1.7, 1.133);
+      DISTANCE_TO_HOOD_ANGLE.put(3.7, Rotation2d.fromDegrees(30));
+      DISTANCE_TO_RADS.put(3.7, 130.0);
+      DISTANCE_TO_TOF.put(3.7, 0.97);
 
-      DISTANCE_TO_HOOD_ANGLE.put(3.5, Rotation2d.fromDegrees(20));
-      DISTANCE_TO_RADS.put(3.5, 150.0);
-      DISTANCE_TO_TOF.put(3.5, 1.4);
-
-      DISTANCE_TO_HOOD_ANGLE.put(5.5, Rotation2d.fromDegrees(27));
-      DISTANCE_TO_RADS.put(5.5, 160.0);
-      DISTANCE_TO_TOF.put(5.5, 1.43);
-
-      DISTANCE_TO_HOOD_ANGLE.put(11.0, Rotation2d.fromDegrees(40));
-      DISTANCE_TO_RADS.put(11.0, 200.0);
-      DISTANCE_TO_TOF.put(11.0, 1.583);
+      DISTANCE_TO_HOOD_ANGLE.put(2.44, Rotation2d.fromDegrees(20));
+      DISTANCE_TO_RADS.put(2.44, 120.0);
+      DISTANCE_TO_TOF.put(2.44, 1.0);
     }
   }
 

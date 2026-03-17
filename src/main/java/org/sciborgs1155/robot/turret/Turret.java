@@ -1,25 +1,36 @@
 package org.sciborgs1155.robot.turret;
 
-import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
-import static edu.wpi.first.units.Units.Rotations;
-import static edu.wpi.first.units.Units.Seconds;
-import static edu.wpi.first.units.Units.Volts;
+import java.util.Set;
+import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
+
+import org.sciborgs1155.lib.Assertion;
 import static org.sciborgs1155.lib.Assertion.tAssert;
+import org.sciborgs1155.lib.InputStream;
+import org.sciborgs1155.lib.LoggingUtils;
+import org.sciborgs1155.lib.Test;
+import org.sciborgs1155.lib.Tuning;
 import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.Constants.TUNING;
+import static org.sciborgs1155.robot.slapdown.SlapdownConstants.CONSTRAINTS;
+
+import org.sciborgs1155.robot.Robot;
+import static org.sciborgs1155.robot.turret.TurretConstants.ControlConstants.*;
 import static org.sciborgs1155.robot.turret.TurretConstants.*;
 import static org.sciborgs1155.robot.turret.TurretConstants.ControlConstants.*;
 
 import com.ctre.phoenix6.SignalLogger;
+
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.networktables.DoubleEntry;
+import static edu.wpi.first.units.Units.*;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -27,20 +38,6 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
-import java.util.Set;
-import java.util.function.DoubleSupplier;
-import java.util.function.Supplier;
-import org.sciborgs1155.lib.Assertion;
-import org.sciborgs1155.lib.FaultLogger;
-import org.sciborgs1155.lib.FaultLogger.Fault;
-import org.sciborgs1155.lib.FaultLogger.FaultType;
-import org.sciborgs1155.lib.InputStream;
-import org.sciborgs1155.lib.LoggingUtils;
-import org.sciborgs1155.lib.Test;
-import org.sciborgs1155.lib.Tuning;
-import org.sciborgs1155.robot.Robot;
-import yams.units.EasyCRT;
-import yams.units.EasyCRTConfig;
 
 /**
  * The {@code Turret} subsystem consists of a single motor that is used to aim a variable hood
@@ -53,7 +50,7 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
 
   /** {@code PIDController} used to orient the turret to a specified angle. */
   @Logged
-  private final ProfiledPIDController controller = new ProfiledPIDController(P, I, D, CONSTRAINTS);
+  private final ProfiledPIDController controller = new ProfiledPIDController(P, I, D, new Constraints(MAX_VELOCITY.in(RadiansPerSecond), MAX_ACCELERATION.in(RadiansPerSecondPerSecond)));
 
   /** {@code Feedforward} used to aid in orienting the turret to a specified angle. */
   @Logged
@@ -72,13 +69,6 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
   @NotLogged private final DoubleEntry tuningS = Tuning.entry("Robot/tuning/turret/S", S);
   @NotLogged private final DoubleEntry tuningV = Tuning.entry("Robot/tuning/turret/V", V);
   @NotLogged private final DoubleEntry tuningA = Tuning.entry("Robot/tuning/turret/A", A);
-
-  private double lastGoodPositionRad;
-  private double failCount;
-
-  private final EasyCRTConfig crtConfig;
-
-  private final EasyCRT solverCRT;
 
   /** Creates real or simulated turret based on {@link Robot#isReal()}. */
   @NotLogged
@@ -107,27 +97,13 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
 
     controller.setTolerance(TOLERANCE.in(Radians));
 
-    crtConfig =
-        new EasyCRTConfig(
-                () -> Rotations.of(hardware.encoderA()), () -> Rotations.of(hardware.encoderB()))
-            .withCommonDriveGear(
-                1.0, (int) TURRET_GEARING, (int) ENCODER_A_GEARING, (int) ENCODER_B_GEARING)
-            .withMechanismRange(MIN_ANGLE, MAX_ANGLE)
-            .withMatchTolerance(CRT_MATCH_TOLERANCE)
-            .withAbsoluteEncoderInversions(true, true)
-            .withAbsoluteEncoderOffsets(Rotations.of(0.655518), Rotations.of(0.804443));
-
-    solverCRT = new EasyCRT(crtConfig);
-
-    solverCRT.getAngleOptional().ifPresent(angle -> hardware.setPosition(angle.in(Rotations)));
-
     sysIdRoutine =
         new SysIdRoutine(
             new Config(
                 RAMP_RATE,
                 STEP_VOLTAGE,
                 TIME_OUT,
-                (state) -> SignalLogger.writeString("turret state", state.toString())),
+                state -> SignalLogger.writeString("turret state", state.toString())),
             new Mechanism(voltage -> hardware.setVoltage(voltage.in(Volts)), null, this));
     SmartDashboard.putData(
         "Robot/turret/quasistatic clockwise",
@@ -164,27 +140,7 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
    */
   @Logged
   public double position() {
-    return solverCRT
-        .getAngleOptional()
-        .map(
-            a -> {
-              lastGoodPositionRad = a.in(Radians);
-              failCount = 0;
-              return lastGoodPositionRad;
-            })
-        .orElseGet(
-            () -> {
-              failCount++;
-              if (failCount % 100 == 0) {
-                FaultLogger.report(
-                    new Fault(
-                        "Turret CRT failure: >10 consecutive failures",
-                        "Unable to solve turret position with CRT, using stale position - fail count: "
-                            + failCount,
-                        FaultType.WARNING));
-              }
-              return lastGoodPositionRad;
-            });
+    return hardware.angle();
   }
 
   /**
@@ -324,8 +280,6 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
   public void periodic() {
     var command = getCurrentCommand();
     LoggingUtils.log("Robot/turret/current command", command != null ? command.getName() : "None");
-    LoggingUtils.log("Robot/turret/encoder A position", hardware.encoderA());
-    LoggingUtils.log("Robot/turret/encoder B position", hardware.encoderB());
 
     hardware.periodic();
 

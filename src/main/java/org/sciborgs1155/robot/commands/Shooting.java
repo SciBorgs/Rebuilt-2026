@@ -101,12 +101,10 @@ public class Shooting {
             () ->
                 shooter.atSetpoint()
                     && shooter.setpoint() > IDLE_VELOCITY.in(RadiansPerSecond)
-                    && hood.atGoal()
-                    && turret.atGoal())
+                    && hood.atGoal())
+                    // && turret.atGoal())
         .andThen(
-            Commands.waitUntil(Robot.isReal() ? hopper.blocked : hopper.blocked.negate())
-                .andThen(Commands.waitUntil(hopper.blocked.negate()))
-                .deadlineFor(
+          Commands.parallel(
                     hopper.intake(),
                     indexer.forward(),
                     Commands.runOnce(

@@ -1,18 +1,6 @@
 package org.sciborgs1155.robot.turret;
 
-import static edu.wpi.first.units.Units.Amps;
-import static edu.wpi.first.units.Units.Degree;
-import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Inches;
-import static edu.wpi.first.units.Units.KilogramSquareMeters;
-import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
-import static edu.wpi.first.units.Units.Second;
-import static edu.wpi.first.units.Units.Seconds;
-import static edu.wpi.first.units.Units.Volts;
-
-import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import static edu.wpi.first.units.Units.*;
 import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
@@ -32,10 +20,6 @@ public class TurretConstants {
   public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.0872);
   public static final AngularVelocity MAX_VELOCITY = RadiansPerSecond.of(3);
   public static final AngularAcceleration MAX_ACCELERATION = RadiansPerSecondPerSecond.of(12);
-  public static final Constraints CONSTRAINTS =
-      new Constraints(
-          MAX_VELOCITY.in(RadiansPerSecond),
-          MAX_ACCELERATION.in(RadiansPerSecondPerSecond)); // TODO: Update.
 
   public static final Angle MAX_ANGLE = Degrees.of(90);
   public static final Angle MIN_ANGLE = Degrees.of(-360);
@@ -51,11 +35,6 @@ public class TurretConstants {
   public static final Time TIME_OUT = Seconds.of(6);
 
   public static final double TURRET_GEARING = 84.0;
-  public static final double ENCODER_A_GEARING = 12.0;
-  public static final double ENCODER_B_GEARING = 13.0;
-
-  public static final Angle CRT_MATCH_TOLERANCE = Degrees.of(2);
-  public static final Angle CRT_BIG_TOLERANCE = Degrees.of(180 + 45);
 
   public static final class ControlConstants {
     // PID CONSTANTS

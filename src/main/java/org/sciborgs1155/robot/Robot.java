@@ -83,7 +83,7 @@ public class Robot extends CommandRobot {
   // SUBSYSTEMS
   private final Drive drive = Drive.create();
   private final Vision vision = Vision.create();
-  private final Turret turret = Turret.create();
+  private final Turret turret = Turret.none();
   private final Hood hood = Hood.create();
   private final Shooter shooter = Shooter.create();
   private final Indexer indexer = Indexer.create();

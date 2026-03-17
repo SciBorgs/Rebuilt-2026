@@ -44,9 +44,6 @@ public class RealTurret implements TurretIO {
     encoderA.getConfigurator().apply(encoderConfig);
     encoderB.getConfigurator().apply(encoderConfig);
 
-    encoderA.setPosition(0);
-    encoderB.setPosition(0);
-
     // TALON UTILS
     TalonUtils.addMotor(hardware);
 
@@ -119,5 +116,10 @@ public class RealTurret implements TurretIO {
     SmartDashboard.putNumber("trueAngleRot", trueAngleRot());
     SmartDashboard.putNumber("encoderADerived", encoderADerived());
     SmartDashboard.putNumber("encoderBDerived", encoderBDerived());
+  }
+
+  @Override
+  public void setPosition(double pos) {
+    hardware.setPosition(pos);
   }
 }

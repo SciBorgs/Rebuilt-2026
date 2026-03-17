@@ -70,4 +70,9 @@ public class SimTurret implements TurretIO {
   public void periodic() {
     SmartDashboard.putNumber("trueAngle", trueAngleRad());
   }
+
+  @Override
+  public void setPosition(double pos) {
+    simulation.setState(pos / (2 * Math.PI), 0);
+  }
 }

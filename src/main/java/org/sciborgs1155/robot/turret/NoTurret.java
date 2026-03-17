@@ -30,4 +30,7 @@ public class NoTurret implements TurretIO {
 
   @Override
   public void close() throws Exception {}
+
+  @Override
+  public void setPosition(double pos) {}
 }

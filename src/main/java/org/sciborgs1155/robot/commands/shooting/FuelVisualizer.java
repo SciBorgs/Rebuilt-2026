@@ -15,7 +15,7 @@ import org.sciborgs1155.robot.drive.Drive;
 @SuppressWarnings("PMD.OneDeclarationPerLine")
 public final class FuelVisualizer extends ProjectileVisualizer {
   private double scoreTolerance = Hub.INNER_WIDTH / 2;
-  private double[] targetPose = fromTranslation(Hub.TOP_CENTER_POINT);
+  private final double[] targetPose = fromTranslation(Hub.TOP_CENTER_POINT);
   private double scoreDepth;
 
   private FuelVisualizer(
@@ -201,7 +201,7 @@ public final class FuelVisualizer extends ProjectileVisualizer {
 
   protected static class Fuel extends Projectile {
     protected double scoreDepth;
-    protected double[] targetPose = fromTranslation(Hub.TOP_CENTER_POINT);
+    protected final double[] targetPose = fromTranslation(Hub.TOP_CENTER_POINT);
 
     protected double scoreRadius = Hub.INNER_WIDTH + FUEL_RADIUS;
     protected double scoreRadiusSq = scoreRadius * scoreRadius;

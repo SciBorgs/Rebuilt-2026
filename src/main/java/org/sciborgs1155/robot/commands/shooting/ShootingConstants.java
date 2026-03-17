@@ -12,10 +12,16 @@ import org.sciborgs1155.robot.FieldConstants.Hub;
 import org.sciborgs1155.robot.hood.HoodConstants;
 
 public class ShootingConstants {
+  /** Exclusively used in LookUp table generation. */
+  protected static final int DISTANCE = -1;
+
   protected static final int SPEED = 0;
   protected static final int PITCH = 1;
   protected static final int YAW = 2;
-  protected static final int ERROR = 3;
+  protected static final int ERROR = 2;
+
+  /** Exclusively used in LookUp table generation. */
+  protected static final int ENTRY_OFFSET = 1;
 
   protected static final double FUEL_MASS = 0.225;
   protected static final double FUEL_RADIUS = 0.075;
@@ -29,14 +35,15 @@ public class ShootingConstants {
   protected static final int SHOOTING_SPEED = 5;
 
   /** The resolution of the trajectory used in the ShotOptimizer. */
-  protected static final int OPTIMIZER_RESOLUTION = 5000;
+  protected static final int OPTIMIZER_RESOLUTION = 100;
 
   /** The resolution of the visualizer's trajectory simulation. */
   protected static final int TRAJECTORY_RESOLUTION = 100;
+
   protected static final boolean TRAJECTORY_ENABLED = false;
 
   /** The resolution of the visualizer's launch simulation. */
-  protected static final int LAUNCH_RESOLUTION = 5000;
+  protected static final int LAUNCH_RESOLUTION = 100;
 
   protected static final boolean LAUNCH_ENABLED = true;
 
@@ -80,7 +87,7 @@ public class ShootingConstants {
   protected static final double[] GOAL = fromTranslation(Hub.TOP_CENTER_POINT);
 
   /** The path to the lookup table (within the resources folder). */
-  protected static final String TABLE_PATH = "shooting/ParameterLookUp";
+  protected static final String TABLE_PATH = "ParameterLookUp";
 
   /** LookUp Table entries with errors greater than this are removed from the table. */
   protected static final double MAX_ERROR = SCORE_RADIUS;

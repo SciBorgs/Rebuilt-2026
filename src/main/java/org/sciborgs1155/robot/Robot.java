@@ -179,6 +179,7 @@ public class Robot extends CommandRobot {
 
       fuelVisualizer.startSimulation();
       addPeriodic(fuelVisualizer::updateLogging, PERIOD);
+      addPeriodic(ShotLookUpTable::updateLogging, PERIOD);
     }
   }
 

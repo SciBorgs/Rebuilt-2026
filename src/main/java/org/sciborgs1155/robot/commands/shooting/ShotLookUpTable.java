@@ -6,12 +6,10 @@ import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Scanner;
 import org.sciborgs1155.lib.LoggingUtils;
 
@@ -19,13 +17,14 @@ import org.sciborgs1155.lib.LoggingUtils;
  * A utility class used to generate a distance/speed/pitch lookup table which can be referenced when
  * calculating launch parameters for shooting.
  */
-@SuppressWarnings("PMD.FieldNamingConventions")
+@SuppressWarnings({"PMD.OneDeclarationPerLine", "PMD.CyclomaticComplexity"})
 public final class ShotLookUpTable {
-  private static final InterpolatingDoubleTreeMap speedLookUp = new InterpolatingDoubleTreeMap();
-  private static final InterpolatingDoubleTreeMap pitchLookUp = new InterpolatingDoubleTreeMap();
-  private static final InterpolatingDoubleTreeMap errorLookUp = new InterpolatingDoubleTreeMap();
+  private static InterpolatingDoubleTreeMap speedLookUp = new InterpolatingDoubleTreeMap();
+  private static InterpolatingDoubleTreeMap pitchLookUp = new InterpolatingDoubleTreeMap();
+  private static InterpolatingDoubleTreeMap errorLookUp = new InterpolatingDoubleTreeMap();
 
   private static boolean status;
+  private static double entriesGenerated, entriesLoaded, averageError;
 
   private ShotLookUpTable() {}
 
@@ -36,44 +35,41 @@ public final class ShotLookUpTable {
    */
   public static Command generate() {
     return Commands.runOnce(
-        () -> generateTable(MIN_DISTANCE, MAX_DISTANCE, DISTANCE_RESOLUTION, TABLE_PATH));
+        () -> generateTable(TABLE_PATH, MIN_DISTANCE, MAX_DISTANCE, DISTANCE_RESOLUTION));
   }
 
-  private static void generateTable(
-      double minDistance, double maxDistance, double resolution, String tablePath) {
-    try {
-      LoggingUtils.log("Shooting/Entries Generated", 0);
+  private static void generateTable(String name, double min, double max, double resolution) {
+    entriesGenerated = 0;
+    double totalError = 0;
 
-      Path path = Paths.get("resources/" + tablePath + ".ankit");
-      BufferedWriter fileWriter = Files.newBufferedWriter(path, StandardCharsets.UTF_8);
+    double increment = 1 / resolution;
 
-      int tableIndex = 0;
-      double totalError = 0;
-      double increment = 1 / resolution;
+    Path path = Path.of("resources/shooting/%s.ankit".formatted(name));
 
-      for (double distance = maxDistance;
-          distance >= minDistance;
-          distance -= increment, tableIndex++) {
-        if (tableIndex > MAX_LOOKUP_TABLE_SIZE) break;
-        double[] launchParameters = ShotOptimizer.optimizedLaunchParameters(distance);
+    try (BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
 
-        double speed = launchParameters[SPEED];
-        double pitch = launchParameters[PITCH];
-        double error = launchParameters[ERROR];
+      for (double distance = max;
+          distance >= min && entriesGenerated <= MAX_LOOKUP_TABLE_SIZE;
+          distance -= increment) {
+        double[] entry = ShotOptimizer.optimizedLaunchParameters(distance);
 
-        if (speed > MAX_SPEED || speed < MIN_SPEED) continue;
-        if (pitch < MIN_PITCH || pitch > MAX_PITCH) continue;
-        double averageError = totalError / tableIndex;
-        if (Math.abs(error - averageError) > MAX_ERROR) continue;
+        double speed = entry[SPEED];
+        double pitch = entry[PITCH];
+
+        if (speed > MAX_SPEED || speed < MIN_SPEED || pitch < MIN_PITCH || pitch > MAX_PITCH)
+          continue;
+
+        double error = entry[ERROR];
+        if (entriesGenerated > 0 && Math.abs(error - totalError / entriesGenerated) > MAX_ERROR)
+          continue;
 
         totalError += error;
-        fileWriter.write(distance + "," + speed + "," + pitch + "," + error);
-        fileWriter.newLine();
 
-        LoggingUtils.log("Shooting/Entries Generated", tableIndex);
+        writer.write("%.4f,%.4f,%.4f,%.4f".formatted(distance, speed, pitch, error));
+        writer.newLine();
+
+        entriesGenerated++;
       }
-
-      fileWriter.close();
     } catch (IOException exception) {
       exception.printStackTrace();
     }
@@ -88,42 +84,33 @@ public final class ShotLookUpTable {
     return Commands.runOnce(() -> loadTable(TABLE_PATH));
   }
 
-  private static void loadTable(String tablePath) {
+  private static void loadTable(String name) {
     speedLookUp.clear();
     pitchLookUp.clear();
     errorLookUp.clear();
 
-    try {
-      LoggingUtils.log("Shooting/Entries Loaded", 0);
-      Scanner fileScanner =
-          new Scanner(new File("resources/" + tablePath + ".ankit"), StandardCharsets.UTF_8);
+    double totalError = 0;
+    Path path = Path.of("resources/shooting/%s.ankit".formatted(name));
 
-      int tableIndex = 0;
-      double totalError = 0;
-      while (tableIndex < MAX_LOOKUP_TABLE_SIZE && fileScanner.hasNextLine()) {
-        String entry = fileScanner.nextLine();
+    try (Scanner scanner = new Scanner(path, StandardCharsets.UTF_8)) {
 
-        int comma1Index = entry.indexOf(',');
-        int comma2Index = entry.indexOf(',', comma1Index + 1);
-        int comma3Index = entry.indexOf(',', comma2Index + 1);
+      for (entriesLoaded = 0;
+          entriesLoaded < MAX_LOOKUP_TABLE_SIZE && scanner.hasNextLine();
+          entriesLoaded++) {
+        String[] entry = scanner.nextLine().split(",");
 
-        double distance = Double.parseDouble(entry.substring(0, comma1Index));
-        double speed = Double.parseDouble(entry.substring(comma1Index + 1, comma2Index));
-        double pitch = Double.parseDouble(entry.substring(comma2Index + 1, comma3Index));
-        double error = Double.parseDouble(entry.substring(comma3Index + 1));
+        double distance = Double.parseDouble(entry[DISTANCE + ENTRY_OFFSET]);
+        double error = Double.parseDouble(entry[ERROR + ENTRY_OFFSET]);
         totalError += error;
 
-        speedLookUp.put(distance, speed);
-        pitchLookUp.put(distance, pitch);
+        speedLookUp.put(distance, Double.parseDouble(entry[SPEED + ENTRY_OFFSET]));
+        pitchLookUp.put(distance, Double.parseDouble(entry[PITCH + ENTRY_OFFSET]));
         errorLookUp.put(distance, error);
-
-        tableIndex++;
-        LoggingUtils.log("Shooting/Entries Loaded", tableIndex);
       }
 
-      LoggingUtils.log("Shooting/Average Error", totalError / tableIndex);
-      fileScanner.close();
-      if (tableIndex > 0) status = true;
+      averageError = entriesLoaded == 0 ? 0 : totalError / entriesLoaded;
+      status = entriesLoaded > 0;
+
     } catch (Exception exception) {
       exception.printStackTrace();
     }
@@ -131,23 +118,29 @@ public final class ShotLookUpTable {
 
   /** The speed returned from the lookup table for the given distance. */
   public static double speed(double distance) {
-    if (!status()) return 0;
-    LoggingUtils.log("Shooting/LookUp Table Status", status);
-    return speedLookUp.get(distance);
+    return status() ? speedLookUp.get(distance) : MIN_SPEED;
   }
 
   /** The pitch returned from the lookup table for the given distance. */
   public static double pitch(double distance) {
-    if (!status()) return MIN_PITCH;
-    LoggingUtils.log("Shooting/LookUp Table Status", status);
-    return pitchLookUp.get(distance);
+    return status() ? pitchLookUp.get(distance) : MIN_PITCH;
   }
 
-  /**
-   * Whether or not a lookup table has been loaded (calls to 'speed' and 'pitch' require a loaded
-   * lookup table).
-   */
+  /** Whether or not a lookup table has been loaded. */
   public static boolean status() {
     return status;
+  }
+
+  /** The average planar distance from the target of all lookup table entries. */
+  public static double error() {
+    return averageError;
+  }
+
+  /** Logs lookup table data to NetworkTables. */
+  public static void updateLogging() {
+    LoggingUtils.log("Shooting/LookUp Table Status", status);
+    LoggingUtils.log("Shooting/Average Table Error", averageError);
+    LoggingUtils.log("Shooting/Entries Generated", entriesGenerated);
+    LoggingUtils.log("Shooting/Entries Loaded", entriesLoaded);
   }
 }

@@ -72,7 +72,7 @@ public final class ShotOptimizer {
           speedCache = testSpeed;
           pitchCache = testPitch;
 
-          return new double[] {testSpeed, testPitch, 0, error(distance, launchParameters)};
+          return new double[] {testSpeed, testPitch, error(distance, launchParameters)};
         }
       }
 

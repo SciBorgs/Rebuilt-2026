@@ -17,7 +17,8 @@ import org.sciborgs1155.lib.LoggingUtils;
   "PMD.AvoidUsingVolatile",
   "PMD.TooManyFields",
   "PMD.OneDeclarationPerLine",
-  "PMD.AvoidSynchronizedStatement"
+  "PMD.AvoidSynchronizedStatement",
+  "PMD.AvoidLiteralsInIfCondition"
 })
 public abstract class ProjectileVisualizer {
   /** Tolerance used to detect input changes. */
@@ -112,8 +113,8 @@ public abstract class ProjectileVisualizer {
   }
 
   protected static void validate(double[] vector) {
-    if (vector == null) vector = new double[3];
-    if (vector.length < 3) vector = new double[3];
+    if (vector == null) System.arraycopy(new double[3], 0, vector, 0, 3);
+    if (vector.length < 3) System.arraycopy(new double[3], 0, vector, 0, 3);
 
     double x = vector[Projectile.X];
     double y = vector[Projectile.Y];
@@ -503,9 +504,8 @@ public abstract class ProjectileVisualizer {
       yaw = initialRotation[Z];
 
       // INPUT VALIDATION
-      if (initialRotationalVelocity != initialRotationalVelocity) initialRotationalVelocity = 0;
-
-      omega = initialRotationalVelocity;
+      omega =
+          initialRotationalVelocity == initialRotationalVelocity ? initialRotationalVelocity : 0;
       alpha = 0;
 
       frames = 0;

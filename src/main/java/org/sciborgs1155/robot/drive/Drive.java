@@ -732,25 +732,6 @@ public class Drive extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * @return If the robot is skidding.
-   */
-  // @Logged
-  // public boolean isSkidding() {
-  //   DoubleSummaryStatistics diffs =
-  //       Arrays.stream(moduleStates())
-  //           .mapToDouble(
-  //               s ->
-  //                   FieldConstants.fromPolarCoords(s.speedMetersPerSecond, s.angle)
-  //                       .minus(
-  //                           VecBuilder.fill(
-  //                               robotRelativeChassisSpeeds().vxMetersPerSecond,
-  //                               robotRelativeChassisSpeeds().vyMetersPerSecond))
-  //                       .norm())
-  //           .summaryStatistics();
-  //   return diffs.getMax() - diffs.getMin() > Skid.THRESHOLD.in(MetersPerSecond);
-  // }
-
-  /**
    * @return If the robot is colliding.
    */
   @Logged

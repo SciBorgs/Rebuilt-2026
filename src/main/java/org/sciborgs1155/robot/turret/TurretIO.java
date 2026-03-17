@@ -30,6 +30,11 @@ public interface TurretIO extends AutoCloseable {
    */
   double encoderB();
 
+  /**
+   * Returns the voltage of the motor in volts.
+   *
+   * @return The voltage of the motor in volts.
+   */
   double voltage();
 
   /** Called once per robot loop. Override to update internal state. */

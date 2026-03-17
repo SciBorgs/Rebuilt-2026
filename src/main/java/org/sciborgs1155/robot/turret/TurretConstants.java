@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
+import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
@@ -53,6 +54,9 @@ public class TurretConstants {
   public static final double TURRET_GEARING = 84.0;
   public static final double ENCODER_A_GEARING = 12.0;
   public static final double ENCODER_B_GEARING = 13.0;
+
+  public static final Angle ENCODER_A_OFFSET = Rotations.of(0);
+  public static final Angle ENCODER_B_OFFSET = Rotations.of(0);
 
   public static final Angle CRT_MATCH_TOLERANCE = Degrees.of(2);
   public static final Angle CRT_BIG_TOLERANCE = Degrees.of(180 + 45);

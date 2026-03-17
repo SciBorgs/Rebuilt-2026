@@ -9,8 +9,27 @@ import static edu.wpi.first.units.Units.Volts;
 import static org.sciborgs1155.lib.Assertion.tAssert;
 import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.Constants.TUNING;
-import static org.sciborgs1155.robot.turret.TurretConstants.*;
-import static org.sciborgs1155.robot.turret.TurretConstants.ControlConstants.*;
+import static org.sciborgs1155.robot.turret.TurretConstants.CONSTRAINTS;
+import static org.sciborgs1155.robot.turret.TurretConstants.CRT_MATCH_TOLERANCE;
+import static org.sciborgs1155.robot.turret.TurretConstants.ControlConstants.A;
+import static org.sciborgs1155.robot.turret.TurretConstants.ControlConstants.D;
+import static org.sciborgs1155.robot.turret.TurretConstants.ControlConstants.I;
+import static org.sciborgs1155.robot.turret.TurretConstants.ControlConstants.P;
+import static org.sciborgs1155.robot.turret.TurretConstants.ControlConstants.S;
+import static org.sciborgs1155.robot.turret.TurretConstants.ControlConstants.TOLERANCE;
+import static org.sciborgs1155.robot.turret.TurretConstants.ControlConstants.V;
+import static org.sciborgs1155.robot.turret.TurretConstants.ENCODER_A_GEARING;
+import static org.sciborgs1155.robot.turret.TurretConstants.ENCODER_A_OFFSET;
+import static org.sciborgs1155.robot.turret.TurretConstants.ENCODER_B_GEARING;
+import static org.sciborgs1155.robot.turret.TurretConstants.ENCODER_B_OFFSET;
+import static org.sciborgs1155.robot.turret.TurretConstants.MAX_ACCELERATION;
+import static org.sciborgs1155.robot.turret.TurretConstants.MAX_ANGLE;
+import static org.sciborgs1155.robot.turret.TurretConstants.MAX_VELOCITY;
+import static org.sciborgs1155.robot.turret.TurretConstants.MIN_ANGLE;
+import static org.sciborgs1155.robot.turret.TurretConstants.RAMP_RATE;
+import static org.sciborgs1155.robot.turret.TurretConstants.STEP_VOLTAGE;
+import static org.sciborgs1155.robot.turret.TurretConstants.TIME_OUT;
+import static org.sciborgs1155.robot.turret.TurretConstants.TURRET_GEARING;
 
 import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.epilogue.Logged;
@@ -20,6 +39,7 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.DoubleEntry;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -39,8 +59,6 @@ import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.lib.Tuning;
 import org.sciborgs1155.robot.Robot;
-import yams.units.EasyCRT;
-import yams.units.EasyCRTConfig;
 
 /**
  * The {@code Turret} subsystem consists of a single motor that is used to aim a variable hood
@@ -74,11 +92,15 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
   @NotLogged private final DoubleEntry tuningA = Tuning.entry("Robot/tuning/turret/A", A);
 
   private double lastGoodPositionRad;
-  private double failCount;
 
-  private final EasyCRTConfig crtConfig;
+  /** CRT solver — called once at startup to seed the motor encoder. */
+  private final CustomCRT crt;
 
-  private final EasyCRT solverCRT;
+  /** Delays CRT until CANcoders have had time to boot and report valid readings. */
+  private final Timer startupTimer = new Timer();
+
+  /** True once CRT has successfully seeded the motor encoder. */
+  private boolean seeded;
 
   /** Creates real or simulated turret based on {@link Robot#isReal()}. */
   @NotLogged
@@ -107,18 +129,19 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
 
     controller.setTolerance(TOLERANCE.in(Radians));
 
-    crtConfig =
-        new EasyCRTConfig(
-                () -> Rotations.of(hardware.encoderA()), () -> Rotations.of(hardware.encoderB()))
-            .withCommonDriveGear(
-                1.0, (int) TURRET_GEARING, (int) ENCODER_A_GEARING, (int) ENCODER_B_GEARING)
-            .withMechanismRange(MIN_ANGLE, MAX_ANGLE)
-            .withMatchTolerance(CRT_MATCH_TOLERANCE)
-            .withAbsoluteEncoderInversions(true, true);
+    crt =
+        new CustomCRT(
+            TURRET_GEARING / ENCODER_A_GEARING,
+            TURRET_GEARING / ENCODER_B_GEARING,
+            MIN_ANGLE.in(Rotations),
+            MAX_ANGLE.in(Rotations),
+            CRT_MATCH_TOLERANCE.in(Rotations),
+            true,
+            true,
+            ENCODER_A_OFFSET.in(Rotations),
+            ENCODER_B_OFFSET.in(Rotations));
 
-    solverCRT = new EasyCRT(crtConfig);
-
-    solverCRT.getAngleOptional();
+    startupTimer.start();
 
     sysIdRoutine =
         new SysIdRoutine(
@@ -159,31 +182,15 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
   /**
    * Returns the angular position of the turret in radians.
    *
+   * <p>Returns 0 until the startup delay has elapsed and CRT first solves successfully. After that,
+   * reflects the most recent CRT result from {@code periodic()}, falling back to the last good
+   * value on solver failure.
+   *
    * @return The angular position of the turret.
    */
   @Logged
   public double position() {
-    return solverCRT
-        .getAngleOptional()
-        .map(
-            a -> {
-              lastGoodPositionRad = a.in(Radians);
-              failCount = 0;
-              return lastGoodPositionRad;
-            })
-        .orElseGet(
-            () -> {
-              failCount++;
-              if (failCount % 100 == 0) {
-                FaultLogger.report(
-                    new Fault(
-                        "Turret CRT failure: >10 consecutive failures",
-                        "Unable to solve turret position with CRT, using stale position - fail count: "
-                            + failCount,
-                        FaultType.WARNING));
-              }
-              return lastGoodPositionRad;
-            });
+    return lastGoodPositionRad;
   }
 
   /**
@@ -309,12 +316,50 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
     return new Test(testCommand, assertions);
   }
 
+  /**
+   * Attempts CRT seed after the startup delay has elapsed. Runs once; on success seeds the motor
+   * encoder and sets {@code seeded = true}. Reports a fault if CRT fails to find a solution.
+   */
+  private void trySeedFromCRT() {
+    crt.solve(hardware.encoderA(), hardware.encoderB())
+        .ifPresentOrElse(
+            rot -> {
+              lastGoodPositionRad = rot * 2.0 * Math.PI;
+              seeded = true;
+              SmartDashboard.putNumber("Robot/turret/crt seed rot", rot);
+            },
+            () ->
+                FaultLogger.report(
+                    new Fault(
+                        "Turret CRT seed failed",
+                        String.format(
+                            "CRT could not resolve position from encoderA=%.4f encoderB=%.4f",
+                            hardware.encoderA(), hardware.encoderB()),
+                        FaultType.WARNING)));
+  }
+
   @Override
   public void periodic() {
+    if (!seeded && startupTimer.hasElapsed(3.0)) {
+      // Wait for CANcoders to boot before attempting CRT seed.
+      trySeedFromCRT();
+    } else if (seeded) {
+      // Update position once per loop from CRT.
+      crt.solve(hardware.encoderA(), hardware.encoderB())
+          .ifPresent(rot -> lastGoodPositionRad = rot * 2.0 * Math.PI);
+    }
+
+    SmartDashboard.putBoolean("Robot/turret/crt seeded", seeded);
+
     var command = getCurrentCommand();
     LoggingUtils.log("Robot/turret/current command", command != null ? command.getName() : "None");
     LoggingUtils.log("Robot/turret/encoder A position", hardware.encoderA());
     LoggingUtils.log("Robot/turret/encoder B position", hardware.encoderB());
+    LoggingUtils.log("Robot/turret/crt'd position", position());
+
+    if (hardware instanceof SimTurret sim) {
+      LoggingUtils.log("Robot/turret/true angle", sim.trueAngleRad());
+    }
 
     hardware.periodic();
 

@@ -35,15 +35,15 @@ public class ShootingConstants {
   protected static final int SHOOTING_SPEED = 5;
 
   /** The resolution of the trajectory used in the ShotOptimizer. */
-  protected static final int OPTIMIZER_RESOLUTION = 100;
+  protected static final int OPTIMIZER_RESOLUTION = 1000;
 
   /** The resolution of the visualizer's trajectory simulation. */
-  protected static final int TRAJECTORY_RESOLUTION = 100;
+  protected static final int TRAJECTORY_RESOLUTION = 1000;
 
   protected static final boolean TRAJECTORY_ENABLED = false;
 
   /** The resolution of the visualizer's launch simulation. */
-  protected static final int LAUNCH_RESOLUTION = 100;
+  protected static final int LAUNCH_RESOLUTION = 1000;
 
   protected static final boolean LAUNCH_ENABLED = true;
 
@@ -62,14 +62,14 @@ public class ShootingConstants {
   protected static final double SPEED_KP = 0.5;
   protected static final double SPEED_KD = 0.05;
 
-  protected static final int MAX_OPTIMIZER_ITERATIONS = 300;
-  protected static final double OPTIMIZATION_THRESHOLD = 0.01;
+  protected static final int MAX_OPTIMIZER_ITERATIONS = 3000;
+  protected static final double OPTIMIZATION_THRESHOLD = 0.001;
 
   protected static final double MAX_SPEED = 20;
   protected static final double MIN_SPEED = EPS;
 
   /** The resolution of the lookup table, in entries per meter. */
-  protected static final double DISTANCE_RESOLUTION = 100;
+  protected static final double DISTANCE_RESOLUTION = 1000;
 
   protected static final double MIN_DISTANCE = Hub.WIDTH / 2 + 0.8128;
   protected static final double MAX_DISTANCE = 10;

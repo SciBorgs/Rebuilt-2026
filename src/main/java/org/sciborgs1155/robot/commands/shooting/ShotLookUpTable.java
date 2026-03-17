@@ -11,6 +11,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Scanner;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import org.sciborgs1155.lib.LoggingUtils;
 
 /**
@@ -24,7 +26,17 @@ public final class ShotLookUpTable {
   private static InterpolatingDoubleTreeMap errorLookUp = new InterpolatingDoubleTreeMap();
 
   private static boolean status;
-  private static double entriesGenerated, entriesLoaded, averageError;
+  private static double entriesGenerated;
+  private static double entriesLoaded, averageError;
+
+  private static ScheduledExecutorService executor =
+      Executors.newScheduledThreadPool(
+          1,
+          runnable -> {
+            Thread thread = new Thread(runnable);
+            thread.setName("ShotLookUpTable Generator");
+            return thread;
+          });
 
   private ShotLookUpTable() {}
 
@@ -35,19 +47,20 @@ public final class ShotLookUpTable {
    */
   public static Command generate() {
     return Commands.runOnce(
-        () -> generateTable(TABLE_PATH, MIN_DISTANCE, MAX_DISTANCE, DISTANCE_RESOLUTION));
+        () ->
+            executor.submit(
+                () -> generateTable(TABLE_PATH, MIN_DISTANCE, MAX_DISTANCE, DISTANCE_RESOLUTION)));
   }
 
   private static void generateTable(String name, double min, double max, double resolution) {
     entriesGenerated = 0;
     double totalError = 0;
-
     double increment = 1 / resolution;
 
+    ShotOptimizer.clearCache();
     Path path = Path.of("resources/shooting/%s.ankit".formatted(name));
 
     try (BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
-
       for (double distance = max;
           distance >= min && entriesGenerated <= MAX_LOOKUP_TABLE_SIZE;
           distance -= increment) {
@@ -65,7 +78,7 @@ public final class ShotLookUpTable {
 
         totalError += error;
 
-        writer.write("%.4f,%.4f,%.4f,%.4f".formatted(distance, speed, pitch, error));
+        writer.write("%.4f,%.10f,%.10f,%.10f".formatted(distance, speed, pitch, error));
         writer.newLine();
 
         entriesGenerated++;

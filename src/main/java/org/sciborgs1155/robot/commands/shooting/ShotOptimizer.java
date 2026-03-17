@@ -22,9 +22,6 @@ public final class ShotOptimizer {
   /** Cached speed value used in 'optimizedLaunchParameters' method. */
   private static double speedCache;
 
-  /** Cached pitch value used in 'optimizedLaunchParameters' method. */
-  private static double pitchCache;
-
   /** Cached launch parameters used in 'generateDirectTrajectory' method. */
   private static double[] launchParameterCache = new double[3];
 
@@ -57,10 +54,13 @@ public final class ShotOptimizer {
     return optimalSpeed;
   }
 
-  /** Returns the optimal launch parameters for the given distance (minimal airtime). */
+  /**
+   * Returns the optimal launch parameters for the given distance (minimal airtime). Clear cache
+   * when generating a new table or doing a single optimization.
+   */
   public static double[] optimizedLaunchParameters(double distance) {
     double increment = Math.PI * 2 / PITCH_RESOLUTION;
-    double startingPitch = pitchCache == 0 ? MIN_PITCH : pitchCache;
+    double startingPitch = MIN_PITCH;
 
     for (double testPitch = startingPitch; testPitch <= MAX_PITCH; testPitch += increment)
       if (reaches(distance, new double[] {MAX_SPEED, testPitch, 0})) {
@@ -70,8 +70,7 @@ public final class ShotOptimizer {
 
         if (clears(distance, launchParameters)) {
           speedCache = testSpeed;
-          pitchCache = testPitch;
-
+          
           return new double[] {testSpeed, testPitch, error(distance, launchParameters)};
         }
       }
@@ -111,6 +110,12 @@ public final class ShotOptimizer {
     }
 
     return false;
+  }
+
+  /** Clears cached  speed and trajectory. */
+  public static void clearCache() {
+    speedCache = 0;
+    launchParameterCache = new double[3];
   }
 
   private static void generateDirectTrajectory(double distance, double[] launchParameters) {

@@ -99,7 +99,7 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
                 RAMP_RATE,
                 STEP_VOLTAGE,
                 TIME_OUT,
-                (state) -> SignalLogger.writeString("turret state", state.toString())),
+                state -> SignalLogger.writeString("turret state", state.toString())),
             new Mechanism(voltage -> hardware.setVoltage(voltage.in(Volts)), null, this));
     SmartDashboard.putData(
         "Robot/turret/quasistatic clockwise",
@@ -178,7 +178,7 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
             .scale(2)
             .scale(PERIOD.in(Seconds))
             .rateLimit(MAX_ACCELERATION.in(RadiansPerSecondPerSecond))
-            .add(() -> controller.getSetpoint()))
+            .add(controller::getSetpoint))
         .withName("manual turret");
   }
 

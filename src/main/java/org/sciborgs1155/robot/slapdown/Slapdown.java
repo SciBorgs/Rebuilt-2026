@@ -13,6 +13,7 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.networktables.DoubleEntry;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
@@ -135,6 +136,18 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
    */
   public Command retract() {
     return goTo(MAX_ANGLE.in(Radians));
+  }
+
+  /**
+   * A repeating sequence of retracting and extending the hopper to help feed fuel into the indexer.
+   *
+   * @return The repeating sequence.
+   */
+  public Command squeeze() {
+    return Commands.sequence(
+            retract().until(() -> atGoal()).withTimeout(SQUEEZE_RETRACT),
+            extend().until(() -> atGoal()).withTimeout(SQUEEZE_EXTEND))
+        .repeatedly();
   }
 
   /**

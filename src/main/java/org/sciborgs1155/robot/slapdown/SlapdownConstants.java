@@ -45,4 +45,7 @@ public class SlapdownConstants {
   public static final Angle START_ANGLE = MAX_ANGLE;
 
   public static final Angle POSITION_TOLERANCE = Radians.of(0.05);
+
+  public static final Time SQUEEZE_RETRACT = Seconds.of(3);
+  public static final Time SQUEEZE_EXTEND = Seconds.of(2);
 }

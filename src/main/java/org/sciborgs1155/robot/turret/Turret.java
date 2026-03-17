@@ -154,7 +154,7 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * Returns the goal of the turret trapezoidal profile.
+   * Returns the goal of the turret.
    *
    * @return The goal of the turret.
    */

@@ -52,10 +52,10 @@ public final class VisionConstants {
           "F cam",
           78,
           new Transform3d(
-              Inches.of(13.327756),
-              Inches.of(2.755270),
-              Inches.of(10.815961),
-              yawPitchRoll(0, 0, 0)),
+              Inches.of(13.514),
+              Inches.of(2.699),
+              Inches.of(10.581108),
+              yawPitchRoll(0, 15, 0)),
           PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
 
   public static final CameraConfig B_CAMERA = // CAMERA 2

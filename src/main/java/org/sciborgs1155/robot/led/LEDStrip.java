@@ -46,7 +46,8 @@ public class LEDStrip extends SubsystemBase implements AutoCloseable {
             () ->
                 update(
                     LEDPattern.rainbow(225, 225)
-                        .scrollAtAbsoluteSpeed(MetersPerSecond.of(0.5), LED_SPACING))));
+                        .scrollAtAbsoluteSpeed(
+                            MetersPerSecond.of(invert ? -0.5 : 0.5), LED_SPACING))));
   }
 
   /** Rainbow LEDs, scrolling at 0.5 m/s. Very cool. */
@@ -68,7 +69,8 @@ public class LEDStrip extends SubsystemBase implements AutoCloseable {
    */
   public Command progressGradient(DoubleSupplier percent) {
     return set(
-        solidGradient(percent).mask(LEDPattern.progressMaskLayer(() -> 1 - percent.getAsDouble())));
+        solidGradient(percent, 0)
+            .mask(LEDPattern.progressMaskLayer(() -> 1 - percent.getAsDouble())));
   }
 
   /**
@@ -79,25 +81,23 @@ public class LEDStrip extends SubsystemBase implements AutoCloseable {
    * @param atGoal A boolean supplier that supplies whether the mechanism is at its goal.
    */
   public Command progressGradient(DoubleSupplier percent, BooleanSupplier atGoal) {
-    return set(solidGradient(percent)
+    return set(solidGradient(percent, 0)
             .mask(LEDPattern.progressMaskLayer(() -> 1 - percent.getAsDouble())))
         .until(atGoal)
         .andThen(solid(Color.kAqua));
   }
 
   /**
-   * Sets the LEDPattern based on an error. When the error is within tolerance, LEDs blink blue.
+   * Sets the LEDPattern based on an error. If the error is within tolerance, LEDs turn blue.
    *
    * @param percentError The error. 1 is a really bad error while 0 is no error.
    * @param tolerance The allowed tolerance in error.
    */
   public Command error(DoubleSupplier error, double tolerance) {
-    return set(solidGradient(error))
-        .until(() -> error.getAsDouble() < tolerance)
-        .andThen(blink(Color.kAqua));
+    return set(solidGradient(error, tolerance));
   }
 
-  /** A gradient of green to yellow LEDs, moving at 60 bpm, which synchronizes with many song. */
+  /** A gradient of green to yellow LEDs, moving at 60 bpm, which synchronizes with many songs. */
   public Command music() {
     return set(
         LEDPattern.gradient(LEDPattern.GradientType.kContinuous, Color.kGreen, Color.kYellow)
@@ -108,11 +108,11 @@ public class LEDStrip extends SubsystemBase implements AutoCloseable {
                             + 0.5)));
   }
 
-  /** An alernating pattern of yellow and green that is scrolled through. */
-  public Command scrolling() {
+  /** An alernating pattern of a given color and black that is scrolled through. */
+  public Command scrolling(Color color) {
     return set(
-        alternatingColor(Color.kYellow, 6, Color.kGreen, 10)
-            .scrollAtAbsoluteSpeed(MetersPerSecond.of(0.5), LED_SPACING));
+        alternatingColor(color, 5, Color.kBlack, 5)
+            .scrollAtAbsoluteSpeed(MetersPerSecond.of(0.25), LED_SPACING));
   }
 
   /** A breathing gradient that matches the alliance colors. */
@@ -158,12 +158,19 @@ public class LEDStrip extends SubsystemBase implements AutoCloseable {
     };
   }
 
-  /** Sets a solid color of a range from red to green, given an error double supplier. */
-  private static LEDPattern solidGradient(DoubleSupplier error) {
+  /**
+   * Sets a solid color of a range from red to green, given an error double supplier. If the error
+   * is less than a tolerance, it will be blue.
+   */
+  private static LEDPattern solidGradient(DoubleSupplier error, double tolerance) {
     return (reader, writer) -> {
       Color color =
-          Color.fromHSV(
-              (int) MathUtil.clamp(Math.round((1 - error.getAsDouble()) * 45), 0, 50), 255, 255);
+          error.getAsDouble() < tolerance
+              ? Color.kAqua
+              : Color.fromHSV(
+                  (int) MathUtil.clamp(Math.round((1 - error.getAsDouble()) * 45), 0, 50),
+                  255,
+                  255);
       int bufLen = reader.getLength();
       for (int i = 0; i < bufLen; i++) {
         writer.setLED(i, color);

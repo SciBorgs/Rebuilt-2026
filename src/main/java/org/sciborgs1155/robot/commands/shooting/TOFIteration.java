@@ -2,6 +2,7 @@ package org.sciborgs1155.robot.commands.shooting;
 
 import static org.sciborgs1155.robot.Constants.ShootingData.*;
 
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -33,14 +34,14 @@ public class TOFIteration implements ShootingAlgorithm {
    *     shooter wheel speed in rad/s.
    */
   @Override
-  public Vector<N3> calculate(Translation3d displacement, Vector<N2> velocity) {
+  public Vector<N3> calculate(Translation3d displacement, Vector<N2> velocity, Vector<N2> accel) {
     Translation2d target = displacement.toTranslation2d();
     Translation2d lookAhead = new Translation2d();
 
     for (int i = 0; i < ITERATIONS; i++) {
       double distance = target.getDistance(lookAhead);
       double tof = DISTANCE_TO_TOF.get(distance);
-      lookAhead = new Translation2d(velocity.times(tof));
+      lookAhead = new Translation2d(velocity.times(tof).plus(accel.times(tof*tof/2)));
     }
 
     double distance = target.getDistance(lookAhead);
@@ -54,5 +55,10 @@ public class TOFIteration implements ShootingAlgorithm {
                 target.minus(lookAhead).getAngle().getRadians()));
 
     return result.toVector();
+  }
+
+  @Override
+  public Vector<N3> calculate(Translation3d displacement, Vector<N2> velocity) {
+    return calculate(displacement, velocity, VecBuilder.fill(0,0));
   }
 }

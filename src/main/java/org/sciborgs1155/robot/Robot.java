@@ -17,7 +17,6 @@ import static org.sciborgs1155.robot.Constants.TUNING;
 import static org.sciborgs1155.robot.drive.DriveConstants.MAX_ANGULAR_ACCEL;
 import static org.sciborgs1155.robot.drive.DriveConstants.MAX_SPEED;
 import static org.sciborgs1155.robot.drive.DriveConstants.TELEOP_ANGULAR_SPEED;
-import static org.sciborgs1155.robot.hood.HoodConstants.HOOD_ORIGIN;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.CENTER_TO_SHOOTER;
 
 import com.ctre.phoenix6.SignalLogger;
@@ -55,6 +54,7 @@ import org.sciborgs1155.robot.commands.shooting.Shooting;
 import org.sciborgs1155.robot.commands.shooting.ShotLookUpTable;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.hood.Hood;
+import org.sciborgs1155.robot.hood.HoodVisualizer;
 import org.sciborgs1155.robot.hopper.Hopper;
 import org.sciborgs1155.robot.indexer.Indexer;
 import org.sciborgs1155.robot.shooter.Shooter;
@@ -89,8 +89,7 @@ public class Robot extends CommandRobot {
   private final Shooting shooting = new Shooting(turret, hood, drive);
   @NotLogged private final SendableChooser<Command> autos = Autos.configureAutos(drive);
 
-  @NotLogged
-  private final ProjectileVisualizer fuelVisualizer = Shooting.createVectorVisualizer(drive);
+  @NotLogged private final ProjectileVisualizer fuelVisualizer = shooting.createVisualizer();
 
   @Logged private double speedMultiplier = FULL_SPEED_MULTIPLIER;
 
@@ -151,22 +150,7 @@ public class Robot extends CommandRobot {
                 vision.estimatedGlobalPoses(drive.gyroHeading(), disabled().getAsBoolean())),
         PERIOD);
 
-    addPeriodic(
-        () -> {
-          log(
-              "RobotModel/turretOrigin",
-              new Transform3d(
-                  CENTER_TO_SHOOTER.getTranslation(), new Rotation3d(0, 0, turret.position())),
-              Transform3d.struct);
-          log(
-              "RobotModel/hoodOrigin",
-              new Transform3d(HOOD_ORIGIN, new Rotation3d(0, hood.angle(), turret.position())),
-              Transform3d.struct);
-          log("RobotModel/hopperOrigin", new Transform3d(), Transform3d.struct);
-          log("RobotModel/intakeOrigin", new Transform3d(), Transform3d.struct);
-          log("RobotModel/driveOrigin", drive.pose3d(), Pose3d.struct);
-        },
-        PERIOD);
+    addPeriodic(this::updateAdvantageScopeModel, PERIOD);
 
     RobotController.setBrownoutVoltage(6.0);
 
@@ -245,7 +229,6 @@ public class Robot extends CommandRobot {
         .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
 
     teleop().whileTrue(shooting.runShooter());
-
     operator.a().whileTrue(fuelVisualizer.launchProjectiles());
     operator.x().onTrue(ShotLookUpTable.generate());
     operator.b().onTrue(ShotLookUpTable.load());
@@ -270,6 +253,21 @@ public class Robot extends CommandRobot {
               driver.getHID().setRumble(rumbleType, 0);
               operator.getHID().setRumble(rumbleType, 0);
             });
+  }
+
+  private void updateAdvantageScopeModel() {
+    log("RobotModel/driveOrigin", drive.pose3d(), Pose3d.struct);
+    log(
+        "RobotModel/turretOrigin",
+        new Transform3d(
+            CENTER_TO_SHOOTER.getTranslation(), new Rotation3d(0, 0, turret.position())),
+        Transform3d.struct);
+    log("RobotModel/intakeOrigin", new Transform3d(), Transform3d.struct);
+    log("RobotModel/hopperOrigin", new Transform3d(), Transform3d.struct);
+    log(
+        "RobotModel/hoodOrigin",
+        HoodVisualizer.transformFromOrigin(hood.angle(), turret.position()),
+        Transform3d.struct);
   }
 
   /**

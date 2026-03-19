@@ -70,7 +70,7 @@ public final class ShotOptimizer {
 
         if (clears(distance, launchParameters)) {
           speedCache = testSpeed;
-          
+
           return new double[] {testSpeed, testPitch, error(distance, launchParameters)};
         }
       }
@@ -112,7 +112,7 @@ public final class ShotOptimizer {
     return false;
   }
 
-  /** Clears cached  speed and trajectory. */
+  /** Clears cached speed and trajectory. */
   public static void clearCache() {
     speedCache = 0;
     launchParameterCache = new double[3];

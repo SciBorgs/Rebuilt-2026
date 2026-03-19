@@ -1,11 +1,12 @@
 package org.sciborgs1155.robot.commands.shooting;
 
-import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Radians;
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.*;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.*;
-import static org.sciborgs1155.robot.hood.HoodConstants.HOOD_RADIUS;
+import static org.sciborgs1155.robot.hood.HoodConstants.MIN_ANGLE;
 
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.util.Units;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.sciborgs1155.lib.LoggingUtils;
@@ -17,6 +18,11 @@ public final class FuelVisualizer extends ProjectileVisualizer {
   private double scoreTolerance = Hub.INNER_WIDTH / 2;
   private final double[] targetPose = fromTranslation(Hub.TOP_CENTER_POINT);
   private double scoreDepth;
+
+  /**
+   * The radius of the arc formed by the starting translation of the FUEL as the hood angle changes.
+   */
+  private static final double SHOOTER_RADIUS = Units.inchesToMeters(2) + FUEL_RADIUS / 2;
 
   private FuelVisualizer(
       Supplier<double[]> initialTranslation,
@@ -102,14 +108,16 @@ public final class FuelVisualizer extends ProjectileVisualizer {
 
   protected static double[] shooterToInitial(double[] shotVelocity, double heading) {
     double pitch = Math.asin(shotVelocity[Z] / norm(shotVelocity));
-    double hoodAngle = Math.PI / 2 - pitch;
-
-    double x = HOOD_RADIUS.in(Meters) * Math.cos(hoodAngle);
-    double z = HOOD_RADIUS.in(Meters) * Math.sin(hoodAngle);
-
     double yaw = Math.atan2(shotVelocity[Y], shotVelocity[X]);
+    double angle = Math.PI / 2 - pitch + MIN_ANGLE.in(Radians);
 
-    return fieldRelative(fieldRelative(new double[] {x, 0, z}, yaw), heading);
+    return fieldRelative(
+        new double[] {
+          SHOOTER_TO_FLYWHEEL[X] - SHOOTER_RADIUS * Math.cos(angle),
+          0,
+          SHOOTER_TO_FLYWHEEL[Z] + SHOOTER_RADIUS * Math.sin(angle)
+        },
+        yaw + heading);
   }
 
   protected static double[] initialTranslation(

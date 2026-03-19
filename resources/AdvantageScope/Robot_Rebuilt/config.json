@@ -138,14 +138,14 @@
           },
           {
             "axis": "y",
-            "degrees": -15
+            "degrees": 0
           },
           {
             "axis": "z",
             "degrees": 0
           }
       ],
-      "zeroedPosition": [-0.20694,-0.14983,-0.3486252]
+      "zeroedPosition": [0,0,0]
     }
   ]
 }

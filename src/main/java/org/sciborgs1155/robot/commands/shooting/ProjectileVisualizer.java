@@ -254,7 +254,7 @@ public abstract class ProjectileVisualizer {
   }
 
   private void launchProjectile() {
-    if (!running.get()) return;
+    if (!running.get() || !launchEnabled) return;
     Projectile projectile = obtainProjectile();
 
     projectile.initialize(

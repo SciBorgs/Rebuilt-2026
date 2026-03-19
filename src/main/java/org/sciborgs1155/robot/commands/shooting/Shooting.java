@@ -1,7 +1,6 @@
 package org.sciborgs1155.robot.commands.shooting;
 
 import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.fieldRelative;
 import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.fromLaunchParameters;
 import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.launchParameters;
@@ -15,18 +14,20 @@ import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Proj
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.DRAG_ENABLED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.GOAL;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.LAUNCH_ENABLED;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.LAUNCH_RESOLUTION;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.LIFT_ENABLED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.MAX_AIR_TIME;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.MAX_PITCH;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.MIN_PITCH;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PITCH;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.SCORE_DEPTH;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.SCORE_RADIUS;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.SHOOTING_SPEED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.SPEED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.TRAJECTORY_ENABLED;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.TRAJECTORY_RESOLUTION;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.VISUALIZER_RESOLUTION;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.YAW;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -35,7 +36,6 @@ import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.hood.Hood;
 import org.sciborgs1155.robot.hood.HoodConstants;
-import org.sciborgs1155.robot.shooter.ShooterConstants;
 import org.sciborgs1155.robot.turret.Turret;
 import org.sciborgs1155.robot.turret.TurretConstants;
 
@@ -46,9 +46,7 @@ public class Shooting {
   private final Drive drive;
 
   private double[] launchParameters = {
-    ShooterConstants.IDLE_VELOCITY.in(RadiansPerSecond),
-    HoodConstants.DEFAULT_ANGLE.in(Radians),
-    TurretConstants.START_ANGLE.in(Radians)
+    0, HoodConstants.DEFAULT_ANGLE.in(Radians), TurretConstants.START_ANGLE.in(Radians)
   };
 
   /** A command factory for the shooting algorithm. */
@@ -105,8 +103,11 @@ public class Shooting {
               LoggingUtils.log("Shooting/Parameters/PITCH", launchParameters[PITCH]);
               LoggingUtils.log("Shooting/Parameters/YAW", launchParameters[YAW]);
             }),
-        turret.goTo(() -> launchParameters[YAW]),
-        hood.goTo(() -> Math.PI / 2 - launchParameters[PITCH]));
+        turret.goTo(() -> MathUtil.inputModulus(launchParameters[YAW], -Math.PI, Math.PI)),
+        hood.goTo(
+            () ->
+                Math.PI / 2
+                    - MathUtil.inputModulus(launchParameters[PITCH], MIN_PITCH, MAX_PITCH)));
   }
 
   /** Creates a visualizer that utilizes the subsystem positions to predict a trajectory. */
@@ -119,7 +120,7 @@ public class Shooting {
         .withScoringParameters(GOAL, SCORE_RADIUS, SCORE_DEPTH)
         .configPhysics(true, DRAG_ENABLED, false, LIFT_ENABLED)
         .configGeneration(
-            1 / SHOOTING_SPEED, MAX_AIR_TIME, TRAJECTORY_RESOLUTION, LAUNCH_RESOLUTION)
+            1 / SHOOTING_SPEED, MAX_AIR_TIME, VISUALIZER_RESOLUTION, VISUALIZER_RESOLUTION)
         .config(LAUNCH_ENABLED, TRAJECTORY_ENABLED);
   }
 
@@ -132,7 +133,7 @@ public class Shooting {
         .withScoringParameters(GOAL, SCORE_RADIUS, SCORE_DEPTH)
         .configPhysics(true, DRAG_ENABLED, false, LIFT_ENABLED)
         .configGeneration(
-            1 / SHOOTING_SPEED, MAX_AIR_TIME, TRAJECTORY_RESOLUTION, LAUNCH_RESOLUTION)
+            1 / SHOOTING_SPEED, MAX_AIR_TIME, VISUALIZER_RESOLUTION, VISUALIZER_RESOLUTION)
         .config(LAUNCH_ENABLED, TRAJECTORY_ENABLED);
   }
 }

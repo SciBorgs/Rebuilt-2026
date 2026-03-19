@@ -66,7 +66,7 @@ public final class Autos {
         drive);
 
     PPHolonomicDriveController.overrideRotationFeedback(() -> drive.heading().getRadians());
-    NamedCommands.registerCommand("shoot", shooting.shootHubDriving(() -> 0, () -> 0, () -> 0));
+    NamedCommands.registerCommand("shoot", shooting.shootDriving(Shooting.HUB_TARGET, () -> 0, () -> 0, () -> 0));
     NamedCommands.registerCommand("intake", intake.intake());
     NamedCommands.registerCommand(
         "climb",

@@ -2,6 +2,7 @@ package org.sciborgs1155.robot.commands;
 
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static org.sciborgs1155.robot.FieldConstants.allianceReflect;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.CENTER_TO_SHOOTER;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.IDLE_VELOCITY;
 
@@ -51,8 +52,10 @@ public class Shooting {
   public static final Distance MIN_DISTANCE = Meters.of(.2);
 
   /** Field-relative position of the hub target. */
-  public static final Translation2d HUB_TARGET =
-      FieldConstants.Hub.TOP_CENTER_POINT.toTranslation2d();
+  public static final Translation2d HUB_TARGET = 
+      allianceReflect(FieldConstants.Hub.TOP_CENTER_POINT.toTranslation2d());
+  public static final Translation2d LEFT_FEED = allianceReflect(FieldConstants.Hub.LEFT_FEED.toTranslation2d());
+  public static final Translation2d RIGHT_FEED = allianceReflect(FieldConstants.Hub.RIGHT_FEED.toTranslation2d());
 
   private final ShootingAlgorithm algorithm = new TOFIteration();
 
@@ -95,7 +98,7 @@ public class Shooting {
    *
    * @return a command that shoots at the hub while driving
    */
-  public Command shootHubDriving(InputStream vx, InputStream vy, InputStream omega) {
+  public Command shootDriving(Translation2d target, InputStream vx, InputStream vy, InputStream omega) {
     return Commands.waitUntil(
             () ->
                 shooter.atSetpoint()

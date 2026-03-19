@@ -285,7 +285,8 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
         .withTimeout(5)
         .andThen(
             FaultLogger.reportEquals(
-                "Hood system check", goal, this::position, TOLERANCE.in(Radians)));
+                "Hood system check", goal, this::position, TOLERANCE.in(Radians)))
+        .andThen(goTo(()-> START_ANGLE.in(Radians)));
   }
 
   @Override

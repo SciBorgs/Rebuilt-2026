@@ -3,6 +3,8 @@ package org.sciborgs1155.robot;
 import static edu.wpi.first.units.Units.*;
 import static org.sciborgs1155.robot.Constants.alliance;
 
+import org.sciborgs1155.robot.drive.DriveConstants.Translation;
+
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.VecBuilder;
@@ -85,6 +87,8 @@ public final class FieldConstants {
     public static final double INNER_HEIGHT = Units.inchesToMeters(56.5);
 
     // Relevant reference points on alliance side
+    public static final Translation3d LEFT_FEED = new Translation3d(1, 1, 0);
+    public static final Translation3d RIGHT_FEED = new Translation3d(1, FIELD_WIDTH - 1, 0);
     public static final Translation3d TOP_CENTER_POINT =
         new Translation3d(
             FIELD_LAYOUT.getTagPose(26).get().getX() + WIDTH / 2.0, FIELD_WIDTH / 2.0, HEIGHT);
@@ -353,6 +357,14 @@ public final class FieldConstants {
                 .rotateAround(
                     new Translation2d(FIELD_LENGTH / 2, FIELD_WIDTH / 2), Rotation2d.k180deg),
             pose.getRotation().plus(Rotation2d.k180deg));
+  }
+
+  public static Translation2d allianceReflect(Translation2d translation) {
+    return alliance() == Alliance.Blue
+        ? translation
+        : translation
+                .rotateAround(
+                    new Translation2d(FIELD_LENGTH / 2, FIELD_WIDTH / 2), Rotation2d.k180deg);
   }
 
   /**

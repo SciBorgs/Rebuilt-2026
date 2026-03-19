@@ -18,12 +18,14 @@ import static org.sciborgs1155.robot.drive.DriveConstants.MAX_SPEED;
 import static org.sciborgs1155.robot.drive.DriveConstants.TELEOP_ANGULAR_SPEED;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.CENTER_TO_SHOOTER;
 import static org.sciborgs1155.robot.turret.TurretConstants.FULL_ANGLE_RANGE;
+import static org.sciborgs1155.robot.turret.TurretConstants.START_ANGLE;
 
 import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
@@ -42,6 +44,7 @@ import org.littletonrobotics.urcl.URCL;
 import org.sciborgs1155.lib.CommandRobot;
 import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.lib.InputStream;
+import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.lib.ShiftTracker;
 import org.sciborgs1155.lib.Tracer;
 import org.sciborgs1155.robot.Ports.OI;
@@ -89,7 +92,6 @@ public class Robot extends CommandRobot {
   private final Hopper hopper = Hopper.create();
   private final Slapdown slapdown = Slapdown.create();
   private final Climb climb = Climb.none();
-  private final LEDs leds = LEDs.create();
 
   // COMMANDS
   private final Alignment align = new Alignment(drive);
@@ -245,7 +247,7 @@ public class Robot extends CommandRobot {
 
     drive.setDefaultCommand(drive.drive(x, y, omega).withName("joysticks"));
 
-    operator.y().onTrue(turret.fromJoysticks(operatorRawX, operatorRawY));
+    operator.y().whileTrue(turret.fromJoysticks(operatorRawX, operatorRawY).withName("joysticks")).onFalse(turret.goTo(() -> START_ANGLE.in(Radians)).withName("back to 0"));
 
     if (TUNING) {
       SignalLogger.enableAutoLogging(false);
@@ -257,7 +259,7 @@ public class Robot extends CommandRobot {
 
     autonomous()
         .whileTrue(
-            Commands.defer(autos::getSelected, Set.of(drive)).asProxy().alongWith(leds.autos()));
+            Commands.defer(autos::getSelected, Set.of(drive)).asProxy());
 
     test().whileTrue(systemsCheck());
 
@@ -274,56 +276,30 @@ public class Robot extends CommandRobot {
     // FEED CONTINUOUS (LEFT SIDE)
     driver
         .leftBumper()
-        .whileTrue(
-            Commands.run(() -> {})
-                .alongWith(
-                    slapdown.squeeze(),
-                    leds.error(
-                        () ->
-                            Math.abs(turret.position() - turret.goal())
-                                / FULL_ANGLE_RANGE.in(Radians),
-                        Degrees.of(2).in(Radians))));
+        .whileTrue(shooting.shootDriving(Shooting.LEFT_FEED, x, y, omega));
 
     // FEED CONTINUOUS (RIGHT SIDE)
     driver
         .rightBumper()
-        .whileTrue(
-            Commands.run(() -> {})
-                .alongWith(
-                    slapdown.squeeze(),
-                    Commands.none(),
-                    leds.error(
-                        () ->
-                            Math.abs(turret.position() - turret.goal())
-                                / FULL_ANGLE_RANGE.in(Radians),
-                        Degrees.of(2).in(Radians))));
+        .whileTrue(shooting.shootDriving(Shooting.RIGHT_FEED, x, y, omega));
 
     // SCORE CONTINUOUS
     driver
         .rightTrigger()
-        .whileTrue(
-            Commands.run(() -> {})
-                .alongWith(
-                    slapdown.squeeze(),
-                    Commands.none(),
-                    leds.error(
-                        () ->
-                            Math.abs(turret.position() - turret.goal())
-                                / FULL_ANGLE_RANGE.in(Radians),
-                        Degrees.of(2).in(Radians))));
+        .whileTrue(shooting.shootDriving(Shooting.HUB_TARGET, x, y, omega));
 
     // SCORING FALL BACK (FIXED POSITION)
     driver
         .y()
         .whileTrue(
             Commands.run(() -> {})
-                .alongWith(slapdown.squeeze(), Commands.none(), leds.blink(Color.kOrange)));
+                .alongWith(Commands.none()));
 
     // CLIMB
     operator
         .y()
-        .whileTrue(climb.extend().alongWith(leds.scroll(Color.kRed)))
-        .onFalse(climb.retract().alongWith(leds.solid(Color.kRed)));
+        .whileTrue(climb.extend())
+        .onFalse(climb.retract());
 
     // DEBUG
     // TODO: various operator debug stuff (turret, hood, shooter)
@@ -341,10 +317,6 @@ public class Robot extends CommandRobot {
     //     .leftBumper()
     //     .or(operator.rightBumper())
     //     .whileTrue(turret.manualTurret(InputStream.of(() -> operator.getLeftX())));
-
-    operator.a().toggleOnTrue(shooting.shootWithTestData());
-    operator.b().whileTrue(shooting.shootHubDriving(x, y, omega));
-    operator.x().whileTrue(hopper.intake().alongWith(indexer.forward()));
   }
 
   /**
@@ -375,13 +347,11 @@ public class Robot extends CommandRobot {
    */
   public Command systemsCheck() {
     return Commands.sequence(
-            leds.blink(Color.kRed).withTimeout(0.5),
             drive.systemsCheck(),
             turret.systemsCheck(),
             hood.systemsCheck(),
             shooter.systemsCheck(),
-            slapdown.systemsCheck(),
-            leds.solid(Color.kGreen).withTimeout(0.5))
+            slapdown.systemsCheck())
         .withName("Test Mechansims");
   }
 

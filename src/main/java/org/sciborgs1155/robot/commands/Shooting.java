@@ -1,10 +1,9 @@
 package org.sciborgs1155.robot.commands;
 
 import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static org.sciborgs1155.robot.FieldConstants.allianceReflect;
 import static edu.wpi.first.units.Units.Seconds;
+import static org.sciborgs1155.robot.FieldConstants.allianceReflect;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.CENTER_TO_SHOOTER;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.IDLE_VELOCITY;
 
@@ -23,7 +22,6 @@ import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-
 import java.util.function.Function;
 import java.util.function.Supplier;
 import org.sciborgs1155.lib.InputStream;
@@ -35,12 +33,11 @@ import org.sciborgs1155.robot.commands.shooting.ShootingAlgorithm;
 import org.sciborgs1155.robot.commands.shooting.TOFIteration;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.drive.DriveConstants;
-import org.sciborgs1155.robot.hood.HoodConstants;
 import org.sciborgs1155.robot.hood.Hood;
+import org.sciborgs1155.robot.hood.HoodConstants;
 import org.sciborgs1155.robot.hopper.Hopper;
 import org.sciborgs1155.robot.indexer.Indexer;
 import org.sciborgs1155.robot.shooter.Shooter;
-import org.sciborgs1155.robot.shooter.ShooterConstants;
 import org.sciborgs1155.robot.turret.Turret;
 
 public class Shooting {
@@ -59,10 +56,13 @@ public class Shooting {
   public static final Distance MIN_DISTANCE = Meters.of(.2);
 
   /** Field-relative position of the hub target. */
-  public static final Translation2d HUB_TARGET = 
+  public static final Translation2d HUB_TARGET =
       allianceReflect(FieldConstants.Hub.TOP_CENTER_POINT.toTranslation2d());
-  public static final Translation2d LEFT_FEED = allianceReflect(FieldConstants.Hub.LEFT_FEED.toTranslation2d());
-  public static final Translation2d RIGHT_FEED = allianceReflect(FieldConstants.Hub.RIGHT_FEED.toTranslation2d());
+
+  public static final Translation2d LEFT_FEED =
+      allianceReflect(FieldConstants.Hub.LEFT_FEED.toTranslation2d());
+  public static final Translation2d RIGHT_FEED =
+      allianceReflect(FieldConstants.Hub.RIGHT_FEED.toTranslation2d());
 
   private final ShootingAlgorithm algorithm = new TOFIteration();
 
@@ -105,7 +105,8 @@ public class Shooting {
    *
    * @return a command that shoots at the hub while driving
    */
-  public Command shootDriving(Translation2d target, InputStream vx, InputStream vy, InputStream omega) {
+  public Command shootDriving(
+      Translation2d target, InputStream vx, InputStream vy, InputStream omega) {
     return Commands.waitUntil(
             () ->
                 shooter.atSetpoint()
@@ -139,29 +140,34 @@ public class Shooting {
    * @return A Command to move the hood all the way down and idle the shooter.
    */
   public Command hideAway() {
-        return Commands.parallel(
-            shooter.idle(),
-            hood.goTo(HoodConstants.MIN_ANGLE)
-        );
+    return Commands.parallel(shooter.idle(), hood.goTo(HoodConstants.MIN_ANGLE));
   }
 
   /**
-   * @return A Trigger that activates when imminently crossing between field zones within HOOD_DOWN_TIME.
+   * @return A Trigger that activates when imminently crossing between field zones within
+   *     HOOD_DOWN_TIME.
    */
   public Trigger crossingAlliance() {
-    return new Trigger(() -> {
-        Vector<N2> velocity = drive.velocity();
-        Pose2d pose = drive.pose();
+    return new Trigger(
+        () -> {
+          Translation2d velocity = drive.velocity();
+          Pose2d pose = drive.pose();
 
-        double projectedDeltaX = velocity.get(0) * HoodConstants.HOOD_DOWN_TIME.in(Seconds);
-        double projectedDeltaY = velocity.get(1) * HoodConstants.HOOD_DOWN_TIME.in(Seconds);
+          double projectedDeltaX = velocity.getX() * HoodConstants.HOOD_DOWN_TIME.in(Seconds);
+          double projectedDeltaY = velocity.getY() * HoodConstants.HOOD_DOWN_TIME.in(Seconds);
 
-        double nearHubDisplacement = FieldConstants.LinesVertical.HUB_CENTER - pose.getX();
-        double farHubDisplacement = FieldConstants.LinesVertical.OPP_HUB_CENTER - pose.getX();
-        Function<Double,Boolean> compare = (Double displacement) -> Math.abs(projectedDeltaX) > Math.abs(displacement) && ((projectedDeltaX > 0) == (displacement > 0));
-        boolean goingAroundHub = Math.abs(pose.getY() + projectedDeltaY - FieldConstants.LinesHorizontal.CENTER) > (DriveConstants.RADIUS.in(Meters) + FieldConstants.Hub.WIDTH / 2);
-        return (compare.apply(nearHubDisplacement) || compare.apply(farHubDisplacement)) && goingAroundHub;
-    });
+          double nearHubDisplacement = FieldConstants.LinesVertical.HUB_CENTER - pose.getX();
+          double farHubDisplacement = FieldConstants.LinesVertical.OPP_HUB_CENTER - pose.getX();
+          Function<Double, Boolean> compare =
+              (Double displacement) ->
+                  Math.abs(projectedDeltaX) > Math.abs(displacement)
+                      && ((projectedDeltaX > 0) == (displacement > 0));
+          boolean goingAroundHub =
+              Math.abs(pose.getY() + projectedDeltaY - FieldConstants.LinesHorizontal.CENTER)
+                  > (DriveConstants.RADIUS.in(Meters) + FieldConstants.Hub.WIDTH / 2);
+          return (compare.apply(nearHubDisplacement) || compare.apply(farHubDisplacement))
+              && goingAroundHub;
+        });
   }
 
   /**

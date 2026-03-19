@@ -41,7 +41,7 @@ public class TOFIteration implements ShootingAlgorithm {
     for (int i = 0; i < ITERATIONS; i++) {
       double distance = target.getDistance(lookAhead);
       double tof = DISTANCE_TO_TOF.get(distance);
-      lookAhead = new Translation2d(velocity.times(tof).plus(accel.times(tof*tof/2)));
+      lookAhead = new Translation2d(velocity.times(tof).plus(accel.times(tof * tof / 2)));
     }
 
     double distance = target.getDistance(lookAhead);
@@ -59,6 +59,6 @@ public class TOFIteration implements ShootingAlgorithm {
 
   @Override
   public Vector<N3> calculate(Translation3d displacement, Vector<N2> velocity) {
-    return calculate(displacement, velocity, VecBuilder.fill(0,0));
+    return calculate(displacement, velocity, VecBuilder.fill(0, 0));
   }
 }

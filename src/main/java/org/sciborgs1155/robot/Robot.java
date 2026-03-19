@@ -1,6 +1,5 @@
 package org.sciborgs1155.robot;
 
-import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
@@ -17,7 +16,6 @@ import static org.sciborgs1155.robot.drive.DriveConstants.MAX_ANGULAR_ACCEL;
 import static org.sciborgs1155.robot.drive.DriveConstants.MAX_SPEED;
 import static org.sciborgs1155.robot.drive.DriveConstants.TELEOP_ANGULAR_SPEED;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.CENTER_TO_SHOOTER;
-import static org.sciborgs1155.robot.turret.TurretConstants.FULL_ANGLE_RANGE;
 import static org.sciborgs1155.robot.turret.TurretConstants.START_ANGLE;
 
 import com.ctre.phoenix6.SignalLogger;
@@ -26,7 +24,6 @@ import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
@@ -34,11 +31,10 @@ import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import java.util.Arrays;
 import java.util.Set;
@@ -46,7 +42,6 @@ import org.littletonrobotics.urcl.URCL;
 import org.sciborgs1155.lib.CommandRobot;
 import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.lib.InputStream;
-import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.lib.ShiftTracker;
 import org.sciborgs1155.lib.Tracer;
 import org.sciborgs1155.robot.Ports.OI;
@@ -62,7 +57,6 @@ import org.sciborgs1155.robot.hood.Hood;
 import org.sciborgs1155.robot.hopper.Hopper;
 import org.sciborgs1155.robot.indexer.Indexer;
 import org.sciborgs1155.robot.intake.Intake;
-import org.sciborgs1155.robot.led.LEDs;
 import org.sciborgs1155.robot.shooter.Shooter;
 import org.sciborgs1155.robot.shooter.ShooterConstants;
 import org.sciborgs1155.robot.slapdown.Slapdown;
@@ -257,43 +251,33 @@ public class Robot extends CommandRobot {
       disabled().onTrue(Commands.runOnce(() -> SignalLogger.stop()));
     }
 
-    autonomous()
-        .whileTrue(
-            Commands.defer(autos::getSelected, Set.of(drive)).asProxy());
+    autonomous().whileTrue(Commands.defer(autos::getSelected, Set.of(drive)).asProxy());
 
     test().whileTrue(systemsCheck());
 
     driver.povUp().whileTrue(drive.zeroHeading());
 
     driver
-        .leftTrigger()
+        .x()
         .onTrue(Commands.runOnce(() -> speedMultiplier = SLOW_SPEED_MULTIPLIER))
         .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
 
     // INTAKE TOGGLE
-    driver.x().toggleOnTrue(slapdown.extend().alongWith(intake.intake()));
+    driver.leftTrigger().toggleOnTrue(slapdown.extend().alongWith(intake.intake()));
 
     // FEED CONTINUOUS (LEFT SIDE)
-    driver
-        .leftBumper()
-        .whileTrue(shooting.shootDriving(Shooting.LEFT_FEED, x, y, omega));
+    driver.leftBumper().whileTrue(shooting.shootDriving(Shooting.LEFT_FEED, x, y, omega));
 
     // FEED CONTINUOUS (RIGHT SIDE)
-    driver
-        .rightBumper()
-        .whileTrue(shooting.shootDriving(Shooting.RIGHT_FEED, x, y, omega));
+    driver.rightBumper().whileTrue(shooting.shootDriving(Shooting.RIGHT_FEED, x, y, omega));
 
     // SCORE CONTINUOUS
-    driver
-        .rightTrigger()
-        .whileTrue(shooting.shootDriving(Shooting.HUB_TARGET, x, y, omega));
+    driver.rightTrigger().whileTrue(shooting.shootDriving(Shooting.HUB_TARGET, x, y, omega));
 
     // SCORING FALL BACK (FIXED POSITION)
     driver
         .y()
-        .whileTrue(
-            Commands.run(() -> {})
-                .alongWith(Commands.none()));
+        .whileTrue(hopper.intake().alongWith(indexer.forward().alongWith(shooter.runShooter(120))));
 
     // CLIMB
     // operator
@@ -302,8 +286,12 @@ public class Robot extends CommandRobot {
     //     .onFalse(climb.retract());
 
     operator.x().whileTrue(shooting.shootWithTestData());
-    
-    operator.y().whileTrue(turret.fromJoysticks(operatorRawX, operatorRawY).withName("joysticks")).onFalse(turret.goToYaw(Rotation2d.fromRadians(START_ANGLE.in(Radians))).withName("back to 0"));
+
+    operator
+        .y()
+        .whileTrue(turret.fromJoysticks(operatorRawX, operatorRawY).withName("joysticks"))
+        .onFalse(
+            turret.goToYaw(Rotation2d.fromRadians(START_ANGLE.in(Radians))).withName("back to 0"));
 
     operator.a().whileTrue(turret.goTo(() -> 3 * Math.PI / 2));
     operator.b().whileTrue(turret.goTo(() -> Math.PI / 2));
@@ -311,7 +299,9 @@ public class Robot extends CommandRobot {
     operator.leftTrigger().whileTrue(turret.goLeft());
     operator.rightTrigger().whileTrue(turret.goRight());
 
-    shooting.crossingAlliance().whileTrue(shooting.hideAway().withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
+    shooting
+        .crossingAlliance()
+        .whileTrue(shooting.hideAway().withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
 
     // DEBUG
     // TODO: various operator debug stuff (turret, hood, shooter)

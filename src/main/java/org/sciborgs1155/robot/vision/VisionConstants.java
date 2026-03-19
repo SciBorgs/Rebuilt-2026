@@ -2,7 +2,6 @@ package org.sciborgs1155.robot.vision;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
-import static edu.wpi.first.units.Units.Meters;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
@@ -12,8 +11,6 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.units.measure.Distance;
-
 import java.util.Set;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.sciborgs1155.robot.FieldConstants;
@@ -59,7 +56,7 @@ public final class VisionConstants {
               Inches.of(13.514), Inches.of(2.699), Inches.of(10.581108), yawPitchRoll(0, 15, 0)),
           PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
 
-  public static final CameraConfig B_CAMERA = // CAMERA 2
+  public static final CameraConfig B_CAMERA = // CAMEwRA 2
       new CameraConfig(
           "B cam",
           78,

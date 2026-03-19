@@ -52,20 +52,21 @@ public class TurretTest {
   /**
    * Tests that goToYaw picks the valid turret position closest to the current position.
    *
-   * Range is [0°, 405°]; overlap zone is [0°, 45°] where both c1=theta and c2=theta+360 are valid.
-   * Cases: overlap zone from near side, overlap zone from far side, only c2 valid (negative yaw),
-   * only c1 valid (yaw above 45°), boundary at 180°, just above 45°, crossover in overlap zone.
+   * <p>Range is [0°, 405°]; overlap zone is [0°, 45°] where both c1=theta and c2=theta+360 are
+   * valid. Cases: overlap zone from near side, overlap zone from far side, only c2 valid (negative
+   * yaw), only c1 valid (yaw above 45°), boundary at 180°, just above 45°, crossover in overlap
+   * zone.
    */
   @ParameterizedTest
   @CsvSource({
-    "0, 20, 20",     // overlap zone, nearer side: c1=20 closer than c2=380
-    "390, 20, 380",  // overlap zone, far side: c2=380 closer than c1=20
-    "0, -90, 270",   // only c2 valid (theta=-90 < MIN=0, c2=270 valid)
-    "0, 120, 120",   // only c1 valid (c2=480 > MAX=405)
-    "0, 180, 180",   // 180 deg boundary: only c1 valid (c2=540 > MAX)
-    "0, 46, 46",     // just above 45: only c1 valid (c2=406 > MAX)
-    "201, 20, 380",  // overlap zone crossover: c2=380 is 179 away, c1=20 is 181 away
-    "199, 20, 20"    // overlap zone crossover: c1=20 is 179 away, c2=380 is 181 away
+    "0, 20, 20", // overlap zone, nearer side: c1=20 closer than c2=380
+    "390, 20, 380", // overlap zone, far side: c2=380 closer than c1=20
+    "0, -90, 270", // only c2 valid (theta=-90 < MIN=0, c2=270 valid)
+    "0, 120, 120", // only c1 valid (c2=480 > MAX=405)
+    "0, 180, 180", // 180 deg boundary: only c1 valid (c2=540 > MAX)
+    "0, 46, 46", // just above 45: only c1 valid (c2=406 > MAX)
+    "201, 20, 380", // overlap zone crossover: c2=380 is 179 away, c1=20 is 181 away
+    "199, 20, 20" // overlap zone crossover: c1=20 is 179 away, c2=380 is 181 away
   })
   public void goToYaw(double startDeg, double yawDeg, double expectedDeg) {
     if (startDeg != 0) {

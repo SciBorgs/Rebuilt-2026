@@ -345,12 +345,13 @@ public class Drive extends SubsystemBase implements AutoCloseable {
 
   /**
    * Returns the field-relative velocity of the robot.
+   *
    * @return The velocity.
    */
   @Logged
-  public Vector<N2> velocity() {
+  public Translation2d velocity() {
     ChassisSpeeds speeds = fieldRelativeChassisSpeeds();
-    return VecBuilder.fill(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
+    return new Translation2d(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
   }
 
   /** Returns a Pose3D of the estimated pose of the robot. */

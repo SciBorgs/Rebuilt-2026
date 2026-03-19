@@ -104,7 +104,8 @@ public final class Shooter extends SubsystemBase implements AutoCloseable {
    * Updates the velocity setpoint of the motor.
    *
    * @param velocitySetpoint The value of the velocity setpoint,
-   * @param noDeceleration If true, sends no negative voltage, using power to break the motor. it'll at most just let it coast.
+   * @param noDeceleration If true, sends no negative voltage, using power to break the motor. it'll
+   *     at most just let it coast.
    */
   public void update(double velocitySetpoint, boolean noDeceleration) {
     double velocity =
@@ -117,7 +118,7 @@ public final class Shooter extends SubsystemBase implements AutoCloseable {
     double ffVolts =
         feedforward.calculateWithVelocities(lastVelocity, controller.getSetpoint().position);
     double volts = MathUtil.clamp(pidVolts + ffVolts, -MAX_VOLTAGE, MAX_VOLTAGE);
-    hardware.setVoltage(noDeceleration ? Math.max(0,volts) : volts);
+    hardware.setVoltage(noDeceleration ? Math.max(0, volts) : volts);
   }
 
   public void update(double velocitySetpoint) {
@@ -180,7 +181,8 @@ public final class Shooter extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * Idles the shooter. It will not intentionally decelerate the wheels, but will keep the speed above IDLE_VELOCITY.
+   * Idles the shooter. It will not intentionally decelerate the wheels, but will keep the speed
+   * above IDLE_VELOCITY.
    */
   public Command idle() {
     return run(() -> update(IDLE_VELOCITY.in(RadiansPerSecond), true)).withName("Idle");

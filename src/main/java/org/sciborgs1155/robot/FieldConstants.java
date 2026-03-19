@@ -3,8 +3,6 @@ package org.sciborgs1155.robot;
 import static edu.wpi.first.units.Units.*;
 import static org.sciborgs1155.robot.Constants.alliance;
 
-import org.sciborgs1155.robot.drive.DriveConstants.Translation;
-
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.VecBuilder;
@@ -362,9 +360,8 @@ public final class FieldConstants {
   public static Translation2d allianceReflect(Translation2d translation) {
     return alliance() == Alliance.Blue
         ? translation
-        : translation
-                .rotateAround(
-                    new Translation2d(FIELD_LENGTH / 2, FIELD_WIDTH / 2), Rotation2d.k180deg);
+        : translation.rotateAround(
+            new Translation2d(FIELD_LENGTH / 2, FIELD_WIDTH / 2), Rotation2d.k180deg);
   }
 
   /**

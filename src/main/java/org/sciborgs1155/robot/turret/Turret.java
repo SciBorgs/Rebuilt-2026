@@ -134,7 +134,9 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * manual control to test the turret, makes it go in the direction of the joystick on the controller
+   * manual control to test the turret, makes it go in the direction of the joystick on the
+   * controller
+   *
    * @param x the x axis of the joystick
    * @param y the y axis of the joystick
    * @return a command to manually face the turret
@@ -286,7 +288,7 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
         .andThen(
             FaultLogger.reportEquals(
                 "Hood system check", goal, this::position, TOLERANCE.in(Radians)))
-        .andThen(goTo(()-> START_ANGLE.in(Radians)));
+        .andThen(goTo(() -> START_ANGLE.in(Radians)));
   }
 
   @Override

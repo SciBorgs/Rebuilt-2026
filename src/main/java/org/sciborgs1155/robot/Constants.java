@@ -52,6 +52,8 @@ public final class Constants {
   /** States if we are in tuning mode. Ideally, keep it at false when not used. */
   public static final boolean TUNING = true;
 
+  public static final Pose2d CLIMB_POSE = new Pose2d(1.52, 3.74, new Rotation2d(Degrees.of(180)));
+
   // Prevents instantiation
   private Constants() {}
 
@@ -102,6 +104,4 @@ public final class Constants {
     public static final Translation3d ROBOT_TO_SHOOTER =
         new Translation3d(-0.14006, 0.13983, 0.3286252);
   }
-
-  public static final Pose2d CLIMB_POSE = new Pose2d(1.52, 3.74, new Rotation2d(Degrees.of(180)));
 }

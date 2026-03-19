@@ -1,13 +1,13 @@
 package org.sciborgs1155.robot.turret;
 
-import static org.sciborgs1155.robot.Constants.PERIOD;
-import static org.sciborgs1155.robot.turret.TurretConstants.*;
-
-import edu.wpi.first.math.system.plant.DCMotor;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Seconds;
+import static org.sciborgs1155.robot.Constants.PERIOD;
+import static org.sciborgs1155.robot.turret.TurretConstants.*;
+
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 
 /** Simulated hardware interface for the {@code Turret} subsystem. */

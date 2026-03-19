@@ -19,7 +19,7 @@ public class SlapdownConstants {
 
   public static final double P = 10;
   public static final double I = 0;
-  public static final double D = 0;
+  public static final double D = 0.5;
 
   public static final double S = 0;
   public static final double V = 0;

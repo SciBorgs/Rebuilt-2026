@@ -1,35 +1,23 @@
 package org.sciborgs1155.robot.turret;
 
-import java.util.Set;
-import java.util.function.DoubleSupplier;
-import java.util.function.Supplier;
-
-import org.sciborgs1155.lib.Assertion;
-import static org.sciborgs1155.lib.Assertion.tAssert;
-import org.sciborgs1155.lib.InputStream;
-import org.sciborgs1155.lib.LoggingUtils;
-import org.sciborgs1155.lib.Test;
-import org.sciborgs1155.lib.Tuning;
+import static edu.wpi.first.units.Units.*;
+import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.Seconds;
+import static edu.wpi.first.units.Units.Volts;
 import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.Constants.TUNING;
-import static org.sciborgs1155.robot.slapdown.SlapdownConstants.CONSTRAINTS;
-
-import org.sciborgs1155.robot.Robot;
-import static org.sciborgs1155.robot.turret.TurretConstants.ControlConstants.*;
 import static org.sciborgs1155.robot.turret.TurretConstants.*;
+import static org.sciborgs1155.robot.turret.TurretConstants.ControlConstants.*;
 
 import com.ctre.phoenix6.SignalLogger;
-
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.networktables.DoubleEntry;
-import static edu.wpi.first.units.Units.*;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -37,6 +25,13 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
+import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
+import org.sciborgs1155.lib.FaultLogger;
+import org.sciborgs1155.lib.InputStream;
+import org.sciborgs1155.lib.LoggingUtils;
+import org.sciborgs1155.lib.Tuning;
+import org.sciborgs1155.robot.Robot;
 
 /**
  * The {@code Turret} subsystem consists of a single motor that is used to aim a variable hood
@@ -49,7 +44,13 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
 
   /** {@code PIDController} used to orient the turret to a specified angle. */
   @Logged
-  private final ProfiledPIDController controller = new ProfiledPIDController(P, I, D, new Constraints(MAX_VELOCITY.in(RadiansPerSecond), MAX_ACCELERATION.in(RadiansPerSecondPerSecond)));
+  private final ProfiledPIDController controller =
+      new ProfiledPIDController(
+          P,
+          I,
+          D,
+          new Constraints(
+              MAX_VELOCITY.in(RadiansPerSecond), MAX_ACCELERATION.in(RadiansPerSecondPerSecond)));
 
   /** {@code Feedforward} used to aid in orienting the turret to a specified angle. */
   @Logged
@@ -132,8 +133,14 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
     return run(() -> hardware.setVoltage(-1));
   }
 
+  /** Has the turret go to the joysticks position physically */
   public Command fromJoysticks(InputStream x, InputStream y) {
-    return goToYaw(() -> Rotation2d.fromRadians(Math.hypot(x.getAsDouble(), y.getAsDouble()) > 0.1 ? Math.atan2(y.getAsDouble(), x.getAsDouble()) : position()));
+    return goToYaw(
+        () ->
+            Rotation2d.fromRadians(
+                Math.hypot(x.getAsDouble(), y.getAsDouble()) > 0.1
+                    ? Math.atan2(y.getAsDouble(), x.getAsDouble())
+                    : position()));
   }
 
   /**
@@ -265,18 +272,15 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
    *
    * @param goal The goal in radians.
    */
-  public Test goToTest(DoubleSupplier goal) {
-    Command testCommand = goTo(goal).until(this::atGoal).withTimeout(5);
-    Set<Assertion> assertions =
-        Set.of(
-            tAssert(
-                this::atGoal,
-                "Turret system check",
-                () ->
-                    String.format(
-                        "Turret goal check: current=%.3f rad, goal=%.3f rad, tolerance=%.3f rad",
-                        position(), goal.getAsDouble(), TOLERANCE.in(Radians))));
-    return new Test(testCommand, assertions);
+  public Command systemsCheck() {
+    DoubleSupplier goal = () -> MAX_ANGLE.div(4).in(Radians);
+
+    return goTo(goal)
+        .until(this::atGoal)
+        .withTimeout(5)
+        .andThen(
+            FaultLogger.reportEquals(
+                "Hood system check", goal, this::position, TOLERANCE.in(Radians)));
   }
 
   @Override

@@ -7,7 +7,6 @@ import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 import static java.lang.Math.atan;
-import static org.sciborgs1155.lib.Assertion.*;
 import static org.sciborgs1155.lib.LoggingUtils.*;
 import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.Constants.TUNING;
@@ -53,22 +52,14 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
-import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.photonvision.EstimatedRobotPose;
-import org.sciborgs1155.lib.Assertion;
-import org.sciborgs1155.lib.Assertion.EqualityAssertion;
-import org.sciborgs1155.lib.Assertion.TruthAssertion;
 import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.lib.FaultLogger.FaultType;
 import org.sciborgs1155.lib.InputStream;
-import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.lib.Tracer;
 import org.sciborgs1155.lib.Tuning;
 import org.sciborgs1155.robot.Robot;
@@ -731,9 +722,9 @@ public class Drive extends SubsystemBase implements AutoCloseable {
     return values;
   }
 
-  /**
-   * @return If the robot is skidding.
-   */
+  // /**
+  //  * @return If the robot is skidding.
+  //  */
   // @Logged
   // public boolean isSkidding() {
   //   DoubleSummaryStatistics diffs =
@@ -985,28 +976,35 @@ public class Drive extends SubsystemBase implements AutoCloseable {
    *
    * @return The test to run.
    */
-  public Test systemsCheck() {
-    ChassisSpeeds speeds = new ChassisSpeeds(1, 1, 0);
-    Command testCommand =
-        run(() -> setChassisSpeeds(speeds, ControlMode.OPEN_LOOP_VELOCITY)).withTimeout(0.75);
-    Function<ModuleIO, TruthAssertion> speedCheck =
-        m ->
-            tAssert(
-                () -> m.state().speedMetersPerSecond * Math.signum(m.position().angle.getCos()) > 1,
-                "Drive Syst Check " + m.name() + " Module Speed",
-                () -> "expected: >= 1; actual: " + m.state().speedMetersPerSecond);
-    Function<ModuleIO, EqualityAssertion> atAngle =
-        m ->
-            eAssert(
-                "Drive Syst Check " + m.name() + " Module Angle (degrees)",
-                () -> 45,
-                () -> Units.radiansToDegrees(atan(m.position().angle.getTan())),
-                1);
-    Set<Assertion> assertions =
+  public Command systemsCheck() {
+    Command[] speedChecks =
         modules.stream()
-            .flatMap(m -> Stream.of(speedCheck.apply(m), atAngle.apply(m)))
-            .collect(Collectors.toSet());
-    return new Test(testCommand, assertions);
+            .map(
+                m ->
+                    FaultLogger.reportTrue(
+                        () ->
+                            m.state().speedMetersPerSecond
+                                    * Math.signum(m.position().angle.getCos())
+                                > 1,
+                        "Drive Syst Check " + m.name() + " Module Speed",
+                        () -> "expected: >= 1; actual: " + m.state().speedMetersPerSecond))
+            .toArray(Command[]::new);
+
+    Command[] atAngle =
+        modules.stream()
+            .map(
+                m ->
+                    FaultLogger.reportEquals(
+                        "Drive Syst Check " + m.name() + " Module Angle (degrees)",
+                        () -> 45,
+                        () -> Units.radiansToDegrees(atan(m.position().angle.getTan())),
+                        1))
+            .toArray(Command[]::new);
+
+    return run(() -> setChassisSpeeds(new ChassisSpeeds(1, 1, 0), ControlMode.OPEN_LOOP_VELOCITY))
+        .withTimeout(0.75)
+        .andThen(speedChecks)
+        .andThen(atAngle);
   }
 
   @Override

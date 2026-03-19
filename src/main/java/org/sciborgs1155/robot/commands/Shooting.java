@@ -24,7 +24,6 @@ import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.lib.Tuning;
 import org.sciborgs1155.robot.FieldConstants;
-import org.sciborgs1155.robot.Robot;
 import org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer;
 import org.sciborgs1155.robot.commands.shooting.ShootingAlgorithm;
 import org.sciborgs1155.robot.commands.shooting.TOFIteration;
@@ -102,15 +101,15 @@ public class Shooting {
                 shooter.atSetpoint()
                     && shooter.setpoint() > IDLE_VELOCITY.in(RadiansPerSecond)
                     && hood.atGoal())
-                    // && turret.atGoal())
+        // && turret.atGoal())
         .andThen(
-          Commands.parallel(
-                    hopper.intake(),
-                    indexer.forward(),
-                    Commands.runOnce(
-                        () -> {
-                          if (fuelVisualizer != null) fuelVisualizer.launchProjectile();
-                        })))
+            Commands.parallel(
+                hopper.intake(),
+                indexer.forward(),
+                Commands.runOnce(
+                    () -> {
+                      if (fuelVisualizer != null) fuelVisualizer.launchProjectile();
+                    })))
         .deadlineFor(
             runShooterSuperstructure(() -> calculateShot(HUB_TARGET)),
             drive.drive(

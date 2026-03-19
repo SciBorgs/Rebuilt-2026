@@ -1,6 +1,5 @@
 package org.sciborgs1155.robot.commands;
 
-import static edu.wpi.first.units.Units.Degrees;
 import static org.sciborgs1155.robot.Constants.Robot.MASS;
 import static org.sciborgs1155.robot.Constants.Robot.MOI;
 import static org.sciborgs1155.robot.Constants.alliance;
@@ -43,11 +42,7 @@ public final class Autos {
    */
   @NotLogged
   public static SendableChooser<Command> configureAutos(
-      Drive drive,
-      Intake intake,
-      Shooting shooting,
-      Climb climb,
-      Alignment alignment) {
+      Drive drive, Intake intake, Shooting shooting, Climb climb, Alignment alignment) {
     AutoBuilder.configure(
         drive::pose,
         drive::resetOdometry,
@@ -71,9 +66,7 @@ public final class Autos {
         drive);
 
     PPHolonomicDriveController.overrideRotationFeedback(() -> drive.heading().getRadians());
-    NamedCommands.registerCommand(
-        "shoot",
-        shooting.shootHubDriving(() -> 0, () -> 0, () -> 0));
+    NamedCommands.registerCommand("shoot", shooting.shootHubDriving(() -> 0, () -> 0, () -> 0));
     NamedCommands.registerCommand("intake", intake.intake());
     NamedCommands.registerCommand(
         "climb",

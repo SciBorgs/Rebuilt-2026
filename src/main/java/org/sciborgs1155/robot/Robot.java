@@ -16,8 +16,8 @@ import static org.sciborgs1155.robot.Constants.*;
 import static org.sciborgs1155.robot.drive.DriveConstants.MAX_ANGULAR_ACCEL;
 import static org.sciborgs1155.robot.drive.DriveConstants.MAX_SPEED;
 import static org.sciborgs1155.robot.drive.DriveConstants.TELEOP_ANGULAR_SPEED;
-import static org.sciborgs1155.robot.turret.TurretConstants.FULL_ANGLE_RANGE;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.CENTER_TO_SHOOTER;
+import static org.sciborgs1155.robot.turret.TurretConstants.FULL_ANGLE_RANGE;
 
 import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.epilogue.Epilogue;
@@ -43,7 +43,6 @@ import org.sciborgs1155.lib.CommandRobot;
 import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.ShiftTracker;
-import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.lib.Tracer;
 import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.climb.Climb;
@@ -207,9 +206,10 @@ public class Robot extends CommandRobot {
     InputStream rawX = InputStream.of(driver::getLeftY).log("/Robot/raw x").negate();
     InputStream rawY = InputStream.of(driver::getLeftX).log("/Robot/raw y").negate();
 
-    InputStream operatorRawX = InputStream.of(operator::getLeftY).log("/Robot/operator raw x").negate();
-    InputStream operatorRawY = InputStream.of(operator::getLeftX).log("/Robot/operator raw y").negate();
-
+    InputStream operatorRawX =
+        InputStream.of(operator::getLeftY).log("/Robot/operator raw x").negate();
+    InputStream operatorRawY =
+        InputStream.of(operator::getLeftX).log("/Robot/operator raw y").negate();
 
     // Apply speed multiplier, deadband, square inputs, and scale translation to max speed
     InputStream r =
@@ -330,7 +330,8 @@ public class Robot extends CommandRobot {
 
     // operator
     //     .a()
-    //     .whileTrue(turret.goTo(() -> TurretConstants.MIN_ANGLE.plus(Degrees.of(20)).in(Radians)));
+    //     .whileTrue(turret.goTo(() ->
+    // TurretConstants.MIN_ANGLE.plus(Degrees.of(20)).in(Radians)));
     // operator.y().whileTrue(turret.goTo(() -> 0));
     // operator.leftTrigger().whileTrue(hood.goTo(Degrees.of(45)).withName("goto 45"));
     // operator.rightTrigger().whileTrue(hood.goTo(Degrees.of(25)).withName("goto 25"));
@@ -340,7 +341,7 @@ public class Robot extends CommandRobot {
     //     .leftBumper()
     //     .or(operator.rightBumper())
     //     .whileTrue(turret.manualTurret(InputStream.of(() -> operator.getLeftX())));
-    
+
     operator.a().toggleOnTrue(shooting.shootWithTestData());
     operator.b().whileTrue(shooting.shootHubDriving(x, y, omega));
     operator.x().whileTrue(hopper.intake().alongWith(indexer.forward()));
@@ -373,11 +374,15 @@ public class Robot extends CommandRobot {
    * @return A command that tests all mechanisms.
    */
   public Command systemsCheck() {
-    return Test.toCommand(
-            Test.fromCommand(leds.blink(Color.kRed).withTimeout(0.5)),
+    return Commands.sequence(
+            leds.blink(Color.kRed).withTimeout(0.5),
             drive.systemsCheck(),
-            Test.fromCommand(leds.solid(Color.kGreen).withTimeout(0.5)))
-        .withName("Test Mechanisms");
+            turret.systemsCheck(),
+            hood.systemsCheck(),
+            shooter.systemsCheck(),
+            slapdown.systemsCheck(),
+            leds.solid(Color.kGreen).withTimeout(0.5))
+        .withName("Test Mechansims");
   }
 
   @Override

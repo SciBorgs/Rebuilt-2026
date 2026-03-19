@@ -20,9 +20,10 @@ public interface TurretIO extends AutoCloseable {
    * Returns the current angle of the turret in radians.
    *
    * @return The current angle of the turret in radians.
-   */  
+   */
   double angle();
 
+  /** returns supply voltage of the motor */
   double voltage();
 
   /** Called once per robot loop. Override to update internal state. */

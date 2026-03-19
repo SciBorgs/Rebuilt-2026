@@ -343,6 +343,16 @@ public class Drive extends SubsystemBase implements AutoCloseable {
     return odometry.getEstimatedPosition();
   }
 
+  /**
+   * Returns the field-relative velocity of the robot.
+   * @return The velocity.
+   */
+  @Logged
+  public Vector<N2> velocity() {
+    ChassisSpeeds speeds = fieldRelativeChassisSpeeds();
+    return VecBuilder.fill(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
+  }
+
   /** Returns a Pose3D of the estimated pose of the robot. */
   public Pose3d pose3d() {
     return new Pose3d(odometry.getEstimatedPosition());

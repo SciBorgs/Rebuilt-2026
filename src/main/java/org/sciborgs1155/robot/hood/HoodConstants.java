@@ -26,6 +26,7 @@ public class HoodConstants {
   public static final Angle POSITION_TOLERANCE = Radians.of(0.03);
   public static final AngularVelocity VELOCITY_TOLERANCE = RadiansPerSecond.of(0.01);
   public static final Angle SHOOTING_ANGLE_OFFSET = Degrees.of(90);
+  public static final Time HOOD_DOWN_TIME = Seconds.of(0.5);
 
   // Sysid constants
   public static final Velocity<VoltageUnit> RAMP_RATE = Volts.of(0.5).per(Second);

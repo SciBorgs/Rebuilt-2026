@@ -3,6 +3,7 @@ package org.sciborgs1155.robot.commands;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static org.sciborgs1155.robot.FieldConstants.allianceReflect;
+import static edu.wpi.first.units.Units.Seconds;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.CENTER_TO_SHOOTER;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.IDLE_VELOCITY;
 
@@ -20,6 +21,9 @@ import edu.wpi.first.networktables.DoubleEntry;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+
+import java.util.function.Function;
 import java.util.function.Supplier;
 import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.LoggingUtils;
@@ -30,10 +34,12 @@ import org.sciborgs1155.robot.commands.shooting.ShootingAlgorithm;
 import org.sciborgs1155.robot.commands.shooting.TOFIteration;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.drive.DriveConstants;
+import org.sciborgs1155.robot.hood.HoodConstants;
 import org.sciborgs1155.robot.hood.Hood;
 import org.sciborgs1155.robot.hopper.Hopper;
 import org.sciborgs1155.robot.indexer.Indexer;
 import org.sciborgs1155.robot.shooter.Shooter;
+import org.sciborgs1155.robot.shooter.ShooterConstants;
 import org.sciborgs1155.robot.turret.Turret;
 
 public class Shooting {
@@ -126,6 +132,30 @@ public class Shooting {
         shooter.runShooter(() -> params.get().RADS),
         hood.goTo(() -> params.get().hoodAngle),
         turret.goTo(() -> params.get().turretAngle));
+  }
+
+  /**
+   * @return A Command to move the hood all the way down and idle the shooter.
+   */
+  public Command hideAway() {
+        return Commands.parallel(
+            shooter.idle(),
+            hood.goTo(HoodConstants.MIN_ANGLE)
+        );
+  }
+
+  /**
+   * @return A Trigger that activates when imminently crossing between field zones within HOOD_DOWN_TIME.
+   */
+  public Trigger crossingAlliance() {
+    return new Trigger(() -> {
+        double projectedDeltaX = drive.velocity().get(0) * HoodConstants.HOOD_DOWN_TIME.in(Seconds);
+        double poseX = drive.pose().getX();
+        double nearHubDisplacement = FieldConstants.LinesVertical.HUB_CENTER - poseX;
+        double farHubDisplacement = FieldConstants.LinesVertical.OPP_HUB_CENTER - poseX;
+        Function<Double,Boolean> compare = (Double displacement) -> Math.abs(projectedDeltaX) > Math.abs(displacement) && ((projectedDeltaX > 0) == (displacement > 0));
+        return compare.apply(nearHubDisplacement) || compare.apply(farHubDisplacement);
+    });
   }
 
   /**

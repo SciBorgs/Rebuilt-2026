@@ -242,7 +242,7 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
         () -> {
           double theta = yaw.get().getRadians();
           double c1 = theta;
-          double c2 = theta - 2 * Math.PI;
+          double c2 = theta + 2 * Math.PI;
           boolean c1Valid = c1 >= MIN_ANGLE.in(Radians) && c1 <= MAX_ANGLE.in(Radians);
           boolean c2Valid = c2 >= MIN_ANGLE.in(Radians) && c2 <= MAX_ANGLE.in(Radians);
           if (c1Valid && c2Valid) {

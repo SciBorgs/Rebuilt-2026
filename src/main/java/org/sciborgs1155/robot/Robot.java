@@ -355,11 +355,12 @@ public class Robot extends CommandRobot {
    */
   public Command systemsCheck() {
     return Commands.sequence(
-            drive.systemsCheck(),
-            turret.systemsCheck(),
-            hood.systemsCheck(),
-            shooter.systemsCheck(),
-            slapdown.systemsCheck())
+            // drive.systemsCheck(),
+            turret.systemsCheck().withTimeout(6),
+            hood.systemsCheck().withTimeout(6),
+            shooter.systemsCheck().withTimeout(6),
+            slapdown.systemsCheck().withTimeout(1),
+            intake.intake().withTimeout(3))
         .withName("Test Mechansims");
   }
 

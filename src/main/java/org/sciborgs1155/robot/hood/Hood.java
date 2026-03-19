@@ -286,7 +286,8 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
                 "Hood system check",
                 () -> angle() + 12,
                 () -> goal.in(Radians),
-                POSITION_TOLERANCE.in(Radians)));
+                POSITION_TOLERANCE.in(Radians)))
+        .andThen(goTo(DEFAULT_ANGLE));
   }
 
   /** closes the hood */

@@ -17,7 +17,6 @@ import static org.sciborgs1155.robot.slapdown.SlapdownConstants.CONSTRAINTS;
 import org.sciborgs1155.robot.Robot;
 import static org.sciborgs1155.robot.turret.TurretConstants.ControlConstants.*;
 import static org.sciborgs1155.robot.turret.TurretConstants.*;
-import static org.sciborgs1155.robot.turret.TurretConstants.ControlConstants.*;
 
 import com.ctre.phoenix6.SignalLogger;
 
@@ -131,6 +130,10 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
   /** manual control to test the turret, makes it go right. */
   public Command goRight() {
     return run(() -> hardware.setVoltage(-1));
+  }
+
+  public Command fromJoysticks(InputStream x, InputStream y) {
+    return goToYaw(() -> Rotation2d.fromRadians(Math.hypot(x.getAsDouble(), y.getAsDouble()) > 0.1 ? Math.atan2(y.getAsDouble(), x.getAsDouble()) : position()));
   }
 
   /**

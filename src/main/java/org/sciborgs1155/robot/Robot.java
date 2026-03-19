@@ -207,6 +207,10 @@ public class Robot extends CommandRobot {
     InputStream rawX = InputStream.of(driver::getLeftY).log("/Robot/raw x").negate();
     InputStream rawY = InputStream.of(driver::getLeftX).log("/Robot/raw y").negate();
 
+    InputStream operatorRawX = InputStream.of(operator::getLeftY).log("/Robot/operator raw x").negate();
+    InputStream operatorRawY = InputStream.of(operator::getLeftX).log("/Robot/operator raw y").negate();
+
+
     // Apply speed multiplier, deadband, square inputs, and scale translation to max speed
     InputStream r =
         InputStream.hypot(rawX, rawY)
@@ -240,6 +244,8 @@ public class Robot extends CommandRobot {
             .rateLimit(MAX_ANGULAR_ACCEL.in(RadiansPerSecond.per(Second)));
 
     drive.setDefaultCommand(drive.drive(x, y, omega).withName("joysticks"));
+
+    operator.y().onTrue(turret.fromJoysticks(operatorRawX, operatorRawY));
 
     if (TUNING) {
       SignalLogger.enableAutoLogging(false);

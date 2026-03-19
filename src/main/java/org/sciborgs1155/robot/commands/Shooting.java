@@ -59,10 +59,8 @@ public class Shooting {
   /** Field-relative position of the hub target. */
   public static final Translation2d HUB_TARGET = FieldConstants.Hub.TOP_CENTER_POINT.toTranslation2d();
 
-  public static final Translation2d LEFT_FEED =
-      allianceReflect(FieldConstants.Hub.LEFT_FEED.toTranslation2d());
-  public static final Translation2d RIGHT_FEED =
-      allianceReflect(FieldConstants.Hub.RIGHT_FEED.toTranslation2d());
+  public static final Translation2d LEFT_FEED = FieldConstants.Hub.LEFT_FEED.toTranslation2d();
+  public static final Translation2d RIGHT_FEED = FieldConstants.Hub.RIGHT_FEED.toTranslation2d();
 
   private final ShootingAlgorithm algorithm = new TOFIteration();
 
@@ -124,7 +122,7 @@ public class Shooting {
                       if (fuelVisualizer != null) fuelVisualizer.launchProjectile();
                     })))
         .deadlineFor(
-            runShooterSuperstructure(() -> calculateShot(allianceReflect(HUB_TARGET))),
+            runShooterSuperstructure(() -> calculateShot(HUB_TARGET)),
             drive.drive(
                 vx.scale(DriveConstants.SHOOTING_TRANSLATIONAL_SPEED),
                 vy.scale(DriveConstants.SHOOTING_TRANSLATIONAL_SPEED),
@@ -176,7 +174,7 @@ public class Shooting {
    * Lets you drive around while the turret aims at the hub. Should be doing this most of the match.
    */
   public Command faceHub() {
-    return turret.goTo(() -> calculateShot(allianceReflect(HUB_TARGET)).turretAngle);
+    return turret.goTo(() -> calculateShot(HUB_TARGET).turretAngle);
   }
 
   /**
@@ -189,23 +187,25 @@ public class Shooting {
                 new ShooterParams(
                     RADS_TEST.get(),
                     HOOD_DEGREES_TEST.get() * Math.PI / 180,
-                    calculateShot(allianceReflect(HUB_TARGET)).turretAngle))
+                    calculateShot(HUB_TARGET).turretAngle))
         .alongWith(fuelVisualizer != null ? fuelVisualizer.launchProjectiles() : Commands.none());
   }
 
   /**
    * Calculates a shot at the given target. Accounts for robot velocity and latency.
+   * Automatically reflects the target based on alliance; no need to reflect before passing target in.
    *
    * @param target field-relative x/y position of the target
    * @return parameters to command the shooter superstructure to
    */
   public ShooterParams calculateShot(Translation2d target) {
+    Translation2d reflectedTarget = allianceReflect(target);
     // Latency-compensated robot pose
     Pose2d latencyPose =
         drive.pose().exp(drive.robotRelativeChassisSpeeds().toTwist2d(LATENCY_TIME.get()));
     LoggingUtils.log("/ShootingData/Latency Pose", latencyPose, Pose2d.struct);
 
-    lastTarget = target;
+    lastTarget = reflectedTarget;
 
     // Turret position at the latency-compensated pose
 
@@ -231,7 +231,7 @@ public class Shooting {
 
     // Displacement from turret to target
     Translation2d turretTranslation = turretPose.getTranslation();
-    Translation3d displacement = new Translation3d(target.minus(turretPose.getTranslation()));
+    Translation3d displacement = new Translation3d(reflectedTarget.minus(turretPose.getTranslation()));
 
     // Run the shooting algorithm to get field-relative firing vector
     Vector<N3> firingVec = algorithm.calculate(displacement, turretSpeeds);
@@ -245,7 +245,7 @@ public class Shooting {
     double fieldYaw = Math.atan2(vy, vx);
     double turretAngle = fieldYaw - drive.pose().getRotation().getRadians();
 
-    LoggingUtils.log("/ShootingData/Distance", turretTranslation.getDistance(target));
+    LoggingUtils.log("/ShootingData/Distance", turretTranslation.getDistance(reflectedTarget));
 
     return new ShooterParams(rads, hoodAngle, turretAngle);
   }

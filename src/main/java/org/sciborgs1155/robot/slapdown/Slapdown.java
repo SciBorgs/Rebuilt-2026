@@ -54,7 +54,7 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
     pid.reset(hardware.position());
     pid.setGoal(START_ANGLE.in(Radians));
 
-    setDefaultCommand(retract());
+    // setDefaultCommand(retract());
 
     sysIdRoutine =
         new SysIdRoutine(

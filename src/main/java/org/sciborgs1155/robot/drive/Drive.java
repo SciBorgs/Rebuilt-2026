@@ -62,6 +62,7 @@ import org.sciborgs1155.lib.FaultLogger.FaultType;
 import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.Tracer;
 import org.sciborgs1155.lib.Tuning;
+import org.sciborgs1155.robot.FieldConstants;
 import org.sciborgs1155.robot.Robot;
 import org.sciborgs1155.robot.drive.DriveConstants.Assisted;
 import org.sciborgs1155.robot.drive.DriveConstants.ControlMode;
@@ -253,7 +254,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
             new SysIdRoutine.Mechanism(
                 volts ->
                     modules.forEach(
-                        m -> m.updateInputs(Rotation2d.fromRadians(0), volts.in(Volts))),
+                        m -> m.setDriveVoltage(volts.in(Volts))),
                 null,
                 this,
                 "translation"));
@@ -265,16 +266,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
                 null,
                 (state) -> SignalLogger.writeString("rotation state", state.toString())),
             new SysIdRoutine.Mechanism(
-                volts -> {
-                  this.frontLeft.updateInputs(
-                      Rotation2d.fromRadians(3 * Math.PI / 4), volts.in(Volts));
-                  this.frontRight.updateInputs(
-                      Rotation2d.fromRadians(Math.PI / 4), volts.in(Volts));
-                  this.rearLeft.updateInputs(
-                      Rotation2d.fromRadians(-3 * Math.PI / 4), volts.in(Volts));
-                  this.rearRight.updateInputs(
-                      Rotation2d.fromRadians(-Math.PI / 4), volts.in(Volts));
-                },
+                volts -> modules.forEach((module) -> module.setDriveVoltage(volts.in(Volts))),
                 null,
                 this,
                 "rotation"));

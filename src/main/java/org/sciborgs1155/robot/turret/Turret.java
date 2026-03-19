@@ -265,6 +265,10 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
     return goToYaw(() -> yaw);
   }
 
+  public Command goToFieldRelativeYaw(Supplier<Rotation2d> yaw, Supplier<Rotation2d> heading) {
+    return goToYaw(() -> yaw.get().minus(heading.get())).withName("goToYaw field relative");
+  }
+
   /**
    * Sets controller setpoint with a supplier and repeatively calls update to orient the turret.
    *

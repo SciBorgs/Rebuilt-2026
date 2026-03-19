@@ -84,14 +84,24 @@ public final class Constants {
     public static final InterpolatingTreeMap<Double, Rotation2d> DISTANCE_TO_HOOD_ANGLE =
         new InterpolatingTreeMap<>(InverseInterpolator.forDouble(), Rotation2d::interpolate);
 
-    static {
-      DISTANCE_TO_HOOD_ANGLE.put(3.7, Rotation2d.fromDegrees(30));
-      DISTANCE_TO_RADS.put(3.7, 130.0);
-      DISTANCE_TO_TOF.put(3.7, 0.97);
+    /**
+     * Applies a point to the three linear interpolations.
+     * @param dist The input distance.
+     * @param degIncline The output degree of incline.
+     * @param speed The 
+     * @param tof
+     */
+    public static void put(double dist, double degIncline, double speed, double tof) {
+      DISTANCE_TO_HOOD_ANGLE.put(dist, Rotation2d.fromDegrees(degIncline));
+      DISTANCE_TO_RADS.put(dist, speed);
+      DISTANCE_TO_TOF.put(dist, tof);
+    }
 
-      DISTANCE_TO_HOOD_ANGLE.put(2.44, Rotation2d.fromDegrees(20));
-      DISTANCE_TO_RADS.put(2.44, 120.0);
-      DISTANCE_TO_TOF.put(2.44, 1.0);
+    static {
+      put(2.44, 20.0, 120.0, 1.0);
+      put(2.5,25.0,117.0,1.01);
+      put(3.7,30,130,0.97);
+      put(4.414, 40.0, 146.0, 0.95);
     }
   }
 

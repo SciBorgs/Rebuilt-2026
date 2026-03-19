@@ -12,6 +12,7 @@ import static edu.wpi.first.wpilibj2.command.button.RobotModeTriggers.teleop;
 import static edu.wpi.first.wpilibj2.command.button.RobotModeTriggers.test;
 import static org.sciborgs1155.lib.LoggingUtils.log;
 import static org.sciborgs1155.robot.Constants.*;
+import static org.sciborgs1155.robot.FieldConstants.allianceReflect;
 import static org.sciborgs1155.robot.drive.DriveConstants.MAX_ANGULAR_ACCEL;
 import static org.sciborgs1155.robot.drive.DriveConstants.MAX_SPEED;
 import static org.sciborgs1155.robot.drive.DriveConstants.TELEOP_ANGULAR_SPEED;
@@ -86,7 +87,7 @@ public class Robot extends CommandRobot {
   private final Shooter shooter = Shooter.create();
   private final Indexer indexer = Indexer.create();
   private final Hopper hopper = Hopper.create();
-  private final Slapdown slapdown = Slapdown.create();
+  private final Slapdown slapdown = Slapdown.none();
   private final Climb climb = Climb.none();
 
   // COMMANDS
@@ -263,7 +264,10 @@ public class Robot extends CommandRobot {
         .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
 
     // INTAKE TOGGLE
-    driver.leftTrigger().toggleOnTrue(slapdown.extend().alongWith(intake.intake()));
+    driver.leftTrigger().toggleOnTrue(intake.intake());
+
+    // OUTTAKE THE INTAKE
+    driver.a().whileTrue(intake.outtake());
 
     // FEED CONTINUOUS (LEFT SIDE)
     driver.leftBumper().whileTrue(shooting.shootDriving(Shooting.LEFT_FEED, x, y, omega));
@@ -278,7 +282,7 @@ public class Robot extends CommandRobot {
     driver
         .y()
         .whileTrue(hopper.intake().alongWith(indexer.forward().alongWith(shooter.runShooter(120))));
-
+        
     // CLIMB
     // operator
     //     .y()
@@ -287,13 +291,15 @@ public class Robot extends CommandRobot {
 
     operator.x().whileTrue(shooting.shootWithTestData());
 
+    operator.leftBumper().whileTrue(intake.intake().alongWith(indexer.forward()).alongWith(hopper.intake()));
+
     operator
         .y()
         .whileTrue(turret.fromJoysticks(operatorRawX, operatorRawY).withName("joysticks"))
         .onFalse(
             turret.goToYaw(Rotation2d.fromRadians(START_ANGLE.in(Radians))).withName("back to 0"));
 
-    operator.a().whileTrue(turret.goTo(() -> 3 * Math.PI / 2));
+    // operator.a().whileTrue(turret.goTo(() -> 3 * Math.PI / 2));
     operator.b().whileTrue(turret.goTo(() -> Math.PI / 2));
 
     operator.leftTrigger().whileTrue(turret.goLeft());

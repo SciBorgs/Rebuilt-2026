@@ -94,7 +94,7 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
     this.hardware = hardware;
 
     fb.setTolerance(POSITION_TOLERANCE.in(Radians));
-    setDefaultCommand(run(() -> hardware.setVoltage(0)).withName("Default"));
+    setDefaultCommand(goTo(STARTING_ANGLE).withName("Default"));
     fb.reset(STARTING_ANGLE.in(Radians));
 
     sysIdRoutine =

@@ -7,6 +7,7 @@ import static org.sciborgs1155.robot.FieldConstants.allianceReflect;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.CENTER_TO_SHOOTER;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.IDLE_VELOCITY;
 
+import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -56,15 +57,14 @@ public class Shooting {
   public static final Distance MIN_DISTANCE = Meters.of(.2);
 
   /** Field-relative position of the hub target. */
-  public static final Translation2d HUB_TARGET =
-      allianceReflect(FieldConstants.Hub.TOP_CENTER_POINT.toTranslation2d());
+  public static final Translation2d HUB_TARGET = FieldConstants.Hub.TOP_CENTER_POINT.toTranslation2d();
 
-  public static final Translation2d LEFT_FEED =
-      allianceReflect(FieldConstants.Hub.LEFT_FEED.toTranslation2d());
-  public static final Translation2d RIGHT_FEED =
-      allianceReflect(FieldConstants.Hub.RIGHT_FEED.toTranslation2d());
+  public static final Translation2d LEFT_FEED = FieldConstants.Hub.LEFT_FEED.toTranslation2d();
+  public static final Translation2d RIGHT_FEED = FieldConstants.Hub.RIGHT_FEED.toTranslation2d();
 
   private final ShootingAlgorithm algorithm = new TOFIteration();
+
+  private Translation2d lastTarget = new Translation2d();
 
   private final Shooter shooter;
   private final Turret turret;
@@ -111,13 +111,13 @@ public class Shooting {
             () ->
                 shooter.atSetpoint()
                     && shooter.setpoint() > IDLE_VELOCITY.in(RadiansPerSecond)
-                    && hood.atGoal())
-        // && turret.atGoal())
+                    && hood.atGoal()
+                    && turret.atGoal())
         .andThen(
             Commands.parallel(
                 hopper.intake(),
                 indexer.forward(),
-                Commands.runOnce(
+                Commands.run(
                     () -> {
                       if (fuelVisualizer != null) fuelVisualizer.launchProjectile();
                     })))
@@ -133,7 +133,7 @@ public class Shooting {
     return Commands.parallel(
         shooter.runShooter(() -> params.get().RADS),
         hood.goTo(() -> params.get().hoodAngle),
-        turret.goTo(() -> params.get().turretAngle));
+        turret.goToYaw(() -> Rotation2d.fromRadians(params.get().turretAngle)));
   }
 
   /**
@@ -193,15 +193,19 @@ public class Shooting {
 
   /**
    * Calculates a shot at the given target. Accounts for robot velocity and latency.
+   * Automatically reflects the target based on alliance; no need to reflect before passing target in.
    *
    * @param target field-relative x/y position of the target
    * @return parameters to command the shooter superstructure to
    */
   public ShooterParams calculateShot(Translation2d target) {
+    Translation2d reflectedTarget = allianceReflect(target);
     // Latency-compensated robot pose
     Pose2d latencyPose =
         drive.pose().exp(drive.robotRelativeChassisSpeeds().toTwist2d(LATENCY_TIME.get()));
     LoggingUtils.log("/ShootingData/Latency Pose", latencyPose, Pose2d.struct);
+
+    lastTarget = reflectedTarget;
 
     // Turret position at the latency-compensated pose
 
@@ -227,7 +231,7 @@ public class Shooting {
 
     // Displacement from turret to target
     Translation2d turretTranslation = turretPose.getTranslation();
-    Translation3d displacement = new Translation3d(target.minus(turretPose.getTranslation()));
+    Translation3d displacement = new Translation3d(reflectedTarget.minus(turretPose.getTranslation()));
 
     // Run the shooting algorithm to get field-relative firing vector
     Vector<N3> firingVec = algorithm.calculate(displacement, turretSpeeds);
@@ -241,8 +245,16 @@ public class Shooting {
     double fieldYaw = Math.atan2(vy, vx);
     double turretAngle = fieldYaw - drive.pose().getRotation().getRadians();
 
-    LoggingUtils.log("/ShootingData/Distance", turretTranslation.getDistance(target));
+    LoggingUtils.log("/ShootingData/Distance", turretTranslation.getDistance(reflectedTarget));
 
     return new ShooterParams(rads, hoodAngle, turretAngle);
+  }
+
+  /**
+   * @return The last target of the shooting.
+   */
+  @Logged
+  public Translation2d getLastTarget() {
+    return lastTarget;
   }
 }

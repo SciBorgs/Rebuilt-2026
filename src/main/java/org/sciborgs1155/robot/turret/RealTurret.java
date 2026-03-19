@@ -9,6 +9,7 @@ import static org.sciborgs1155.robot.turret.TurretConstants.GEAR_RATIO;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.sciborgs1155.lib.FaultLogger;
@@ -27,6 +28,7 @@ public class RealTurret implements TurretIO {
     configuration.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     configuration.Feedback.SensorToMechanismRatio = GEAR_RATIO;
     configuration.CurrentLimits.SupplyCurrentLimit = CURRENT_LIMIT.in(Amps);
+    configuration.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
     hardware.getConfigurator().apply(configuration);
     hardware.setPosition(0);

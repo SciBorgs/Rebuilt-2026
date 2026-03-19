@@ -320,7 +320,13 @@ public class Vision {
     avgWeight /= targets.size();
 
     // Decrease std devs if multiple targets are visibleX
-    if (targets.size() > 1) estStdDevs = MULTIPLE_TAG_STD_DEVS;
+    if (targets.size() > 1) {
+      if (avgDist < 10) {
+        estStdDevs = MULTIPLE_TAG_STD_DEVS;
+      } else {
+        estStdDevs = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
+      }
+    }
     // Increase std devs based on (average) distance
     if (targets.size() == 1 && avgDist > 4)
       estStdDevs = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);

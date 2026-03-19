@@ -25,6 +25,7 @@ import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -247,8 +248,6 @@ public class Robot extends CommandRobot {
 
     drive.setDefaultCommand(drive.drive(x, y, omega).withName("joysticks"));
 
-    operator.y().whileTrue(turret.fromJoysticks(operatorRawX, operatorRawY).withName("joysticks")).onFalse(turret.goTo(() -> START_ANGLE.in(Radians)).withName("back to 0"));
-
     if (TUNING) {
       SignalLogger.enableAutoLogging(false);
 
@@ -296,10 +295,20 @@ public class Robot extends CommandRobot {
                 .alongWith(Commands.none()));
 
     // CLIMB
-    operator
-        .y()
-        .whileTrue(climb.extend())
-        .onFalse(climb.retract());
+    // operator
+    //     .y()
+    //     .whileTrue(climb.extend())
+    //     .onFalse(climb.retract());
+
+    operator.x().whileTrue(shooting.shootWithTestData());
+    
+    operator.y().whileTrue(turret.fromJoysticks(operatorRawX, operatorRawY).withName("joysticks")).onFalse(turret.goToYaw(Rotation2d.fromRadians(START_ANGLE.in(Radians))).withName("back to 0"));
+
+    operator.a().whileTrue(turret.goTo(() -> 3 * Math.PI / 2));
+    operator.b().whileTrue(turret.goTo(() -> Math.PI / 2));
+
+    operator.leftTrigger().whileTrue(turret.goLeft());
+    operator.rightTrigger().whileTrue(turret.goRight());
 
     // DEBUG
     // TODO: various operator debug stuff (turret, hood, shooter)

@@ -133,7 +133,12 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
     return run(() -> hardware.setVoltage(-1));
   }
 
-  /** Has the turret go to the joysticks position physically */
+  /**
+   * manual control to test the turret, makes it go in the direction of the joystick on the controller
+   * @param x the x axis of the joystick
+   * @param y the y axis of the joystick
+   * @return a command to manually face the turret
+   */
   public Command fromJoysticks(InputStream x, InputStream y) {
     return goToYaw(
         () ->

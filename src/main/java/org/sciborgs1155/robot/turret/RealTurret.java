@@ -46,7 +46,7 @@ public class RealTurret implements TurretIO {
    */
   @Override
   public double angle() {
-    return hardware.getPosition().getValueAsDouble();
+    return hardware.getPosition().getValueAsDouble() * 2 * Math.PI;
   }
 
   @Override

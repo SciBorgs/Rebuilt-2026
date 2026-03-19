@@ -118,7 +118,7 @@ public class Robot extends CommandRobot {
 
   @NotLogged
   private final SendableChooser<Command> autos =
-      Autos.configureAutos(drive, intake, shooting, climb, align);
+      Autos.configureAutos(drive, intake, slapdown, shooting, climb, align);
 
   @Logged private double speedMultiplier = FULL_SPEED_MULTIPLIER;
 

@@ -351,11 +351,6 @@ public class Drive extends SubsystemBase implements AutoCloseable {
     return new Pose3d(odometry.getEstimatedPosition());
   }
 
-  @Logged
-  public Pose2d hub() {
-    return new Pose2d(FieldConstants.Hub.TOP_CENTER_POINT.toTranslation2d(), Rotation2d.kZero);
-  }
-
   /**
    * Returns the currently-estimated field-relative yaw of the robot.
    *

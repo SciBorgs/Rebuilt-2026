@@ -7,7 +7,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "TrenchRight.0"
+            "pathName": "Middle"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shoot"
           }
         }
       ]

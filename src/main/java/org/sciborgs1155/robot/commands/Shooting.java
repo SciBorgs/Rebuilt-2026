@@ -140,7 +140,7 @@ public class Shooting {
    * @return A Command to move the hood all the way down and idle the shooter.
    */
   public Command hideAway() {
-    return Commands.parallel(shooter.idle(), hood.goTo(HoodConstants.MIN_ANGLE));
+    return Commands.parallel(shooter.idleShooter(), hood.goTo(HoodConstants.MIN_ANGLE));
   }
 
   /**

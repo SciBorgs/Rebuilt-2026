@@ -357,6 +357,13 @@ public final class FieldConstants {
             pose.getRotation().plus(Rotation2d.k180deg));
   }
 
+  /**
+   * Reflects a translational position across the middle of the field if the alliance is red,
+   * otherwise does nothing.
+   *
+   * @param translation The input position.
+   * @return A reflected position, only if the alliance is red.
+   */
   public static Translation2d allianceReflect(Translation2d translation) {
     return alliance() == Alliance.Blue
         ? translation

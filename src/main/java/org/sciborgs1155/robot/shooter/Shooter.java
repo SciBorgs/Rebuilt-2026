@@ -97,13 +97,13 @@ public final class Shooter extends SubsystemBase implements AutoCloseable {
     SmartDashboard.putData(
         "Robot/shooter/shooter dynamic forward", characterization.dynamic(Direction.kForward));
 
-    setDefaultCommand(idle());
+    setDefaultCommand(idleShooter());
   }
 
   /**
    * Updates the velocity setpoint of the motor.
    *
-   * @param velocitySetpoint The value of the velocity setpoint,
+   * @param velocitySetpoint The value of the velocity setpoint (rad/s).
    * @param noDeceleration If true, sends no negative voltage, using power to break the motor. it'll
    *     at most just let it coast.
    */
@@ -121,6 +121,11 @@ public final class Shooter extends SubsystemBase implements AutoCloseable {
     hardware.setVoltage(noDeceleration ? Math.max(0, volts) : volts);
   }
 
+  /**
+   * Updates the velocity setpoint of the motor.
+   *
+   * @param velocitySetpoint The value of the velocity setpoint (rad/s).
+   */
   public void update(double velocitySetpoint) {
     update(velocitySetpoint, false);
   }
@@ -184,7 +189,7 @@ public final class Shooter extends SubsystemBase implements AutoCloseable {
    * Idles the shooter. It will not intentionally decelerate the wheels, but will keep the speed
    * above IDLE_VELOCITY.
    */
-  public Command idle() {
+  public Command idleShooter() {
     return run(() -> update(IDLE_VELOCITY.in(RadiansPerSecond), true)).withName("Idle");
   }
 

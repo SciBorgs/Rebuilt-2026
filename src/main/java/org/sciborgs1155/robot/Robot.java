@@ -2,9 +2,7 @@ package org.sciborgs1155.robot;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.MetersPerSecond;
-import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Second;
@@ -14,12 +12,7 @@ import static edu.wpi.first.wpilibj2.command.button.RobotModeTriggers.disabled;
 import static edu.wpi.first.wpilibj2.command.button.RobotModeTriggers.teleop;
 import static edu.wpi.first.wpilibj2.command.button.RobotModeTriggers.test;
 import static org.sciborgs1155.lib.LoggingUtils.log;
-import static org.sciborgs1155.robot.Constants.DEADBAND;
-import static org.sciborgs1155.robot.Constants.FULL_SPEED_MULTIPLIER;
-import static org.sciborgs1155.robot.Constants.PERIOD;
-import static org.sciborgs1155.robot.Constants.ROBOT_TYPE;
-import static org.sciborgs1155.robot.Constants.SLOW_SPEED_MULTIPLIER;
-import static org.sciborgs1155.robot.Constants.TUNING;
+import static org.sciborgs1155.robot.Constants.*;
 import static org.sciborgs1155.robot.drive.DriveConstants.MAX_ANGULAR_ACCEL;
 import static org.sciborgs1155.robot.drive.DriveConstants.MAX_SPEED;
 import static org.sciborgs1155.robot.drive.DriveConstants.TELEOP_ANGULAR_SPEED;
@@ -70,7 +63,6 @@ import org.sciborgs1155.robot.shooter.Shooter;
 import org.sciborgs1155.robot.shooter.ShooterConstants;
 import org.sciborgs1155.robot.slapdown.Slapdown;
 import org.sciborgs1155.robot.turret.Turret;
-import org.sciborgs1155.robot.turret.TurretConstants;
 import org.sciborgs1155.robot.vision.Vision;
 
 /**
@@ -103,8 +95,6 @@ public class Robot extends CommandRobot {
   // COMMANDS
   private final Alignment align = new Alignment(drive);
 
-  @NotLogged private final SendableChooser<Command> autos = Autos.configureAutos(drive);
-
   @NotLogged
   private final ProjectileVisualizer fuelVisualizer =
       isReal()
@@ -123,6 +113,10 @@ public class Robot extends CommandRobot {
 
   private final Shooting shooting =
       new Shooting(shooter, turret, hood, drive, hopper, indexer, fuelVisualizer);
+
+  @NotLogged
+  private final SendableChooser<Command> autos =
+      Autos.configureAutos(drive, intake, shooting, climb, align);
 
   @Logged private double speedMultiplier = FULL_SPEED_MULTIPLIER;
 

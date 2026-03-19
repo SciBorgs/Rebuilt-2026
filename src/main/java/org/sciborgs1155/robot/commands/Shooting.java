@@ -56,8 +56,7 @@ public class Shooting {
   public static final Distance MIN_DISTANCE = Meters.of(.2);
 
   /** Field-relative position of the hub target. */
-  public static final Translation2d HUB_TARGET =
-      allianceReflect(FieldConstants.Hub.TOP_CENTER_POINT.toTranslation2d());
+  public static final Translation2d HUB_TARGET = FieldConstants.Hub.TOP_CENTER_POINT.toTranslation2d();
 
   public static final Translation2d LEFT_FEED =
       allianceReflect(FieldConstants.Hub.LEFT_FEED.toTranslation2d());
@@ -111,18 +110,18 @@ public class Shooting {
             () ->
                 shooter.atSetpoint()
                     && shooter.setpoint() > IDLE_VELOCITY.in(RadiansPerSecond)
-                    && hood.atGoal())
-        // && turret.atGoal())
+                    && hood.atGoal()
+                    && turret.atGoal())
         .andThen(
             Commands.parallel(
                 hopper.intake(),
                 indexer.forward(),
-                Commands.runOnce(
+                Commands.run(
                     () -> {
                       if (fuelVisualizer != null) fuelVisualizer.launchProjectile();
                     })))
         .deadlineFor(
-            runShooterSuperstructure(() -> calculateShot(HUB_TARGET)),
+            runShooterSuperstructure(() -> calculateShot(allianceReflect(HUB_TARGET))),
             drive.drive(
                 vx.scale(DriveConstants.SHOOTING_TRANSLATIONAL_SPEED),
                 vy.scale(DriveConstants.SHOOTING_TRANSLATIONAL_SPEED),
@@ -133,7 +132,7 @@ public class Shooting {
     return Commands.parallel(
         shooter.runShooter(() -> params.get().RADS),
         hood.goTo(() -> params.get().hoodAngle),
-        turret.goTo(() -> params.get().turretAngle));
+        turret.goToYaw(() -> Rotation2d.fromRadians(params.get().turretAngle)));
   }
 
   /**
@@ -174,7 +173,7 @@ public class Shooting {
    * Lets you drive around while the turret aims at the hub. Should be doing this most of the match.
    */
   public Command faceHub() {
-    return turret.goTo(() -> calculateShot(HUB_TARGET).turretAngle);
+    return turret.goTo(() -> calculateShot(allianceReflect(HUB_TARGET)).turretAngle);
   }
 
   /**
@@ -187,7 +186,7 @@ public class Shooting {
                 new ShooterParams(
                     RADS_TEST.get(),
                     HOOD_DEGREES_TEST.get() * Math.PI / 180,
-                    calculateShot(HUB_TARGET).turretAngle))
+                    calculateShot(allianceReflect(HUB_TARGET)).turretAngle))
         .alongWith(fuelVisualizer != null ? fuelVisualizer.launchProjectiles() : Commands.none());
   }
 

@@ -54,7 +54,7 @@ public class Vision {
   /** A factory to create new vision classes with our cameras. */
   public static Vision create() {
     return new Vision(
-        FL_CAMERA, FR_CAMERA, F_CAMERA, B_CAMERA); // , CAMERA_2, CAMERA_3, CAMERA_4, CAMERA_5);
+        FL_CAMERA, FR_CAMERA, F_CAMERA); // , CAMERA_2, CAMERA_3, CAMERA_4, CAMERA_5);
   }
 
   /**

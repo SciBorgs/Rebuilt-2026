@@ -74,7 +74,7 @@ public final class VisionConstants {
   public static final Matrix<N3, N1> SINGLE_TAG_STD_DEVS =
       VecBuilder.fill(0.9, 0.9, 1155); // TODO decide these later when we test the bump
   public static final Matrix<N3, N1> MULTIPLE_TAG_STD_DEVS = VecBuilder.fill(0.6, 0.6, 1155);
-  public static final Matrix<N3, N1> SUPERTRUST_TAG_STD_DEVS = VecBuilder.fill(0.001, 0.001, 0.001);
+  public static final Matrix<N3, N1> SUPERTRUST_TAG_STD_DEVS = VecBuilder.fill(0.01, 0.01, 0.01);
 
   public static final double MAX_HEIGHT = 0.305;
   public static final double MAX_ANGLE = Math.PI;

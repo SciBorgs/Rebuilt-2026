@@ -150,12 +150,17 @@ public class Shooting {
    */
   public Trigger crossingAlliance() {
     return new Trigger(() -> {
-        double projectedDeltaX = drive.velocity().get(0) * HoodConstants.HOOD_DOWN_TIME.in(Seconds);
-        double poseX = drive.pose().getX();
-        double nearHubDisplacement = FieldConstants.LinesVertical.HUB_CENTER - poseX;
-        double farHubDisplacement = FieldConstants.LinesVertical.OPP_HUB_CENTER - poseX;
+        Vector<N2> velocity = drive.velocity();
+        Pose2d pose = drive.pose();
+
+        double projectedDeltaX = velocity.get(0) * HoodConstants.HOOD_DOWN_TIME.in(Seconds);
+        double projectedDeltaY = velocity.get(1) * HoodConstants.HOOD_DOWN_TIME.in(Seconds);
+
+        double nearHubDisplacement = FieldConstants.LinesVertical.HUB_CENTER - pose.getX();
+        double farHubDisplacement = FieldConstants.LinesVertical.OPP_HUB_CENTER - pose.getX();
         Function<Double,Boolean> compare = (Double displacement) -> Math.abs(projectedDeltaX) > Math.abs(displacement) && ((projectedDeltaX > 0) == (displacement > 0));
-        return compare.apply(nearHubDisplacement) || compare.apply(farHubDisplacement);
+        boolean goingAroundHub = Math.abs(pose.getY() + projectedDeltaY - FieldConstants.LinesHorizontal.CENTER) > (DriveConstants.RADIUS.in(Meters) + FieldConstants.Hub.WIDTH / 2);
+        return (compare.apply(nearHubDisplacement) || compare.apply(farHubDisplacement)) && goingAroundHub;
     });
   }
 

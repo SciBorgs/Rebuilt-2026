@@ -7,6 +7,7 @@ import static org.sciborgs1155.robot.FieldConstants.allianceReflect;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.CENTER_TO_SHOOTER;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.IDLE_VELOCITY;
 
+import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -64,6 +65,8 @@ public class Shooting {
       allianceReflect(FieldConstants.Hub.RIGHT_FEED.toTranslation2d());
 
   private final ShootingAlgorithm algorithm = new TOFIteration();
+
+  private Translation2d lastTarget = new Translation2d();
 
   private final Shooter shooter;
   private final Turret turret;
@@ -202,6 +205,8 @@ public class Shooting {
         drive.pose().exp(drive.robotRelativeChassisSpeeds().toTwist2d(LATENCY_TIME.get()));
     LoggingUtils.log("/ShootingData/Latency Pose", latencyPose, Pose2d.struct);
 
+    lastTarget = target;
+
     // Turret position at the latency-compensated pose
 
     Pose2d turretPose =
@@ -243,5 +248,13 @@ public class Shooting {
     LoggingUtils.log("/ShootingData/Distance", turretTranslation.getDistance(target));
 
     return new ShooterParams(rads, hoodAngle, turretAngle);
+  }
+
+  /**
+   * @return The last target of the shooting.
+   */
+  @Logged
+  public Translation2d getLastTarget() {
+    return lastTarget;
   }
 }

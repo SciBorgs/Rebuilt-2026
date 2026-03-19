@@ -2,6 +2,7 @@ package org.sciborgs1155.robot.vision;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Meters;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
@@ -11,8 +12,11 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.units.measure.Distance;
+
 import java.util.Set;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
+import org.sciborgs1155.robot.FieldConstants;
 import org.sciborgs1155.robot.vision.Vision.CameraConfig;
 
 public final class VisionConstants {
@@ -78,6 +82,7 @@ public final class VisionConstants {
   public static final double MAX_HEIGHT = 0.305;
   public static final double MAX_ANGLE = Math.PI;
   public static final double MAX_AMBIGUITY = 0.20;
+  public static final double MAX_DISTANCE = FieldConstants.FIELD_LENGTH / 2;
 
   // Total of 32 AprilTags
   // Reference: https://firstfrc.blob.core.windows.net/frc2026/Manual/2026GameManual.pdf (page 33)

@@ -1,5 +1,6 @@
 package org.sciborgs1155.robot.vision;
 
+import static edu.wpi.first.units.Units.Meters;
 import static org.sciborgs1155.lib.LoggingUtils.*;
 import static org.sciborgs1155.robot.vision.VisionConstants.*;
 
@@ -181,6 +182,15 @@ public class Vision {
               change.targets.stream().filter(t -> t.poseAmbiguity < MAX_AMBIGUITY).toList();
           change.multitagResult =
               change.multitagResult.filter(r -> r.estimatedPose.ambiguity < MAX_AMBIGUITY);
+
+          // remove tags that are too far from the camera
+          change.targets =
+              change.targets.stream()
+                  .filter(
+                      t ->
+                          t.getBestCameraToTarget().getTranslation().getNorm()
+                              < MAX_DISTANCE)
+                  .toList();
 
           estimate = updateEstimate(estimators[i], change, estimatorStrategies[i]);
 

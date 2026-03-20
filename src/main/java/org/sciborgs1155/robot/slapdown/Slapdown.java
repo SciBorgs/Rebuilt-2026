@@ -13,15 +13,14 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.networktables.DoubleEntry;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
-import java.util.Set;
-import org.sciborgs1155.lib.Assertion;
-import org.sciborgs1155.lib.Assertion.EqualityAssertion;
-import org.sciborgs1155.lib.Test;
+import java.util.function.DoubleSupplier;
+import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.lib.Tuning;
 import org.sciborgs1155.robot.Robot;
 
@@ -55,7 +54,7 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
     pid.reset(hardware.position());
     pid.setGoal(START_ANGLE.in(Radians));
 
-    setDefaultCommand(retract());
+    // setDefaultCommand(retract());
 
     sysIdRoutine =
         new SysIdRoutine(
@@ -113,6 +112,16 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
   }
 
   /**
+   * Command Factory
+   *
+   * @param angle go to angle
+   * @return command to make the Slapdown go to the angle
+   */
+  public Command goTo(DoubleSupplier angle) {
+    return run(() -> update(angle.getAsDouble())).withName("go to angle");
+  }
+
+  /**
    * @return slap down the intake
    */
   public Command extend() {
@@ -127,6 +136,18 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
   }
 
   /**
+   * A repeating sequence of retracting and extending the hopper to help feed fuel into the indexer.
+   *
+   * @return The repeating sequence.
+   */
+  public Command squeeze() {
+    return Commands.sequence(
+            retract().until(() -> atGoal()).withTimeout(SQUEEZE_RETRACT),
+            extend().until(() -> atGoal()).withTimeout(SQUEEZE_EXTEND))
+        .repeatedly();
+  }
+
+  /**
    * @return the position of the slapdown
    */
   @Logged
@@ -135,11 +156,11 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * @return the position of the pid
+   * @return the goal of the pid
    */
   @Logged
   public double setpoint() {
-    return pid.getSetpoint().position;
+    return pid.getGoal().position;
   }
 
   /**
@@ -174,12 +195,15 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
    * @param angle test if the Slapdown will go to the angle
    * @return the test
    */
-  public Test goToTest(double angle) {
-    EqualityAssertion atGoal =
-        Assertion.eAssert(
-            "Slapdown angle", () -> angle, hardware::position, POSITION_TOLERANCE.in(Radians));
-    Command testCommand = goTo(angle).until(pid::atGoal).withTimeout(5);
-    return new Test(testCommand, Set.of(atGoal));
+  public Command systemsCheck() {
+    double angle = MAX_ANGLE.in(Radians);
+
+    return goTo(angle)
+        .until(pid::atGoal)
+        .withTimeout(5)
+        .andThen(
+            FaultLogger.reportEquals(
+                "Slapdown angle", () -> angle, hardware::position, POSITION_TOLERANCE.in(Radians)));
   }
 
   @Override

@@ -34,9 +34,6 @@ public final class FieldConstants {
   public static final double FIELD_LENGTH = FIELD_LAYOUT.getFieldLength();
   public static final double FIELD_WIDTH = FIELD_LAYOUT.getFieldWidth();
 
-  // Prevents instantiation
-  private FieldConstants() {}
-
   /**
    * Officially defined and relevant vertical lines found on the field (defined by X-axis offset)
    */
@@ -88,6 +85,8 @@ public final class FieldConstants {
     public static final double INNER_HEIGHT = Units.inchesToMeters(56.5);
 
     // Relevant reference points on alliance side
+    public static final Translation3d LEFT_FEED = new Translation3d(1, 1, 0);
+    public static final Translation3d RIGHT_FEED = new Translation3d(1, FIELD_WIDTH - 1, 0);
     public static final Translation3d TOP_CENTER_POINT =
         new Translation3d(
             FIELD_LAYOUT.getTagPose(26).get().getX() + WIDTH / 2.0, FIELD_WIDTH / 2.0, HEIGHT);
@@ -300,6 +299,9 @@ public final class FieldConstants {
         new Translation2d(0, FIELD_LAYOUT.getTagPose(29).get().getY());
   }
 
+  // Prevents instantiation
+  private FieldConstants() {}
+
   /** Returns whether the provided position is within the boundaries of the field. */
   public static boolean inField(Pose3d pose) {
     return pose.getX() > 0
@@ -353,6 +355,20 @@ public final class FieldConstants {
                 .rotateAround(
                     new Translation2d(FIELD_LENGTH / 2, FIELD_WIDTH / 2), Rotation2d.k180deg),
             pose.getRotation().plus(Rotation2d.k180deg));
+  }
+
+  /**
+   * Reflects a translational position across the middle of the field if the alliance is red,
+   * otherwise does nothing.
+   *
+   * @param translation The input position.
+   * @return A reflected position, only if the alliance is red.
+   */
+  public static Translation2d allianceReflect(Translation2d translation) {
+    return alliance() == Alliance.Blue
+        ? translation
+        : translation.rotateAround(
+            new Translation2d(FIELD_LENGTH / 2, FIELD_WIDTH / 2), Rotation2d.k180deg);
   }
 
   /**

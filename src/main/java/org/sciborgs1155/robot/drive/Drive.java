@@ -7,7 +7,6 @@ import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 import static java.lang.Math.atan;
-import static org.sciborgs1155.lib.Assertion.*;
 import static org.sciborgs1155.lib.LoggingUtils.*;
 import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.Constants.TUNING;
@@ -51,34 +50,23 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import java.util.Arrays;
-import java.util.DoubleSummaryStatistics;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
-import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.photonvision.EstimatedRobotPose;
-import org.sciborgs1155.lib.Assertion;
-import org.sciborgs1155.lib.Assertion.EqualityAssertion;
-import org.sciborgs1155.lib.Assertion.TruthAssertion;
 import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.lib.FaultLogger.FaultType;
 import org.sciborgs1155.lib.InputStream;
-import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.lib.Tracer;
 import org.sciborgs1155.lib.Tuning;
-import org.sciborgs1155.robot.FieldConstants;
 import org.sciborgs1155.robot.Robot;
 import org.sciborgs1155.robot.drive.DriveConstants.Assisted;
 import org.sciborgs1155.robot.drive.DriveConstants.ControlMode;
 import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Driving;
 import org.sciborgs1155.robot.drive.DriveConstants.Rotation;
-import org.sciborgs1155.robot.drive.DriveConstants.Skid;
 import org.sciborgs1155.robot.drive.DriveConstants.Translation;
 import org.sciborgs1155.robot.vision.Vision.PoseEstimate;
 
@@ -263,9 +251,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
                 null,
                 (state) -> SignalLogger.writeString("translation state", state.toString())),
             new SysIdRoutine.Mechanism(
-                volts ->
-                    modules.forEach(
-                        m -> m.updateInputs(Rotation2d.fromRadians(0), volts.in(Volts))),
+                volts -> modules.forEach(m -> m.setDriveVoltage(volts.in(Volts))),
                 null,
                 this,
                 "translation"));
@@ -277,16 +263,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
                 null,
                 (state) -> SignalLogger.writeString("rotation state", state.toString())),
             new SysIdRoutine.Mechanism(
-                volts -> {
-                  this.frontLeft.updateInputs(
-                      Rotation2d.fromRadians(3 * Math.PI / 4), volts.in(Volts));
-                  this.frontRight.updateInputs(
-                      Rotation2d.fromRadians(Math.PI / 4), volts.in(Volts));
-                  this.rearLeft.updateInputs(
-                      Rotation2d.fromRadians(-3 * Math.PI / 4), volts.in(Volts));
-                  this.rearRight.updateInputs(
-                      Rotation2d.fromRadians(-Math.PI / 4), volts.in(Volts));
-                },
+                volts -> modules.forEach((module) -> module.setDriveVoltage(volts.in(Volts))),
                 null,
                 this,
                 "rotation"));
@@ -353,6 +330,17 @@ public class Drive extends SubsystemBase implements AutoCloseable {
   @Logged
   public Pose2d pose() {
     return odometry.getEstimatedPosition();
+  }
+
+  /**
+   * Returns the field-relative velocity of the robot.
+   *
+   * @return The velocity.
+   */
+  @Logged
+  public Translation2d velocity() {
+    ChassisSpeeds speeds = fieldRelativeChassisSpeeds();
+    return new Translation2d(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
   }
 
   /** Returns a Pose3D of the estimated pose of the robot. */
@@ -598,10 +586,9 @@ public class Drive extends SubsystemBase implements AutoCloseable {
    * @param mode The control loop used to achieve those speeds.
    */
   public void setChassisSpeeds(ChassisSpeeds desired, ControlMode mode) {
+    ChassisSpeeds speeds = robotRelativeChassisSpeeds();
     Vector<N2> currentVelocity =
-        VecBuilder.fill(
-            robotRelativeChassisSpeeds().vxMetersPerSecond,
-            robotRelativeChassisSpeeds().vyMetersPerSecond);
+        VecBuilder.fill(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
 
     Vector<N2> deltaV =
         VecBuilder.fill(desired.vxMetersPerSecond, desired.vyMetersPerSecond)
@@ -735,24 +722,24 @@ public class Drive extends SubsystemBase implements AutoCloseable {
     return values;
   }
 
-  /**
-   * @return If the robot is skidding.
-   */
-  @Logged
-  public boolean isSkidding() {
-    DoubleSummaryStatistics diffs =
-        Arrays.stream(moduleStates())
-            .mapToDouble(
-                s ->
-                    FieldConstants.fromPolarCoords(s.speedMetersPerSecond, s.angle)
-                        .minus(
-                            VecBuilder.fill(
-                                robotRelativeChassisSpeeds().vxMetersPerSecond,
-                                robotRelativeChassisSpeeds().vyMetersPerSecond))
-                        .norm())
-            .summaryStatistics();
-    return diffs.getMax() - diffs.getMin() > Skid.THRESHOLD.in(MetersPerSecond);
-  }
+  // /**
+  //  * @return If the robot is skidding.
+  //  */
+  // @Logged
+  // public boolean isSkidding() {
+  //   DoubleSummaryStatistics diffs =
+  //       Arrays.stream(moduleStates())
+  //           .mapToDouble(
+  //               s ->
+  //                   FieldConstants.fromPolarCoords(s.speedMetersPerSecond, s.angle)
+  //                       .minus(
+  //                           VecBuilder.fill(
+  //                               robotRelativeChassisSpeeds().vxMetersPerSecond,
+  //                               robotRelativeChassisSpeeds().vyMetersPerSecond))
+  //                       .norm())
+  //           .summaryStatistics();
+  //   return diffs.getMax() - diffs.getMin() > Skid.THRESHOLD.in(MetersPerSecond);
+  // }
 
   /**
    * @return If the robot is colliding.
@@ -767,7 +754,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
    *
    * @return If any module is stalling.
    */
-  @Logged
+  // @Logged
   public boolean isStalling() {
     return Arrays.stream(modulesStalling)
         .map(bs -> bs.getAsBoolean())
@@ -792,19 +779,37 @@ public class Drive extends SubsystemBase implements AutoCloseable {
   /** Returns the module states. */
   @Logged
   public SwerveModuleState[] moduleStates() {
-    return modules.stream().map(ModuleIO::state).toArray(SwerveModuleState[]::new);
+    SwerveModuleState[] states = new SwerveModuleState[modules.size()];
+    for (int i = 0; i < modules.size(); i++) {
+      states[i] = modules.get(i).state();
+    }
+    // return modules.stream().map(ModuleIO::state).toArray(SwerveModuleState[]::new);
+    return states;
   }
 
   /** Returns the module states. */
   @Logged
   public SwerveModuleState[] moduleSetpoints() {
-    return modules.stream().map(ModuleIO::desiredState).toArray(SwerveModuleState[]::new);
+    SwerveModuleState[] states = new SwerveModuleState[modules.size()];
+    for (int i = 0; i < modules.size(); i++) {
+      states[i] = modules.get(i).desiredState();
+    }
+    // return modules.stream().map(ModuleIO::state).toArray(SwerveModuleState[]::new);
+    return states;
+    // return modules.stream().map(ModuleIO::desiredState).toArray(SwerveModuleState[]::new);
   }
 
   /** Returns the module positions. */
   @Logged
   public SwerveModulePosition[] modulePositions() {
-    return modules.stream().map(ModuleIO::position).toArray(SwerveModulePosition[]::new);
+    SwerveModulePosition[] positions = new SwerveModulePosition[modules.size()];
+    for (int i = 0; i < modules.size(); i++) {
+      positions[i] = modules.get(i).position();
+    }
+    // return modules.stream().map(ModuleIO::state).toArray(SwerveModuleState[]::new);
+    return positions;
+
+    // return modules.stream().map(ModuleIO::position).toArray(SwerveModulePosition[]::new);
   }
 
   /** Returns the robot-relative chassis speeds. */
@@ -971,28 +976,35 @@ public class Drive extends SubsystemBase implements AutoCloseable {
    *
    * @return The test to run.
    */
-  public Test systemsCheck() {
-    ChassisSpeeds speeds = new ChassisSpeeds(1, 1, 0);
-    Command testCommand =
-        run(() -> setChassisSpeeds(speeds, ControlMode.OPEN_LOOP_VELOCITY)).withTimeout(0.75);
-    Function<ModuleIO, TruthAssertion> speedCheck =
-        m ->
-            tAssert(
-                () -> m.state().speedMetersPerSecond * Math.signum(m.position().angle.getCos()) > 1,
-                "Drive Syst Check " + m.name() + " Module Speed",
-                () -> "expected: >= 1; actual: " + m.state().speedMetersPerSecond);
-    Function<ModuleIO, EqualityAssertion> atAngle =
-        m ->
-            eAssert(
-                "Drive Syst Check " + m.name() + " Module Angle (degrees)",
-                () -> 45,
-                () -> Units.radiansToDegrees(atan(m.position().angle.getTan())),
-                1);
-    Set<Assertion> assertions =
+  public Command systemsCheck() {
+    Command[] speedChecks =
         modules.stream()
-            .flatMap(m -> Stream.of(speedCheck.apply(m), atAngle.apply(m)))
-            .collect(Collectors.toSet());
-    return new Test(testCommand, assertions);
+            .map(
+                m ->
+                    FaultLogger.reportTrue(
+                        () ->
+                            m.state().speedMetersPerSecond
+                                    * Math.signum(m.position().angle.getCos())
+                                > 1,
+                        "Drive Syst Check " + m.name() + " Module Speed",
+                        () -> "expected: >= 1; actual: " + m.state().speedMetersPerSecond))
+            .toArray(Command[]::new);
+
+    Command[] atAngle =
+        modules.stream()
+            .map(
+                m ->
+                    FaultLogger.reportEquals(
+                        "Drive Syst Check " + m.name() + " Module Angle (degrees)",
+                        () -> 45,
+                        () -> Units.radiansToDegrees(atan(m.position().angle.getTan())),
+                        1))
+            .toArray(Command[]::new);
+
+    return run(() -> setChassisSpeeds(new ChassisSpeeds(1, 1, 0), ControlMode.OPEN_LOOP_VELOCITY))
+        .withTimeout(0.75)
+        .andThen(speedChecks)
+        .andThen(atAngle);
   }
 
   @Override

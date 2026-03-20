@@ -9,11 +9,7 @@ import static edu.wpi.first.wpilibj2.command.button.RobotModeTriggers.disabled;
 import static edu.wpi.first.wpilibj2.command.button.RobotModeTriggers.teleop;
 import static edu.wpi.first.wpilibj2.command.button.RobotModeTriggers.test;
 import static org.sciborgs1155.lib.LoggingUtils.log;
-import static org.sciborgs1155.robot.Constants.DEADBAND;
-import static org.sciborgs1155.robot.Constants.FULL_SPEED_MULTIPLIER;
-import static org.sciborgs1155.robot.Constants.PERIOD;
-import static org.sciborgs1155.robot.Constants.SLOW_SPEED_MULTIPLIER;
-import static org.sciborgs1155.robot.Constants.TUNING;
+import static org.sciborgs1155.robot.Constants.*;
 import static org.sciborgs1155.robot.drive.DriveConstants.MAX_ANGULAR_ACCEL;
 import static org.sciborgs1155.robot.drive.DriveConstants.MAX_SPEED;
 import static org.sciborgs1155.robot.drive.DriveConstants.TELEOP_ANGULAR_SPEED;
@@ -44,9 +40,9 @@ import org.sciborgs1155.lib.CommandRobot;
 import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.ShiftTracker;
-import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.lib.Tracer;
 import org.sciborgs1155.robot.Ports.OI;
+import org.sciborgs1155.robot.climb.Climb;
 import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
 import org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer;
@@ -57,7 +53,9 @@ import org.sciborgs1155.robot.hood.Hood;
 import org.sciborgs1155.robot.hood.HoodVisualizer;
 import org.sciborgs1155.robot.hopper.Hopper;
 import org.sciborgs1155.robot.indexer.Indexer;
+import org.sciborgs1155.robot.intake.Intake;
 import org.sciborgs1155.robot.shooter.Shooter;
+import org.sciborgs1155.robot.slapdown.Slapdown;
 import org.sciborgs1155.robot.turret.Turret;
 import org.sciborgs1155.robot.vision.Vision;
 
@@ -77,19 +75,26 @@ public class Robot extends CommandRobot {
 
   // SUBSYSTEMS
   private final Drive drive = Drive.create();
-  private final Hood hood = Hood.create();
   private final Vision vision = Vision.create();
-  private final Shooter shooter = Shooter.create();
+  private final Intake intake = Intake.create();
   private final Turret turret = Turret.create();
-  private final Hopper hopper = Hopper.create();
+  private final Hood hood = Hood.create();
+  private final Shooter shooter = Shooter.create();
   private final Indexer indexer = Indexer.create();
+  private final Hopper hopper = Hopper.create();
+  private final Slapdown slapdown = Slapdown.none();
+  private final Climb climb = Climb.none();
 
   // COMMANDS
   private final Alignment align = new Alignment(drive);
   private final Shooting shooting = new Shooting(turret, hood, drive);
-  @NotLogged private final SendableChooser<Command> autos = Autos.configureAutos(drive);
 
-  @NotLogged private final ProjectileVisualizer fuelVisualizer = Shooting.createVectorVisualizer(drive);
+  @NotLogged
+  private final ProjectileVisualizer fuelVisualizer = Shooting.createVectorVisualizer(drive);
+
+  @NotLogged
+  private final SendableChooser<Command> autos =
+      Autos.configureAutos(drive, intake, slapdown, shooting, climb, align);
 
   @Logged private double speedMultiplier = FULL_SPEED_MULTIPLIER;
 
@@ -149,6 +154,11 @@ public class Robot extends CommandRobot {
             drive.updateEstimates(
                 vision.estimatedGlobalPoses(drive.gyroHeading(), disabled().getAsBoolean())),
         PERIOD);
+
+    driver
+        .x()
+        .onTrue(Commands.runOnce(() -> speedMultiplier = SLOW_SPEED_MULTIPLIER))
+        .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
 
     addPeriodic(this::updateAdvantageScopeModel, PERIOD);
 
@@ -218,20 +228,12 @@ public class Robot extends CommandRobot {
     }
 
     autonomous().whileTrue(Commands.defer(autos::getSelected, Set.of(drive)).asProxy());
-
     test().whileTrue(systemsCheck());
-
-    driver.b().whileTrue(drive.zeroHeading());
-    driver
-        .leftBumper()
-        .or(driver.rightBumper())
-        .onTrue(Commands.runOnce(() -> speedMultiplier = SLOW_SPEED_MULTIPLIER))
-        .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
-
     teleop().whileTrue(shooting.runShooter());
+
     operator.a().whileTrue(fuelVisualizer.launchProjectiles());
-    operator.x().onTrue(ShotLookUpTable.generate());
     operator.b().onTrue(ShotLookUpTable.load());
+    operator.x().onTrue(ShotLookUpTable.generate());
   }
 
   /**
@@ -276,7 +278,14 @@ public class Robot extends CommandRobot {
    * @return A command that tests all mechanisms.
    */
   public Command systemsCheck() {
-    return Test.toCommand(drive.systemsCheck()).withName("Test Mechanisms");
+    return Commands.sequence(
+            drive.systemsCheck(),
+            turret.systemsCheck().withTimeout(6),
+            hood.systemsCheck().withTimeout(6),
+            shooter.systemsCheck().withTimeout(6),
+            slapdown.systemsCheck().withTimeout(1),
+            intake.intake().withTimeout(3))
+        .withName("Test Mechansims");
   }
 
   @Override

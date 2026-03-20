@@ -10,128 +10,45 @@
       "/SmartDashboard/Drive Field": "Field2d",
       "/SmartDashboard/PathPlanner": "Alerts",
       "/SmartDashboard/PhotonAlerts": "Alerts",
+      "/SmartDashboard/Robot/climb/measurement visualizer": "Mechanism2d",
+      "/SmartDashboard/Robot/climb/setpoint visualizer": "Mechanism2d",
+      "/SmartDashboard/Robot/elevator/dynamic backward": "Command",
+      "/SmartDashboard/Robot/elevator/dynamic forward": "Command",
+      "/SmartDashboard/Robot/elevator/quasistatic backward": "Command",
+      "/SmartDashboard/Robot/elevator/quasistatic forward": "Command",
       "/SmartDashboard/Robot/hood/dynamic backward": "Command",
       "/SmartDashboard/Robot/hood/dynamic forward": "Command",
       "/SmartDashboard/Robot/hood/quasistatic backward": "Command",
       "/SmartDashboard/Robot/hood/quasistatic forward": "Command",
+      "/SmartDashboard/Robot/rotation/dynamic backward": "Command",
+      "/SmartDashboard/Robot/rotation/dynamic forward": "Command",
+      "/SmartDashboard/Robot/rotation/quasistatic backward": "Command",
+      "/SmartDashboard/Robot/rotation/quasistatic forward": "Command",
+      "/SmartDashboard/Robot/shooter/shooter dynamic backward": "Command",
+      "/SmartDashboard/Robot/shooter/shooter dynamic forward": "Command",
+      "/SmartDashboard/Robot/shooter/shooter quasistatic backward": "Command",
+      "/SmartDashboard/Robot/shooter/shooter quasistatic forward": "Command",
       "/SmartDashboard/Robot/slapdown/dynamic backward": "Command",
       "/SmartDashboard/Robot/slapdown/dynamic forward": "Command",
       "/SmartDashboard/Robot/slapdown/quasistatic backward": "Command",
       "/SmartDashboard/Robot/slapdown/quasistatic forward": "Command",
-      "/SmartDashboard/Turret dynamic clockwise": "Command",
-      "/SmartDashboard/Turret dynamic counterclockwise": "Command",
-      "/SmartDashboard/Turret quasistatic clockwise": "Command",
-      "/SmartDashboard/Turret quasistatic counterclockwise": "Command",
-      "/SmartDashboard/TurretVisualizer": "Mechanism2d",
+      "/SmartDashboard/Robot/translation/dynamic backward": "Command",
+      "/SmartDashboard/Robot/translation/dynamic forward": "Command",
+      "/SmartDashboard/Robot/translation/quasistatic backward": "Command",
+      "/SmartDashboard/Robot/translation/quasistatic forward": "Command",
+      "/SmartDashboard/Robot/turret/TurretVisualizer": "Mechanism2d",
+      "/SmartDashboard/Robot/turret/dynamic clockwise": "Command",
+      "/SmartDashboard/Robot/turret/dynamic counterclockwise": "Command",
+      "/SmartDashboard/Robot/turret/quasistatic clockwise": "Command",
+      "/SmartDashboard/Robot/turret/quasistatic counterclockwise": "Command",
       "/SmartDashboard/VisionSystemSim-main/Sim Field": "Field2d",
-      "/SmartDashboard/shooter top dynamic backward": "Command",
-      "/SmartDashboard/shooter top dynamic forward": "Command",
-      "/SmartDashboard/shooter top quasistatic backward": "Command",
-      "/SmartDashboard/shooter top quasistatic forward": "Command",
+      "Robot/climb/pid": "ProfiledPIDController",
       "Robot/drive/rotationController": "PIDController",
       "Robot/drive/translationController": "ProfiledPIDController",
       "Robot/hood/fb": "ProfiledPIDController",
-      "Robot/shooter/controller": "PIDController",
+      "Robot/shooter/controller": "ProfiledPIDController",
       "Robot/slapdown/pid": "ProfiledPIDController",
       "Robot/turret/controller": "ProfiledPIDController"
-<<<<<<< HEAD
-=======
-      "Robot/turret/controller": "ProfiledPIDController"
-    },
-    "windows": {
-      "/Robot/drive/field2d": {
-        "bottom": 1914,
-        "height": 8.069275856018066,
-        "left": 245,
-        "module- FL": {
-          "style": "Line"
-        },
-        "module- RR": {
-          "style": "Line"
-        },
-        "module-FR": {
-          "style": "Line"
-        },
-        "module-RL": {
-          "style": "Line"
-        },
-        "right": 3942,
-        "top": 118,
-        "width": 16.54119300842285,
-        "window": {
-          "visible": true
-        }
-      },
-      "/SmartDashboard/Auto Chooser": {
-        "width": 17.54825210571289,
-        "window": {
-          "visible": true
-        }
-      },
-      "/SmartDashboard/Drive Field": {
-        "bottom": 1914,
-        "height": 8.069275856018066,
-        "left": 245,
-        "right": 3942,
-        "top": 118,
-        "width": 16.54119300842285,
-        "window": {
-          "visible": true
-        }
-      },
-      "/SmartDashboard/Robot/climb/measurement visualizer": {
-        "window": {
-          "visible": true
-        }
-      },
-      "/SmartDashboard/Robot/climb/setpoint visualizer": {
-        "window": {
-          "visible": true
-        }
-      },
-      "/SmartDashboard/Robot/climb/measurement visualizer": {
-        "window": {
-          "visible": true
-        }
-      },
-      "/SmartDashboard/Robot/climb/setpoint visualizer": {
-        "window": {
-          "visible": true
-        }
-      },
-      "/SmartDashboard/TurretVisualizer": {
-        "window": {
-          "visible": true
-        }
-      },
-      "/SmartDashboard/VisionSystemSim-main/Sim Field": {
-        "bottom": 1914,
-        "height": 8.069275856018066,
-        "left": 245,
-        "right": 3942,
-        "top": 118,
-        "width": 16.54119300842285,
-        "window": {
-          "visible": true
-        }
-      }
-    }
-  },
-  "NetworkTables": {
-    "transitory": {
-      "Robot": {
-        "open": true,
-        "slapdown": {
-          "open": true
-        },
-        "tuning": {
-          "open": true,
-          "slapdown": {
-            "open": true
-          }
-        }
-      }
->>>>>>> shooting-competition-ankit
     }
   },
   "NetworkTables Info": {

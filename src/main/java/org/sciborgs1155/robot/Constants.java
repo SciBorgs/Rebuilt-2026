@@ -1,9 +1,16 @@
 package org.sciborgs1155.robot;
 
-import static edu.wpi.first.units.Units.*;
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.KilogramSquareMeters;
+import static edu.wpi.first.units.Units.Pounds;
+import static edu.wpi.first.units.Units.Seconds;
 
 import com.ctre.phoenix6.CANBus;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
+import edu.wpi.first.math.interpolation.InterpolatingTreeMap;
+import edu.wpi.first.math.interpolation.InverseInterpolator;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Mass;
 import edu.wpi.first.units.measure.MomentOfInertia;
@@ -22,13 +29,6 @@ import org.sciborgs1155.robot.drive.DriveConstants;
  * @see Units
  */
 public final class Constants {
-
-  /** The current robot state, as in the type. Remember to update! */
-  public static final RobotType ROBOT_TYPE = RobotType.FULL;
-
-  /** States if we are in tuning mode. Ideally, keep it at false when not used. */
-  public static final boolean TUNING = false;
-
   public static final Time PERIOD = Seconds.of(0.02); // roborio tickrate (s)
   public static final Time ODOMETRY_PERIOD = Seconds.of(1.0 / 20.0); // 4 ms (speedy!)
   public static final double DEADBAND = 0.15;
@@ -39,8 +39,17 @@ public final class Constants {
   public static final double FULL_SPEED_MULTIPLIER = 1.0;
 
   // The name of seperate canivore, set to rio if no seperate canivore
-  public static final CANBus DRIVE_CANIVORE = new CANBus("drivetrain");
-  public static final CANBus TURRET_CANIVORE = new CANBus("turret");
+  public static final CANBus DRIVE_CANIVORE = new CANBus("");
+  public static final CANBus INTAKE_CANIVORE = new CANBus("intake");
+  public static final CANBus SHOOTING_CANIVORE = new CANBus("shooting");
+
+  /** The current robot state, as in the type. Remember to update! */
+  public static final RobotType ROBOT_TYPE = RobotType.FULL;
+
+  /** States if we are in tuning mode. Ideally, keep it at false when not used. */
+  public static final boolean TUNING = true;
+
+  public static final Pose2d CLIMB_POSE = new Pose2d(1.52, 3.74, new Rotation2d(Degrees.of(180)));
 
   // Prevents instantiation
   private Constants() {}
@@ -61,6 +70,39 @@ public final class Constants {
     FULL,
     CHASSIS,
     NONE
+  }
+
+  /** Lookup tables mapping shot distance (meters) to shooter parameters. */
+  public static final class ShootingData {
+    public static final InterpolatingDoubleTreeMap DISTANCE_TO_RADS =
+        new InterpolatingDoubleTreeMap();
+    public static final InterpolatingDoubleTreeMap DISTANCE_TO_TOF =
+        new InterpolatingDoubleTreeMap();
+    public static final InterpolatingTreeMap<Double, Rotation2d> DISTANCE_TO_HOOD_ANGLE =
+        new InterpolatingTreeMap<>(InverseInterpolator.forDouble(), Rotation2d::interpolate);
+
+    private ShootingData() {}
+
+    /**
+     * Applies a point to the three linear interpolations.
+     *
+     * @param dist The input distance.
+     * @param degIncline The output degree of incline.
+     * @param speed The
+     * @param tof
+     */
+    public static void put(double dist, double degIncline, double speed, double tof) {
+      DISTANCE_TO_HOOD_ANGLE.put(dist, Rotation2d.fromDegrees(degIncline));
+      DISTANCE_TO_RADS.put(dist, speed);
+      DISTANCE_TO_TOF.put(dist, tof);
+    }
+
+    static {
+      put(2.44, 20.0, 120.0, 1.0);
+      put(2.5, 25.0, 117.0, 1.01);
+      put(3.7, 30, 130, 0.97);
+      put(4.414, 40.0, 146.0, 0.95);
+    }
   }
 
   // TODO: UPDATE ALL OF THESE VALUES.

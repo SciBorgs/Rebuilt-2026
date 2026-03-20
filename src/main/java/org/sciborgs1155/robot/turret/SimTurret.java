@@ -3,16 +3,12 @@ package org.sciborgs1155.robot.turret;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Seconds;
 import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.turret.TurretConstants.*;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
-import yams.units.EasyCRT;
-import yams.units.EasyCRTConfig;
 
 /** Simulated hardware interface for the {@code Turret} subsystem. */
 public class SimTurret implements TurretIO {
@@ -28,39 +24,10 @@ public class SimTurret implements TurretIO {
           false, // GRAVITY DISBLAED
           START_ANGLE.in(Radians)); // STARTING ANGLE
 
-  /** Cached last valid CRT solution */
-  private double lastGoodPositionRad = START_ANGLE.in(Radians);
-
-  /** EasyCRT solver */
-  private final EasyCRTConfig crtConfig =
-      new EasyCRTConfig(() -> Rotations.of(encoderA()), () -> Rotations.of(encoderB()))
-          .withEncoderRatios(
-              (double) TURRET_GEARING / ENCODER_A_GEARING,
-              (double) TURRET_GEARING / ENCODER_B_GEARING)
-          .withMechanismRange(MIN_ANGLE, MAX_ANGLE)
-          .withMatchTolerance(CRT_MATCH_TOLERANCE);
-
-  private final EasyCRT solverCRT = new EasyCRT(crtConfig);
-
-  /** True turret angle in radians (mechanism space). */
-  public double trueAngleRad() {
+  /** Turret angle in radians (mechanism space). */
+  @Override
+  public double angle() {
     return simulation.getAngleRads();
-  }
-
-  @Override
-  public double encoderA() {
-    double turretRot = trueAngleRad() / (2.0 * Math.PI);
-    double encoderRot = turretRot * ((double) TURRET_GEARING / ENCODER_A_GEARING);
-
-    return MathUtil.inputModulus(encoderRot, 0.0, 1.0);
-  }
-
-  @Override
-  public double encoderB() {
-    double turretRot = trueAngleRad() / (2.0 * Math.PI);
-    double encoderRot = turretRot * ((double) TURRET_GEARING / ENCODER_B_GEARING);
-
-    return MathUtil.inputModulus(encoderRot, 0.0, 1.0);
   }
 
   @Override
@@ -70,20 +37,13 @@ public class SimTurret implements TurretIO {
   }
 
   @Override
-  public double position() {
-    return solverCRT
-        .getAngleOptional()
-        .map(
-            a -> {
-              lastGoodPositionRad = a.in(Radians);
-              return lastGoodPositionRad;
-            })
-        .orElse(lastGoodPositionRad);
+  public double velocity() {
+    return simulation.getVelocityRadPerSec();
   }
 
   @Override
-  public double velocity() {
-    return simulation.getVelocityRadPerSec();
+  public double voltage() {
+    return simulation.getInput(0);
   }
 
   @Override

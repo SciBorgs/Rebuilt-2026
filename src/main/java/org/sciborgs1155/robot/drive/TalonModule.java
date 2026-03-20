@@ -232,15 +232,10 @@ public class TalonModule implements ModuleIO {
 
   @Override
   public void updateInputs(Rotation2d angle, double voltage) {
-    SwerveModuleState sp = new SwerveModuleState(1, angle);
-    Rotation2d rotation = rotation();
-    sp.optimize(rotation);
-    sp.cosineScale(rotation);
-
     setDriveVoltage(voltage);
 
-    setTurnSetpoint(sp.angle);
-    this.setpoint.angle = sp.angle;
+    setTurnSetpoint(angle);
+    this.setpoint.angle = angle;
   }
 
   @Override

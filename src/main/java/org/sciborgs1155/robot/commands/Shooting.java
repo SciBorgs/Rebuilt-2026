@@ -123,7 +123,7 @@ public class Shooting {
                       if (fuelVisualizer != null) fuelVisualizer.launchProjectile();
                     })))
         .deadlineFor(
-            runShooterSuperstructure(() -> calculateShot(HUB_TARGET)),
+            runShooterSuperstructure(() -> calculateShot(target)),
             drive.drive(
                 vx.scale(DriveConstants.SHOOTING_TRANSLATIONAL_SPEED),
                 vy.scale(DriveConstants.SHOOTING_TRANSLATIONAL_SPEED),

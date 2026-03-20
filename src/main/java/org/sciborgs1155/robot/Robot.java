@@ -201,8 +201,8 @@ public class Robot extends CommandRobot {
     teleop().onTrue(ShiftTracker.startTracking());
 
     // x and y are switched: we use joystick Y axis to control field x motion
-    InputStream rawX = InputStream.of(driver::getLeftY).log("/Robot/raw x").negate();
-    InputStream rawY = InputStream.of(driver::getLeftX).log("/Robot/raw y").negate();
+    InputStream rawX = InputStream.of(driver::getLeftY).log("/Robot/raw x"); // .negate();
+    InputStream rawY = InputStream.of(driver::getLeftX).log("/Robot/raw y"); // .negate();
 
     InputStream operatorRawX =
         InputStream.of(operator::getLeftY).log("/Robot/operator raw x").negate();
@@ -266,21 +266,35 @@ public class Robot extends CommandRobot {
     driver.leftTrigger().whileTrue(intake.intake());
 
     // OUTTAKE THE INTAKE
-    driver.a().whileTrue(intake.outtake().alongWith(hopper.outtake()).alongWith(indexer.backward()));
+    driver
+        .a()
+        .whileTrue(intake.outtake().alongWith(hopper.outtake()).alongWith(indexer.backward()));
 
     // FEED CONTINUOUS (LEFT SIDE)
-    driver.leftBumper().whileTrue(shooting.shootDriving(Shooting.LEFT_FEED, x, y, omega));
+    driver
+        .leftBumper()
+        .whileTrue(shooting.shootDriving(Shooting.LEFT_FEED, x, y, omega).withName("left feed"));
 
     // FEED CONTINUOUS (RIGHT SIDE)
-    driver.rightBumper().whileTrue(shooting.shootDriving(Shooting.RIGHT_FEED, x, y, omega));
+    driver
+        .rightBumper()
+        .whileTrue(shooting.shootDriving(Shooting.RIGHT_FEED, x, y, omega).withName("right feed"));
 
     // SCORE CONTINUOUS
-    driver.rightTrigger().whileTrue(shooting.shootDriving(Shooting.HUB_TARGET, x, y, omega));
+    driver
+        .rightTrigger()
+        .whileTrue(shooting.shootDriving(Shooting.HUB_TARGET, x, y, omega).withName("HUB"));
 
     // SCORING FALL BACK (FIXED POSITION)
     driver
         .y()
-        .whileTrue(hopper.intake().alongWith(indexer.forward().alongWith(shooter.runShooter(120))));
+        .whileTrue(
+            hopper
+                .intake()
+                .alongWith(indexer.forward().alongWith(shooter.runShooter(120)))
+                .withName("fallback"));
+
+    // driver.b().whileTrue(drive.goForward());
 
     // CLIMB
     // operator
@@ -288,11 +302,11 @@ public class Robot extends CommandRobot {
     //     .whileTrue(climb.extend())
     //     .onFalse(climb.retract());
 
-    operator.x().whileTrue(shooting.shootWithTestData());
+    operator.x().whileTrue(shooting.shootWithTestData().withName("test data"));
 
-    operator
-        .leftBumper()
-        .whileTrue(intake.intake().alongWith(indexer.forward()).alongWith(hopper.intake()));
+    // operator
+    //     .leftBumper()
+    //     .whileTrue(intake.intake().alongWith(indexer.forward()).alongWith(hopper.intake()));
 
     operator
         .y()
@@ -303,12 +317,16 @@ public class Robot extends CommandRobot {
     // operator.a().whileTrue(turret.goTo(() -> 3 * Math.PI / 2));
     operator.b().whileTrue(turret.goTo(() -> Math.PI / 2));
 
-    operator.leftTrigger().whileTrue(turret.goLeft());
-    operator.rightTrigger().whileTrue(turret.goRight());
+    operator.leftTrigger().whileTrue(turret.goLeft().withName("left"));
+    operator.rightTrigger().whileTrue(turret.goRight().withName("right"));
 
     shooting
         .crossingAlliance()
-        .whileTrue(shooting.hideAway().withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
+        .whileTrue(
+            shooting
+                .hideAway()
+                .withInterruptBehavior(InterruptionBehavior.kCancelIncoming)
+                .withName("crossing"));
 
     // DEBUG
     // TODO: various operator debug stuff (turret, hood, shooter)

@@ -345,6 +345,14 @@ public class Drive extends SubsystemBase implements AutoCloseable {
     return odometry.getEstimatedPosition();
   }
 
+  public Command goForward() {
+    return run(() -> modules.forEach(m -> m.updateInputs(Rotation2d.kZero, 4)));
+  }
+
+  public Command allModulesFace(Rotation2d g) {
+    return run(() -> modules.forEach(m -> m.updateInputs(g, 0)));
+  }
+
   /**
    * Returns the field-relative velocity of the robot.
    *

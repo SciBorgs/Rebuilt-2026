@@ -231,11 +231,15 @@ public class TalonModule implements ModuleIO {
   }
 
   @Override
-  public void updateInputs(Rotation2d angle, double voltage) {
-    setDriveVoltage(voltage);
+  public void updateInputs(SwerveModuleState voltage) {
+    Rotation2d rotation = rotation();
+    // Optimize the reference state to avoid spinning further than 90 degrees
+    voltage.optimize(rotation);
 
-    setTurnSetpoint(angle);
-    this.setpoint.angle = angle;
+    setDriveVoltage(voltage.speedMetersPerSecond);
+
+    setTurnSetpoint(voltage.angle);
+    this.setpoint.angle = voltage.angle;
   }
 
   @Override

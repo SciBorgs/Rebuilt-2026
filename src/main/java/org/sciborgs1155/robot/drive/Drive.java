@@ -255,7 +255,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
                 null,
                 (state) -> SignalLogger.writeString("translation state", state.toString())),
             new SysIdRoutine.Mechanism(
-                volts -> modules.forEach(m -> m.updateInputs(Rotation2d.kZero, volts.in(Volts))),
+                volts -> modules.forEach(m -> m.updateInputs(new SwerveModuleState(volts.in(Volts), Rotation2d.kZero))),
                 null,
                 this,
                 "translation"));
@@ -269,13 +269,13 @@ public class Drive extends SubsystemBase implements AutoCloseable {
             new SysIdRoutine.Mechanism(
                 volts -> {
                   this.frontLeft.updateInputs(
-                      Rotation2d.fromRadians(3 * Math.PI / 4), volts.in(Volts));
+                      new SwerveModuleState(volts.in(Volts),Rotation2d.fromRadians(3 * Math.PI / 4)));
                   this.frontRight.updateInputs(
-                      Rotation2d.fromRadians(Math.PI / 4), volts.in(Volts));
+                    new SwerveModuleState(volts.in(Volts),Rotation2d.fromRadians(Math.PI / 4)));
                   this.rearLeft.updateInputs(
-                      Rotation2d.fromRadians(-3 * Math.PI / 4), volts.in(Volts));
+                    new SwerveModuleState(volts.in(Volts),Rotation2d.fromRadians(-3 * Math.PI / 4)));
                   this.rearRight.updateInputs(
-                      Rotation2d.fromRadians(-Math.PI / 4), volts.in(Volts));
+                      new SwerveModuleState(volts.in(Volts),Rotation2d.fromRadians(-Math.PI / 4)));
                 },
                 null,
                 this,
@@ -346,11 +346,11 @@ public class Drive extends SubsystemBase implements AutoCloseable {
   }
 
   public Command goForward() {
-    return run(() -> modules.forEach(m -> m.updateInputs(Rotation2d.kZero, 4)));
+    return run(() -> modules.forEach(m -> m.updateInputs(new SwerveModuleState(4, Rotation2d.kZero))));
   }
 
   public Command allModulesFace(Rotation2d g) {
-    return run(() -> modules.forEach(m -> m.updateInputs(g, 0)));
+    return run(() -> modules.forEach(m -> m.updateInputs(new SwerveModuleState(4, g))));
   }
 
   /**

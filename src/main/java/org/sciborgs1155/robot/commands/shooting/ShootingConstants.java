@@ -13,13 +13,17 @@ public class ShootingConstants {
   /** Exclusively used in LookUp table generation. */
   protected static final int DISTANCE = -1;
 
-  protected static final int SPEED = 0;
-  protected static final int PITCH = 1;
-  protected static final int YAW = 2;
   protected static final int ERROR = 2;
 
   /** Exclusively used in LookUp table generation. */
   protected static final int ENTRY_OFFSET = 1;
+
+  protected static final int SPEED = 0;
+  protected static final int PITCH = 1;
+  protected static final int YAW = 2;
+
+  protected static final int YAW_VELOCITY = 0;
+  protected static final int PITCH_VELOCITY = 1;
 
   // VISUALIZER CONSTANTS
 

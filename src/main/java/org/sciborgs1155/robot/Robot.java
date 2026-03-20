@@ -89,8 +89,7 @@ public class Robot extends CommandRobot {
   private final Alignment align = new Alignment(drive);
   private final Shooting shooting = new Shooting(turret, hood, drive);
 
-  @NotLogged
-  private final ProjectileVisualizer fuelVisualizer = Shooting.createVectorVisualizer(drive);
+  @NotLogged private final ProjectileVisualizer fuelVisualizer = shooting.createVisualizer();
 
   @NotLogged
   private final SendableChooser<Command> autos =
@@ -229,7 +228,7 @@ public class Robot extends CommandRobot {
 
     autonomous().whileTrue(Commands.defer(autos::getSelected, Set.of(drive)).asProxy());
     test().whileTrue(systemsCheck());
-    teleop().whileTrue(shooting.runShooter());
+    teleop().whileTrue(shooting.runDiscreteShooter());
 
     operator.a().whileTrue(fuelVisualizer.launchProjectiles());
     operator.b().onTrue(ShotLookUpTable.load());

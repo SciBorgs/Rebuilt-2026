@@ -22,8 +22,8 @@ public class TurretConstants {
   public static final AngularVelocity MAX_VELOCITY = RadiansPerSecond.of(10);
   public static final AngularAcceleration MAX_ACCELERATION = RadiansPerSecondPerSecond.of(15);
 
-  public static final Angle MAX_ANGLE = Degrees.of(360 + 45);
-  public static final Angle MIN_ANGLE = Degrees.of(0);
+  public static final Angle MAX_ANGLE = Degrees.of(Integer.MAX_VALUE);
+  public static final Angle MIN_ANGLE = Degrees.of(Integer.MIN_VALUE);
   public static final Angle START_ANGLE = Radians.of(0);
   public static final Angle FULL_ANGLE_RANGE = MAX_ANGLE.minus(MIN_ANGLE);
 
@@ -39,10 +39,15 @@ public class TurretConstants {
   public static final double TURRET_GEARING = 84.0;
 
   public static final class ControlConstants {
-    // PID CONSTANTS
+    // PID CONSTANTS (POSITION)
     public static final double P = 6;
     public static final double I = 0;
     public static final double D = 0.01;
+
+    // PID CONSTANTS (VELOCITY)
+    public static final double P_V = 0.1;
+    public static final double I_V = 0;
+    public static final double D_V = 0;
 
     // FEEDFORWARD CONSTANTS (VELOCITY IN RAD/SEC)
     public static final double S = 0.65;
@@ -51,5 +56,6 @@ public class TurretConstants {
 
     // TOLERANCES
     public static final Angle TOLERANCE = Degree.of(3);
+    public static final AngularVelocity TOLERANCE_V = DegreesPerSecond.of(0.1);
   }
 }

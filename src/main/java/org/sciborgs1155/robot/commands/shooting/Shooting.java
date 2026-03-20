@@ -29,9 +29,11 @@ import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.YAW;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.hood.Hood;
@@ -56,8 +58,8 @@ public class Shooting {
     this.drive = drive;
   }
 
-  /** Calculates the launch parameters required to shoot on the move (speed, pitch, yaw). */
-  public static double[] movingLaunchParameters(Pose3d robotPose, ChassisSpeeds robotVelocity) {
+  /** Calculates the launch parameters required to shoot (speed, pitch, yaw). */
+  public static double[] discreteLaunchParameters(Pose3d robotPose, ChassisSpeeds robotVelocity) {
     double heading = robotPose.getRotation().getZ();
     double[] robotToShooter = robotToShooter(heading);
 
@@ -93,21 +95,26 @@ public class Shooting {
    * Simultaneously calculates new launch parameters and passes those parameters into the
    * subsystems.
    */
-  public Command runShooter() {
+  public Command runDiscreteShooter() {
     return Commands.parallel(
         Commands.run(
             () -> {
               launchParameters =
-                  movingLaunchParameters(drive.pose3d(), drive.fieldRelativeChassisSpeeds());
+                  discreteLaunchParameters(drive.pose3d(), drive.fieldRelativeChassisSpeeds());
               LoggingUtils.log("Shooting/Parameters/SPEED", launchParameters[SPEED]);
               LoggingUtils.log("Shooting/Parameters/PITCH", launchParameters[PITCH]);
               LoggingUtils.log("Shooting/Parameters/YAW", launchParameters[YAW]);
             }),
-        turret.goTo(() -> MathUtil.inputModulus(launchParameters[YAW], -Math.PI, Math.PI)),
+        turret.goToYaw(() -> Rotation2d.fromRadians(launchParameters[YAW])),
         hood.goTo(
             () ->
                 Math.PI / 2
                     - MathUtil.inputModulus(launchParameters[PITCH], MIN_PITCH, MAX_PITCH)));
+  }
+
+  // TODO
+  public Command parallelShooter(InputStream vx, InputStream vy, InputStream omega) {
+    return Commands.parallel(drive.drive(vx, vy, omega), turret.goToVelocity(omega));
   }
 
   /** Creates a visualizer that utilizes the subsystem positions to predict a trajectory. */
@@ -129,7 +136,8 @@ public class Shooting {
    */
   public static ProjectileVisualizer createVectorVisualizer(Drive drive) {
     return fromLaunchParameters(
-            () -> movingLaunchParameters(drive.pose3d(), drive.fieldRelativeChassisSpeeds()), drive)
+            () -> discreteLaunchParameters(drive.pose3d(), drive.fieldRelativeChassisSpeeds()),
+            drive)
         .withScoringParameters(GOAL, SCORE_RADIUS, SCORE_DEPTH)
         .configPhysics(true, DRAG_ENABLED, false, LIFT_ENABLED)
         .configGeneration(

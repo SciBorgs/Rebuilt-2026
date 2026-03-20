@@ -11,6 +11,7 @@ import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.networktables.DoubleEntry;
@@ -48,6 +49,8 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
           new Constraints(
               MAX_VELOCITY.in(RadiansPerSecond), MAX_ACCEL.in(RadiansPerSecondPerSecond)));
 
+  @Logged private final PIDController fbVel = new PIDController(P_V, I_V, D_V);
+
   /** Arm feed forward controller. */
   private final ArmFeedforward ff = new ArmFeedforward(S, G, V, A);
 
@@ -59,6 +62,9 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
   @NotLogged private final DoubleEntry tuningP = Tuning.entry("Robot/tuning/hood/K_P", P);
   @NotLogged private final DoubleEntry tuningI = Tuning.entry("Robot/tuning/hood/K_I", I);
   @NotLogged private final DoubleEntry tuningD = Tuning.entry("Robot/tuning/hood/K_D", D);
+  @NotLogged private final DoubleEntry tuningP_V = Tuning.entry("Robot/tuning/hood/K_P_V", P_V);
+  @NotLogged private final DoubleEntry tuningI_V = Tuning.entry("Robot/tuning/hood/K_I_V", I_V);
+  @NotLogged private final DoubleEntry tuningD_V = Tuning.entry("Robot/tuning/hood/K_D_V", D_V);
   @NotLogged private final DoubleEntry tuningS = Tuning.entry("Robot/tuning/hood/S", S);
   @NotLogged private final DoubleEntry tuningG = Tuning.entry("Robot/tuning/hood/G", G);
   @NotLogged private final DoubleEntry tuningV = Tuning.entry("Robot/tuning/hood/V", V);
@@ -228,6 +234,18 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
   }
 
   /**
+   * Goes to a velocity
+   *
+   * @param velocity Supplied velocity to go to
+   * @return A command to go to the velocity
+   */
+  public Command goToVelocity(DoubleSupplier goal) {
+    return run(() -> updateVelocity(goal.getAsDouble()))
+        .until(this::atGoal)
+        .withName("Hood GoTo Shooting Angle");
+  }
+
+  /**
    * Goes to an angle so that the fuel is launch out at said angle.
    *
    * @param angle Angle to shoot at
@@ -274,6 +292,39 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
     hardware.setVoltage(feedback + feedforward);
   }
 
+  /**
+   * method to set the voltage of the motor based of ff and fb calculations
+   *
+   * @param velocity Goal angular velocity for hood to reach
+   */
+  public void updateVelocity(double velocity) {
+    if (Math.abs(velocity) < VELOCITY_TOLERANCE.in(RadiansPerSecond)) {
+      hardware.setVoltage(0);
+      return;
+    }
+
+    if (Math.abs(angle() - MAX_ANGLE.in(Radians)) < POSITION_TOLERANCE.in(Radians)
+        && velocity > 0) {
+      hardware.setVoltage(0);
+      return;
+    }
+
+    if (Math.abs(angle() - MIN_ANGLE.in(Radians)) < POSITION_TOLERANCE.in(Radians)
+        && velocity < 0) {
+      hardware.setVoltage(0);
+      return;
+    }
+
+    double vel = hardware.velocity();
+    double pidVolts = fbVel.calculate(vel, velocity);
+    double ffdVolts = ff.calculateWithVelocities(angle(), vel, velocity);
+
+    double voltage = pidVolts + ffdVolts;
+
+    if (voltage > 12.0) voltage = 12.0;
+    hardware.setVoltage(voltage);
+  }
+
   /** test for hood to go to a set goal angle */
   public Command systemsCheck() {
     Angle goal = MAX_ANGLE.div(2);
@@ -309,6 +360,9 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
       fb.setP(tuningP.get());
       fb.setI(tuningI.get());
       fb.setD(tuningD.get());
+      fbVel.setP(tuningP_V.get());
+      fbVel.setI(tuningI_V.get());
+      fbVel.setD(tuningD_V.get());
       ff.setKs(tuningS.get());
       ff.setKg(tuningG.get());
       ff.setKv(tuningV.get());

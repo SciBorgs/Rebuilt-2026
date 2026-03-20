@@ -233,7 +233,7 @@ public class Robot extends CommandRobot {
     // Apply speed multiplier, deadband, square inputs, and scale rotation to max teleop speed
     InputStream omega =
         InputStream.of(driver::getRightX)
-            .negate()
+            // .negate()
             .scale(() -> speedMultiplier)
             .clamp(1.0)
             .deadband(DEADBAND, 1.0)
@@ -263,7 +263,7 @@ public class Robot extends CommandRobot {
         .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
 
     // INTAKE TOGGLE
-    driver.leftTrigger().toggleOnTrue(intake.intake());
+    driver.leftTrigger().whileTrue(intake.intake());
 
     // OUTTAKE THE INTAKE
     driver.a().whileTrue(intake.outtake().alongWith(hopper.outtake()).alongWith(indexer.backward()));

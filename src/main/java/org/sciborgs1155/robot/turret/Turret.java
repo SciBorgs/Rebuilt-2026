@@ -167,6 +167,16 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
   }
 
   /**
+   * Returns the angular velocity of the turret in radians per second.
+   *
+   * @return The angular velocity of the turret.
+   */
+  @Logged
+  public double velocity() {
+    return hardware.velocity();
+  }
+
+  /**
    * Returns the setpoint of the turret.
    *
    * @return The setpoint of the turret.

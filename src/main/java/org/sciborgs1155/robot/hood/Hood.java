@@ -228,19 +228,7 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
    * @return A command to go to the shooting angle
    */
   public Command goToShootingAngle(DoubleSupplier goal) {
-    return run(() -> update(goal.getAsDouble() - SHOOTING_ANGLE_OFFSET.in(Radians)))
-        .until(this::atGoal)
-        .withName("Hood GoTo Shooting Angle");
-  }
-
-  /**
-   * Goes to a velocity
-   *
-   * @param velocity Supplied velocity to go to
-   * @return A command to go to the velocity
-   */
-  public Command goToVelocity(DoubleSupplier goal) {
-    return run(() -> updateVelocity(goal.getAsDouble()))
+    return run(() -> update(SHOOTING_ANGLE_OFFSET.in(Radians) - goal.getAsDouble()))
         .until(this::atGoal)
         .withName("Hood GoTo Shooting Angle");
   }
@@ -290,39 +278,6 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
     double feedback = fb.calculate(angle(), goal);
     double feedforward = ff.calculate(fb.getSetpoint().position, fb.getSetpoint().velocity);
     hardware.setVoltage(feedback + feedforward);
-  }
-
-  /**
-   * method to set the voltage of the motor based of ff and fb calculations
-   *
-   * @param velocity Goal angular velocity for hood to reach
-   */
-  public void updateVelocity(double velocity) {
-    if (Math.abs(velocity) < VELOCITY_TOLERANCE.in(RadiansPerSecond)) {
-      hardware.setVoltage(0);
-      return;
-    }
-
-    if (Math.abs(angle() - MAX_ANGLE.in(Radians)) < POSITION_TOLERANCE.in(Radians)
-        && velocity > 0) {
-      hardware.setVoltage(0);
-      return;
-    }
-
-    if (Math.abs(angle() - MIN_ANGLE.in(Radians)) < POSITION_TOLERANCE.in(Radians)
-        && velocity < 0) {
-      hardware.setVoltage(0);
-      return;
-    }
-
-    double vel = hardware.velocity();
-    double pidVolts = fbVel.calculate(vel, velocity);
-    double ffdVolts = ff.calculateWithVelocities(angle(), vel, velocity);
-
-    double voltage = pidVolts + ffdVolts;
-
-    if (voltage > 12.0) voltage = 12.0;
-    hardware.setVoltage(voltage);
   }
 
   /** test for hood to go to a set goal angle */

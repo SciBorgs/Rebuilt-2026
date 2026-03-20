@@ -89,7 +89,8 @@ public class Robot extends CommandRobot {
   private final Alignment align = new Alignment(drive);
   private final Shooting shooting = new Shooting(turret, hood, drive);
 
-  @NotLogged private final ProjectileVisualizer fuelVisualizer = shooting.createVisualizer();
+  @NotLogged
+  private final ProjectileVisualizer fuelVisualizer = Shooting.createVectorVisualizer(drive);
 
   @NotLogged
   private final SendableChooser<Command> autos =
@@ -120,6 +121,7 @@ public class Robot extends CommandRobot {
     // Configure logging with DataLogManager, Epilogue, and FaultLogger
     DataLogManager.start();
     SignalLogger.enableAutoLogging(true);
+    addPeriodic(shooting::periodic, 0.2);
     addPeriodic(FaultLogger::update, 2);
     Epilogue.bind(this);
 
@@ -228,7 +230,12 @@ public class Robot extends CommandRobot {
 
     autonomous().whileTrue(Commands.defer(autos::getSelected, Set.of(drive)).asProxy());
     test().whileTrue(systemsCheck());
-    teleop().whileTrue(shooting.runDiscreteShooter());
+    teleop().whileTrue(shooting.runDiscreteShooter(x, y, omega));
+
+    shooting
+        .discrete(x, y, omega)
+        .whileTrue(shooting.runDiscreteShooter(x, y, omega))
+        .whileFalse(shooting.runDynamicShooter(x, y, omega));
 
     operator.a().whileTrue(fuelVisualizer.launchProjectiles());
     operator.b().onTrue(ShotLookUpTable.load());

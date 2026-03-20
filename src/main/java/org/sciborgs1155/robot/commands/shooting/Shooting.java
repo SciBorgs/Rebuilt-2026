@@ -8,6 +8,7 @@ import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.robotRelat
 import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.robotRelativeShotVelocity;
 import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.robotToShooter;
 import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.shooterVelocity;
+import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.EPS;
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.X;
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.Y;
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.Z;
@@ -16,6 +17,7 @@ import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.GOAL;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.LAUNCH_ENABLED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.LIFT_ENABLED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.MAX_AIR_TIME;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.MAX_DISTANCE;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.MAX_PITCH;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.MIN_PITCH;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PITCH;
@@ -33,6 +35,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+import java.util.function.DoubleSupplier;
 import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.robot.drive.Drive;
@@ -47,7 +51,8 @@ public class Shooting {
   private final Hood hood;
   private final Drive drive;
 
-  private double[] launchParameters = {
+  private String mode = "NONE";
+  private final double[] discreteLaunchParameters = {
     0, HoodConstants.DEFAULT_ANGLE.in(Radians), TurretConstants.START_ANGLE.in(Radians)
   };
 
@@ -58,8 +63,36 @@ public class Shooting {
     this.drive = drive;
   }
 
+  public Command runDiscreteShooter(InputStream vx, InputStream vy, InputStream omega) {
+    return Commands.parallel(
+            Commands.startEnd(() -> mode = "DISCRETE", () -> mode = "NONE"),
+            drive.drive(vx, vy, omega),
+            turret.goToYaw(() -> Rotation2d.fromRadians(discreteLaunchParameters[YAW])),
+            hood.goToShootingAngle(
+                () -> MathUtil.inputModulus(discreteLaunchParameters[PITCH], MIN_PITCH, MAX_PITCH)))
+        .withName("Discrete Shooter");
+  }
+
+  public Command runDynamicShooter(DoubleSupplier vx, DoubleSupplier vy, DoubleSupplier omega) {
+    return Commands.parallel(
+            Commands.startEnd(() -> mode = "DYNAMIC", () -> mode = "NONE"),
+            drive.drive(vx, vy, omega),
+            turret.goToYaw(() -> Rotation2d.fromRadians(discreteLaunchParameters[YAW])),
+            hood.goToShootingAngle(
+                () -> MathUtil.inputModulus(discreteLaunchParameters[PITCH], MIN_PITCH, MAX_PITCH)))
+        .withName("Dynamic Shooter");
+  }
+
+  public Trigger discrete(DoubleSupplier vx, DoubleSupplier vy, DoubleSupplier omega) {
+    return new Trigger(
+        () ->
+            Math.abs(vx.getAsDouble()) < EPS
+                && Math.abs(vy.getAsDouble()) < EPS
+                && Math.abs(omega.getAsDouble()) < EPS);
+  }
+
   /** Calculates the launch parameters required to shoot (speed, pitch, yaw). */
-  public static double[] discreteLaunchParameters(Pose3d robotPose, ChassisSpeeds robotVelocity) {
+  private static double[] discreteLaunchParameters(Pose3d robotPose, ChassisSpeeds robotVelocity) {
     double heading = robotPose.getRotation().getZ();
     double[] robotToShooter = robotToShooter(heading);
 
@@ -91,36 +124,38 @@ public class Shooting {
             heading));
   }
 
-  /**
-   * Simultaneously calculates new launch parameters and passes those parameters into the
-   * subsystems.
-   */
-  public Command runDiscreteShooter() {
-    return Commands.parallel(
-        Commands.run(
-            () -> {
-              launchParameters =
-                  discreteLaunchParameters(drive.pose3d(), drive.fieldRelativeChassisSpeeds());
-              LoggingUtils.log("Shooting/Parameters/SPEED", launchParameters[SPEED]);
-              LoggingUtils.log("Shooting/Parameters/PITCH", launchParameters[PITCH]);
-              LoggingUtils.log("Shooting/Parameters/YAW", launchParameters[YAW]);
-            }),
-        turret.goToYaw(() -> Rotation2d.fromRadians(launchParameters[YAW])),
-        hood.goTo(
-            () ->
-                Math.PI / 2
-                    - MathUtil.inputModulus(launchParameters[PITCH], MIN_PITCH, MAX_PITCH)));
-  }
+  public void periodic() {
+    // DISTANCE CALCULATION
+    Pose3d robotPose = drive.pose3d();
+    ChassisSpeeds robotVelocity = drive.fieldRelativeChassisSpeeds();
 
-  // TODO
-  public Command parallelShooter(InputStream vx, InputStream vy, InputStream omega) {
-    return Commands.parallel(drive.drive(vx, vy, omega), turret.goToVelocity(omega));
+    double heading = robotPose.getRotation().getZ();
+    double[] robotToShooter = robotToShooter(heading);
+
+    double x = GOAL[X] - robotToShooter[X] - robotPose.getX();
+    double y = GOAL[Y] - robotToShooter[Y] - robotPose.getY();
+
+    double distance = Math.sqrt(x * x + y * y);
+
+    // PARAMETER UPDATING
+    double[] newLaunchParameters = discreteLaunchParameters(robotPose, robotVelocity);
+
+    discreteLaunchParameters[SPEED] = newLaunchParameters[SPEED];
+    discreteLaunchParameters[PITCH] = newLaunchParameters[PITCH];
+    discreteLaunchParameters[YAW] = newLaunchParameters[YAW];
+
+    // LOGGING
+    LoggingUtils.log("Shooting/Mode", mode);
+    LoggingUtils.log("Shooting/Possible", distance <= MAX_DISTANCE);
+    LoggingUtils.log("Shooting/Discrete/SPEED", discreteLaunchParameters[SPEED]);
+    LoggingUtils.log("Shooting/Discrete/PITCH", discreteLaunchParameters[PITCH]);
+    LoggingUtils.log("Shooting/Discrete/YAW", discreteLaunchParameters[YAW]);
   }
 
   /** Creates a visualizer that utilizes the subsystem positions to predict a trajectory. */
   public ProjectileVisualizer createVisualizer() {
     return fromLaunchParameters(
-            () -> launchParameters[SPEED],
+            () -> discreteLaunchParameters[SPEED],
             () -> Math.PI / 2 - hood.angle(),
             () -> turret.position(),
             drive)
@@ -135,9 +170,7 @@ public class Shooting {
    * Creates a FuelVisualizer with the settings used to generate shots for the shooting algorithm.
    */
   public static ProjectileVisualizer createVectorVisualizer(Drive drive) {
-    return fromLaunchParameters(
-            () -> discreteLaunchParameters(drive.pose3d(), drive.fieldRelativeChassisSpeeds()),
-            drive)
+    return fromLaunchParameters(() -> discreteLaunchParameters(drive.pose3d(), drive.fieldRelativeChassisSpeeds()), drive)
         .withScoringParameters(GOAL, SCORE_RADIUS, SCORE_DEPTH)
         .configPhysics(true, DRAG_ENABLED, false, LIFT_ENABLED)
         .configGeneration(

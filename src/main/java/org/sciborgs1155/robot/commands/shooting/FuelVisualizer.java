@@ -33,8 +33,7 @@ public final class FuelVisualizer extends ProjectileVisualizer {
   }
 
   /** Creates a new visualizer from a supplier of launch parameters (speed, pitch, yaw). */
-  public static FuelVisualizer fromLaunchParameters(
-      Supplier<double[]> launchParameters, Drive drive) {
+  protected static FuelVisualizer fromLaunchParameters(Supplier<double[]> launchParameters, Drive drive) {
     DoubleSupplier heading = () -> drive.pose3d().getRotation().getZ();
     Supplier<double[]> shotVelocity = () -> robotRelativeShotVelocity(launchParameters.get());
     Supplier<ChassisSpeeds> chassisSpeeds = () -> drive.fieldRelativeChassisSpeeds();
@@ -51,7 +50,8 @@ public final class FuelVisualizer extends ProjectileVisualizer {
                 heading.getAsDouble(),
                 chassisSpeeds.get().vxMetersPerSecond,
                 chassisSpeeds.get().vyMetersPerSecond,
-                chassisSpeeds.get().omegaRadiansPerSecond),
+                chassisSpeeds.get().omegaRadiansPerSecond, 
+                0),
         () -> initialRotation(shotVelocity.get(), heading.getAsDouble()),
         () -> initialRotationalVelocity());
   }
@@ -133,13 +133,18 @@ public final class FuelVisualizer extends ProjectileVisualizer {
   }
 
   protected static double[] initialVelocity(
-      double[] shotVelocity, double heading, double robotVx, double robotVy, double robotOmega) {
+      double[] shotVelocity, double heading, double robotVx, double robotVy, double robotOmega, double turretOmega) {
     double[] fieldRelative = fieldRelative(shotVelocity, heading);
     double[] shooterVelocity = shooterVelocity(robotVx, robotVy, robotOmega, heading);
 
+    double[] shooterToInitial = shooterToInitial(shotVelocity, heading);
+
+    double turretVx = -turretOmega * shooterToInitial[Y];
+    double turretVy = turretOmega * shooterToInitial[X];
+
     return new double[] {
-      fieldRelative[X] + shooterVelocity[X],
-      fieldRelative[Y] + shooterVelocity[Y],
+      fieldRelative[X] + shooterVelocity[X] + turretVx,
+      fieldRelative[Y] + shooterVelocity[Y] + turretVy,
       fieldRelative[Z] + shooterVelocity[Z]
     };
   }

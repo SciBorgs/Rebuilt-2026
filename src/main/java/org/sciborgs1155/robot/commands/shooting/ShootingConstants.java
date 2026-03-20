@@ -54,7 +54,7 @@ public class ShootingConstants {
   protected static final double SPEED_KP = 0.5;
   protected static final double SPEED_KD = 0.05;
 
-  protected static final int MAX_OPTIMIZER_ITERATIONS = 300;
+  protected static final int MAX_OPTIMIZER_ITERATIONS = 3000;
   protected static final double OPTIMIZATION_THRESHOLD = 0.01;
 
   protected static final double MAX_SPEED = 20;
@@ -69,7 +69,7 @@ public class ShootingConstants {
   protected static final double DISTANCE_RESOLUTION = 100;
 
   protected static final double MIN_DISTANCE = Hub.WIDTH / 2 + 0.8128;
-  protected static final double MAX_DISTANCE = 10;
+  protected static final double MAX_DISTANCE = 20;
 
   /** The resolution of the pitches in the lookup table, in samples per 2pi radians. */
   protected static final double PITCH_RESOLUTION = 512;

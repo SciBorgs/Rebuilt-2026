@@ -89,7 +89,7 @@ public class Robot extends CommandRobot {
   private final Shooting shooting = new Shooting(turret, hood, drive);
   @NotLogged private final SendableChooser<Command> autos = Autos.configureAutos(drive);
 
-  @NotLogged private final ProjectileVisualizer fuelVisualizer = shooting.createVisualizer();
+  @NotLogged private final ProjectileVisualizer fuelVisualizer = Shooting.createVectorVisualizer(drive);
 
   @Logged private double speedMultiplier = FULL_SPEED_MULTIPLIER;
 

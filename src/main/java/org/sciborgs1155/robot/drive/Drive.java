@@ -62,7 +62,6 @@ import org.sciborgs1155.lib.FaultLogger.FaultType;
 import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.Tracer;
 import org.sciborgs1155.lib.Tuning;
-import org.sciborgs1155.robot.FieldConstants;
 import org.sciborgs1155.robot.Robot;
 import org.sciborgs1155.robot.drive.DriveConstants.Assisted;
 import org.sciborgs1155.robot.drive.DriveConstants.ControlMode;
@@ -252,9 +251,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
                 null,
                 (state) -> SignalLogger.writeString("translation state", state.toString())),
             new SysIdRoutine.Mechanism(
-                volts ->
-                    modules.forEach(
-                        m -> m.setDriveVoltage(volts.in(Volts))),
+                volts -> modules.forEach(m -> m.setDriveVoltage(volts.in(Volts))),
                 null,
                 this,
                 "translation"));
@@ -344,6 +341,16 @@ public class Drive extends SubsystemBase implements AutoCloseable {
   public Translation2d velocity() {
     ChassisSpeeds speeds = fieldRelativeChassisSpeeds();
     return new Translation2d(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
+  }
+
+  @Logged
+  public Translation2d acceleration() {
+    return new Translation2d(gyro.acceleration());
+  }
+
+  @Logged
+  public double omega() {
+    return fieldRelativeChassisSpeeds().omegaRadiansPerSecond;
   }
 
   /** Returns a Pose3D of the estimated pose of the robot. */
@@ -921,6 +928,8 @@ public class Drive extends SubsystemBase implements AutoCloseable {
       odometry.update(simRotation, modulePositions());
       lastPositions = modulePositions();
     }
+
+    gyro.periodic();
 
     // update our simulated field poses
     field2d.setRobotPose(pose());

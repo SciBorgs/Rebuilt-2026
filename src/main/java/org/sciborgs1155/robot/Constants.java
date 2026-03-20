@@ -86,9 +86,10 @@ public final class Constants {
 
     /**
      * Applies a point to the three linear interpolations.
+     *
      * @param dist The input distance.
      * @param degIncline The output degree of incline.
-     * @param speed The 
+     * @param speed The
      * @param tof
      */
     public static void put(double dist, double degIncline, double speed, double tof) {
@@ -99,8 +100,8 @@ public final class Constants {
 
     static {
       put(2.44, 20.0, 120.0, 1.0);
-      put(2.5,25.0,117.0,1.01);
-      put(3.7,30,130,0.97);
+      put(2.5, 25.0, 117.0, 1.01);
+      put(3.7, 30, 130, 0.97);
       put(4.414, 40.0, 146.0, 0.95);
     }
   }

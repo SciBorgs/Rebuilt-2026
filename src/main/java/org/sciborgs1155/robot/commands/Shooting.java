@@ -57,7 +57,8 @@ public class Shooting {
   public static final Distance MIN_DISTANCE = Meters.of(.2);
 
   /** Field-relative position of the hub target. */
-  public static final Translation2d HUB_TARGET = FieldConstants.Hub.TOP_CENTER_POINT.toTranslation2d();
+  public static final Translation2d HUB_TARGET =
+      FieldConstants.Hub.TOP_CENTER_POINT.toTranslation2d();
 
   public static final Translation2d LEFT_FEED = FieldConstants.Hub.LEFT_FEED.toTranslation2d();
   public static final Translation2d RIGHT_FEED = FieldConstants.Hub.RIGHT_FEED.toTranslation2d();
@@ -192,8 +193,8 @@ public class Shooting {
   }
 
   /**
-   * Calculates a shot at the given target. Accounts for robot velocity and latency.
-   * Automatically reflects the target based on alliance; no need to reflect before passing target in.
+   * Calculates a shot at the given target. Accounts for robot velocity and latency. Automatically
+   * reflects the target based on alliance; no need to reflect before passing target in.
    *
    * @param target field-relative x/y position of the target
    * @return parameters to command the shooter superstructure to
@@ -231,10 +232,17 @@ public class Shooting {
 
     // Displacement from turret to target
     Translation2d turretTranslation = turretPose.getTranslation();
-    Translation3d displacement = new Translation3d(reflectedTarget.minus(turretPose.getTranslation()));
+    Translation3d displacement =
+        new Translation3d(reflectedTarget.minus(turretPose.getTranslation()));
+
+    Translation2d linearAccel = drive.acceleration();
 
     // Run the shooting algorithm to get field-relative firing vector
-    Vector<N3> firingVec = algorithm.calculate(displacement, turretSpeeds);
+    Vector<N3> firingVec =
+        algorithm.calculate(
+            displacement.plus(
+                new Translation3d(linearAccel.times(Math.pow(LATENCY_TIME.getAsDouble(), 2) / 2))),
+            turretSpeeds.plus(linearAccel.times(LATENCY_TIME.getAsDouble()).toVector()));
 
     double vx = firingVec.get(0);
     double vy = firingVec.get(1);

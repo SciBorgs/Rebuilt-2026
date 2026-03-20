@@ -19,8 +19,8 @@ public class TurretConstants {
 
   public static final double GEAR_RATIO = 686.0 / 15.0; // 686 / 15
   public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.0872);
-  public static final AngularVelocity MAX_VELOCITY = RadiansPerSecond.of(10);
-  public static final AngularAcceleration MAX_ACCELERATION = RadiansPerSecondPerSecond.of(15);
+  public static final AngularVelocity MAX_VELOCITY = RadiansPerSecond.of(15);
+  public static final AngularAcceleration MAX_ACCELERATION = RadiansPerSecondPerSecond.of(20);
 
   public static final Angle MAX_ANGLE = Degrees.of(360 + 45);
   public static final Angle MIN_ANGLE = Degrees.of(0);

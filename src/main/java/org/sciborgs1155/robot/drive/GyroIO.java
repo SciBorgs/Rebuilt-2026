@@ -30,6 +30,11 @@ public interface GyroIO extends AutoCloseable {
   /** Returns the acceleration of the robot as a Vector. */
   Vector<N2> acceleration();
 
+  double alpha();
+
   /** Resets heading to 0 */
   void reset(Rotation2d heading);
+
+  /** updates the gyro */
+  void periodic();
 }

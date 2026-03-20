@@ -2,6 +2,7 @@ package org.sciborgs1155.robot.drive;
 
 import static edu.wpi.first.units.Units.Seconds;
 import static org.sciborgs1155.robot.Constants.ODOMETRY_PERIOD;
+import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.Ports.Drive.CANANDGYRO;
 
 import com.reduxrobotics.sensors.canandgyro.Canandgyro;
@@ -20,6 +21,9 @@ public class ReduxGyro implements GyroIO {
 
   private final Queue<Double> position;
   private final Queue<Double> timestamp;
+
+  private double lastAngularVelocity = 0;
+  private double alpha = 0;
 
   /** Creates a new ReduxGyro and configures it with appropriate settings. */
   public ReduxGyro() {
@@ -82,5 +86,16 @@ public class ReduxGyro implements GyroIO {
   }
 
   @Override
+  public double alpha() {
+    return alpha;
+  }
+
+  @Override
   public void close() throws Exception {}
+
+  @Override
+  public void periodic() {
+    alpha = (canandgyro.getAngularVelocityYaw() - lastAngularVelocity) / PERIOD.in(Seconds);
+    lastAngularVelocity = canandgyro.getAngularVelocityYaw();
+  }
 }

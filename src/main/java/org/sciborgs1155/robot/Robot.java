@@ -12,7 +12,6 @@ import static edu.wpi.first.wpilibj2.command.button.RobotModeTriggers.teleop;
 import static edu.wpi.first.wpilibj2.command.button.RobotModeTriggers.test;
 import static org.sciborgs1155.lib.LoggingUtils.log;
 import static org.sciborgs1155.robot.Constants.*;
-import static org.sciborgs1155.robot.FieldConstants.allianceReflect;
 import static org.sciborgs1155.robot.drive.DriveConstants.MAX_ANGULAR_ACCEL;
 import static org.sciborgs1155.robot.drive.DriveConstants.MAX_SPEED;
 import static org.sciborgs1155.robot.drive.DriveConstants.TELEOP_ANGULAR_SPEED;
@@ -267,7 +266,7 @@ public class Robot extends CommandRobot {
     driver.leftTrigger().toggleOnTrue(intake.intake());
 
     // OUTTAKE THE INTAKE
-    driver.a().whileTrue(intake.outtake());
+    driver.a().whileTrue(intake.outtake().alongWith(hopper.outtake()).alongWith(indexer.backward()));
 
     // FEED CONTINUOUS (LEFT SIDE)
     driver.leftBumper().whileTrue(shooting.shootDriving(Shooting.LEFT_FEED, x, y, omega));
@@ -282,7 +281,7 @@ public class Robot extends CommandRobot {
     driver
         .y()
         .whileTrue(hopper.intake().alongWith(indexer.forward().alongWith(shooter.runShooter(120))));
-        
+
     // CLIMB
     // operator
     //     .y()
@@ -291,7 +290,9 @@ public class Robot extends CommandRobot {
 
     operator.x().whileTrue(shooting.shootWithTestData());
 
-    operator.leftBumper().whileTrue(intake.intake().alongWith(indexer.forward()).alongWith(hopper.intake()));
+    operator
+        .leftBumper()
+        .whileTrue(intake.intake().alongWith(indexer.forward()).alongWith(hopper.intake()));
 
     operator
         .y()

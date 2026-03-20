@@ -1,5 +1,8 @@
 package org.sciborgs1155.robot.drive;
 
+import static edu.wpi.first.units.Units.Seconds;
+import static org.sciborgs1155.robot.Constants.PERIOD;
+
 import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
 import edu.wpi.first.math.VecBuilder;
@@ -16,6 +19,9 @@ public class NavXGyro implements GyroIO {
 
   private final Queue<Double> position;
   private final Queue<Double> timestamp;
+
+  private double lastAngularVelocity = 0;
+  private double alpha = 0;
 
   /** Creates a new NavXGyro and registers it with FaultLogger. */
   public NavXGyro() {
@@ -62,6 +68,11 @@ public class NavXGyro implements GyroIO {
   }
 
   @Override
+  public double alpha() {
+    return alpha;
+  }
+
+  @Override
   public void reset(Rotation2d heading) {
     ahrs.setAngleAdjustment(heading.getDegrees());
     ahrs.reset();
@@ -69,4 +80,10 @@ public class NavXGyro implements GyroIO {
 
   @Override
   public void close() throws Exception {}
+
+  @Override
+  public void periodic() {
+    alpha = (ahrs.getRate() - lastAngularVelocity) / PERIOD.in(Seconds);
+    lastAngularVelocity = ahrs.getRate();
+  }
 }

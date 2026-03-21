@@ -48,6 +48,7 @@ import org.sciborgs1155.robot.commands.Autos;
 import org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer;
 import org.sciborgs1155.robot.commands.shooting.Shooting;
 import org.sciborgs1155.robot.commands.shooting.ShotLookUpTable;
+import org.sciborgs1155.robot.commands.shooting.VelocityAnalyzer;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.hood.Hood;
 import org.sciborgs1155.robot.hood.HoodVisualizer;
@@ -89,8 +90,7 @@ public class Robot extends CommandRobot {
   private final Alignment align = new Alignment(drive);
   private final Shooting shooting = new Shooting(turret, hood, drive);
 
-  @NotLogged
-  private final ProjectileVisualizer fuelVisualizer = Shooting.createVectorVisualizer(drive);
+  @NotLogged private final ProjectileVisualizer fuelVisualizer = shooting.createVectorVisualizer();
 
   @NotLogged
   private final SendableChooser<Command> autos =
@@ -121,7 +121,6 @@ public class Robot extends CommandRobot {
     // Configure logging with DataLogManager, Epilogue, and FaultLogger
     DataLogManager.start();
     SignalLogger.enableAutoLogging(true);
-    addPeriodic(shooting::periodic, 0.2);
     addPeriodic(FaultLogger::update, 2);
     Epilogue.bind(this);
 
@@ -240,6 +239,7 @@ public class Robot extends CommandRobot {
     operator.a().whileTrue(fuelVisualizer.launchProjectiles());
     operator.b().onTrue(ShotLookUpTable.load());
     operator.x().onTrue(ShotLookUpTable.generate());
+    operator.y().onTrue(VelocityAnalyzer.tableErrorAnalysis());
   }
 
   /**

@@ -35,23 +35,44 @@ public final class ShotOptimizer {
 
   /** Calculates the launch speed given a launch pitch and a planar distance from the target. */
   public static double optimizedSpeed(double distance, double startingSpeed, double pitch) {
-    double lastDisplacement = distance;
+    double previousError = distance;
     double optimalSpeed = startingSpeed;
 
     for (int iterations = 0; iterations <= MAX_OPTIMIZER_ITERATIONS; iterations++) {
       generateDirectTrajectory(distance, new double[] {optimalSpeed, pitch, 0});
-      double finalDisplacement = trajectoryBuffer[trajectoryBuffer.length - 1][X] - GOAL[X];
-      if (Math.abs(finalDisplacement) <= OPTIMIZATION_THRESHOLD) return optimalSpeed;
+      double error = trajectoryBuffer[trajectoryBuffer.length - 1][X] - GOAL[X];
+      if (Math.abs(error) <= OPTIMIZATION_THRESHOLD) return optimalSpeed;
 
-      double proportional = SPEED_KP * -finalDisplacement;
-      double derivative = SPEED_KD * (lastDisplacement - finalDisplacement);
-      if (lastDisplacement == distance) derivative = 0;
+      double proportional = SPEED_KP * -error;
+      double derivative = SPEED_KD * (previousError - error);
+      if (previousError == distance) derivative = 0;
 
-      optimalSpeed = optimalSpeed + proportional + derivative;
-      lastDisplacement = finalDisplacement;
+      optimalSpeed += (proportional + derivative);
+      previousError = error;
     }
 
     return optimalSpeed;
+  }
+
+  /** Calculates the launch speed given the pitch and tof of a successful shot. */
+  public static double getSpeed(double distance, double pitch, double tof) {
+    double previousError = tof;
+    double speed = MAX_SPEED;
+
+    for (int iterations = 0; iterations <= MAX_TOF_ANALYSIS_ITERATIONS; iterations++) {
+      generateDirectTrajectory(distance, new double[] {speed, pitch, 0});
+      double error = trajectoryBuffer.length / OPTIMIZER_RESOLUTION - tof;
+      if (Math.abs(error) < TOF_ANALYSIS_THRESHOLD) return speed;
+
+      double proportional = TOF_KP * -error;
+      double derivative = TOF_KD * (previousError - error);
+      if (previousError == tof) derivative = 0;
+
+      speed += (proportional + derivative);
+      previousError = error;
+    }
+
+    return speed;
   }
 
   /**
@@ -118,7 +139,11 @@ public final class ShotOptimizer {
     launchParameterCache = new double[3];
   }
 
-  private static void generateDirectTrajectory(double distance, double[] launchParameters) {
+  static double[][] buffer() {
+    return trajectoryBuffer.clone();
+  }
+
+  static void generateDirectTrajectory(double distance, double[] launchParameters) {
     if (!diff(launchParameters, launchParameterCache)) return;
     System.arraycopy(launchParameters, 0, launchParameterCache, 0, 3);
 
@@ -126,7 +151,7 @@ public final class ShotOptimizer {
     final List<double[]> poseList = new ArrayList<>();
 
     double[] shotVelocity = robotRelativeShotVelocity(launchParameters);
-    double[] shooterToInitial = shooterToInitial(shotVelocity, 0);
+    double[] shooterToInitial = shooterToInitial(launchParameters[PITCH], launchParameters[YAW], 0);
     double[] shooterTranslation = {
       GOAL[X] - distance, GOAL[Y], ShooterConstants.CENTER_TO_SHOOTER.getZ()
     };

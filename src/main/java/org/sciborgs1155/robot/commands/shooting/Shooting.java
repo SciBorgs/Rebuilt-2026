@@ -30,14 +30,11 @@ import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.VISUALI
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.YAW;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import java.util.function.DoubleSupplier;
-import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.hood.Hood;
@@ -63,9 +60,11 @@ public class Shooting {
     this.drive = drive;
   }
 
-  public Command runDiscreteShooter(InputStream vx, InputStream vy, InputStream omega) {
+  /** Controls turret and hood positions to specific setpoints. */
+  public Command runDiscreteShooter(DoubleSupplier vx, DoubleSupplier vy, DoubleSupplier omega) {
     return Commands.parallel(
             Commands.startEnd(() -> mode = "DISCRETE", () -> mode = "NONE"),
+            Commands.run(() -> update(vx.getAsDouble(), vy.getAsDouble(), omega.getAsDouble())),
             drive.drive(vx, vy, omega),
             turret.goToYaw(() -> Rotation2d.fromRadians(discreteLaunchParameters[YAW])),
             hood.goToShootingAngle(
@@ -73,9 +72,11 @@ public class Shooting {
         .withName("Discrete Shooter");
   }
 
+  /** Controls turret and hood velocities to specific setpoints. */
   public Command runDynamicShooter(DoubleSupplier vx, DoubleSupplier vy, DoubleSupplier omega) {
     return Commands.parallel(
             Commands.startEnd(() -> mode = "DYNAMIC", () -> mode = "NONE"),
+            Commands.run(() -> update(vx.getAsDouble(), vy.getAsDouble(), omega.getAsDouble())),
             drive.drive(vx, vy, omega),
             turret.goToYaw(() -> Rotation2d.fromRadians(discreteLaunchParameters[YAW])),
             hood.goToShootingAngle(
@@ -83,6 +84,7 @@ public class Shooting {
         .withName("Dynamic Shooter");
   }
 
+  /** True if the robot is not moving, false if the robot is moving. */
   public Trigger discrete(DoubleSupplier vx, DoubleSupplier vy, DoubleSupplier omega) {
     return new Trigger(
         () ->
@@ -91,13 +93,12 @@ public class Shooting {
                 && Math.abs(omega.getAsDouble()) < EPS);
   }
 
-  /** Calculates the launch parameters required to shoot (speed, pitch, yaw). */
-  private static double[] discreteLaunchParameters(Pose3d robotPose, ChassisSpeeds robotVelocity) {
-    double heading = robotPose.getRotation().getZ();
+  private static double[] discreteLaunchParameters(
+      double robotX, double robotY, double heading, double vx, double vy, double omega) {
     double[] robotToShooter = robotToShooter(heading);
 
-    double x = GOAL[X] - robotToShooter[X] - robotPose.getX();
-    double y = GOAL[Y] - robotToShooter[Y] - robotPose.getY();
+    double x = GOAL[X] - robotToShooter[X] - robotX;
+    double y = GOAL[Y] - robotToShooter[Y] - robotY;
 
     double distance = Math.sqrt(x * x + y * y);
     double yaw = Math.atan2(y, x) - heading;
@@ -107,12 +108,7 @@ public class Shooting {
             new double[] {ShotLookUpTable.speed(distance), ShotLookUpTable.pitch(distance), yaw});
 
     double[] stationaryShotVelocity = fieldRelative(robotRelativeShotVelocity, heading);
-    double[] shooterVelocity =
-        shooterVelocity(
-            robotVelocity.vxMetersPerSecond,
-            robotVelocity.vyMetersPerSecond,
-            robotVelocity.omegaRadiansPerSecond,
-            heading);
+    double[] shooterVelocity = shooterVelocity(-vx, -vy, omega, heading);
 
     return launchParameters(
         robotRelative(
@@ -124,21 +120,21 @@ public class Shooting {
             heading));
   }
 
-  public void periodic() {
-    // DISTANCE CALCULATION
-    Pose3d robotPose = drive.pose3d();
-    ChassisSpeeds robotVelocity = drive.fieldRelativeChassisSpeeds();
+  private void update(double vx, double vy, double omega) {
+    double robotX = drive.pose().getX();
+    double robotY = drive.pose().getY();
+    double heading = drive.heading().getRadians();
 
-    double heading = robotPose.getRotation().getZ();
+    // DISTANCE CALCULATION
     double[] robotToShooter = robotToShooter(heading);
 
-    double x = GOAL[X] - robotToShooter[X] - robotPose.getX();
-    double y = GOAL[Y] - robotToShooter[Y] - robotPose.getY();
+    double x = GOAL[X] - robotToShooter[X] - robotX;
+    double y = GOAL[Y] - robotToShooter[Y] - robotY;
 
     double distance = Math.sqrt(x * x + y * y);
 
     // PARAMETER UPDATING
-    double[] newLaunchParameters = discreteLaunchParameters(robotPose, robotVelocity);
+    double[] newLaunchParameters = discreteLaunchParameters(robotX, robotY, heading, vx, vy, omega);
 
     discreteLaunchParameters[SPEED] = newLaunchParameters[SPEED];
     discreteLaunchParameters[PITCH] = newLaunchParameters[PITCH];
@@ -169,8 +165,12 @@ public class Shooting {
   /**
    * Creates a FuelVisualizer with the settings used to generate shots for the shooting algorithm.
    */
-  public static ProjectileVisualizer createVectorVisualizer(Drive drive) {
-    return fromLaunchParameters(() -> discreteLaunchParameters(drive.pose3d(), drive.fieldRelativeChassisSpeeds()), drive)
+  public ProjectileVisualizer createVectorVisualizer() {
+    return fromLaunchParameters(
+            () -> discreteLaunchParameters[SPEED],
+            () -> discreteLaunchParameters[PITCH],
+            () -> discreteLaunchParameters[YAW],
+            drive)
         .withScoringParameters(GOAL, SCORE_RADIUS, SCORE_DEPTH)
         .configPhysics(true, DRAG_ENABLED, false, LIFT_ENABLED)
         .configGeneration(

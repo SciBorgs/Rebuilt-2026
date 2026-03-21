@@ -3,7 +3,6 @@ package org.sciborgs1155.robot.turret;
 import static edu.wpi.first.units.Units.*;
 import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.Constants.TUNING;
-import static org.sciborgs1155.robot.hood.HoodConstants.POSITION_TOLERANCE;
 import static org.sciborgs1155.robot.turret.TurretConstants.*;
 import static org.sciborgs1155.robot.turret.TurretConstants.ControlConstants.*;
 
@@ -68,9 +67,9 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
   @NotLogged private final DoubleEntry tuningP = Tuning.entry("Robot/tuning/turret/K_P", P);
   @NotLogged private final DoubleEntry tuningI = Tuning.entry("Robot/tuning/turret/K_I", I);
   @NotLogged private final DoubleEntry tuningD = Tuning.entry("Robot/tuning/turret/K_D", D);
-  @NotLogged private final DoubleEntry tuningP_V = Tuning.entry("Robot/tuning/turret/K_P_V", P_V);
-  @NotLogged private final DoubleEntry tuningI_V = Tuning.entry("Robot/tuning/turret/K_I_V", I_V);
-  @NotLogged private final DoubleEntry tuningD_V = Tuning.entry("Robot/tuning/turret/K_D_V", D_V);
+  @NotLogged private final DoubleEntry tuningPV = Tuning.entry("Robot/tuning/turret/K_P_V", P_V);
+  @NotLogged private final DoubleEntry tuningIV = Tuning.entry("Robot/tuning/turret/K_I_V", I_V);
+  @NotLogged private final DoubleEntry tuningDV = Tuning.entry("Robot/tuning/turret/K_D_V", D_V);
   @NotLogged private final DoubleEntry tuningS = Tuning.entry("Robot/tuning/turret/S", S);
   @NotLogged private final DoubleEntry tuningV = Tuning.entry("Robot/tuning/turret/V", V);
   @NotLogged private final DoubleEntry tuningA = Tuning.entry("Robot/tuning/turret/A", A);
@@ -255,30 +254,16 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
    * @param double The velocity setpoint in radians per second.
    */
   public void updateVelocity(double velocitySetpoint) {
-    if (Math.abs(velocitySetpoint) < TOLERANCE_V.in(RadiansPerSecond)) {
-      hardware.setVoltage(0);
-      return;
-    }
-
-    if (Math.abs(position() - MAX_ANGLE.in(Radians)) < POSITION_TOLERANCE.in(Radians)
-        && velocitySetpoint > 0) {
-      hardware.setVoltage(0);
-      return;
-    }
-
-    if (Math.abs(position() - MIN_ANGLE.in(Radians)) < POSITION_TOLERANCE.in(Radians)
-        && velocitySetpoint < 0) {
-      hardware.setVoltage(0);
-      return;
-    }
-
     double vel = hardware.velocity();
     double pidVolts = velocityController.calculate(vel, velocitySetpoint);
     double ffdVolts = feedforward.calculateWithVelocities(vel, velocitySetpoint);
 
     double voltage = pidVolts + ffdVolts;
 
-    if (voltage > 12.0) voltage = 12.0;
+    double pos = position();
+    if (pos >= MAX_ANGLE.in(Radians)) voltage = Math.min(voltage, 0);
+    if (pos <= MIN_ANGLE.in(Radians)) voltage = Math.max(voltage, 0);
+
     hardware.setVoltage(voltage);
   }
 
@@ -372,9 +357,9 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
       controller.setP(tuningP.get());
       controller.setI(tuningI.get());
       controller.setD(tuningD.get());
-      velocityController.setP(tuningP_V.get());
-      velocityController.setI(tuningI_V.get());
-      velocityController.setD(tuningD_V.get());
+      velocityController.setP(tuningPV.get());
+      velocityController.setI(tuningIV.get());
+      velocityController.setD(tuningDV.get());
       feedforward.setKs(tuningS.get());
       feedforward.setKv(tuningV.get());
       feedforward.setKa(tuningA.get());

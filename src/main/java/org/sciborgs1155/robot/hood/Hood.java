@@ -62,9 +62,9 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
   @NotLogged private final DoubleEntry tuningP = Tuning.entry("Robot/tuning/hood/K_P", P);
   @NotLogged private final DoubleEntry tuningI = Tuning.entry("Robot/tuning/hood/K_I", I);
   @NotLogged private final DoubleEntry tuningD = Tuning.entry("Robot/tuning/hood/K_D", D);
-  @NotLogged private final DoubleEntry tuningP_V = Tuning.entry("Robot/tuning/hood/K_P_V", P_V);
-  @NotLogged private final DoubleEntry tuningI_V = Tuning.entry("Robot/tuning/hood/K_I_V", I_V);
-  @NotLogged private final DoubleEntry tuningD_V = Tuning.entry("Robot/tuning/hood/K_D_V", D_V);
+  @NotLogged private final DoubleEntry tuningPV = Tuning.entry("Robot/tuning/hood/K_P_V", P_V);
+  @NotLogged private final DoubleEntry tuningIV = Tuning.entry("Robot/tuning/hood/K_I_V", I_V);
+  @NotLogged private final DoubleEntry tuningDV = Tuning.entry("Robot/tuning/hood/K_D_V", D_V);
   @NotLogged private final DoubleEntry tuningS = Tuning.entry("Robot/tuning/hood/S", S);
   @NotLogged private final DoubleEntry tuningG = Tuning.entry("Robot/tuning/hood/G", G);
   @NotLogged private final DoubleEntry tuningV = Tuning.entry("Robot/tuning/hood/V", V);
@@ -315,9 +315,9 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
       fb.setP(tuningP.get());
       fb.setI(tuningI.get());
       fb.setD(tuningD.get());
-      fbVel.setP(tuningP_V.get());
-      fbVel.setI(tuningI_V.get());
-      fbVel.setD(tuningD_V.get());
+      fbVel.setP(tuningPV.get());
+      fbVel.setI(tuningIV.get());
+      fbVel.setD(tuningDV.get());
       ff.setKs(tuningS.get());
       ff.setKg(tuningG.get());
       ff.setKv(tuningV.get());

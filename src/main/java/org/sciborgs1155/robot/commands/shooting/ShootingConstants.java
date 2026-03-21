@@ -6,6 +6,7 @@ import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Proj
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.fromTranslation;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.CENTER_TO_SHOOTER;
 
+import edu.wpi.first.math.util.Units;
 import org.sciborgs1155.robot.FieldConstants.Hub;
 import org.sciborgs1155.robot.hood.HoodConstants;
 
@@ -46,6 +47,14 @@ public class ShootingConstants {
 
   /** The target translation for the FUEL to hit. */
   protected static final double[] GOAL = fromTranslation(Hub.TOP_CENTER_POINT);
+
+  // TOF ANALYSIS CONSTANTS
+
+  protected static final double TOF_KP = 0.5;
+  protected static final double TOF_KD = 0.05;
+
+  protected static final int MAX_TOF_ANALYSIS_ITERATIONS = 3000;
+  protected static final double TOF_ANALYSIS_THRESHOLD = 0.01;
 
   // OPTIMIZATION CONSTANTS
 
@@ -99,6 +108,11 @@ public class ShootingConstants {
 
   protected static final double FUEL_MASS = 0.225;
   protected static final double FUEL_RADIUS = 0.075;
+
+  /**
+   * The radius of the arc formed by the starting translation of the FUEL as the hood angle changes.
+   */
+  protected static final double SHOOTER_RADIUS = Units.inchesToMeters(2) + FUEL_RADIUS / 2;
 
   /** The distance above the Hub from which the FUEL's fate is decided (score / miss). */
   protected static final double SCORE_WINDOW = FUEL_RADIUS / 2;

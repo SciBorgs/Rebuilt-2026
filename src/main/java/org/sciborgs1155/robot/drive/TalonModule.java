@@ -1,10 +1,16 @@
 package org.sciborgs1155.robot.drive;
 
-import static edu.wpi.first.units.Units.*;
-import static org.sciborgs1155.lib.FaultLogger.*;
+import java.util.Queue;
+
+import static org.sciborgs1155.lib.FaultLogger.register;
+import org.sciborgs1155.lib.TalonUtils;
 import static org.sciborgs1155.robot.Constants.DRIVE_CANIVORE;
 import static org.sciborgs1155.robot.Constants.ODOMETRY_PERIOD;
 import static org.sciborgs1155.robot.Constants.PERIOD;
+import org.sciborgs1155.robot.drive.DriveConstants.ControlMode;
+import org.sciborgs1155.robot.drive.DriveConstants.FFConstants;
+import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Driving;
+import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Turning;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusCode;
@@ -17,17 +23,15 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import java.util.Queue;
-import org.sciborgs1155.lib.TalonUtils;
-import org.sciborgs1155.robot.drive.DriveConstants.ControlMode;
-import org.sciborgs1155.robot.drive.DriveConstants.FFConstants;
-import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Driving;
-import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Turning;
+import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Seconds;
 
 public class TalonModule implements ModuleIO {
   private final TalonFX driveMotor; // Kraken X60

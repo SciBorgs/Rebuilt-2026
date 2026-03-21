@@ -102,7 +102,8 @@ public interface ModuleIO extends AutoCloseable {
    *
    * <p>This is useful for SysId characterization and should not be used otherwise.
    *
-   * @param voltage The voltage to supply to the drive motor, with the angle of the SwerveModuleState being the direction of the module.
+   * @param voltage The voltage to supply to the drive motor, with the angle of the
+   *     SwerveModuleState being the direction of the module.
    */
   void updateInputs(SwerveModuleState voltage);
 

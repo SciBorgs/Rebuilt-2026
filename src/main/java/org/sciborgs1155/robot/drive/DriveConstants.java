@@ -135,10 +135,10 @@ public final class DriveConstants {
 
       public static final Current CURRENT_LIMIT = Amps.of(50);
 
-      public static final FFConstants FRONT_RIGHT_FF = new FFConstants(0.21459, 2.0025, 0.094773);
-      public static final FFConstants FRONT_LEFT_FF = new FFConstants(0.23328, 2.0243, 0.045604);
-      public static final FFConstants REAR_LEFT_FF = new FFConstants(0.14362, 2.0942, 0.21547);
-      public static final FFConstants REAR_RIGHT_FF = new FFConstants(0.15099, 1.9379, 0.30998);
+      public static final FFConstants FRONT_RIGHT_FF = new FFConstants(0.27372, 2.3131, 0.2385);
+      public static final FFConstants FRONT_LEFT_FF = new FFConstants(0.14985, 2.313, 0.19269);
+      public static final FFConstants REAR_LEFT_FF = new FFConstants(0.21295, 2.265, 0.085833);
+      public static final FFConstants REAR_RIGHT_FF = new FFConstants(0.26806, 2.3948, 0.079315);
 
       public static final List<FFConstants> FF_CONSTANTS =
           List.of(FRONT_LEFT_FF, FRONT_RIGHT_FF, REAR_LEFT_FF, REAR_RIGHT_FF);

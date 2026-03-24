@@ -144,9 +144,9 @@ public final class DriveConstants {
           List.of(FRONT_LEFT_FF, FRONT_RIGHT_FF, REAR_LEFT_FF, REAR_RIGHT_FF);
 
       public static final class PID {
-        public static final double P = 3.2;
+        public static final double P = 0.5;
         public static final double I = 0.0;
-        public static final double D = 0.0;
+        public static final double D = 0.05;
       }
     }
 
@@ -157,9 +157,9 @@ public final class DriveConstants {
       public static final Current CURRENT_LIMIT = Amps.of(20);
 
       public static final class PID {
-        public static final double P = 50;
+        public static final double P = 70;
         public static final double I = 0.0;
-        public static final double D = 0.05;
+        public static final double D = 0.5;
       }
 
       // system constants only used in simulation

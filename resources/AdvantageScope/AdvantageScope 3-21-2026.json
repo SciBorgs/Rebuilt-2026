@@ -1,0 +1,297 @@
+{
+  "hubs": [
+    {
+      "x": 296,
+      "y": 186,
+      "width": 1105,
+      "height": 656,
+      "state": {
+        "sidebar": {
+          "width": 311,
+          "expanded": [
+            "/Robot/shooting",
+            "/Robot/pivot",
+            "/Robot/fuelVisualizer/FUEL POSE/rotation/q",
+            "/Robot/fuelVisualizer/FUEL POSE/rotation",
+            "/Robot/fuelVisualizer/FUEL POSE/translation",
+            "/Robot/fuelVisualizer",
+            "/Robot/fuelVisualizer/FUEL VELOCITY",
+            "/Robot/fuelVisualizer/FUEL ACCELERATION",
+            "/Robot/fuelVisualizer/FUEL POSE",
+            "/Robot/fuelVisualizer/FUEL POSES",
+            "/Visualizer",
+            "/Visualizer/0",
+            "/Fuel Visualizer/0",
+            "/Fuel Visualizer/0/translation",
+            "/Fuel Visualizer/0/rotation",
+            "/Fuel Visualizer/Fuel Poses/1/rotation",
+            "/Fuel Visualizer/Fuel Poses/1/translation",
+            "/Fuel Visualizer/Fuel Poses/0/translation",
+            "/Projectile Visualizer/Shooter Pose/rotation/q",
+            "/Projectile Visualizer/Projectile Poses/3",
+            "/Projectile Visualizer/Projectile Poses/3/translation",
+            "/Projectile Visualizer/Projectile Poses/3/rotation",
+            "/Projectile Visualizer/Projectile Poses/3/rotation/q",
+            "/Projectile Visualizer/Projectile Poses/1",
+            "/Projectile Visualizer/Projectile Poses/1/rotation",
+            "/Projectile Visualizer/Projectile Poses/1/rotation/q",
+            "/SmartDashboard/Robot/hood/setpoint/Chassis/hood",
+            "/SmartDashboard/MapleSim",
+            "/SmartDashboard/MapleArenaSimulation",
+            "/Fuel Visualizer/Trajectory/50",
+            "/Fuel Visualizer/Trajectory/0",
+            "/Fuel Visualizer/Trajectory/0/rotation",
+            "/Fuel Visualizer/Trajectory/0/translation",
+            "/Shot Optimizer",
+            "/Shot Optimizer/Trajectory/317/translation",
+            "/Shot Optimizer/Trajectory/343",
+            "/Shot Optimizer/Trajectory/343/translation",
+            "/Shot Optimizer/Trajectory/304/translation",
+            "/Shot Optimizer/Trajectory/282",
+            "/Shot Optimizer/Trajectory/282/translation",
+            "/Shot Optimizer/Trajectory/34",
+            "/Shot Optimizer/Trajectory/34/translation",
+            "/Shot Optimizer/Trajectory/289",
+            "/Shot Optimizer/Trajectory/289/rotation",
+            "/Shot Optimizer/Trajectory/289/translation",
+            "/Shot Optimizer/Trajectory/188",
+            "/Tracer/robot main/trajectory generation",
+            "/NT",
+            "/NT/Robot",
+            "/NT/Epilogue/Stats",
+            "/NT/Robot/tuning/hood",
+            "/NT/SmartDashboard/Robot",
+            "/NT/Robot/shooter",
+            "/Phoenix6",
+            "/Phoenix6/TalonFX-30",
+            "/Phoenix6/TalonFX-28",
+            "/Tracer/Projectile Trajectory Simulation",
+            "/Tracer/Projectile Launch Simulation",
+            "/SmartDashboard/Robot",
+            "/SmartDashboard/Robot/turret",
+            "/Projectile Visualizer",
+            "/Shooting",
+            "/Robot",
+            "/Shooting/Dynamic",
+            "/Shooting/Discrete",
+            "/Shooting/Velocity Analyzer"
+          ]
+        },
+        "tabs": {
+          "selected": 1,
+          "tabs": [
+            {
+              "type": 0,
+              "title": "",
+              "controller": null,
+              "controllerUUID": "e5i8243bwyg5uqygjgejq7campi4580u",
+              "renderer": "",
+              "controlsHeight": 0
+            },
+            {
+              "type": 3,
+              "title": "3D Field",
+              "controller": {
+                "sources": [
+                  {
+                    "type": "gamePiece",
+                    "logKey": "NT:Projectile Visualizer/Projectiles",
+                    "logType": "Pose3d[]",
+                    "visible": true,
+                    "options": {
+                      "variant": "Fuel"
+                    }
+                  },
+                  {
+                    "type": "trajectory",
+                    "logKey": "NT:Projectile Visualizer/Trajectory",
+                    "logType": "Pose3d[]",
+                    "visible": true,
+                    "options": {
+                      "color": "#00ff00",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "gamePiece",
+                    "logKey": "NT:Projectile Visualizer/Launch pose",
+                    "logType": "Pose3d",
+                    "visible": false,
+                    "options": {
+                      "variant": "Fuel"
+                    }
+                  },
+                  {
+                    "type": "gamePiece",
+                    "logKey": "NT:Projectile Visualizer/Ending pose",
+                    "logType": "Pose3d",
+                    "visible": false,
+                    "options": {
+                      "variant": "Fuel"
+                    }
+                  },
+                  {
+                    "type": "robot",
+                    "logKey": "NT:Robot/drive/pose",
+                    "logType": "Pose2d",
+                    "visible": true,
+                    "options": {
+                      "model": "Rebuilt"
+                    }
+                  },
+                  {
+                    "type": "component",
+                    "logKey": "NT:RobotModel/turretOrigin",
+                    "logType": "Transform3d",
+                    "visible": true,
+                    "options": {}
+                  },
+                  {
+                    "type": "component",
+                    "logKey": "NT:RobotModel/intakeOrigin",
+                    "logType": "Transform3d",
+                    "visible": true,
+                    "options": {}
+                  },
+                  {
+                    "type": "component",
+                    "logKey": "NT:RobotModel/hopperOrigin",
+                    "logType": "Transform3d",
+                    "visible": true,
+                    "options": {}
+                  },
+                  {
+                    "type": "component",
+                    "logKey": "NT:RobotModel/hoodOrigin",
+                    "logType": "Transform3d",
+                    "visible": true,
+                    "options": {}
+                  },
+                  {
+                    "type": "trajectory",
+                    "logKey": "NT:Shooting/Velocity Analyzer/Recreation",
+                    "logType": "Pose3d[]",
+                    "visible": true,
+                    "options": {
+                      "color": "#00ff00",
+                      "size": "normal"
+                    }
+                  }
+                ],
+                "game": "FRC:2026 Field"
+              },
+              "controllerUUID": "juxo8lycw1tadi4s4ee0btiv9lao3j4w",
+              "renderer": {
+                "cameraIndex": -1,
+                "orbitFov": 50,
+                "cameraPosition": [
+                  -6.698132241927476,
+                  5.43944079243581,
+                  5.518014951168734
+                ],
+                "cameraTarget": [
+                  -0.5726794369039638,
+                  0.131366410707941,
+                  -1.5423848437479744
+                ]
+              },
+              "controlsHeight": 262
+            },
+            {
+              "type": 2,
+              "title": "2D Field",
+              "controller": {
+                "sources": [
+                  {
+                    "type": "robot",
+                    "logKey": "NT:Robot/drive/pose",
+                    "logType": "Pose2d",
+                    "visible": true,
+                    "options": {
+                      "bumpers": ""
+                    }
+                  },
+                  {
+                    "type": "ghost",
+                    "logKey": "NT:Projectile Visualizer/Projectiles",
+                    "logType": "Pose3d[]",
+                    "visible": true,
+                    "options": {
+                      "color": "#ffff00"
+                    }
+                  },
+                  {
+                    "type": "trajectory",
+                    "logKey": "NT:Projectile Visualizer/Trajectory",
+                    "logType": "Pose3d[]",
+                    "visible": true,
+                    "options": {
+                      "color": "#00ff00",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "arrow",
+                    "logKey": "NT:Projectile Visualizer/Ending pose",
+                    "logType": "Pose3d",
+                    "visible": true,
+                    "options": {
+                      "position": "center"
+                    }
+                  }
+                ],
+                "field": "FRC:2026 Field",
+                "orientation": 2,
+                "size": "large"
+              },
+              "controllerUUID": "8smzdqo36okmp8rnewbf0keckv3mp7rj",
+              "renderer": null,
+              "controlsHeight": 200
+            },
+            {
+              "type": 10,
+              "title": "Turret",
+              "controller": [
+                {
+                  "type": "mechanism",
+                  "logKey": "NT:/SmartDashboard/Robot/turret/TurretVisualizer",
+                  "logType": "Mechanism2d",
+                  "visible": true,
+                  "options": {}
+                }
+              ],
+              "controllerUUID": "e2adyor5suwclsep2ptuvx7j4qpcy856",
+              "renderer": null,
+              "controlsHeight": 200
+            },
+            {
+              "type": 10,
+              "title": "Hood",
+              "controller": [
+                {
+                  "type": "mechanism",
+                  "logKey": "NT:/SmartDashboard//Robot/hood/measurement",
+                  "logType": "Mechanism2d",
+                  "visible": true,
+                  "options": {}
+                },
+                {
+                  "type": "mechanism",
+                  "logKey": "NT:/SmartDashboard//Robot/hood/setpoint",
+                  "logType": "Mechanism2d",
+                  "visible": true,
+                  "options": {}
+                }
+              ],
+              "controllerUUID": "ubujb6gk05iuur6wqqb11mz9flry49l1",
+              "renderer": null,
+              "controlsHeight": 200
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "satellites": [],
+  "version": "26.0.0"
+}

@@ -144,7 +144,10 @@ public final class ShotOptimizer {
   }
 
   static void generateDirectTrajectory(double distance, double[] launchParameters) {
-    if (!diff(launchParameters, launchParameterCache)) return;
+    if (!diff(launchParameters[X], launchParameterCache[X])
+        && !diff(launchParameters[Y], launchParameterCache[Y])
+        && !diff(launchParameters[Z], launchParameterCache[Z])) return;
+
     System.arraycopy(launchParameters, 0, launchParameterCache, 0, 3);
 
     projectile.reset();

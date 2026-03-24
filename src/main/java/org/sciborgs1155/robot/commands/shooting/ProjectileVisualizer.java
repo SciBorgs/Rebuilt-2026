@@ -9,16 +9,14 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.DoubleSupplier;
-import java.util.function.Supplier;
 import org.sciborgs1155.lib.LoggingUtils;
 
 @SuppressWarnings({
-  "PMD.GodClass",
   "PMD.AvoidUsingVolatile",
   "PMD.TooManyFields",
   "PMD.OneDeclarationPerLine",
   "PMD.AvoidSynchronizedStatement",
-  "PMD.AvoidLiteralsInIfCondition"
+  "PMD.ExcessiveParameterList"
 })
 public abstract class ProjectileVisualizer {
   /** Tolerance used to detect input changes. */
@@ -47,9 +45,10 @@ public abstract class ProjectileVisualizer {
 
   private volatile Pose3d[] trajectory = new Pose3d[0];
 
-  private final Supplier<double[]> initialTranslation;
-  private final Supplier<double[]> initialVelocity;
-  private final Supplier<double[]> initialRotation;
+  // Initial state suppliers
+  private final DoubleSupplier initialTranslationX, initialTranslationY, initialTranslationZ;
+  private final DoubleSupplier initialVelocityX, initialVelocityY, initialVelocityZ;
+  private final DoubleSupplier initialRotationX, initialRotationY, initialRotationZ;
   private final DoubleSupplier initialRotationalVelocity;
 
   private final List<Projectile> projectiles = new ArrayList<>();
@@ -60,35 +59,43 @@ public abstract class ProjectileVisualizer {
   /** Reusable trajectory buffer. */
   private final List<Pose3d> trajectoryBuffer = new ArrayList<>(512);
 
-  private final double[] lastInitialTranslation = new double[3];
-  private final double[] lastInitialVelocity = new double[3];
-  private final double[] lastInitialRotation = new double[3];
-  private double lastInitialRotationalVelocity;
+  // Cached launch state
+  private double lastTranslationX, lastTranslationY, lastTranslationZ;
+  private double lastVelocityX, lastVelocityY, lastVelocityZ;
+  private double lastRotationX, lastRotationY, lastRotationZ;
+  private double lastRotationalVelocity;
 
   private boolean launchStateInitialized;
   private volatile boolean trajectoryDirty = true;
 
   private final ScheduledExecutorService executor =
       Executors.newScheduledThreadPool(
-          2,
-          runnable -> {
-            Thread thread = new Thread(runnable);
-            thread.setName("Projectile Visualizer");
-            return thread;
-          });
+          2, runnable -> new Thread(runnable, "Projectile Visualizer"));
 
   private final AtomicBoolean running = new AtomicBoolean(false);
 
   protected abstract Projectile createProjectile();
 
   protected ProjectileVisualizer(
-      Supplier<double[]> initialTranslation,
-      Supplier<double[]> initialVelocity,
-      Supplier<double[]> initialRotation,
+      DoubleSupplier initialTranslationX,
+      DoubleSupplier initialTranslationY,
+      DoubleSupplier initialTranslationZ,
+      DoubleSupplier initialVelocityX,
+      DoubleSupplier initialVelocityY,
+      DoubleSupplier initialVelocityZ,
+      DoubleSupplier initialRotationX,
+      DoubleSupplier initialRotationY,
+      DoubleSupplier initialRotationZ,
       DoubleSupplier initialRotationalVelocity) {
-    this.initialTranslation = initialTranslation;
-    this.initialVelocity = initialVelocity;
-    this.initialRotation = initialRotation;
+    this.initialTranslationX = initialTranslationX;
+    this.initialTranslationY = initialTranslationY;
+    this.initialTranslationZ = initialTranslationZ;
+    this.initialVelocityX = initialVelocityX;
+    this.initialVelocityY = initialVelocityY;
+    this.initialVelocityZ = initialVelocityZ;
+    this.initialRotationX = initialRotationX;
+    this.initialRotationY = initialRotationY;
+    this.initialRotationZ = initialRotationZ;
     this.initialRotationalVelocity = initialRotationalVelocity;
 
     recomputeFrameLimits();
@@ -102,52 +109,48 @@ public abstract class ProjectileVisualizer {
     trajectoryDt = 1.0 / trajectoryResolution;
   }
 
-  protected static boolean diff(double number1, double number2) {
-    return Math.abs(number1 - number2) > EPS;
-  }
-
-  protected static boolean diff(double[] vector1, double[] vector2) {
-    return diff(vector1[Projectile.X], vector2[Projectile.X])
-        || diff(vector1[Projectile.Y], vector2[Projectile.Y])
-        || diff(vector1[Projectile.Z], vector2[Projectile.Z]);
-  }
-
-  protected static void validate(double[] vector) {
-    if (vector == null) System.arraycopy(new double[3], 0, vector, 0, 3);
-    if (vector.length < 3) System.arraycopy(new double[3], 0, vector, 0, 3);
-
-    double x = vector[Projectile.X];
-    double y = vector[Projectile.Y];
-    double z = vector[Projectile.Z];
-
-    if (x != x) vector[Projectile.X] = 0;
-    if (y != y) vector[Projectile.Y] = 0;
-    if (z != z) vector[Projectile.Z] = 0;
+  protected static boolean diff(double a, double b) {
+    return Math.abs(a - b) > EPS;
   }
 
   private void checkLaunchState() {
-    double[] translation = initialTranslation.get();
-    double[] velocity = initialVelocity.get();
-    double[] rotation = initialRotation.get();
-    double rotationalVelocity = initialRotationalVelocity.getAsDouble();
+    double tx = initialTranslationX.getAsDouble();
+    double ty = initialTranslationY.getAsDouble();
+    double tz = initialTranslationZ.getAsDouble();
+    double vx = initialVelocityX.getAsDouble();
+    double vy = initialVelocityY.getAsDouble();
+    double vz = initialVelocityZ.getAsDouble();
+    double rx = initialRotationX.getAsDouble();
+    double ry = initialRotationY.getAsDouble();
+    double rz = initialRotationZ.getAsDouble();
+    double rv = initialRotationalVelocity.getAsDouble();
 
-    boolean changed = false;
-    if (launchStateInitialized) {
-      if (diff(translation, lastInitialTranslation)
-          || diff(velocity, lastInitialVelocity)
-          || diff(rotation, lastInitialRotation)
-          || diff(rotationalVelocity, lastInitialRotationalVelocity)) changed = true;
-    } else {
-      changed = true;
-      launchStateInitialized = true;
-    }
+    boolean changed =
+        !launchStateInitialized
+            || diff(tx, lastTranslationX)
+            || diff(ty, lastTranslationY)
+            || diff(tz, lastTranslationZ)
+            || diff(vx, lastVelocityX)
+            || diff(vy, lastVelocityY)
+            || diff(vz, lastVelocityZ)
+            || diff(rx, lastRotationX)
+            || diff(ry, lastRotationY)
+            || diff(rz, lastRotationZ)
+            || diff(rv, lastRotationalVelocity);
 
     if (changed) {
-      System.arraycopy(translation, 0, lastInitialTranslation, 0, 3);
-      System.arraycopy(velocity, 0, lastInitialVelocity, 0, 3);
-      System.arraycopy(rotation, 0, lastInitialRotation, 0, 3);
+      lastTranslationX = tx;
+      lastTranslationY = ty;
+      lastTranslationZ = tz;
+      lastVelocityX = vx;
+      lastVelocityY = vy;
+      lastVelocityZ = vz;
+      lastRotationX = rx;
+      lastRotationY = ry;
+      lastRotationZ = rz;
+      lastRotationalVelocity = rv;
 
-      lastInitialRotationalVelocity = rotationalVelocity;
+      launchStateInitialized = true;
       trajectoryDirty = true;
     }
   }
@@ -174,12 +177,12 @@ public abstract class ProjectileVisualizer {
     if (!running.compareAndSet(false, true)) return;
 
     executor.scheduleAtFixedRate(
-        this::updateLaunchSimulation, 0, (long) (launchDt * 1000000), TimeUnit.MICROSECONDS);
+        this::updateLaunchSimulation, 0, (long) (launchDt * 1_000_000), TimeUnit.MICROSECONDS);
 
     executor.scheduleAtFixedRate(
         this::updateTrajectorySimulation,
         0,
-        (long) (trajectoryDt * 1000000),
+        (long) (trajectoryDt * 1_000_000),
         TimeUnit.MICROSECONDS);
   }
 
@@ -258,9 +261,15 @@ public abstract class ProjectileVisualizer {
     Projectile projectile = obtainProjectile();
 
     projectile.initialize(
-        initialTranslation.get(),
-        initialVelocity.get(),
-        initialRotation.get(),
+        initialTranslationX.getAsDouble(),
+        initialTranslationY.getAsDouble(),
+        initialTranslationZ.getAsDouble(),
+        initialVelocityX.getAsDouble(),
+        initialVelocityY.getAsDouble(),
+        initialVelocityZ.getAsDouble(),
+        initialRotationX.getAsDouble(),
+        initialRotationY.getAsDouble(),
+        initialRotationZ.getAsDouble(),
         initialRotationalVelocity.getAsDouble());
 
     synchronized (projectiles) {
@@ -325,10 +334,16 @@ public abstract class ProjectileVisualizer {
     projectile.config(trajectoryResolution, weightEnabled, dragEnabled, torqueEnabled, liftEnabled);
 
     projectile.initialize(
-        initialTranslation.get(),
-        initialVelocity.get(),
-        initialRotation.get(),
-        initialRotationalVelocity.getAsDouble());
+        lastTranslationX,
+        lastTranslationY,
+        lastTranslationZ,
+        lastVelocityX,
+        lastVelocityY,
+        lastVelocityZ,
+        lastRotationX,
+        lastRotationY,
+        lastRotationZ,
+        lastRotationalVelocity);
 
     initial = projectile.pose();
 
@@ -477,38 +492,60 @@ public abstract class ProjectileVisualizer {
       return this;
     }
 
+    /** Replaces NaN with 0.0 so invalid supplier values are handled gracefully. */
+    protected static double validated(double value) {
+      return value == value ? value : 0.0;
+    }
+
     protected void initialize(
-        double[] initialTranslation,
-        double[] initialVelocity,
-        double[] initialRotation,
-        double initialRotationalVelocity) {
-      // INPUT VALIDATION
-      validate(initialTranslation);
-      validate(initialVelocity);
-      validate(initialRotation);
+        double tx,
+        double ty,
+        double tz,
+        double ivx,
+        double ivy,
+        double ivz,
+        double rx,
+        double ry,
+        double rz,
+        double rotationalVelocity) {
+      x = validated(tx);
+      y = validated(ty);
+      z = validated(tz);
 
-      x = initialTranslation[X];
-      y = initialTranslation[Y];
-      z = initialTranslation[Z];
-
-      vx = initialVelocity[X];
-      vy = initialVelocity[Y];
-      vz = initialVelocity[Z];
+      vx = validated(ivx);
+      vy = validated(ivy);
+      vz = validated(ivz);
 
       ax = 0;
       ay = 0;
       az = 0;
 
-      roll = initialRotation[X];
-      pitch = initialRotation[Y];
-      yaw = initialRotation[Z];
+      roll = validated(rx);
+      pitch = validated(ry);
+      yaw = validated(rz);
 
-      // INPUT VALIDATION
-      omega =
-          initialRotationalVelocity == initialRotationalVelocity ? initialRotationalVelocity : 0;
+      omega = validated(rotationalVelocity);
       alpha = 0;
 
       frames = 0;
+    }
+
+    protected void initialize(
+        double[] translation,
+        double[] initialVelocity,
+        double[] initialRotation,
+        double rotationalVelocity) {
+      initialize(
+          translation[X],
+          translation[Y],
+          translation[Z],
+          initialVelocity[X],
+          initialVelocity[Y],
+          initialVelocity[Z],
+          initialRotation[X],
+          initialRotation[Y],
+          initialRotation[Z],
+          rotationalVelocity);
     }
 
     protected void step() {

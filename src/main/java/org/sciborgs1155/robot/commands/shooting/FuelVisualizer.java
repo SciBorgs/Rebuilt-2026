@@ -36,17 +36,24 @@ public final class FuelVisualizer extends ProjectileVisualizer {
       Supplier<double[]> initialRotation,
       DoubleSupplier initialRotationalVelocity) {
 
-    super(initialTranslation, initialVelocity, initialRotation, initialRotationalVelocity);
+    super(
+        () -> initialTranslation.get()[X],
+        () -> initialTranslation.get()[Y],
+        () -> initialTranslation.get()[Z],
+        () -> initialVelocity.get()[X],
+        () -> initialVelocity.get()[Y],
+        () -> initialVelocity.get()[Z],
+        () -> initialRotation.get()[X],
+        () -> initialRotation.get()[Y],
+        () -> initialRotation.get()[Z],
+        initialRotationalVelocity);
 
     this.speed = speed;
     this.pitch = pitch;
-
     this.yaw = yaw;
-
     this.robotVx = vx;
     this.robotVy = vy;
     this.robotOmega = robotOmega;
-
     this.heading = heading;
     this.robotX = robotX;
     this.robotY = robotY;

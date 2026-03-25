@@ -57,7 +57,7 @@ public class TalonModule implements ModuleIO {
    * @param angularOffset The angular offset of the module's encoder.
    * @param ff The feedforward constants for the drive motor.
    * @param name The name of the module.
-   * @param invert Whether to invert the motor direction.
+   * @param invertTurn Whether to invert the motor direction.
    */
   public TalonModule(
       int drivePort,
@@ -66,7 +66,8 @@ public class TalonModule implements ModuleIO {
       Rotation2d angularOffset,
       FFConstants ff,
       String name,
-      boolean invert) {
+      boolean invertDrive,
+      boolean invertTurn) {
     // drive motor
     driveMotor = new TalonFX(drivePort, DRIVE_CANIVORE);
     driveFF = new SimpleMotorFeedforward(ff.kS(), ff.kV(), ff.kA());
@@ -79,7 +80,7 @@ public class TalonModule implements ModuleIO {
     talonDriveConfig.CurrentLimits.StatorCurrentLimit = Driving.STATOR_LIMIT.in(Amps);
 
     talonDriveConfig.MotorOutput.Inverted =
-        invert ? InvertedValue.Clockwise_Positive : InvertedValue.CounterClockwise_Positive;
+        invertDrive ? InvertedValue.Clockwise_Positive : InvertedValue.CounterClockwise_Positive;
 
     talonDriveConfig.Slot0.kP = Driving.PID.P;
     talonDriveConfig.Slot0.kI = Driving.PID.I;
@@ -93,7 +94,7 @@ public class TalonModule implements ModuleIO {
 
     talonTurnConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     talonTurnConfig.MotorOutput.Inverted =
-        invert ? InvertedValue.Clockwise_Positive : InvertedValue.CounterClockwise_Positive;
+        invertTurn ? InvertedValue.Clockwise_Positive : InvertedValue.CounterClockwise_Positive;
 
     talonTurnConfig.Feedback.SensorToMechanismRatio = Turning.ENCODER_GEARING;
     talonTurnConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
@@ -230,10 +231,15 @@ public class TalonModule implements ModuleIO {
   }
 
   @Override
-  public void updateInputs(Rotation2d angle, double voltage) {
-    setpoint.angle = angle;
-    setDriveVoltage(voltage);
-    setTurnSetpoint(angle);
+  public void updateInputs(SwerveModuleState voltage) {
+    Rotation2d rotation = rotation();
+    // Optimize the reference state to avoid spinning further than 90 degrees
+    voltage.optimize(rotation);
+
+    setDriveVoltage(voltage.speedMetersPerSecond);
+
+    setTurnSetpoint(voltage.angle);
+    this.setpoint.angle = voltage.angle;
   }
 
   @Override

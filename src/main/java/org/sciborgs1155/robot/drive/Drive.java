@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 import static java.lang.Math.atan;
@@ -166,6 +167,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
               ANGULAR_OFFSETS.get(0),
               Driving.FF_CONSTANTS.get(0),
               "FL",
+              false,
               true),
           new TalonModule(
               FRONT_RIGHT_DRIVE,
@@ -174,6 +176,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
               ANGULAR_OFFSETS.get(1),
               Driving.FF_CONSTANTS.get(1),
               "FR",
+              true,
               true),
           new TalonModule(
               REAR_LEFT_DRIVE,
@@ -182,6 +185,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
               ANGULAR_OFFSETS.get(2),
               Driving.FF_CONSTANTS.get(2),
               "RL",
+              false,
               true),
           new TalonModule(
               REAR_RIGHT_DRIVE,
@@ -190,6 +194,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
               ANGULAR_OFFSETS.get(3),
               Driving.FF_CONSTANTS.get(3),
               "RR",
+              true,
               true));
     } else {
       return new Drive(
@@ -246,27 +251,42 @@ public class Drive extends SubsystemBase implements AutoCloseable {
     translationCharacterization =
         new SysIdRoutine(
             new SysIdRoutine.Config(
-                null,
+                Volts.per(Second).of(1),
                 Volts.of(4),
-                null,
+                Seconds.of(5),
                 (state) -> SignalLogger.writeString("translation state", state.toString())),
             new SysIdRoutine.Mechanism(
-                volts -> modules.forEach(m -> m.setDriveVoltage(volts.in(Volts))),
+                volts ->
+                    modules.forEach(
+                        m ->
+                            m.updateInputs(
+                                new SwerveModuleState(volts.in(Volts), Rotation2d.kZero))),
                 null,
                 this,
-                "translation"));
+                "drive"));
     rotationalCharacterization =
         new SysIdRoutine(
             new SysIdRoutine.Config(
-                null,
+                Volts.per(Second).of(1),
                 Volts.of(4),
-                null,
+                Seconds.of(5),
                 (state) -> SignalLogger.writeString("rotation state", state.toString())),
             new SysIdRoutine.Mechanism(
-                volts -> modules.forEach((module) -> module.setDriveVoltage(volts.in(Volts))),
+                volts -> {
+                  this.frontLeft.updateInputs(
+                      new SwerveModuleState(
+                          volts.in(Volts), Rotation2d.fromRadians(3 * Math.PI / 4)));
+                  this.frontRight.updateInputs(
+                      new SwerveModuleState(volts.in(Volts), Rotation2d.fromRadians(Math.PI / 4)));
+                  this.rearLeft.updateInputs(
+                      new SwerveModuleState(
+                          volts.in(Volts), Rotation2d.fromRadians(-3 * Math.PI / 4)));
+                  this.rearRight.updateInputs(
+                      new SwerveModuleState(volts.in(Volts), Rotation2d.fromRadians(-Math.PI / 4)));
+                },
                 null,
                 this,
-                "rotation"));
+                "drive"));
 
     gyro.reset(Rotation2d.kZero);
     odometry = new SwerveDrivePoseEstimator(kinematics, lastHeading, lastPositions, Pose2d.kZero);
@@ -332,6 +352,15 @@ public class Drive extends SubsystemBase implements AutoCloseable {
     return odometry.getEstimatedPosition();
   }
 
+  public Command goForward() {
+    return run(
+        () -> modules.forEach(m -> m.updateInputs(new SwerveModuleState(4, Rotation2d.kZero))));
+  }
+
+  public Command allModulesFace(Rotation2d g) {
+    return run(() -> modules.forEach(m -> m.updateInputs(new SwerveModuleState(4, g))));
+  }
+
   /**
    * Returns the field-relative velocity of the robot.
    *
@@ -341,6 +370,16 @@ public class Drive extends SubsystemBase implements AutoCloseable {
   public Translation2d velocity() {
     ChassisSpeeds speeds = fieldRelativeChassisSpeeds();
     return new Translation2d(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
+  }
+
+  @Logged
+  public Translation2d acceleration() {
+    return new Translation2d(gyro.acceleration());
+  }
+
+  @Logged
+  public double omega() {
+    return fieldRelativeChassisSpeeds().omegaRadiansPerSecond;
   }
 
   /** Returns a Pose3D of the estimated pose of the robot. */
@@ -723,22 +762,22 @@ public class Drive extends SubsystemBase implements AutoCloseable {
   }
 
   // /**
-  //  * @return If the robot is skidding.
-  //  */
+  // * @return If the robot is skidding.
+  // */
   // @Logged
   // public boolean isSkidding() {
-  //   DoubleSummaryStatistics diffs =
-  //       Arrays.stream(moduleStates())
-  //           .mapToDouble(
-  //               s ->
-  //                   FieldConstants.fromPolarCoords(s.speedMetersPerSecond, s.angle)
-  //                       .minus(
-  //                           VecBuilder.fill(
-  //                               robotRelativeChassisSpeeds().vxMetersPerSecond,
-  //                               robotRelativeChassisSpeeds().vyMetersPerSecond))
-  //                       .norm())
-  //           .summaryStatistics();
-  //   return diffs.getMax() - diffs.getMin() > Skid.THRESHOLD.in(MetersPerSecond);
+  // DoubleSummaryStatistics diffs =
+  // Arrays.stream(moduleStates())
+  // .mapToDouble(
+  // s ->
+  // FieldConstants.fromPolarCoords(s.speedMetersPerSecond, s.angle)
+  // .minus(
+  // VecBuilder.fill(
+  // robotRelativeChassisSpeeds().vxMetersPerSecond,
+  // robotRelativeChassisSpeeds().vyMetersPerSecond))
+  // .norm())
+  // .summaryStatistics();
+  // return diffs.getMax() - diffs.getMin() > Skid.THRESHOLD.in(MetersPerSecond);
   // }
 
   /**
@@ -783,7 +822,8 @@ public class Drive extends SubsystemBase implements AutoCloseable {
     for (int i = 0; i < modules.size(); i++) {
       states[i] = modules.get(i).state();
     }
-    // return modules.stream().map(ModuleIO::state).toArray(SwerveModuleState[]::new);
+    // return
+    // modules.stream().map(ModuleIO::state).toArray(SwerveModuleState[]::new);
     return states;
   }
 
@@ -794,9 +834,11 @@ public class Drive extends SubsystemBase implements AutoCloseable {
     for (int i = 0; i < modules.size(); i++) {
       states[i] = modules.get(i).desiredState();
     }
-    // return modules.stream().map(ModuleIO::state).toArray(SwerveModuleState[]::new);
+    // return
+    // modules.stream().map(ModuleIO::state).toArray(SwerveModuleState[]::new);
     return states;
-    // return modules.stream().map(ModuleIO::desiredState).toArray(SwerveModuleState[]::new);
+    // return
+    // modules.stream().map(ModuleIO::desiredState).toArray(SwerveModuleState[]::new);
   }
 
   /** Returns the module positions. */
@@ -806,10 +848,12 @@ public class Drive extends SubsystemBase implements AutoCloseable {
     for (int i = 0; i < modules.size(); i++) {
       positions[i] = modules.get(i).position();
     }
-    // return modules.stream().map(ModuleIO::state).toArray(SwerveModuleState[]::new);
+    // return
+    // modules.stream().map(ModuleIO::state).toArray(SwerveModuleState[]::new);
     return positions;
 
-    // return modules.stream().map(ModuleIO::position).toArray(SwerveModulePosition[]::new);
+    // return
+    // modules.stream().map(ModuleIO::position).toArray(SwerveModulePosition[]::new);
   }
 
   /** Returns the robot-relative chassis speeds. */
@@ -887,7 +931,8 @@ public class Drive extends SubsystemBase implements AutoCloseable {
       try {
         double[] timestamps = modules.get(2).timestamps();
 
-        // get the positions of all modules at a given timestamp [[module0 odometry], [module1
+        // get the positions of all modules at a given timestamp [[module0 odometry],
+        // [module1
         // odometry], ...]
         SwerveModulePosition[][] allPositions = {
           modules.get(0).odometryData(),
@@ -918,6 +963,8 @@ public class Drive extends SubsystemBase implements AutoCloseable {
       odometry.update(simRotation, modulePositions());
       lastPositions = modulePositions();
     }
+
+    gyro.periodic();
 
     // update our simulated field poses
     field2d.setRobotPose(pose());

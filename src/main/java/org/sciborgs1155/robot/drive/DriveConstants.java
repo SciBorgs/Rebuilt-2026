@@ -45,7 +45,7 @@ public final class DriveConstants {
   public static final Distance CHASSIS_WIDTH = Inches.of(32.645);
 
   // Percentage of the max speed we can do while shooting
-  public static final double SHOOTING_TRANSLATIONAL_SPEED = .5;
+  public static final double SHOOTING_TRANSLATIONAL_SPEED = 0.25;
   // Maximum achievable translational and rotation velocities and accelerations of the robot.
   public static final LinearVelocity MAX_SPEED = MetersPerSecond.of(5);
   public static final LinearAcceleration MAX_ACCEL = MetersPerSecondPerSecond.of(40);
@@ -54,7 +54,7 @@ public final class DriveConstants {
   public static final LinearAcceleration MAX_TILT_ACCEL =
       MetersPerSecondPerSecond.of(12); // TODO: Tune
   // Percentage of the max angular speed we can do while shooting
-  public static final double SHOOTING_ANGULAR_SPEED = .25;
+  public static final double SHOOTING_ANGULAR_SPEED = 0;
   public static final AngularVelocity MAX_ANGULAR_SPEED =
       RadiansPerSecond.of(MAX_SPEED.in(MetersPerSecond) / RADIUS.in(Meters));
   public static final AngularAcceleration MAX_ANGULAR_ACCEL =
@@ -135,18 +135,18 @@ public final class DriveConstants {
 
       public static final Current CURRENT_LIMIT = Amps.of(50);
 
-      public static final FFConstants FRONT_RIGHT_FF = new FFConstants(0.21459, 2.0025, 0.094773);
-      public static final FFConstants FRONT_LEFT_FF = new FFConstants(0.23328, 2.0243, 0.045604);
-      public static final FFConstants REAR_LEFT_FF = new FFConstants(0.14362, 2.0942, 0.21547);
-      public static final FFConstants REAR_RIGHT_FF = new FFConstants(0.15099, 1.9379, 0.30998);
+      public static final FFConstants FRONT_RIGHT_FF = new FFConstants(0.27372, 2.3131, 0.2385);
+      public static final FFConstants FRONT_LEFT_FF = new FFConstants(0.14985, 2.313, 0.19269);
+      public static final FFConstants REAR_LEFT_FF = new FFConstants(0.21295, 2.265, 0.085833);
+      public static final FFConstants REAR_RIGHT_FF = new FFConstants(0.26806, 2.3948, 0.079315);
 
       public static final List<FFConstants> FF_CONSTANTS =
           List.of(FRONT_LEFT_FF, FRONT_RIGHT_FF, REAR_LEFT_FF, REAR_RIGHT_FF);
 
       public static final class PID {
-        public static final double P = 3.2;
+        public static final double P = 0.5;
         public static final double I = 0.0;
-        public static final double D = 0.0;
+        public static final double D = 0.05;
       }
     }
 
@@ -157,9 +157,9 @@ public final class DriveConstants {
       public static final Current CURRENT_LIMIT = Amps.of(20);
 
       public static final class PID {
-        public static final double P = 50;
+        public static final double P = 70;
         public static final double I = 0.0;
-        public static final double D = 0.05;
+        public static final double D = 0.5;
       }
 
       // system constants only used in simulation

@@ -85,8 +85,8 @@ public final class FieldConstants {
     public static final double INNER_HEIGHT = Units.inchesToMeters(56.5);
 
     // Relevant reference points on alliance side
-    public static final Translation3d LEFT_FEED = new Translation3d(1, 1, 0);
-    public static final Translation3d RIGHT_FEED = new Translation3d(1, FIELD_WIDTH - 1, 0);
+    public static final Translation3d LEFT_FEED = new Translation3d(1, FIELD_WIDTH - 1, 0);
+    public static final Translation3d RIGHT_FEED = new Translation3d(1, 1, 0);
     public static final Translation3d TOP_CENTER_POINT =
         new Translation3d(
             FIELD_LAYOUT.getTagPose(26).get().getX() + WIDTH / 2.0, FIELD_WIDTH / 2.0, HEIGHT);

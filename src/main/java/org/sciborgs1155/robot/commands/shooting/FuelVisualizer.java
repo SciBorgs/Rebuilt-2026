@@ -10,7 +10,7 @@ import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.robot.FieldConstants.Hub;
 import org.sciborgs1155.robot.drive.Drive;
 
-@SuppressWarnings("PMD.OneDeclarationPerLine")
+@SuppressWarnings({"PMD.OneDeclarationPerLine", "PMD.MethodReturnsInternalArray"})
 public final class FuelVisualizer extends ProjectileVisualizer {
   private double scoreTolerance = Hub.INNER_WIDTH / 2;
   private final double[] targetPose = fromTranslation(Hub.TOP_CENTER_POINT);
@@ -19,7 +19,6 @@ public final class FuelVisualizer extends ProjectileVisualizer {
   private final DoubleSupplier speed, pitch, yaw;
   private final DoubleSupplier robotVx, robotVy, robotOmega;
   private final DoubleSupplier robotX, robotY, heading;
-
   private final CachedVector initialTranslation, initialVelocity, initialRotation;
 
   private FuelVisualizer(
@@ -57,7 +56,7 @@ public final class FuelVisualizer extends ProjectileVisualizer {
     this.heading = heading;
     this.robotX = robotX;
     this.robotY = robotY;
-    
+
     this.initialTranslation = initialTranslation;
     this.initialVelocity = initialVelocity;
     this.initialRotation = initialRotation;

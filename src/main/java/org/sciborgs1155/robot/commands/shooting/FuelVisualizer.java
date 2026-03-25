@@ -6,7 +6,6 @@ import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.*;
 import static org.sciborgs1155.robot.hood.HoodConstants.MIN_ANGLE;
 
 import java.util.function.DoubleSupplier;
-import java.util.function.Supplier;
 import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.robot.FieldConstants.Hub;
 import org.sciborgs1155.robot.drive.Drive;
@@ -21,6 +20,8 @@ public final class FuelVisualizer extends ProjectileVisualizer {
   private final DoubleSupplier robotVx, robotVy, robotOmega;
   private final DoubleSupplier robotX, robotY, heading;
 
+  private final CachedVector initialTranslation, initialVelocity, initialRotation;
+
   private FuelVisualizer(
       DoubleSupplier speed,
       DoubleSupplier pitch,
@@ -31,21 +32,20 @@ public final class FuelVisualizer extends ProjectileVisualizer {
       DoubleSupplier vx,
       DoubleSupplier vy,
       DoubleSupplier robotOmega,
-      Supplier<double[]> initialTranslation,
-      Supplier<double[]> initialVelocity,
-      Supplier<double[]> initialRotation,
+      CachedVector initialTranslation,
+      CachedVector initialVelocity,
+      CachedVector initialRotation,
       DoubleSupplier initialRotationalVelocity) {
-
     super(
-        () -> initialTranslation.get()[X],
-        () -> initialTranslation.get()[Y],
-        () -> initialTranslation.get()[Z],
-        () -> initialVelocity.get()[X],
-        () -> initialVelocity.get()[Y],
-        () -> initialVelocity.get()[Z],
-        () -> initialRotation.get()[X],
-        () -> initialRotation.get()[Y],
-        () -> initialRotation.get()[Z],
+        initialTranslation.x(),
+        initialTranslation.y(),
+        initialTranslation.z(),
+        initialVelocity.x(),
+        initialVelocity.y(),
+        initialVelocity.z(),
+        initialRotation.x(),
+        initialRotation.y(),
+        initialRotation.z(),
         initialRotationalVelocity);
 
     this.speed = speed;
@@ -57,6 +57,10 @@ public final class FuelVisualizer extends ProjectileVisualizer {
     this.heading = heading;
     this.robotX = robotX;
     this.robotY = robotY;
+    
+    this.initialTranslation = initialTranslation;
+    this.initialVelocity = initialVelocity;
+    this.initialRotation = initialRotation;
   }
 
   protected static FuelVisualizer fromLaunchParameters(
@@ -68,6 +72,32 @@ public final class FuelVisualizer extends ProjectileVisualizer {
     DoubleSupplier robotVy = () -> drive.fieldRelativeChassisSpeeds().vyMetersPerSecond;
     DoubleSupplier robotOmega = () -> drive.fieldRelativeChassisSpeeds().omegaRadiansPerSecond;
 
+    CachedVector initialTranslation =
+        new CachedVector(
+            () ->
+                initialTranslation(
+                    robotX.getAsDouble(),
+                    robotY.getAsDouble(),
+                    pitch.getAsDouble(),
+                    yaw.getAsDouble(),
+                    heading.getAsDouble()));
+
+    CachedVector initialVelocity =
+        new CachedVector(
+            () ->
+                initialVelocity(
+                    speed.getAsDouble(),
+                    pitch.getAsDouble(),
+                    yaw.getAsDouble(),
+                    heading.getAsDouble(),
+                    robotVx.getAsDouble(),
+                    robotVy.getAsDouble(),
+                    robotOmega.getAsDouble(),
+                    0));
+
+    CachedVector initialRotation =
+        new CachedVector(() -> initialRotation(yaw.getAsDouble(), heading.getAsDouble()));
+
     return new FuelVisualizer(
         speed,
         pitch,
@@ -78,24 +108,9 @@ public final class FuelVisualizer extends ProjectileVisualizer {
         robotVx,
         robotVy,
         robotOmega,
-        () ->
-            initialTranslation(
-                robotX.getAsDouble(),
-                robotY.getAsDouble(),
-                pitch.getAsDouble(),
-                yaw.getAsDouble(),
-                heading.getAsDouble()),
-        () ->
-            initialVelocity(
-                speed.getAsDouble(),
-                pitch.getAsDouble(),
-                yaw.getAsDouble(),
-                heading.getAsDouble(),
-                robotVx.getAsDouble(),
-                robotVy.getAsDouble(),
-                robotOmega.getAsDouble(),
-                0),
-        () -> initialRotation(yaw.getAsDouble(), heading.getAsDouble()),
+        initialTranslation,
+        initialVelocity,
+        initialRotation,
         FuelVisualizer::initialRotationalVelocity);
   }
 
@@ -122,6 +137,10 @@ public final class FuelVisualizer extends ProjectileVisualizer {
   @Override
   public void updateLogging() {
     super.updateLogging();
+
+    initialTranslation.invalidate();
+    initialVelocity.invalidate();
+    initialRotation.invalidate();
 
     if (ending() == null) return;
     double deltaX = targetPose[X] - ending().getTranslation().getX();
@@ -288,28 +307,20 @@ public final class FuelVisualizer extends ProjectileVisualizer {
     protected double[] drag() {
       // https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/drag-of-a-sphere/
       double scale = -DRAG_CONSTANT * Math.sqrt(vx * vx + vy * vy + vz * vz);
-
       drag[X] = vx * scale;
       drag[Y] = vy * scale;
       drag[Z] = vz * scale;
-
-      double[] output = new double[3];
-      System.arraycopy(drag, 0, output, 0, 3);
-      return output;
+      return drag;
     }
 
     @Override
     protected double[] lift() {
       // https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/ideal-lift-of-a-spinning-ball/
       double scale = LIFT_CONSTANT * omega;
-
       lift[X] = scale * -vx;
       lift[Y] = 0;
       lift[Z] = scale * vz;
-
-      double[] output = new double[3];
-      System.arraycopy(lift, 0, output, 0, 3);
-      return output;
+      return lift;
     }
 
     @Override

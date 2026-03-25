@@ -9,6 +9,7 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 import org.sciborgs1155.lib.LoggingUtils;
 
 @SuppressWarnings({
@@ -45,7 +46,7 @@ public abstract class ProjectileVisualizer {
 
   private volatile Pose3d[] trajectory = new Pose3d[0];
 
-  // Initial state suppliers
+  // INITIAL STATE SUPPLIERS
   private final DoubleSupplier initialTranslationX, initialTranslationY, initialTranslationZ;
   private final DoubleSupplier initialVelocityX, initialVelocityY, initialVelocityZ;
   private final DoubleSupplier initialRotationX, initialRotationY, initialRotationZ;
@@ -59,7 +60,7 @@ public abstract class ProjectileVisualizer {
   /** Reusable trajectory buffer. */
   private final List<Pose3d> trajectoryBuffer = new ArrayList<>(512);
 
-  // Cached launch state
+  // CACHED LAUNCH STATE
   private double lastTranslationX, lastTranslationY, lastTranslationZ;
   private double lastVelocityX, lastVelocityY, lastVelocityZ;
   private double lastRotationX, lastRotationY, lastRotationZ;
@@ -628,6 +629,51 @@ public abstract class ProjectileVisualizer {
 
     protected static double[] fromTranslation(Translation3d translation) {
       return new double[] {translation.getX(), translation.getY(), translation.getZ()};
+    }
+  }
+
+  /** Caches a recomputed double[3] and exposes per-component DoubleSuppliers. */
+  protected static final class CachedVector {
+    private final Supplier<double[]> source;
+    private final double[] cache = new double[3];
+    private boolean dirty = true;
+
+    CachedVector(Supplier<double[]> source) {
+      this.source = source;
+    }
+
+    private void refresh() {
+      if (!dirty) return;
+      double[] result = source.get();
+      cache[0] = result[0];
+      cache[1] = result[1];
+      cache[2] = result[2];
+      dirty = false;
+    }
+
+    void invalidate() {
+      dirty = true;
+    }
+
+    DoubleSupplier x() {
+      return () -> {
+        refresh();
+        return cache[Projectile.X];
+      };
+    }
+
+    DoubleSupplier y() {
+      return () -> {
+        refresh();
+        return cache[Projectile.Y];
+      };
+    }
+
+    DoubleSupplier z() {
+      return () -> {
+        refresh();
+        return cache[Projectile.Z];
+      };
     }
   }
 }

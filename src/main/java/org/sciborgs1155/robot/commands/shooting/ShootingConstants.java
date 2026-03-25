@@ -32,7 +32,7 @@ public class ShootingConstants {
   protected static final int SHOOTING_SPEED = 5;
 
   /** The resolution of the visualizer's launch simulation. */
-  protected static final int VISUALIZER_RESOLUTION = 100;
+  protected static final int VISUALIZER_RESOLUTION = 500;
 
   protected static final boolean TRAJECTORY_ENABLED = false;
   protected static final boolean LAUNCH_ENABLED = true;

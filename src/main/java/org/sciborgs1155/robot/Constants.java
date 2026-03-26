@@ -85,6 +85,10 @@ public final class Constants {
         new InterpolatingTreeMap<>(InverseInterpolator.forDouble(), Rotation2d::interpolate);
     public static final InterpolatingDoubleTreeMap DISTANCE_TO_HORIZONTAL_VELOCITY =
         new InterpolatingDoubleTreeMap();
+    public static final InterpolatingDoubleTreeMap VELOCITY_TO_RADS =
+        new InterpolatingDoubleTreeMap();
+    public static final InterpolatingTreeMap<Double, Rotation2d> VELOCITY_TO_HOOD_ANGLE =
+        new InterpolatingTreeMap<>(InverseInterpolator.forDouble(), Rotation2d::interpolate);
 
     /**
      * Applies a point to the three linear interpolations.
@@ -95,10 +99,16 @@ public final class Constants {
      * @param tof
      */
     public static void put(double dist, double degIncline, double speed, double tof) {
-      DISTANCE_TO_HOOD_ANGLE.put(dist, Rotation2d.fromDegrees(degIncline));
+      Rotation2d hoodAngle = Rotation2d.fromDegrees(degIncline);
+      DISTANCE_TO_HOOD_ANGLE.put(dist, hoodAngle);
       DISTANCE_TO_RADS.put(dist, speed);
       DISTANCE_TO_TOF.put(dist, tof);
-      DISTANCE_TO_HORIZONTAL_VELOCITY.put(dist, dist / tof);
+
+      double velocity = dist / tof;
+      DISTANCE_TO_HORIZONTAL_VELOCITY.put(dist, velocity);
+      VELOCITY_TO_RADS.put(velocity, speed);
+      VELOCITY_TO_HOOD_ANGLE.put(velocity, hoodAngle);
+      
     }
 
     static {

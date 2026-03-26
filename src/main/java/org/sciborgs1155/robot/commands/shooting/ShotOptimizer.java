@@ -54,19 +54,19 @@ public final class ShotOptimizer {
     return optimalSpeed;
   }
 
-  /** Calculates the launch speed given the pitch and tof of a successful shot. */
-  public static double getSpeed(double distance, double pitch, double tof) {
-    double previousError = tof;
-    double speed = MAX_SPEED;
+  /** Calculates the launch speed given the pitch and time-of-flight of a successful shot. */
+  public static double estimateSpeed(double distance, double pitch, double timeOfFlight) {
+    double previousError = timeOfFlight;
+    double speed = optimizedSpeed(distance, MAX_SPEED, pitch);
 
     for (int iterations = 0; iterations <= MAX_TOF_ANALYSIS_ITERATIONS; iterations++) {
       generateDirectTrajectory(distance, new double[] {speed, pitch, 0});
-      double error = trajectoryBuffer.length / OPTIMIZER_RESOLUTION - tof;
+      double error = trajectoryBuffer.length * 1.0 / OPTIMIZER_RESOLUTION - timeOfFlight;
       if (Math.abs(error) < TOF_ANALYSIS_THRESHOLD) return speed;
 
       double proportional = TOF_KP * -error;
       double derivative = TOF_KD * (previousError - error);
-      if (previousError == tof) derivative = 0;
+      if (previousError == timeOfFlight) derivative = 0;
 
       speed += (proportional + derivative);
       previousError = error;

@@ -8,22 +8,19 @@ import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.OPTIMIZ
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import org.sciborgs1155.lib.LoggingUtils;
 
+/** A utility class used to analyze shooting velocity data and compile it into a look up table. */
 public final class VelocityAnalyzer {
   private VelocityAnalyzer() {}
 
-  /** Javadoc. */
-  public static Command tableErrorAnalysis() {
-    return Commands.runOnce(() -> tofError(2.44, Units.degreesToRadians(70), 1.0));
-  }
+  public static double calculateSpeed(double distance, double pitchDegrees, double timeOfFlight) {
+    double pitch = Math.PI / 2 - Units.degreesToRadians(pitchDegrees);
+    double speed = ShotOptimizer.estimateSpeed(distance, pitch, timeOfFlight);
 
-  private static double tofError(double distance, double pitch, double tof) {
-    double speed = ShotOptimizer.getSpeed(distance, pitch, tof);
     double[] launchParameters = {speed, pitch, 0};
     ShotOptimizer.generateDirectTrajectory(distance, launchParameters);
+
     double[][] trajectory = ShotOptimizer.buffer();
     Pose3d[] poses = new Pose3d[trajectory.length];
 
@@ -32,11 +29,14 @@ public final class VelocityAnalyzer {
       poses[frame] = new Pose3d(translation[X], translation[Y], translation[Z], new Rotation3d());
     }
 
+    double simulatedTOF = trajectory.length * 1.0 / OPTIMIZER_RESOLUTION;
+    double error = (simulatedTOF - timeOfFlight) / simulatedTOF;
+
+    LoggingUtils.log("Shooting/Velocity Analyzer/Time of Flight", simulatedTOF);
+    LoggingUtils.log("Shooting/Velocity Analyzer/Error", error);
+    LoggingUtils.log("Shooting/Velocity Analyzer/Estimated Speed", speed);
     LoggingUtils.log("Shooting/Velocity Analyzer/Recreation", poses, Pose3d.struct);
 
-    double actualTof = trajectory.length / OPTIMIZER_RESOLUTION;
-    double error = (actualTof - tof) / actualTof;
-    LoggingUtils.log("Shooting/Velocity Analyzer/Error", error);
-    return error;
+    return speed;
   }
 }

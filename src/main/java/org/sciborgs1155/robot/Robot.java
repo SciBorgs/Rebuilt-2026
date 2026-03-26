@@ -1,6 +1,7 @@
 package org.sciborgs1155.robot;
 
 import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
@@ -10,6 +11,7 @@ import static edu.wpi.first.wpilibj2.command.button.RobotModeTriggers.teleop;
 import static edu.wpi.first.wpilibj2.command.button.RobotModeTriggers.test;
 import static org.sciborgs1155.lib.LoggingUtils.log;
 import static org.sciborgs1155.robot.Constants.*;
+import static org.sciborgs1155.robot.drive.DriveConstants.MAX_ACCEL;
 import static org.sciborgs1155.robot.drive.DriveConstants.MAX_ANGULAR_ACCEL;
 import static org.sciborgs1155.robot.drive.DriveConstants.MAX_SPEED;
 import static org.sciborgs1155.robot.drive.DriveConstants.TELEOP_ANGULAR_SPEED;
@@ -47,8 +49,7 @@ import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
 import org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer;
 import org.sciborgs1155.robot.commands.shooting.Shooting;
-import org.sciborgs1155.robot.commands.shooting.ShotLookUpTable;
-import org.sciborgs1155.robot.commands.shooting.VelocityAnalyzer;
+import org.sciborgs1155.robot.commands.shooting.ShotLookupTable;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.hood.Hood;
 import org.sciborgs1155.robot.hood.HoodVisualizer;
@@ -173,7 +174,7 @@ public class Robot extends CommandRobot {
 
       fuelVisualizer.startSimulation();
       addPeriodic(fuelVisualizer::updateLogging, PERIOD);
-      addPeriodic(ShotLookUpTable::updateLogging, PERIOD);
+      addPeriodic(ShotLookupTable::updateLogging, PERIOD);
     }
   }
 
@@ -201,10 +202,12 @@ public class Robot extends CommandRobot {
     // Split x and y components of translation input
     InputStream x =
         r.scale(theta.map(Math::cos))
-            .log("/Robot/final x"); // .rateLimit(MAX_ACCEL.in(MetersPerSecondPerSecond));
+            .log("/Robot/final x")
+            .rateLimit(MAX_ACCEL.in(MetersPerSecondPerSecond));
     InputStream y =
         r.scale(theta.map(Math::sin))
-            .log("/Robot/final y"); // .rateLimit(MAX_ACCEL.in(MetersPerSecondPerSecond));
+            .log("/Robot/final y")
+            .rateLimit(MAX_ACCEL.in(MetersPerSecondPerSecond));
 
     // Apply speed multiplier, deadband, square inputs, and scale rotation to max teleop speed
     InputStream omega =
@@ -237,9 +240,8 @@ public class Robot extends CommandRobot {
         .whileFalse(shooting.runDynamicShooter(x, y, omega));
 
     operator.a().whileTrue(fuelVisualizer.launchProjectiles());
-    operator.b().onTrue(ShotLookUpTable.load());
-    operator.x().onTrue(ShotLookUpTable.generate());
-    operator.y().onTrue(VelocityAnalyzer.tableErrorAnalysis());
+    operator.b().onTrue(ShotLookupTable.load());
+    operator.x().onTrue(ShotLookupTable.generate());
   }
 
   /**

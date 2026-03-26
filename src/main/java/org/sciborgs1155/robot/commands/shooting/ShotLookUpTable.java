@@ -20,10 +20,10 @@ import org.sciborgs1155.lib.LoggingUtils;
  * calculating launch parameters for shooting.
  */
 @SuppressWarnings({"PMD.OneDeclarationPerLine", "PMD.CyclomaticComplexity"})
-public final class ShotLookUpTable {
-  private static InterpolatingDoubleTreeMap speedLookUp = new InterpolatingDoubleTreeMap();
-  private static InterpolatingDoubleTreeMap pitchLookUp = new InterpolatingDoubleTreeMap();
-  private static InterpolatingDoubleTreeMap errorLookUp = new InterpolatingDoubleTreeMap();
+public final class ShotLookupTable {
+  private static InterpolatingDoubleTreeMap speedLookup = new InterpolatingDoubleTreeMap();
+  private static InterpolatingDoubleTreeMap pitchLookup = new InterpolatingDoubleTreeMap();
+  private static InterpolatingDoubleTreeMap errorLookup = new InterpolatingDoubleTreeMap();
 
   private static boolean status;
   private static double entriesGenerated;
@@ -34,11 +34,11 @@ public final class ShotLookUpTable {
           1,
           runnable -> {
             Thread thread = new Thread(runnable);
-            thread.setName("ShotLookUpTable Generator");
+            thread.setName("ShotLookupTable Generator");
             return thread;
           });
 
-  private ShotLookUpTable() {}
+  private ShotLookupTable() {}
 
   /**
    * Generates a new lookup table.
@@ -98,9 +98,9 @@ public final class ShotLookUpTable {
   }
 
   private static void loadTable(String name) {
-    speedLookUp.clear();
-    pitchLookUp.clear();
-    errorLookUp.clear();
+    speedLookup.clear();
+    pitchLookup.clear();
+    errorLookup.clear();
 
     double totalError = 0;
     Path path = Path.of("resources/shooting/%s.ankit".formatted(name));
@@ -116,9 +116,9 @@ public final class ShotLookUpTable {
         double error = Double.parseDouble(entry[ERROR + ENTRY_OFFSET]);
         totalError += error;
 
-        speedLookUp.put(distance, Double.parseDouble(entry[SPEED + ENTRY_OFFSET]));
-        pitchLookUp.put(distance, Double.parseDouble(entry[PITCH + ENTRY_OFFSET]));
-        errorLookUp.put(distance, error);
+        speedLookup.put(distance, Double.parseDouble(entry[SPEED + ENTRY_OFFSET]));
+        pitchLookup.put(distance, Double.parseDouble(entry[PITCH + ENTRY_OFFSET]));
+        errorLookup.put(distance, error);
       }
 
       averageError = entriesLoaded == 0 ? 0 : totalError / entriesLoaded;
@@ -131,12 +131,12 @@ public final class ShotLookUpTable {
 
   /** The speed returned from the lookup table for the given distance. */
   public static double speed(double distance) {
-    return status() ? speedLookUp.get(distance) : MIN_SPEED;
+    return status() ? speedLookup.get(distance) : MIN_SPEED;
   }
 
   /** The pitch returned from the lookup table for the given distance. */
   public static double pitch(double distance) {
-    return status() ? pitchLookUp.get(distance) : MIN_PITCH;
+    return status() ? pitchLookup.get(distance) : MIN_PITCH;
   }
 
   /** Whether or not a lookup table has been loaded. */

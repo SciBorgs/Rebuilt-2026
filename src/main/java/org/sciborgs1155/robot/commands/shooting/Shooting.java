@@ -105,7 +105,7 @@ public class Shooting {
 
     double[] robotRelativeShotVelocity =
         robotRelativeShotVelocity(
-            new double[] {ShotLookUpTable.speed(distance), ShotLookUpTable.pitch(distance), yaw});
+            new double[] {ShotLookupTable.speed(distance), ShotLookupTable.pitch(distance), yaw});
 
     double[] stationaryShotVelocity = fieldRelative(robotRelativeShotVelocity, heading);
     double[] shooterVelocity = shooterVelocity(-vx, -vy, omega, heading);

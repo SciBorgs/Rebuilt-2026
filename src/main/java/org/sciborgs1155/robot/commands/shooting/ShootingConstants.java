@@ -11,12 +11,12 @@ import org.sciborgs1155.robot.FieldConstants.Hub;
 import org.sciborgs1155.robot.hood.HoodConstants;
 
 public class ShootingConstants {
-  /** Exclusively used in LookUp table generation. */
+  /** Exclusively used in lookup table generation. */
   protected static final int DISTANCE = -1;
 
   protected static final int ERROR = 2;
 
-  /** Exclusively used in LookUp table generation. */
+  /** Exclusively used in lookup table generation. */
   protected static final int ENTRY_OFFSET = 1;
 
   protected static final int SPEED = 0;
@@ -89,9 +89,9 @@ public class ShootingConstants {
   protected static final int MAX_LOOKUP_TABLE_SIZE = 50000;
 
   /** The path to the lookup table (within the resources folder). */
-  protected static final String TABLE_PATH = "ParameterLookUp";
+  protected static final String TABLE_PATH = "ParameterLookup";
 
-  /** LookUp Table entries with errors greater than this are removed from the table. */
+  /** Lookup Table entries with errors greater than this are removed from the table. */
   protected static final double MAX_ERROR = SCORE_RADIUS;
 
   // PHYSICAL CONSTANTS

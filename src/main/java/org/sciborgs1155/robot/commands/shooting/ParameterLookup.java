@@ -16,11 +16,10 @@ import java.util.concurrent.ScheduledExecutorService;
 import org.sciborgs1155.lib.LoggingUtils;
 
 /**
- * A utility class used to generate a distance/speed/pitch lookup table which can be referenced when
- * calculating launch parameters for shooting.
+ * A utility class used to generate a distance/speed/pitch/error lookup table which can be referenced when calculating launch parameters for shooting.
  */
 @SuppressWarnings({"PMD.OneDeclarationPerLine", "PMD.CyclomaticComplexity"})
-public final class ShotLookupTable {
+public final class ParameterLookup {
   private static InterpolatingDoubleTreeMap speedLookup = new InterpolatingDoubleTreeMap();
   private static InterpolatingDoubleTreeMap pitchLookup = new InterpolatingDoubleTreeMap();
   private static InterpolatingDoubleTreeMap errorLookup = new InterpolatingDoubleTreeMap();
@@ -38,7 +37,7 @@ public final class ShotLookupTable {
             return thread;
           });
 
-  private ShotLookupTable() {}
+  private ParameterLookup() {}
 
   /**
    * Generates a new lookup table.
@@ -49,7 +48,7 @@ public final class ShotLookupTable {
     return Commands.runOnce(
         () ->
             executor.submit(
-                () -> generateTable(TABLE_PATH, MIN_DISTANCE, MAX_DISTANCE, DISTANCE_RESOLUTION)));
+                () -> generateTable(PARAMETER_TABLE_PATH, MIN_DISTANCE, MAX_DISTANCE, DISTANCE_RESOLUTION)));
   }
 
   private static void generateTable(String name, double min, double max, double resolution) {
@@ -94,7 +93,7 @@ public final class ShotLookupTable {
    * @return a command to load the lookup table
    */
   public static Command load() {
-    return Commands.runOnce(() -> loadTable(TABLE_PATH));
+    return Commands.runOnce(() -> loadTable(PARAMETER_TABLE_PATH));
   }
 
   private static void loadTable(String name) {

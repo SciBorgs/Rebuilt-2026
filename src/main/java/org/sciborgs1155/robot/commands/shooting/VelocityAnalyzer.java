@@ -5,6 +5,11 @@ import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Proj
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.Z;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.OPTIMIZER_RESOLUTION;
 
+import java.io.BufferedWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.util.Units;
@@ -39,4 +44,17 @@ public final class VelocityAnalyzer {
 
     return speed;
   }
+
+  // public static void generateTable(String name) {
+  //   Path path = Path.of("resources/shooting/%s.ankit".formatted(name));
+
+  //   try (BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
+      
+
+  //     writer.write("%.4f,%.10f,%.10f,%.10f".formatted(speed, rpm));
+  //     writer.newLine();
+  //   }
+  // }
+
+
 }

@@ -49,7 +49,7 @@ import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
 import org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer;
 import org.sciborgs1155.robot.commands.shooting.Shooting;
-import org.sciborgs1155.robot.commands.shooting.ShotLookupTable;
+import org.sciborgs1155.robot.commands.shooting.ParameterLookup;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.hood.Hood;
 import org.sciborgs1155.robot.hood.HoodVisualizer;
@@ -174,7 +174,7 @@ public class Robot extends CommandRobot {
 
       fuelVisualizer.startSimulation();
       addPeriodic(fuelVisualizer::updateLogging, PERIOD);
-      addPeriodic(ShotLookupTable::updateLogging, PERIOD);
+      addPeriodic(ParameterLookup::updateLogging, PERIOD);
     }
   }
 
@@ -240,8 +240,8 @@ public class Robot extends CommandRobot {
         .whileFalse(shooting.runDynamicShooter(x, y, omega));
 
     operator.a().whileTrue(fuelVisualizer.launchProjectiles());
-    operator.b().onTrue(ShotLookupTable.load());
-    operator.x().onTrue(ShotLookupTable.generate());
+    operator.b().onTrue(ParameterLookup.load());
+    operator.x().onTrue(ParameterLookup.generate());
   }
 
   /**

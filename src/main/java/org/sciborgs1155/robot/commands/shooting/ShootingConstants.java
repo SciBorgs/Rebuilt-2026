@@ -88,8 +88,11 @@ public class ShootingConstants {
 
   protected static final int MAX_LOOKUP_TABLE_SIZE = 50000;
 
-  /** The path to the lookup table (within the resources folder). */
-  protected static final String TABLE_PATH = "ParameterLookup";
+  /** The path to the parameter lookup table (within the resources folder). */
+  protected static final String PARAMETER_TABLE_PATH = "ParameterLookup";
+
+  /** The path to the velocity lookup table (within the resources folder). */
+  protected static final String VELOCITY_TABLE_PATH = "VelocityLookup";
 
   /** Lookup Table entries with errors greater than this are removed from the table. */
   protected static final double MAX_ERROR = SCORE_RADIUS;

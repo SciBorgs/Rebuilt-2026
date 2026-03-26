@@ -83,6 +83,8 @@ public final class Constants {
         new InterpolatingDoubleTreeMap();
     public static final InterpolatingTreeMap<Double, Rotation2d> DISTANCE_TO_HOOD_ANGLE =
         new InterpolatingTreeMap<>(InverseInterpolator.forDouble(), Rotation2d::interpolate);
+    public static final InterpolatingDoubleTreeMap DISTANCE_TO_HORIZONTAL_VELOCITY =
+        new InterpolatingDoubleTreeMap();
 
     /**
      * Applies a point to the three linear interpolations.
@@ -96,6 +98,7 @@ public final class Constants {
       DISTANCE_TO_HOOD_ANGLE.put(dist, Rotation2d.fromDegrees(degIncline));
       DISTANCE_TO_RADS.put(dist, speed);
       DISTANCE_TO_TOF.put(dist, tof);
+      DISTANCE_TO_HORIZONTAL_VELOCITY.put(dist, dist / tof);
     }
 
     static {

@@ -71,7 +71,7 @@ import org.sciborgs1155.robot.drive.DriveConstants.Rotation;
 import org.sciborgs1155.robot.drive.DriveConstants.Translation;
 import org.sciborgs1155.robot.vision.Vision.PoseEstimate;
 
-@SuppressWarnings("PMD.GodClass")
+@SuppressWarnings({"PMD.GodClass", "PMD.ExcessivePublicCount"})
 public class Drive extends SubsystemBase implements AutoCloseable {
   // Modules
   private final ModuleIO frontLeft;
@@ -352,15 +352,6 @@ public class Drive extends SubsystemBase implements AutoCloseable {
     return odometry.getEstimatedPosition();
   }
 
-  public Command goForward() {
-    return run(
-        () -> modules.forEach(m -> m.updateInputs(new SwerveModuleState(4, Rotation2d.kZero))));
-  }
-
-  public Command allModulesFace(Rotation2d g) {
-    return run(() -> modules.forEach(m -> m.updateInputs(new SwerveModuleState(4, g))));
-  }
-
   /**
    * Returns the field-relative velocity of the robot.
    *
@@ -372,17 +363,25 @@ public class Drive extends SubsystemBase implements AutoCloseable {
     return new Translation2d(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
   }
 
+  /**
+   * @return The rotational acceleration of the robot chassis.
+   */
   @Logged
   public Translation2d acceleration() {
     return new Translation2d(gyro.acceleration());
   }
 
+  /**
+   * @return The rotational velocity of the robot chassis.
+   */
   @Logged
   public double omega() {
     return fieldRelativeChassisSpeeds().omegaRadiansPerSecond;
   }
 
-  /** Returns a Pose3D of the estimated pose of the robot. */
+  /**
+   * @return a Pose3D of the estimated pose of the robot.
+   */
   public Pose3d pose3d() {
     return new Pose3d(odometry.getEstimatedPosition());
   }

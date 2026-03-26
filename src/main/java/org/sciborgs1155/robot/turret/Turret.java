@@ -265,6 +265,13 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
     return goToYaw(() -> yaw);
   }
 
+  /**
+   * Moves the turret to a field-relative yaw.
+   *
+   * @param yaw The field-relative yaw to move the turret to.
+   * @param heading The current heading of the robot.
+   * @return A command to move the robot to a field-relative yaw angle.
+   */
   public Command goToFieldRelativeYaw(Supplier<Rotation2d> yaw, Supplier<Rotation2d> heading) {
     return goToYaw(() -> yaw.get().minus(heading.get())).withName("goToYaw field relative");
   }

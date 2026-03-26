@@ -12,16 +12,17 @@ import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
 
 public class VelocitySubtraction implements ShootingAlgorithm {
-    @Override
-    public Vector<N3> calculate(Translation3d displacement, Vector<N2> velocity) {
-        Translation2d target = displacement.toTranslation2d();
+  @Override
+  public Vector<N3> calculate(Translation3d displacement, Vector<N2> velocity) {
+    Translation2d target = displacement.toTranslation2d();
 
-        Translation2d stationaryVelocity = target.times(DISTANCE_TO_HORIZONTAL_VELOCITY.get(target.getNorm()) / target.getNorm());
-        Translation2d desiredVelocity = stationaryVelocity.plus(new Translation2d(velocity));
+    Translation2d stationaryVelocity =
+        target.times(DISTANCE_TO_HORIZONTAL_VELOCITY.get(target.getNorm()) / target.getNorm());
+    Translation2d desiredVelocity = stationaryVelocity.plus(new Translation2d(velocity));
 
-        double desiredSpeed = desiredVelocity.getNorm();
+    double desiredSpeed = desiredVelocity.getNorm();
 
-        Translation3d result =
+    Translation3d result =
         new Translation3d(
             VELOCITY_TO_RADS.get(desiredSpeed),
             new Rotation3d(
@@ -29,7 +30,6 @@ public class VelocitySubtraction implements ShootingAlgorithm {
                 -VELOCITY_TO_HOOD_ANGLE.get(desiredSpeed).getRadians(),
                 desiredVelocity.getAngle().getRadians()));
 
-        return result.toVector();
-    }
-    
+    return result.toVector();
+  }
 }

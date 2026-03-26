@@ -18,7 +18,7 @@ public class VelocitySubtraction implements ShootingAlgorithm {
 
     Translation2d stationaryVelocity =
         target.times(DISTANCE_TO_HORIZONTAL_VELOCITY.get(target.getNorm()) / target.getNorm());
-    Translation2d desiredVelocity = stationaryVelocity.plus(new Translation2d(velocity));
+    Translation2d desiredVelocity = stationaryVelocity.minus(new Translation2d(velocity));
 
     double desiredSpeed = desiredVelocity.getNorm();
 

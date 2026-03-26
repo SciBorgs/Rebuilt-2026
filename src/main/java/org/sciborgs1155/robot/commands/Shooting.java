@@ -31,7 +31,7 @@ import org.sciborgs1155.lib.Tuning;
 import org.sciborgs1155.robot.FieldConstants;
 import org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer;
 import org.sciborgs1155.robot.commands.shooting.ShootingAlgorithm;
-import org.sciborgs1155.robot.commands.shooting.TOFIteration;
+import org.sciborgs1155.robot.commands.shooting.VelocitySubtraction;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.drive.DriveConstants;
 import org.sciborgs1155.robot.hood.Hood;
@@ -63,7 +63,7 @@ public class Shooting {
   public static final Translation2d LEFT_FEED = FieldConstants.Hub.LEFT_FEED.toTranslation2d();
   public static final Translation2d RIGHT_FEED = FieldConstants.Hub.RIGHT_FEED.toTranslation2d();
 
-  private final ShootingAlgorithm algorithm = new TOFIteration();
+  private final ShootingAlgorithm algorithm = new VelocitySubtraction();
 
   private Translation2d lastTarget = new Translation2d();
 

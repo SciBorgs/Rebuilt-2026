@@ -9,12 +9,6 @@
           "data": {
             "pathName": "Middle"
           }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "shoot"
-          }
         }
       ]
     }

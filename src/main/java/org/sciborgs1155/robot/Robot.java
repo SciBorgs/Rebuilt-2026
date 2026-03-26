@@ -201,8 +201,8 @@ public class Robot extends CommandRobot {
     teleop().onTrue(ShiftTracker.startTracking());
 
     // x and y are switched: we use joystick Y axis to control field x motion
-    InputStream rawX = InputStream.of(driver::getLeftY).log("/Robot/raw x"); // .negate();
-    InputStream rawY = InputStream.of(driver::getLeftX).log("/Robot/raw y"); // .negate();
+    InputStream rawX = InputStream.of(driver::getLeftY).log("/Robot/raw x").negate();
+    InputStream rawY = InputStream.of(driver::getLeftX).log("/Robot/raw y").negate();
 
     InputStream operatorRawX =
         InputStream.of(operator::getLeftY).log("/Robot/operator raw x").negate();
@@ -233,7 +233,7 @@ public class Robot extends CommandRobot {
     // Apply speed multiplier, deadband, square inputs, and scale rotation to max teleop speed
     InputStream omega =
         InputStream.of(driver::getRightX)
-            // .negate()
+            .negate()
             .scale(() -> speedMultiplier)
             .clamp(1.0)
             .deadband(DEADBAND, 1.0)
@@ -304,9 +304,9 @@ public class Robot extends CommandRobot {
 
     operator.x().whileTrue(shooting.shootWithTestData().withName("test data"));
 
-    // operator
-    //     .leftBumper()
-    //     .whileTrue(intake.intake().alongWith(indexer.forward()).alongWith(hopper.intake()));
+    operator
+        .leftBumper()
+        .whileTrue(intake.intake().alongWith(indexer.forward()).alongWith(hopper.intake()));
 
     operator
         .y()

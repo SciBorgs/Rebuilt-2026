@@ -53,7 +53,7 @@ public final class Autos {
         drive::pose,
         drive::resetOdometry,
         drive::robotRelativeChassisSpeeds,
-        (s, g) -> drive.setChassisSpeeds(s, ControlMode.CLOSED_LOOP_VELOCITY),
+        (s, g) -> drive.setChassisSpeeds(s, ControlMode.OPEN_LOOP_VELOCITY),
         new PPHolonomicDriveController(
             new PIDConstants(Translation.P, Translation.I, Translation.D),
             new PIDConstants(Rotation.P, Rotation.I, Rotation.D)),

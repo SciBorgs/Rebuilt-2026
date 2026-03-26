@@ -235,14 +235,12 @@ public class Shooting {
     Translation3d displacement =
         new Translation3d(reflectedTarget.minus(turretPose.getTranslation()));
 
-    Translation2d linearAccel = drive.acceleration();
-
     // Run the shooting algorithm to get field-relative firing vector
     Vector<N3> firingVec =
         algorithm.calculate(
-            displacement.plus(
-                new Translation3d(linearAccel.times(Math.pow(LATENCY_TIME.getAsDouble(), 2) / 2))),
-            turretSpeeds.plus(linearAccel.times(LATENCY_TIME.getAsDouble()).toVector()));
+            displacement,
+            // turretSpeeds);
+            VecBuilder.fill(0,0));
 
     double vx = firingVec.get(0);
     double vy = firingVec.get(1);

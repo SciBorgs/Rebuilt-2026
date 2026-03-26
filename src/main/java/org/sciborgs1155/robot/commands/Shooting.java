@@ -236,11 +236,8 @@ public class Shooting {
         new Translation3d(reflectedTarget.minus(turretPose.getTranslation()));
 
     // Run the shooting algorithm to get field-relative firing vector
-    Vector<N3> firingVec =
-        algorithm.calculate(
-            displacement,
-            // turretSpeeds);
-            VecBuilder.fill(0,0));
+    Vector<N3> firingVec = algorithm.calculate(displacement, turretSpeeds);
+    // VecBuilder.fill(0, 0));
 
     double vx = firingVec.get(0);
     double vy = firingVec.get(1);

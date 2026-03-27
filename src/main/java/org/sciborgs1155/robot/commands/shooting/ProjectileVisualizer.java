@@ -449,6 +449,7 @@ public abstract class ProjectileVisualizer {
     LoggingUtils.log("Projectile Visualizer/Ending pose", ending, Pose3d.struct);
   }
 
+  /** An abstract class representing a physics projectile. */
   protected abstract static class Projectile {
     protected static final double GRAVITY = -9.80665;
     protected static final double AIR_DENSITY = 1.225;

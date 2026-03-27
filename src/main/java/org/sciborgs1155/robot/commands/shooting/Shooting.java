@@ -60,7 +60,16 @@ public class Shooting {
     this.drive = drive;
   }
 
-  /** Controls turret and hood positions to specific setpoints. */
+  /**
+   * Drives the robot while shooting at the HUB. The turret is controlled with position setpoints as
+   * opposed to velocity setpoints in dynamic control.
+   *
+   * @param vx A supplier for the velocity of the robot along the x axis (perpendicular to the
+   *     alliance side).
+   * @param vy A supplier for the velocity of the robot along the y axis (parallel to the alliance
+   *     side).
+   * @param omega A supplier for the angular velocity of the robot.
+   */
   public Command runDiscreteShooter(DoubleSupplier vx, DoubleSupplier vy, DoubleSupplier omega) {
     return Commands.parallel(
             Commands.startEnd(() -> mode = "DISCRETE", () -> mode = "NONE"),
@@ -72,7 +81,16 @@ public class Shooting {
         .withName("Discrete Shooter");
   }
 
-  /** Controls turret and hood velocities to specific setpoints. */
+  /**
+   * Drives the robot while shooting at the HUB. The turret is controlled with velocity setpoints as
+   * opposed to position setpoints in discrete control.
+   *
+   * @param vx A supplier for the velocity of the robot along the x axis (perpendicular to the
+   *     alliance side).
+   * @param vy A supplier for the velocity of the robot along the y axis (parallel to the alliance
+   *     side).
+   * @param omega A supplier for the angular velocity of the robot.
+   */
   public Command runDynamicShooter(DoubleSupplier vx, DoubleSupplier vy, DoubleSupplier omega) {
     return Commands.parallel(
             Commands.startEnd(() -> mode = "DYNAMIC", () -> mode = "NONE"),
@@ -84,7 +102,15 @@ public class Shooting {
         .withName("Dynamic Shooter");
   }
 
-  /** True if the robot is not moving, false if the robot is moving. */
+  /**
+   * True if the robot is moving, false if the robot is not moving.
+   *
+   * @param vx A supplier for the velocity of the robot along the x axis (perpendicular to the
+   *     alliance side).
+   * @param vy A supplier for the velocity of the robot along the y axis (parallel to the alliance
+   *     side).
+   * @param omega A supplier for the angular velocity of the robot.
+   */
   public Trigger discrete(DoubleSupplier vx, DoubleSupplier vy, DoubleSupplier omega) {
     return new Trigger(
         () ->

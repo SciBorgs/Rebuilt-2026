@@ -1,6 +1,22 @@
 package org.sciborgs1155.robot.commands.shooting;
 
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.*;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.DISTANCE_RESOLUTION;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ERROR;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.MAX_DISTANCE;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.MAX_ERROR;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.MAX_LOOKUP_TABLE_SIZE;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.MAX_PITCH;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.MAX_SPEED;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.MIN_DISTANCE;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.MIN_PITCH;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.MIN_SPEED;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PARAMETER_TABLE_PATH;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PITCH;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.SPEED;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.TABLE_DISTANCE;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.TABLE_ERROR;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.TABLE_PITCH;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.TABLE_SPEED;
 
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -16,7 +32,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import org.sciborgs1155.lib.LoggingUtils;
 
 /**
- * A utility class used to generate a distance/speed/pitch/error lookup table which can be referenced when calculating launch parameters for shooting.
+ * A utility class used to generate a distance/speed/pitch/error lookup table which can be
+ * referenced when calculating launch parameters for shooting.
  */
 @SuppressWarnings({"PMD.OneDeclarationPerLine", "PMD.CyclomaticComplexity"})
 public final class ParameterLookup {
@@ -48,7 +65,9 @@ public final class ParameterLookup {
     return Commands.runOnce(
         () ->
             executor.submit(
-                () -> generateTable(PARAMETER_TABLE_PATH, MIN_DISTANCE, MAX_DISTANCE, DISTANCE_RESOLUTION)));
+                () ->
+                    generateTable(
+                        PARAMETER_TABLE_PATH, MIN_DISTANCE, MAX_DISTANCE, DISTANCE_RESOLUTION)));
   }
 
   private static void generateTable(String name, double min, double max, double resolution) {
@@ -63,7 +82,7 @@ public final class ParameterLookup {
       for (double distance = max;
           distance >= min && entriesGenerated <= MAX_LOOKUP_TABLE_SIZE;
           distance -= increment) {
-        double[] entry = ShotOptimizer.optimizedLaunchParameters(distance);
+        double[] entry = ShotOptimizer.optimizeForAirTime(distance);
 
         double speed = entry[SPEED];
         double pitch = entry[PITCH];
@@ -76,7 +95,6 @@ public final class ParameterLookup {
           continue;
 
         totalError += error;
-
         writer.write("%.4f,%.10f,%.10f,%.10f".formatted(distance, speed, pitch, error));
         writer.newLine();
 
@@ -111,12 +129,12 @@ public final class ParameterLookup {
           entriesLoaded++) {
         String[] entry = scanner.nextLine().split(",");
 
-        double distance = Double.parseDouble(entry[DISTANCE + ENTRY_OFFSET]);
-        double error = Double.parseDouble(entry[ERROR + ENTRY_OFFSET]);
+        double distance = Double.parseDouble(entry[TABLE_DISTANCE]);
+        double error = Double.parseDouble(entry[TABLE_ERROR]);
         totalError += error;
 
-        speedLookup.put(distance, Double.parseDouble(entry[SPEED + ENTRY_OFFSET]));
-        pitchLookup.put(distance, Double.parseDouble(entry[PITCH + ENTRY_OFFSET]));
+        speedLookup.put(distance, Double.parseDouble(entry[TABLE_SPEED]));
+        pitchLookup.put(distance, Double.parseDouble(entry[TABLE_PITCH]));
         errorLookup.put(distance, error);
       }
 
@@ -128,17 +146,25 @@ public final class ParameterLookup {
     }
   }
 
-  /** The speed returned from the lookup table for the given distance. */
+  /**
+   * The speed interpolated from the lookup table for the given distance.
+   *
+   * @param distance the planar distance of the shooter from the HUB in meters
+   */
   public static double speed(double distance) {
     return status() ? speedLookup.get(distance) : MIN_SPEED;
   }
 
-  /** The pitch returned from the lookup table for the given distance. */
+  /**
+   * The pitch interpolated from the lookup table for the given distance.
+   *
+   * @param distance the planar distance of the shooter from the HUB in meters
+   */
   public static double pitch(double distance) {
     return status() ? pitchLookup.get(distance) : MIN_PITCH;
   }
 
-  /** Whether or not a lookup table has been loaded. */
+  /** Whether or not a table has been loaded into the interpolators. */
   public static boolean status() {
     return status;
   }
@@ -148,11 +174,11 @@ public final class ParameterLookup {
     return averageError;
   }
 
-  /** Logs lookup table data to NetworkTables. */
+  /** Logs table data to NetworkTables. */
   public static void updateLogging() {
-    LoggingUtils.log("Shooting/LookUp Table Status", status);
-    LoggingUtils.log("Shooting/Average Table Error", averageError);
-    LoggingUtils.log("Shooting/Entries Generated", entriesGenerated);
-    LoggingUtils.log("Shooting/Entries Loaded", entriesLoaded);
+    LoggingUtils.log("Shooting/ParameterLookup/Status", status);
+    LoggingUtils.log("Shooting/ParameterLookup/Average Error", averageError);
+    LoggingUtils.log("Shooting/ParameterLookup/Entries Generated", entriesGenerated);
+    LoggingUtils.log("Shooting/ParameterLookup/Entries Loaded", entriesLoaded);
   }
 }

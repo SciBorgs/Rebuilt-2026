@@ -47,9 +47,10 @@ import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.climb.Climb;
 import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
-import org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer;
-import org.sciborgs1155.robot.commands.shooting.Shooting;
 import org.sciborgs1155.robot.commands.shooting.ParameterLookup;
+import org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer;
+import org.sciborgs1155.robot.commands.shooting.RPMLookup;
+import org.sciborgs1155.robot.commands.shooting.Shooting;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.hood.Hood;
 import org.sciborgs1155.robot.hood.HoodVisualizer;
@@ -77,7 +78,7 @@ public class Robot extends CommandRobot {
 
   // SUBSYSTEMS
   private final Drive drive = Drive.create();
-  private final Vision vision = Vision.create();
+  private final Vision vision = Vision.none();
   private final Intake intake = Intake.create();
   private final Turret turret = Turret.create();
   private final Hood hood = Hood.create();
@@ -122,7 +123,7 @@ public class Robot extends CommandRobot {
     // Configure logging with DataLogManager, Epilogue, and FaultLogger
     DataLogManager.start();
     SignalLogger.enableAutoLogging(true);
-    addPeriodic(FaultLogger::update, 2);
+    if (isReal()) addPeriodic(FaultLogger::update, 2);
     Epilogue.bind(this);
 
     FaultLogger.register(pdh);
@@ -175,6 +176,7 @@ public class Robot extends CommandRobot {
       fuelVisualizer.startSimulation();
       addPeriodic(fuelVisualizer::updateLogging, PERIOD);
       addPeriodic(ParameterLookup::updateLogging, PERIOD);
+      addPeriodic(RPMLookup::updateLogging, PERIOD);
     }
   }
 
@@ -232,16 +234,16 @@ public class Robot extends CommandRobot {
 
     autonomous().whileTrue(Commands.defer(autos::getSelected, Set.of(drive)).asProxy());
     test().whileTrue(systemsCheck());
-    teleop().whileTrue(shooting.runDiscreteShooter(x, y, omega));
 
     shooting
-        .discrete(x, y, omega)
+        .discrete(x, y, omega).and(teleop())
         .whileTrue(shooting.runDiscreteShooter(x, y, omega))
         .whileFalse(shooting.runDynamicShooter(x, y, omega));
 
     operator.a().whileTrue(fuelVisualizer.launchProjectiles());
     operator.b().onTrue(ParameterLookup.load());
     operator.x().onTrue(ParameterLookup.generate());
+    operator.y().onTrue(RPMLookup.generate());
   }
 
   /**

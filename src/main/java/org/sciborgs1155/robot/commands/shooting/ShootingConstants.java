@@ -10,21 +10,19 @@ import edu.wpi.first.math.util.Units;
 import org.sciborgs1155.robot.FieldConstants.Hub;
 import org.sciborgs1155.robot.hood.HoodConstants;
 
-public class ShootingConstants {
-  /** Exclusively used in lookup table generation. */
-  protected static final int DISTANCE = -1;
+class ShootingConstants {
+  // LOOKUP ARRAY HELPERS
+  public static final int TABLE_DISTANCE = 0;
+  public static final int TABLE_SPEED = 1;
+  public static final int TABLE_PITCH = 2;
+  public static final int TABLE_ERROR = 3;
+  public static final int TABLE_TOF = 3;
 
-  protected static final int ERROR = 2;
-
-  /** Exclusively used in lookup table generation. */
-  protected static final int ENTRY_OFFSET = 1;
-
+  // PARAMETER ARRAY HELPERS
   protected static final int SPEED = 0;
   protected static final int PITCH = 1;
   protected static final int YAW = 2;
-
-  protected static final int YAW_VELOCITY = 0;
-  protected static final int PITCH_VELOCITY = 1;
+  protected static final int ERROR = 2;
 
   // VISUALIZER CONSTANTS
 
@@ -92,7 +90,10 @@ public class ShootingConstants {
   protected static final String PARAMETER_TABLE_PATH = "ParameterLookup";
 
   /** The path to the velocity lookup table (within the resources folder). */
-  protected static final String VELOCITY_TABLE_PATH = "VelocityLookup";
+  protected static final String RPM_TABLE_PATH = "RPMLookup";
+
+  /** The path to the standard lookup table (within the resources folder). */
+  protected static final String STANDARD_TABLE_PATH = "StandardTable";
 
   /** Lookup Table entries with errors greater than this are removed from the table. */
   protected static final double MAX_ERROR = SCORE_RADIUS;

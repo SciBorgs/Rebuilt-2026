@@ -49,7 +49,7 @@ import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
 import org.sciborgs1155.robot.commands.shooting.ParameterLookup;
 import org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer;
-import org.sciborgs1155.robot.commands.shooting.RPMLookup;
+import org.sciborgs1155.robot.commands.shooting.RollerSpeedLookup;
 import org.sciborgs1155.robot.commands.shooting.Shooting;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.hood.Hood;
@@ -90,7 +90,7 @@ public class Robot extends CommandRobot {
 
   // COMMANDS
   private final Alignment align = new Alignment(drive);
-  private final Shooting shooting = new Shooting(turret, hood, drive);
+  private final Shooting shooting = new Shooting(shooter, turret, hood, drive);
 
   @NotLogged private final ProjectileVisualizer fuelVisualizer = shooting.createVectorVisualizer();
 
@@ -176,7 +176,7 @@ public class Robot extends CommandRobot {
       fuelVisualizer.startSimulation();
       addPeriodic(fuelVisualizer::updateLogging, PERIOD);
       addPeriodic(ParameterLookup::updateLogging, PERIOD);
-      addPeriodic(RPMLookup::updateLogging, PERIOD);
+      addPeriodic(RollerSpeedLookup::updateLogging, PERIOD);
     }
   }
 
@@ -236,14 +236,14 @@ public class Robot extends CommandRobot {
     test().whileTrue(systemsCheck());
 
     shooting
-        .discrete(x, y, omega).and(teleop())
+        .discrete(x, y, omega)
+        .and(teleop())
         .whileTrue(shooting.runDiscreteShooter(x, y, omega))
         .whileFalse(shooting.runDynamicShooter(x, y, omega));
 
     operator.a().whileTrue(fuelVisualizer.launchProjectiles());
     operator.b().onTrue(ParameterLookup.load());
-    operator.x().onTrue(ParameterLookup.generate());
-    operator.y().onTrue(RPMLookup.generate());
+    operator.x().onTrue(RollerSpeedLookup.generate().andThen(RollerSpeedLookup.load()));
   }
 
   /**

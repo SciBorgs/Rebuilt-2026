@@ -11,12 +11,21 @@ import org.sciborgs1155.robot.FieldConstants.Hub;
 import org.sciborgs1155.robot.hood.HoodConstants;
 
 class ShootingConstants {
-  // LOOKUP ARRAY HELPERS
+  // ROLLER LOOKUP ARRAY HELPERS
+  public static final int DISTANCE_TABLE_DISTANCE = 0;
+  public static final int DISTANCE_TABLE_ROLLER_SPEED = 1;
+  public static final int DISTANCE_TABLE_PITCH = 2;
+  public static final int DISTANCE_TABLE_TOF = 3;
+
+  public static final int ROLLER_TABLE_SPEED = 0;
+  public static final int ROLLER_TABLE_ROLLER_SPEED = 1;
+  public static final int ROLLER_TABLE_ERROR = 2;
+
+  // PARAMETER LOOKUP ARRAY HELPERS
   public static final int TABLE_DISTANCE = 0;
   public static final int TABLE_SPEED = 1;
   public static final int TABLE_PITCH = 2;
   public static final int TABLE_ERROR = 3;
-  public static final int TABLE_TOF = 3;
 
   // PARAMETER ARRAY HELPERS
   protected static final int SPEED = 0;
@@ -52,7 +61,7 @@ class ShootingConstants {
   protected static final double TOF_KD = 0.05;
 
   protected static final int MAX_TOF_ANALYSIS_ITERATIONS = 3000;
-  protected static final double TOF_ANALYSIS_THRESHOLD = 0.01;
+  protected static final double TOF_ANALYSIS_THRESHOLD = 0.001;
 
   // OPTIMIZATION CONSTANTS
 
@@ -64,11 +73,11 @@ class ShootingConstants {
   protected static final int MAX_OPTIMIZER_ITERATIONS = 3000;
   protected static final double OPTIMIZATION_THRESHOLD = 0.01;
 
-  protected static final double MAX_SPEED = 20;
+  protected static final double MAX_SPEED = 100;
   protected static final double MIN_SPEED = EPS;
 
   /** The resolution of the trajectory used in the ShotOptimizer. */
-  protected static final int OPTIMIZER_RESOLUTION = 100;
+  protected static final int OPTIMIZER_RESOLUTION = 1000;
 
   // TABLE CONSTANTS
 
@@ -90,10 +99,10 @@ class ShootingConstants {
   protected static final String PARAMETER_TABLE_PATH = "ParameterLookup";
 
   /** The path to the velocity lookup table (within the resources folder). */
-  protected static final String RPM_TABLE_PATH = "RPMLookup";
+  protected static final String ROLLER_TABLE_PATH = "RPMLookup";
 
   /** The path to the standard lookup table (within the resources folder). */
-  protected static final String STANDARD_TABLE_PATH = "StandardTable";
+  protected static final String DISTANCE_TABLE_PATH = "StandardTable";
 
   /** Lookup Table entries with errors greater than this are removed from the table. */
   protected static final double MAX_ERROR = SCORE_RADIUS;

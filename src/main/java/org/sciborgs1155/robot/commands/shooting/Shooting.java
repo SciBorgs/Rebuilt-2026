@@ -39,11 +39,13 @@ import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.hood.Hood;
 import org.sciborgs1155.robot.hood.HoodConstants;
+import org.sciborgs1155.robot.shooter.Shooter;
 import org.sciborgs1155.robot.turret.Turret;
 import org.sciborgs1155.robot.turret.TurretConstants;
 
 /** A command factory for the shooting algorithm. */
 public class Shooting {
+  private final Shooter shooter;
   private final Turret turret;
   private final Hood hood;
   private final Drive drive;
@@ -54,7 +56,8 @@ public class Shooting {
   };
 
   /** A command factory for the shooting algorithm. */
-  public Shooting(Turret turret, Hood hood, Drive drive) {
+  public Shooting(Shooter shooter, Turret turret, Hood hood, Drive drive) {
+    this.shooter = shooter;
     this.turret = turret;
     this.hood = hood;
     this.drive = drive;
@@ -74,10 +77,12 @@ public class Shooting {
     return Commands.parallel(
             Commands.startEnd(() -> mode = "DISCRETE", () -> mode = "NONE"),
             Commands.run(() -> update(vx.getAsDouble(), vy.getAsDouble(), omega.getAsDouble())),
-            drive.drive(vx, vy, omega),
+            shooter.runShooter(
+                () -> RollerSpeedLookup.rollerSpeed(discreteLaunchParameters[SPEED])),
             turret.goToYaw(() -> Rotation2d.fromRadians(discreteLaunchParameters[YAW])),
             hood.goToShootingAngle(
-                () -> MathUtil.inputModulus(discreteLaunchParameters[PITCH], MIN_PITCH, MAX_PITCH)))
+                () -> MathUtil.inputModulus(discreteLaunchParameters[PITCH], MIN_PITCH, MAX_PITCH)),
+            drive.drive(vx, vy, omega))
         .withName("Discrete Shooter");
   }
 
@@ -95,10 +100,12 @@ public class Shooting {
     return Commands.parallel(
             Commands.startEnd(() -> mode = "DYNAMIC", () -> mode = "NONE"),
             Commands.run(() -> update(vx.getAsDouble(), vy.getAsDouble(), omega.getAsDouble())),
-            drive.drive(vx, vy, omega),
+            shooter.runShooter(
+                () -> RollerSpeedLookup.rollerSpeed(discreteLaunchParameters[SPEED])),
             turret.goToYaw(() -> Rotation2d.fromRadians(discreteLaunchParameters[YAW])),
             hood.goToShootingAngle(
-                () -> MathUtil.inputModulus(discreteLaunchParameters[PITCH], MIN_PITCH, MAX_PITCH)))
+                () -> MathUtil.inputModulus(discreteLaunchParameters[PITCH], MIN_PITCH, MAX_PITCH)),
+            drive.drive(vx, vy, omega))
         .withName("Dynamic Shooter");
   }
 
@@ -172,12 +179,14 @@ public class Shooting {
     LoggingUtils.log("Shooting/Discrete/SPEED", discreteLaunchParameters[SPEED]);
     LoggingUtils.log("Shooting/Discrete/PITCH", discreteLaunchParameters[PITCH]);
     LoggingUtils.log("Shooting/Discrete/YAW", discreteLaunchParameters[YAW]);
+    LoggingUtils.log(
+        "Shooting/Discrete/RADS", RollerSpeedLookup.rollerSpeed(discreteLaunchParameters[SPEED]));
   }
 
   /** Creates a visualizer that utilizes the subsystem positions to predict a trajectory. */
   public ProjectileVisualizer createVisualizer() {
     return fromLaunchParameters(
-            () -> discreteLaunchParameters[SPEED],
+            () -> RollerSpeedLookup.speed(shooter.velocity()),
             () -> Math.PI / 2 - hood.angle(),
             () -> turret.position(),
             drive)

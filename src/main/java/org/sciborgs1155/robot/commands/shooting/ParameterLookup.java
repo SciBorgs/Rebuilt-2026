@@ -42,17 +42,12 @@ public final class ParameterLookup {
   private static InterpolatingDoubleTreeMap errorLookup = new InterpolatingDoubleTreeMap();
 
   private static boolean status;
-  private static double entriesGenerated;
-  private static double entriesLoaded, averageError;
+  private static int entriesGenerated, entriesLoaded;
+  private static double averageError;
 
   private static ScheduledExecutorService executor =
       Executors.newScheduledThreadPool(
-          1,
-          runnable -> {
-            Thread thread = new Thread(runnable);
-            thread.setName("ShotLookupTable Generator");
-            return thread;
-          });
+          1, runnable -> new Thread(runnable, "Parameter Lookup Table Generation"));
 
   private ParameterLookup() {}
 
@@ -72,7 +67,6 @@ public final class ParameterLookup {
 
   private static void generateTable(String name, double min, double max, double resolution) {
     entriesGenerated = 0;
-    double totalError = 0;
     double increment = 1 / resolution;
 
     ShotOptimizer.clearCache();
@@ -86,15 +80,14 @@ public final class ParameterLookup {
 
         double speed = entry[SPEED];
         double pitch = entry[PITCH];
-
-        if (speed > MAX_SPEED || speed < MIN_SPEED || pitch < MIN_PITCH || pitch > MAX_PITCH)
-          continue;
-
         double error = entry[ERROR];
-        if (entriesGenerated > 0 && Math.abs(error - totalError / entriesGenerated) > MAX_ERROR)
-          continue;
 
-        totalError += error;
+        if (speed > MAX_SPEED
+            || speed < MIN_SPEED
+            || pitch < MIN_PITCH
+            || pitch > MAX_PITCH
+            || error > MAX_ERROR) continue;
+
         writer.write("%.4f,%.10f,%.10f,%.10f".formatted(distance, speed, pitch, error));
         writer.newLine();
 
@@ -164,21 +157,30 @@ public final class ParameterLookup {
     return status() ? pitchLookup.get(distance) : MIN_PITCH;
   }
 
+  /**
+   * The error interpolated from the lookup table for the given distance.
+   *
+   * @param distance the planar distance of the shooter from the HUB in meters
+   */
+  public static double error(double distance) {
+    return status() ? errorLookup.get(distance) : 0;
+  }
+
   /** Whether or not a table has been loaded into the interpolators. */
   public static boolean status() {
     return status;
   }
 
-  /** The average planar distance from the target of all lookup table entries. */
-  public static double error() {
+  /** The average planar error of all the lookup table entries. */
+  public static double averageError() {
     return averageError;
   }
 
   /** Logs table data to NetworkTables. */
   public static void updateLogging() {
-    LoggingUtils.log("Shooting/ParameterLookup/Status", status);
-    LoggingUtils.log("Shooting/ParameterLookup/Average Error", averageError);
-    LoggingUtils.log("Shooting/ParameterLookup/Entries Generated", entriesGenerated);
-    LoggingUtils.log("Shooting/ParameterLookup/Entries Loaded", entriesLoaded);
+    LoggingUtils.log("Shooting/Parameter Lookup/Status", status);
+    LoggingUtils.log("Shooting/Parameter Lookup/Average Error", averageError);
+    LoggingUtils.log("Shooting/Parameter Lookup/Entries Generated", entriesGenerated);
+    LoggingUtils.log("Shooting/Parameter Lookup/Entries Loaded", entriesLoaded);
   }
 }

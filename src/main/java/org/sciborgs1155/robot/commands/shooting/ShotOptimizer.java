@@ -9,10 +9,10 @@ import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Proj
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.diff;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.*;
 
+import edu.wpi.first.math.MathUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.DoubleFunction;
-
 import org.sciborgs1155.robot.commands.shooting.FuelVisualizer.Fuel;
 import org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile;
 
@@ -26,8 +26,12 @@ public final class ShotOptimizer {
   /** Cached launch parameters used in simulating trajectory. */
   private static double[] launchParameterCache = new double[3];
 
+  /** Cached launch parameter used in simulating trajectory. */
+  private static double distanceCache;
+
   /** Buffer used to store simulated trajectory. */
   private static double[][] trajectoryBuffer = new double[0][];
+
   private static Projectile projectile =
       new Fuel()
           .withScoringParameters(GOAL, SCORE_RADIUS, SCORE_DEPTH)
@@ -45,13 +49,15 @@ public final class ShotOptimizer {
    */
   public static double optimizeForAccuracy(double distance, double startingSpeed, double pitch) {
     return runPID(
-      startingSpeed,
-      finalTranslation(distance, new double[]{startingSpeed, pitch, 0})[X] - GOAL[X],
-      MAX_OPTIMIZER_ITERATIONS,
-      OPTIMIZATION_THRESHOLD,
-      speed -> finalTranslation(distance, new double[]{speed, pitch, 0})[X] - GOAL[X],
-      SPEED_KP,
-      SPEED_KD);
+        startingSpeed,
+        finalTranslation(distance, new double[] {startingSpeed, pitch, 0})[X] - GOAL[X],
+        MAX_OPTIMIZER_ITERATIONS,
+        OPTIMIZATION_THRESHOLD,
+        speed -> finalTranslation(distance, new double[] {speed, pitch, 0})[X] - GOAL[X],
+        SPEED_KP,
+        SPEED_KD,
+        MIN_SPEED,
+        MAX_SPEED);
   }
 
   /**
@@ -64,13 +70,15 @@ public final class ShotOptimizer {
    */
   public static double estimateSpeed(double distance, double pitch, double timeOfFlight) {
     return runPID(
-      optimizeForAccuracy(distance, MAX_SPEED, pitch),
-      timeOfFlight(distance, new double[]{MAX_SPEED, pitch, 0}),
-      MAX_TOF_ANALYSIS_ITERATIONS,
-      TOF_ANALYSIS_THRESHOLD,
-      speed -> timeOfFlight(distance, new double[]{speed, pitch, 0}),
-      TOF_KP,
-      TOF_KD);
+        optimizeForAccuracy(distance, MAX_SPEED, pitch),
+        timeOfFlight,
+        MAX_TOF_ANALYSIS_ITERATIONS,
+        TOF_ANALYSIS_THRESHOLD,
+        speed -> timeOfFlight(distance, new double[] {speed, pitch, 0}),
+        TOF_KP,
+        TOF_KD,
+        MIN_SPEED,
+        MAX_SPEED);
   }
 
   /**
@@ -92,11 +100,13 @@ public final class ShotOptimizer {
         if (clearsRimHeight(distance, launchParameters)) {
           speedCache = testSpeed;
 
-          return new double[] {testSpeed, testPitch, planarErrorFromHub(distance, launchParameters)};
+          return new double[] {
+            testSpeed, testPitch, planarErrorFromHub(distance, launchParameters)
+          };
         }
       }
 
-    return new double[] {0, 0, 0, 0};
+    return new double[] {0, 0, 0};
   }
 
   /**
@@ -163,12 +173,14 @@ public final class ShotOptimizer {
 
   /**
    * The final translation of the FUEL launched with the given parameters.
-   * 
+   *
    * @param distance the planar distance of the shooter from the HUB in meters
    * @param launchParameters the launch parameters in the format implied by 'ShootingConstants'
    */
   public static double[] finalTranslation(double distance, double[] launchParameters) {
-    return simulateTrajectory(distance, launchParameters)[trajectoryBuffer.length - 1];
+    simulateTrajectory(distance, launchParameters);
+    if (trajectoryBuffer.length > 0) return trajectoryBuffer[trajectoryBuffer.length - 1];
+    else return new double[] {0, 0, 0};
   }
 
   /**
@@ -180,8 +192,10 @@ public final class ShotOptimizer {
   public static double[][] simulateTrajectory(double distance, double[] launchParameters) {
     if (!diff(launchParameters[X], launchParameterCache[X])
         && !diff(launchParameters[Y], launchParameterCache[Y])
-        && !diff(launchParameters[Z], launchParameterCache[Z])) return trajectoryBuffer;
+        && !diff(launchParameters[Z], launchParameterCache[Z])
+        && !diff(distance, distanceCache)) return trajectoryBuffer;
 
+    distanceCache = distance;
     System.arraycopy(launchParameters, 0, launchParameterCache, 0, 3);
 
     projectile.reset();
@@ -222,7 +236,9 @@ public final class ShotOptimizer {
       double threshold,
       DoubleFunction<Double> errorFunction,
       double kp,
-      double kd) {
+      double kd,
+      double minimum,
+      double maximum) {
     double value = initialValue;
     double previousError = initialError;
 
@@ -231,9 +247,9 @@ public final class ShotOptimizer {
       if (Math.abs(error) <= threshold) return value;
 
       double proportional = kp * -error;
-      double derivative = (previousError == initialError) ? 0 : kd * (previousError - error);
+      double derivative = (iteration == 0) ? 0 : kd * (previousError - error);
 
-      value += proportional + derivative;
+      value = MathUtil.clamp(value + proportional + derivative, minimum, maximum);
       previousError = error;
     }
 

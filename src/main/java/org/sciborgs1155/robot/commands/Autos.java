@@ -71,7 +71,7 @@ public final class Autos {
         () -> alliance() != Alliance.Blue,
         drive);
 
-    PPHolonomicDriveController.overrideRotationFeedback(() -> drive.heading().getRadians());
+    // PPHolonomicDriveController.overrideRotationFeedback(() -> drive.heading().getRadians());
     NamedCommands.registerCommand(
         "shoot", shooting.shootDriving(Shooting.HUB_TARGET, () -> 0, () -> 0, () -> 0));
     NamedCommands.registerCommand("intake", intake.intake());

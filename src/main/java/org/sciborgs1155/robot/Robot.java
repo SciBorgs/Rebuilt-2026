@@ -243,7 +243,7 @@ public class Robot extends CommandRobot {
         .whileTrue(
             Commands.defer(
                     autos::getSelected,
-                    Set.of(drive, hood, turret, intake, slapdown, shooter, climb))
+                    Set.of(drive, hood, turret, intake, slapdown, shooter , hopper, climb, indexer))
                 .asProxy());
 
     test().whileTrue(systemsCheck());

@@ -61,7 +61,7 @@ public class TurretConstants {
   public static final Angle CRT_MATCH_TOLERANCE = Degrees.of(2);
   public static final Angle CRT_BIG_TOLERANCE = Degrees.of(180 + 45);
 
-  public static final class ControlConstants {
+  public static final class PositionControlConstants {
     // PID CONSTANTS
     public static final double P = 3;
     public static final double I = 0;
@@ -72,7 +72,19 @@ public class TurretConstants {
     public static final double V = 0.3;
     public static final double A = 0.016369;
 
-    // TOLERANCES
+    // TOLERANCE
     public static final Angle TOLERANCE = Degree.of(3);
+  }
+
+  public static final class VelocityControlConstants {
+    // PID CONSTANTS
+    public static final double P = 0;
+    public static final double I = 0;
+    public static final double D = 0;
+
+    // FEEDFORWARD CONSTANTS (VELOCITY IN RAD/SEC)
+    public static final double S = 0.65;
+    public static final double V = 0.3;
+    public static final double A = 0.016369;
   }
 }

@@ -6,7 +6,7 @@ import static edu.wpi.first.units.Units.Seconds;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.sciborgs1155.lib.UnitTestingUtil.*;
 import static org.sciborgs1155.robot.turret.TurretConstants.*;
-import static org.sciborgs1155.robot.turret.TurretConstants.ControlConstants.*;
+import static org.sciborgs1155.robot.turret.TurretConstants.PositionControlConstants.TOLERANCE;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Angle;

@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /c/Users/jyf20 -name *.jar -path *sysid*)",
+      "Bash(find /c/Users/jyf20/.gradle -name *.jar -path *wpilibj*)",
+      "Bash(jar tf:*)",
+      "Bash(unzip -l \"/c/Users/jyf20/.gradle/caches/modules-2/files-2.1/edu.wpi.first.wpilibj/wpilibj-java/2026.2.1/35b21b82f0370e46cdd439113003f272dd2e4a73/wpilibj-java-2026.2.1.jar\")"
+    ]
+  }
+}

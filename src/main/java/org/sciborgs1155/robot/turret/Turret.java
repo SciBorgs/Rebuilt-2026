@@ -11,13 +11,6 @@ import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.Constants.TUNING;
 import static org.sciborgs1155.robot.turret.TurretConstants.CONSTRAINTS;
 import static org.sciborgs1155.robot.turret.TurretConstants.CRT_MATCH_TOLERANCE;
-import static org.sciborgs1155.robot.turret.TurretConstants.ControlConstants.A;
-import static org.sciborgs1155.robot.turret.TurretConstants.ControlConstants.D;
-import static org.sciborgs1155.robot.turret.TurretConstants.ControlConstants.I;
-import static org.sciborgs1155.robot.turret.TurretConstants.ControlConstants.P;
-import static org.sciborgs1155.robot.turret.TurretConstants.ControlConstants.S;
-import static org.sciborgs1155.robot.turret.TurretConstants.ControlConstants.TOLERANCE;
-import static org.sciborgs1155.robot.turret.TurretConstants.ControlConstants.V;
 import static org.sciborgs1155.robot.turret.TurretConstants.ENCODER_A_GEARING;
 import static org.sciborgs1155.robot.turret.TurretConstants.ENCODER_A_OFFSET;
 import static org.sciborgs1155.robot.turret.TurretConstants.ENCODER_B_GEARING;
@@ -35,6 +28,7 @@ import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -59,6 +53,8 @@ import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.lib.Tuning;
 import org.sciborgs1155.robot.Robot;
+import org.sciborgs1155.robot.turret.TurretConstants.PositionControlConstants;
+import org.sciborgs1155.robot.turret.TurretConstants.VelocityControlConstants;
 
 /**
  * The {@code Turret} subsystem consists of a single motor that is used to aim a variable hood
@@ -71,12 +67,36 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
 
   /** {@code PIDController} used to orient the turret to a specified angle. */
   @Logged
-  private final ProfiledPIDController controller = new ProfiledPIDController(P, I, D, CONSTRAINTS);
+  private final ProfiledPIDController controller =
+      new ProfiledPIDController(
+          PositionControlConstants.P,
+          PositionControlConstants.I,
+          PositionControlConstants.D,
+          CONSTRAINTS);
+
+  /** {@code PIDController} used to drive the turret at a specified velocity. */
+  @Logged
+  private final PIDController velocityController =
+      new PIDController(
+          VelocityControlConstants.P, VelocityControlConstants.I, VelocityControlConstants.D);
 
   /** {@code Feedforward} used to aid in orienting the turret to a specified angle. */
   @Logged
   private final SimpleMotorFeedforward feedforward =
-      new SimpleMotorFeedforward(S, V, A, PERIOD.in(Seconds));
+      new SimpleMotorFeedforward(
+          PositionControlConstants.S,
+          PositionControlConstants.V,
+          PositionControlConstants.A,
+          PERIOD.in(Seconds));
+
+  /** {@code Feedforward} used to aid in driving the turret at a specified velocity. */
+  @Logged
+  private final SimpleMotorFeedforward velocityFeedforward =
+      new SimpleMotorFeedforward(
+          VelocityControlConstants.S,
+          VelocityControlConstants.V,
+          VelocityControlConstants.A,
+          PERIOD.in(Seconds));
 
   /** Visualization. Green = Position, Red = Setpoint. */
   private final TurretVisualizer visualizer = new TurretVisualizer(6, 7);
@@ -84,12 +104,53 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
   /** System identification routine object. */
   private final SysIdRoutine sysIdRoutine;
 
-  @NotLogged private final DoubleEntry tuningP = Tuning.entry("Robot/tuning/turret/K_P", P);
-  @NotLogged private final DoubleEntry tuningI = Tuning.entry("Robot/tuning/turret/K_I", I);
-  @NotLogged private final DoubleEntry tuningD = Tuning.entry("Robot/tuning/turret/K_D", D);
-  @NotLogged private final DoubleEntry tuningS = Tuning.entry("Robot/tuning/turret/S", S);
-  @NotLogged private final DoubleEntry tuningV = Tuning.entry("Robot/tuning/turret/V", V);
-  @NotLogged private final DoubleEntry tuningA = Tuning.entry("Robot/tuning/turret/A", A);
+  @NotLogged
+  private final DoubleEntry tuningP =
+      Tuning.entry("Robot/tuning/turret/K_P", PositionControlConstants.P);
+
+  @NotLogged
+  private final DoubleEntry tuningI =
+      Tuning.entry("Robot/tuning/turret/K_I", PositionControlConstants.I);
+
+  @NotLogged
+  private final DoubleEntry tuningD =
+      Tuning.entry("Robot/tuning/turret/K_D", PositionControlConstants.D);
+
+  @NotLogged
+  private final DoubleEntry tuningS =
+      Tuning.entry("Robot/tuning/turret/S", PositionControlConstants.S);
+
+  @NotLogged
+  private final DoubleEntry tuningV =
+      Tuning.entry("Robot/tuning/turret/V", PositionControlConstants.V);
+
+  @NotLogged
+  private final DoubleEntry tuningA =
+      Tuning.entry("Robot/tuning/turret/A", PositionControlConstants.A);
+
+  @NotLogged
+  private final DoubleEntry tuningVelocityP =
+      Tuning.entry("Robot/tuning/turret/velocity/K_P", VelocityControlConstants.P);
+
+  @NotLogged
+  private final DoubleEntry tuningVelocityI =
+      Tuning.entry("Robot/tuning/turret/velocity/K_I", VelocityControlConstants.I);
+
+  @NotLogged
+  private final DoubleEntry tuningVelocityD =
+      Tuning.entry("Robot/tuning/turret/velocity/K_D", VelocityControlConstants.D);
+
+  @NotLogged
+  private final DoubleEntry tuningVelocityS =
+      Tuning.entry("Robot/tuning/turret/velocity/S", VelocityControlConstants.S);
+
+  @NotLogged
+  private final DoubleEntry tuningVelocityV =
+      Tuning.entry("Robot/tuning/turret/velocity/V", VelocityControlConstants.V);
+
+  @NotLogged
+  private final DoubleEntry tuningVelocityA =
+      Tuning.entry("Robot/tuning/turret/velocity/A", VelocityControlConstants.A);
 
   private double lastGoodPositionRad;
 
@@ -127,7 +188,7 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
   private Turret(TurretIO turretIO) {
     hardware = turretIO;
 
-    controller.setTolerance(TOLERANCE.in(Radians));
+    controller.setTolerance(PositionControlConstants.TOLERANCE.in(Radians));
 
     crt =
         new CustomCRT(
@@ -213,12 +274,6 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
     return controller.atGoal();
   }
 
-  /** Enum used to specify the type of sysId test. */
-  public enum SysIdTestType {
-    QUASISTATIC,
-    DYNAMIC
-  }
-
   /**
    * manual control of the turret with an controller, which will be used for operator control and
    * testing
@@ -241,7 +296,7 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
    *
    * @param double The position setpoint in radians.
    */
-  public void update(double positionSetpoint) {
+  private void update(double positionSetpoint) {
     double pos = position();
     double pidVolts =
         controller.calculate(
@@ -249,6 +304,23 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
     double ffdVolts = feedforward.calculate(controller.getSetpoint().velocity);
 
     double voltage = pidVolts + ffdVolts;
+
+    if (pos >= MAX_ANGLE.in(Radians)) voltage = Math.min(voltage, 0);
+    if (pos <= MIN_ANGLE.in(Radians)) voltage = Math.max(voltage, 0);
+
+    hardware.setVoltage(voltage);
+  }
+
+  /**
+   * Applies voltage to the motor based on setpoint.
+   *
+   * @param double The velocity setpoint in radians.
+   */
+  private void updateVelocity(double velocitySetpoint) {
+    double pos = position();
+    double pidVolts = velocityController.calculate(hardware.velocity(), velocitySetpoint);
+    double ffVolts = velocityFeedforward.calculate(velocitySetpoint);
+    double voltage = pidVolts + ffVolts;
 
     if (pos >= MAX_ANGLE.in(Radians)) voltage = Math.min(voltage, 0);
     if (pos <= MIN_ANGLE.in(Radians)) voltage = Math.max(voltage, 0);
@@ -289,12 +361,30 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * Sets controller setpoint with a supplier and repeatively calls update to orient the turret.
+   * Sets controller setpoint with a supplier and repeatedly calls update to orient the turret.
    *
    * @param DoubleSupplier The position supplier.
    */
   public Command goTo(DoubleSupplier position) {
     return run(() -> update(position.getAsDouble())).withName("goTo (DoubleSupplier)");
+  }
+
+  /**
+   * Drives the turret at the specified angular velocity in radians per second.
+   *
+   * @param DoubleSupplier The velocity supplier.
+   */
+  public Command goToVelocity(DoubleSupplier goalVelocity) {
+    return run(() -> updateVelocity(goalVelocity.getAsDouble())).withName("goToVelocity");
+  }
+
+  /**
+   * Returns the angular velocity of the turret in radians per second.
+   *
+   * @return the current velocity in radians per second.
+   */
+  public double velocity() {
+    return hardware.velocity();
   }
 
   /**
@@ -312,7 +402,9 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
                 () ->
                     String.format(
                         "Turret goal check: current=%.3f rad, goal=%.3f rad, tolerance=%.3f rad",
-                        position(), goal.getAsDouble(), TOLERANCE.in(Radians))));
+                        position(),
+                        goal.getAsDouble(),
+                        PositionControlConstants.TOLERANCE.in(Radians))));
     return new Test(testCommand, assertions);
   }
 
@@ -356,6 +448,7 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
     LoggingUtils.log("Robot/turret/encoder A position", hardware.encoderA());
     LoggingUtils.log("Robot/turret/encoder B position", hardware.encoderB());
     LoggingUtils.log("Robot/turret/crt'd position", position());
+    LoggingUtils.log("Robot/turret/velocity", velocity());
 
     if (hardware instanceof SimTurret sim) {
       LoggingUtils.log("Robot/turret/true angle", sim.trueAngleRad());
@@ -370,6 +463,12 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
       feedforward.setKs(tuningS.get());
       feedforward.setKv(tuningV.get());
       feedforward.setKa(tuningA.get());
+      velocityController.setP(tuningVelocityP.get());
+      velocityController.setI(tuningVelocityI.get());
+      velocityController.setD(tuningVelocityD.get());
+      velocityFeedforward.setKs(tuningVelocityS.get());
+      velocityFeedforward.setKv(tuningVelocityV.get());
+      velocityFeedforward.setKa(tuningVelocityA.get());
     }
 
     // VISUALIZATION

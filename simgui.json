@@ -35,13 +35,18 @@
       "/SmartDashboard/Robot/turret/dynamic counterclockwise": "Command",
       "/SmartDashboard/Robot/turret/quasistatic clockwise": "Command",
       "/SmartDashboard/Robot/turret/quasistatic counterclockwise": "Command",
+      "/SmartDashboard/Robot/turret/velocity dynamic clockwise": "Command",
+      "/SmartDashboard/Robot/turret/velocity dynamic counterclockwise": "Command",
+      "/SmartDashboard/Robot/turret/velocity quasistatic clockwise": "Command",
+      "/SmartDashboard/Robot/turret/velocity quasistatic counterclockwise": "Command",
       "/SmartDashboard/VisionSystemSim-main/Sim Field": "Field2d",
       "Robot/drive/rotationController": "PIDController",
       "Robot/drive/translationController": "ProfiledPIDController",
       "Robot/hood/fb": "PIDController",
       "Robot/shooter/controller": "ProfiledPIDController",
       "Robot/slapdown/pid": "ProfiledPIDController",
-      "Robot/turret/controller": "ProfiledPIDController"
+      "Robot/turret/controller": "ProfiledPIDController",
+      "Robot/turret/velocityController": "PIDController"
     },
     "windows": {
       "/SmartDashboard/Robot/turret/TurretVisualizer": {

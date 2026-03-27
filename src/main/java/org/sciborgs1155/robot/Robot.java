@@ -174,13 +174,6 @@ public class Robot extends CommandRobot {
                 vision.estimatedGlobalPoses(drive.gyroHeading(), disabled().getAsBoolean())),
         PERIOD);
 
-    addPeriodic(
-        () ->
-            SmartDashboard.putNumber(
-                "Hypothetical Turret Shooting Goal",
-                shooting.calculateShot(Shooting.HUB_TARGET).turretAngle()),
-        PERIOD);
-
     RobotController.setBrownoutVoltage(6.0);
 
     if (isReal()) {

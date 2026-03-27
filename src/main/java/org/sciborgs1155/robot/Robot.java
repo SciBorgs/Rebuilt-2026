@@ -32,7 +32,6 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import java.util.Arrays;
-import java.util.Set;
 import org.littletonrobotics.urcl.URCL;
 import org.sciborgs1155.lib.CommandRobot;
 import org.sciborgs1155.lib.FaultLogger;
@@ -239,12 +238,7 @@ public class Robot extends CommandRobot {
       disabled().onTrue(Commands.runOnce(() -> SignalLogger.stop()));
     }
 
-    autonomous()
-        .whileTrue(
-            Commands.defer(
-                    autos::getSelected,
-                    Set.of(drive, hood, turret, intake, slapdown, shooter , hopper, climb, indexer))
-                .asProxy());
+    autonomous().whileTrue(Commands.deferredProxy(autos::getSelected).asProxy());
 
     test().whileTrue(systemsCheck());
 

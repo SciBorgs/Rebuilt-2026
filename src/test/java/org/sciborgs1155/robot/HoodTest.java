@@ -2,7 +2,7 @@ package org.sciborgs1155.robot;
 
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Seconds;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.sciborgs1155.lib.UnitTestingUtil.fastForward;
 import static org.sciborgs1155.lib.UnitTestingUtil.reset;
 import static org.sciborgs1155.lib.UnitTestingUtil.setupTests;
@@ -38,10 +38,11 @@ public class HoodTest {
   /** Tests whether changing the position of the hood tracks correctly. */
   @RepeatedTest(5)
   public void orientation() {
+    fastForward(Seconds.of(3));
     double setpoint = random.nextDouble(MIN_ANGLE.in(Radians), MAX_ANGLE.in(Radians));
     CommandScheduler.getInstance()
         .schedule(hood.goTo(() -> setpoint).withDeadline(Commands.waitSeconds(3)));
     fastForward(Seconds.of(3));
-    assertTrue(hood.atPosition(setpoint));
+    assertEquals(hood.angle(), setpoint, POSITION_TOLERANCE.in(Radians));
   }
 }

@@ -127,6 +127,8 @@ public class Drive extends SubsystemBase implements AutoCloseable {
   // Odometry and pose estimation
   private final SwerveDrivePoseEstimator odometry;
 
+  private ChassisSpeeds desiredSpeeds = new ChassisSpeeds();
+
   // Faster Odometry
   private SwerveModulePosition[] lastPositions;
   private Rotation2d lastHeading;
@@ -624,6 +626,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
    * @param mode The control loop used to achieve those speeds.
    */
   public void setChassisSpeeds(ChassisSpeeds desired, ControlMode mode) {
+    desiredSpeeds = desired;
     ChassisSpeeds speeds = robotRelativeChassisSpeeds();
     Vector<N2> currentVelocity =
         VecBuilder.fill(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
@@ -853,6 +856,11 @@ public class Drive extends SubsystemBase implements AutoCloseable {
 
     // return
     // modules.stream().map(ModuleIO::position).toArray(SwerveModulePosition[]::new);
+  }
+
+  @Logged
+  public ChassisSpeeds desiredSpeeds() {
+    return desiredSpeeds;
   }
 
   /** Returns the robot-relative chassis speeds. */

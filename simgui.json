@@ -74,19 +74,8 @@
         "left": 245,
         "right": 3942,
         "top": 118,
-        "width": 16.54119300842285,
-        "window": {
-          "visible": true
-        }
-      },
-      "/SmartDashboard/Robot/turret/TurretVisualizer": {
-        "window": {
-          "visible": true
-        }
+        "width": 16.54119300842285
       }
     }
-  },
-  "NetworkTables Info": {
-    "visible": true
   }
 }

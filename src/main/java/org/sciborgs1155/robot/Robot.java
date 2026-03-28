@@ -94,7 +94,7 @@ public class Robot extends CommandRobot {
   private final Alignment align = new Alignment(drive);
   private final Shooting shooting = new Shooting(shooter, turret, hood, hopper, indexer, drive);
 
-  @NotLogged private final ProjectileVisualizer fuelVisualizer = shooting.createVectorVisualizer();
+  @NotLogged private final ProjectileVisualizer fuelVisualizer = shooting.createVisualizer();
 
   @NotLogged
   private final SendableChooser<Command> autos =
@@ -257,13 +257,13 @@ public class Robot extends CommandRobot {
     shooting
         .discrete(x, y, omega)
         .and(teleop())
-        .whileTrue(shooting.runDiscreteShooter(x, y, omega))
-        .whileFalse(shooting.runDynamicShooter(x, y, omega));
+        .and(operator.a())
+        .whileTrue(shooting.runDiscreteShooter(x, y, omega));
 
-    operator.a().whileTrue(fuelVisualizer.launchProjectiles());
+    shooting.shouldIndex().and(operator.a()).whileTrue(fuelVisualizer.launchProjectiles());
+
     operator.b().onTrue(ParameterLookup.load());
-    operator.x().onTrue(ParameterLookup.generate());
-    operator.y().onTrue(RollerTable.generate().andThen(RollerTable.load()));
+    operator.x().onTrue(RollerTable.load());
   }
 
   /**

@@ -22,6 +22,7 @@ import java.util.function.DoubleSupplier;
 import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.robot.FieldConstants.Hub;
 import org.sciborgs1155.robot.drive.Drive;
+import org.sciborgs1155.robot.turret.Turret;
 
 @SuppressWarnings({"PMD.OneDeclarationPerLine", "PMD.MethodReturnsInternalArray"})
 public final class FuelVisualizer extends ProjectileVisualizer {
@@ -76,13 +77,14 @@ public final class FuelVisualizer extends ProjectileVisualizer {
   }
 
   protected static FuelVisualizer fromLaunchParameters(
-      DoubleSupplier speed, DoubleSupplier pitch, DoubleSupplier yaw, Drive drive) {
+      DoubleSupplier speed, DoubleSupplier pitch, DoubleSupplier yaw, Drive drive, Turret turret) {
     DoubleSupplier robotX = () -> drive.pose().getX();
     DoubleSupplier robotY = () -> drive.pose().getY();
     DoubleSupplier heading = () -> drive.heading().getRadians();
     DoubleSupplier robotVx = () -> drive.velocity().getX();
     DoubleSupplier robotVy = () -> drive.velocity().getY();
     DoubleSupplier robotOmega = () -> drive.omega();
+    DoubleSupplier yawOmega = () -> turret.velocity();
 
     CachedVector initialTranslation =
         new CachedVector(
@@ -105,7 +107,7 @@ public final class FuelVisualizer extends ProjectileVisualizer {
                     robotVx.getAsDouble(),
                     robotVy.getAsDouble(),
                     robotOmega.getAsDouble(),
-                    0));
+                    yawOmega.getAsDouble()));
 
     CachedVector initialRotation =
         new CachedVector(() -> initialRotation(yaw.getAsDouble(), heading.getAsDouble()));

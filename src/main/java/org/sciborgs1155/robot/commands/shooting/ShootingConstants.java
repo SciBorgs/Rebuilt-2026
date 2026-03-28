@@ -89,11 +89,26 @@ public final class ShootingConstants {
   }
 
   public static final class ScoringConstants {
-    public static final double CLEARANCE = 0.13;
+    /** Maximum allowable turret error for the indexer to run (% of full circle). */
+    public static final double TURRET_ERROR_THRESHOLD = 10;
+
+    /** Maximum allowable hood error for the indexer to run (% of full circle). */
+    public static final double HOOD_ERROR_THRESHOLD = 10;
+
+    /** Maximum allowable turret error for the indexer to run (% relative to setpoint). */
+    public static final double SHOOTER_ERROR_THRESHOLD = 10;
+
+    public static final double CLEARANCE = 0.5;
     public static final double CLEARANCE_CHECK = Hub.INNER_WIDTH / 2;
 
     public static final double SCORE_DEPTH = 0;
     public static final double SCORE_RADIUS = Hub.INNER_WIDTH / 2;
+
+    /** Used in TOF analysis. */
+    public static final double TOF_DEPTH = 0;
+
+    /** Used in TOF analysis. */
+    public static final double TOF_RADIUS = Hub.INNER_WIDTH / 2;
 
     /** The target translation for the FUEL to hit. */
     public static final double[] GOAL = fromTranslation(Hub.TOP_CENTER_POINT);
@@ -135,14 +150,14 @@ public final class ShootingConstants {
     public static final double FUEL_MASS = 0.225;
     public static final double FUEL_RADIUS = 0.075;
 
-    public static final double MAX_SPEED = 100;
+    public static final double MAX_SPEED = 10;
     public static final double MIN_SPEED = EPS;
 
     public static final double MIN_PITCH = toPitch(HoodConstants.MAX_ANGLE.in(Radians));
     public static final double MAX_PITCH = toPitch(HoodConstants.MIN_ANGLE.in(Radians));
 
-    public static final double MIN_DISTANCE = Hub.WIDTH / 2 + 0.8128;
-    public static final double MAX_DISTANCE = 20;
+    public static final double MIN_DISTANCE = 2.5;
+    public static final double MAX_DISTANCE = 5;
 
     /**
      * The radius of the arc formed by the starting translation of the FUEL as the hood angle

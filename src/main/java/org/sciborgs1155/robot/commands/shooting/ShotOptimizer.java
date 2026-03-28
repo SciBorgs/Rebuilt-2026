@@ -33,13 +33,14 @@ import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.Scoring
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ScoringConstants.GOAL;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ScoringConstants.SCORE_DEPTH;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ScoringConstants.SCORE_RADIUS;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ScoringConstants.TOF_DEPTH;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ScoringConstants.TOF_RADIUS;
 
 import edu.wpi.first.math.MathUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.DoubleFunction;
 import org.sciborgs1155.robot.commands.shooting.FuelVisualizer.Fuel;
-import org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile;
 
 /**
  * A utility class used to generate accurate launch parameters for launches from a given distance.
@@ -58,10 +59,11 @@ public final class ShotOptimizer {
   /** Buffer used to store simulated trajectory. */
   private static double[][] trajectoryBuffer = new double[0][];
 
-  private static Projectile projectile =
-      new Fuel()
-          .withScoringParameters(GOAL, SCORE_RADIUS, SCORE_DEPTH)
-          .config(RESOLUTION, true, DRAG_ENABLED, false, LIFT_ENABLED);
+  private static Fuel fuel =
+      (Fuel)
+          new Fuel()
+              .withScoringParameters(GOAL, SCORE_RADIUS, SCORE_DEPTH)
+              .config(RESOLUTION, true, DRAG_ENABLED, false, LIFT_ENABLED);
 
   private ShotOptimizer() {}
 
@@ -74,6 +76,8 @@ public final class ShotOptimizer {
    * @param pitch the launch pitch of the FUEL in radians
    */
   public static double optimizeForAccuracy(double distance, double startingSpeed, double pitch) {
+    fuel.withScoringParameters(GOAL, SCORE_RADIUS, SCORE_DEPTH);
+
     return runPID(
         startingSpeed,
         MAX_OPTIMIZER_ITERATIONS,
@@ -94,11 +98,13 @@ public final class ShotOptimizer {
    *     the plane formed by the rim of the HUB
    */
   public static double estimateSpeed(double distance, double pitch, double timeOfFlight) {
+    fuel.withScoringParameters(GOAL, TOF_RADIUS, TOF_DEPTH);
+
     return runPID(
         optimizeForAccuracy(distance, MAX_SPEED, pitch),
         MAX_TOF_ANALYSIS_ITERATIONS,
         TOF_ANALYSIS_THRESHOLD,
-        speed -> timeOfFlight(distance, new double[] {speed, pitch, 0}),
+        speed -> timeOfFlight(distance, new double[] {speed, pitch, 0}) - timeOfFlight,
         TOF_KP,
         TOF_KD,
         MIN_SPEED,
@@ -222,7 +228,7 @@ public final class ShotOptimizer {
     distanceCache = distance;
     System.arraycopy(launchParameters, 0, launchParameterCache, 0, 3);
 
-    projectile.reset();
+    fuel.reset();
     final List<double[]> poseList = new ArrayList<>();
 
     double[] shotVelocity = robotRelativeShotVelocity(launchParameters);
@@ -230,7 +236,7 @@ public final class ShotOptimizer {
     double[] shooterTranslation = {GOAL[X] - distance, GOAL[Y], ROBOT_TO_SHOOTER[Z]};
     double initialRotationalVelocity = initialRotationalVelocity();
 
-    projectile.initialize(
+    fuel.initialize(
         new double[] {
           shooterTranslation[X] + shooterToInitial[X],
           shooterTranslation[Y] + shooterToInitial[Y],
@@ -242,11 +248,11 @@ public final class ShotOptimizer {
 
     double maxFrames = RESOLUTION * MAX_AIR_TIME;
     for (int frames = 0; frames <= maxFrames; frames++) {
-      poseList.add(new double[] {projectile.x, projectile.y, projectile.z});
-      projectile.step();
+      poseList.add(new double[] {fuel.x, fuel.y, fuel.z});
+      fuel.step();
 
-      if (projectile.willScore()) break;
-      if (projectile.willMiss()) break;
+      if (fuel.willScore()) break;
+      if (fuel.willMiss()) break;
     }
 
     trajectoryBuffer = poseList.toArray(new double[0][]);

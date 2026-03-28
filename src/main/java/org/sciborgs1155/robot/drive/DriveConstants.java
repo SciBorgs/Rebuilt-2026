@@ -54,7 +54,7 @@ public final class DriveConstants {
   public static final LinearAcceleration MAX_TILT_ACCEL =
       MetersPerSecondPerSecond.of(12); // TODO: Tune
   // Percentage of the max angular speed we can do while shooting
-  public static final double SHOOTING_ANGULAR_SPEED = 0;
+  public static final double SHOOTING_ANGULAR_SPEED = 0.25;
   public static final AngularVelocity MAX_ANGULAR_SPEED =
       RadiansPerSecond.of(MAX_SPEED.in(MetersPerSecond) / RADIUS.in(Meters));
   public static final AngularAcceleration MAX_ANGULAR_ACCEL =

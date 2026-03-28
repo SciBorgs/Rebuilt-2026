@@ -36,7 +36,7 @@ public final class Constants {
   public static final double MAX_RATE =
       DriveConstants.MAX_ACCEL.baseUnitMagnitude()
           / DriveConstants.MAX_ANGULAR_SPEED.baseUnitMagnitude();
-  public static final double SLOW_SPEED_MULTIPLIER = 1.0;
+  public static final double SLOW_SPEED_MULTIPLIER = 0.25;
   public static final double FULL_SPEED_MULTIPLIER = 1.0;
 
   // The name of seperate canivore, set to rio if no seperate canivore

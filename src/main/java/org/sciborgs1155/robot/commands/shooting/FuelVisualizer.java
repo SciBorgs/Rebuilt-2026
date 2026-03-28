@@ -1,8 +1,21 @@
 package org.sciborgs1155.robot.commands.shooting;
 
 import static edu.wpi.first.units.Units.Radians;
-import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.*;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.*;
+import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.X;
+import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.Y;
+import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.Z;
+import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.fromTranslation;
+import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.norm;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.LaunchParameters.PITCH;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.LaunchParameters.SPEED;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.LaunchParameters.YAW;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.DRAG_CONSTANT;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.FUEL_RADIUS;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.LIFT_CONSTANT;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.ROBOT_TO_SHOOTER;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.SHOOTER_RADIUS;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.SHOOTER_TO_FLYWHEEL;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.toHoodAngle;
 import static org.sciborgs1155.robot.hood.HoodConstants.MIN_ANGLE;
 
 import java.util.function.DoubleSupplier;
@@ -174,7 +187,7 @@ public final class FuelVisualizer extends ProjectileVisualizer {
   }
 
   protected static double[] shooterToInitial(double pitch, double yaw, double heading) {
-    double angle = Math.PI / 2 - pitch + MIN_ANGLE.in(Radians);
+    double angle = toHoodAngle(pitch) + MIN_ANGLE.in(Radians);
     double horizontal = SHOOTER_TO_FLYWHEEL[X] - SHOOTER_RADIUS * Math.cos(angle);
     double vertical = SHOOTER_TO_FLYWHEEL[Z] + SHOOTER_RADIUS * Math.sin(angle);
 

@@ -1,22 +1,22 @@
 package org.sciborgs1155.robot.commands.shooting;
 
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.DISTANCE_RESOLUTION;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ERROR;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.MAX_DISTANCE;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.MAX_ERROR;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.MAX_LOOKUP_TABLE_SIZE;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.MAX_PITCH;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.MAX_SPEED;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.MIN_DISTANCE;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.MIN_PITCH;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.MIN_SPEED;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PARAMETER_TABLE_PATH;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PITCH;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.SPEED;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.TABLE_DISTANCE;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.TABLE_ERROR;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.TABLE_PITCH;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.TABLE_SPEED;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.LaunchParameters;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterTableConstants.DELIMITER;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterTableConstants.DISTANCE;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterTableConstants.DISTANCE_RESOLUTION;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterTableConstants.ERROR;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterTableConstants.FORMAT;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterTableConstants.MAX_ERROR;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterTableConstants.MAX_LOOKUP_TABLE_SIZE;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterTableConstants.PARAMETER_TABLE_PATH;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterTableConstants.PITCH;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterTableConstants.SPEED;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MAX_DISTANCE;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MAX_PITCH;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MAX_SPEED;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MIN_DISTANCE;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MIN_PITCH;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MIN_SPEED;
 
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -35,15 +35,16 @@ import org.sciborgs1155.lib.LoggingUtils;
  * A utility class used to generate a distance/speed/pitch/error lookup table which can be
  * referenced when calculating launch parameters for shooting.
  */
-@SuppressWarnings({"PMD.OneDeclarationPerLine", "PMD.CyclomaticComplexity"})
 public final class ParameterLookup {
   private static InterpolatingDoubleTreeMap speedLookup = new InterpolatingDoubleTreeMap();
   private static InterpolatingDoubleTreeMap pitchLookup = new InterpolatingDoubleTreeMap();
   private static InterpolatingDoubleTreeMap errorLookup = new InterpolatingDoubleTreeMap();
 
   private static boolean status;
-  private static int entriesGenerated, entriesLoaded;
   private static double averageError;
+
+  private static int entriesGenerated;
+  private static int entriesLoaded;
 
   private static ScheduledExecutorService executor =
       Executors.newScheduledThreadPool(
@@ -73,14 +74,15 @@ public final class ParameterLookup {
     Path path = Path.of("resources/shooting/%s.ankit".formatted(name));
 
     try (BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
+
       for (double distance = max;
           distance >= min && entriesGenerated <= MAX_LOOKUP_TABLE_SIZE;
           distance -= increment) {
         double[] entry = ShotOptimizer.optimizeForAirTime(distance);
 
-        double speed = entry[SPEED];
-        double pitch = entry[PITCH];
-        double error = entry[ERROR];
+        double speed = entry[LaunchParameters.SPEED];
+        double pitch = entry[LaunchParameters.PITCH];
+        double error = entry[LaunchParameters.ERROR];
 
         if (speed > MAX_SPEED
             || speed < MIN_SPEED
@@ -88,9 +90,8 @@ public final class ParameterLookup {
             || pitch > MAX_PITCH
             || error > MAX_ERROR) continue;
 
-        writer.write("%.4f,%.10f,%.10f,%.10f".formatted(distance, speed, pitch, error));
+        writer.write(FORMAT.formatted(distance, speed, pitch, error));
         writer.newLine();
-
         entriesGenerated++;
       }
     } catch (IOException exception) {
@@ -120,14 +121,14 @@ public final class ParameterLookup {
       for (entriesLoaded = 0;
           entriesLoaded < MAX_LOOKUP_TABLE_SIZE && scanner.hasNextLine();
           entriesLoaded++) {
-        String[] entry = scanner.nextLine().split(",");
+        String[] entry = scanner.nextLine().split(DELIMITER);
 
-        double distance = Double.parseDouble(entry[TABLE_DISTANCE]);
-        double error = Double.parseDouble(entry[TABLE_ERROR]);
+        double distance = Double.parseDouble(entry[DISTANCE]);
+        double error = Double.parseDouble(entry[ERROR]);
         totalError += error;
 
-        speedLookup.put(distance, Double.parseDouble(entry[TABLE_SPEED]));
-        pitchLookup.put(distance, Double.parseDouble(entry[TABLE_PITCH]));
+        speedLookup.put(distance, Double.parseDouble(entry[SPEED]));
+        pitchLookup.put(distance, Double.parseDouble(entry[PITCH]));
         errorLookup.put(distance, error);
       }
 

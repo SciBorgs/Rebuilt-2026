@@ -7,7 +7,32 @@ import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Proj
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.Y;
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.Z;
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.diff;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.*;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.LaunchParameters.PITCH;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.LaunchParameters.YAW;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.OptimizerConstants.MAX_AIR_TIME;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.OptimizerConstants.MAX_OPTIMIZER_ITERATIONS;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.OptimizerConstants.MAX_TOF_ANALYSIS_ITERATIONS;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.OptimizerConstants.OPTIMIZATION_THRESHOLD;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.OptimizerConstants.PITCH_RESOLUTION;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.OptimizerConstants.RESOLUTION;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.OptimizerConstants.SPEED_KD;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.OptimizerConstants.SPEED_KP;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.OptimizerConstants.TOF_ANALYSIS_THRESHOLD;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.OptimizerConstants.TOF_KD;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.OptimizerConstants.TOF_KP;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.DRAG_ENABLED;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.FUEL_RADIUS;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.LIFT_ENABLED;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MAX_PITCH;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MAX_SPEED;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MIN_PITCH;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MIN_SPEED;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.ROBOT_TO_SHOOTER;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ScoringConstants.CLEARANCE;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ScoringConstants.CLEARANCE_CHECK;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ScoringConstants.GOAL;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ScoringConstants.SCORE_DEPTH;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ScoringConstants.SCORE_RADIUS;
 
 import edu.wpi.first.math.MathUtil;
 import java.util.ArrayList;
@@ -19,6 +44,7 @@ import org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile;
 /**
  * A utility class used to generate accurate launch parameters for launches from a given distance.
  */
+@SuppressWarnings("PMD.MethodReturnsInternalArray")
 public final class ShotOptimizer {
   /** Cached speed value used for optimization. */
   private static double speedCache;
@@ -35,7 +61,7 @@ public final class ShotOptimizer {
   private static Projectile projectile =
       new Fuel()
           .withScoringParameters(GOAL, SCORE_RADIUS, SCORE_DEPTH)
-          .config(OPTIMIZER_RESOLUTION, true, DRAG_ENABLED, false, LIFT_ENABLED);
+          .config(RESOLUTION, true, DRAG_ENABLED, false, LIFT_ENABLED);
 
   private ShotOptimizer() {}
 
@@ -50,7 +76,6 @@ public final class ShotOptimizer {
   public static double optimizeForAccuracy(double distance, double startingSpeed, double pitch) {
     return runPID(
         startingSpeed,
-        finalTranslation(distance, new double[] {startingSpeed, pitch, 0})[X] - GOAL[X],
         MAX_OPTIMIZER_ITERATIONS,
         OPTIMIZATION_THRESHOLD,
         speed -> finalTranslation(distance, new double[] {speed, pitch, 0})[X] - GOAL[X],
@@ -71,7 +96,6 @@ public final class ShotOptimizer {
   public static double estimateSpeed(double distance, double pitch, double timeOfFlight) {
     return runPID(
         optimizeForAccuracy(distance, MAX_SPEED, pitch),
-        timeOfFlight,
         MAX_TOF_ANALYSIS_ITERATIONS,
         TOF_ANALYSIS_THRESHOLD,
         speed -> timeOfFlight(distance, new double[] {speed, pitch, 0}),
@@ -138,7 +162,7 @@ public final class ShotOptimizer {
    * @param launchParameters the launch parameters in the format implied by 'ShootingConstants'
    */
   public static double timeOfFlight(double distance, double[] launchParameters) {
-    return simulateTrajectory(distance, launchParameters).length * 1.0 / OPTIMIZER_RESOLUTION;
+    return simulateTrajectory(distance, launchParameters).length * 1.0 / RESOLUTION;
   }
 
   /**
@@ -216,7 +240,7 @@ public final class ShotOptimizer {
         new double[3],
         initialRotationalVelocity);
 
-    double maxFrames = OPTIMIZER_RESOLUTION * MAX_AIR_TIME;
+    double maxFrames = RESOLUTION * MAX_AIR_TIME;
     for (int frames = 0; frames <= maxFrames; frames++) {
       poseList.add(new double[] {projectile.x, projectile.y, projectile.z});
       projectile.step();
@@ -231,7 +255,6 @@ public final class ShotOptimizer {
 
   private static double runPID(
       double initialValue,
-      double initialError,
       int maxIterations,
       double threshold,
       DoubleFunction<Double> errorFunction,
@@ -240,7 +263,7 @@ public final class ShotOptimizer {
       double minimum,
       double maximum) {
     double value = initialValue;
-    double previousError = initialError;
+    double previousError = errorFunction.apply(initialValue);
 
     for (int iteration = 0; iteration <= maxIterations; iteration++) {
       double error = errorFunction.apply(value);

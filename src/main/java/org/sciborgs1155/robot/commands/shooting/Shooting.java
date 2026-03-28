@@ -12,22 +12,23 @@ import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.EPS;
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.X;
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.Y;
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.Z;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.DRAG_ENABLED;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.GOAL;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.LAUNCH_ENABLED;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.LIFT_ENABLED;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.MAX_AIR_TIME;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.MAX_DISTANCE;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.MAX_PITCH;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.MIN_PITCH;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PITCH;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.SCORE_DEPTH;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.SCORE_RADIUS;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.SHOOTING_SPEED;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.SPEED;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.TRAJECTORY_ENABLED;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.VISUALIZER_RESOLUTION;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.YAW;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.LaunchParameters.PITCH;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.LaunchParameters.SPEED;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.LaunchParameters.YAW;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.DRAG_ENABLED;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.LIFT_ENABLED;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MAX_DISTANCE;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MAX_PITCH;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MIN_PITCH;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ScoringConstants.GOAL;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ScoringConstants.SCORE_DEPTH;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ScoringConstants.SCORE_RADIUS;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.VisualizerConstants.LAUNCH_ENABLED;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.VisualizerConstants.MAX_AIR_TIME;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.VisualizerConstants.SHOOTING_SPEED;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.VisualizerConstants.TRAJECTORY_ENABLED;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.VisualizerConstants.VISUALIZER_RESOLUTION;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.toPitch;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -77,8 +78,7 @@ public class Shooting {
     return Commands.parallel(
             Commands.startEnd(() -> mode = "DISCRETE", () -> mode = "NONE"),
             Commands.run(() -> update(vx.getAsDouble(), vy.getAsDouble(), omega.getAsDouble())),
-            shooter.runShooter(
-                () -> RollerSpeedLookup.rollerSpeed(discreteLaunchParameters[SPEED])),
+            shooter.runShooter(() -> RollerTable.rollerSpeed(discreteLaunchParameters[SPEED])),
             turret.goToYaw(() -> Rotation2d.fromRadians(discreteLaunchParameters[YAW])),
             hood.goToShootingAngle(
                 () -> MathUtil.inputModulus(discreteLaunchParameters[PITCH], MIN_PITCH, MAX_PITCH)),
@@ -100,8 +100,7 @@ public class Shooting {
     return Commands.parallel(
             Commands.startEnd(() -> mode = "DYNAMIC", () -> mode = "NONE"),
             Commands.run(() -> update(vx.getAsDouble(), vy.getAsDouble(), omega.getAsDouble())),
-            shooter.runShooter(
-                () -> RollerSpeedLookup.rollerSpeed(discreteLaunchParameters[SPEED])),
+            shooter.runShooter(() -> RollerTable.rollerSpeed(discreteLaunchParameters[SPEED])),
             turret.goToYaw(() -> Rotation2d.fromRadians(discreteLaunchParameters[YAW])),
             hood.goToShootingAngle(
                 () -> MathUtil.inputModulus(discreteLaunchParameters[PITCH], MIN_PITCH, MAX_PITCH)),
@@ -180,14 +179,14 @@ public class Shooting {
     LoggingUtils.log("Shooting/Discrete/PITCH", discreteLaunchParameters[PITCH]);
     LoggingUtils.log("Shooting/Discrete/YAW", discreteLaunchParameters[YAW]);
     LoggingUtils.log(
-        "Shooting/Discrete/RADS", RollerSpeedLookup.rollerSpeed(discreteLaunchParameters[SPEED]));
+        "Shooting/Discrete/RADS", RollerTable.rollerSpeed(discreteLaunchParameters[SPEED]));
   }
 
   /** Creates a visualizer that utilizes the subsystem positions to predict a trajectory. */
   public ProjectileVisualizer createVisualizer() {
     return fromLaunchParameters(
-            () -> RollerSpeedLookup.speed(shooter.velocity()),
-            () -> Math.PI / 2 - hood.angle(),
+            () -> RollerTable.speed(shooter.velocity()),
+            () -> toPitch(hood.angle()),
             () -> turret.position(),
             drive)
         .withScoringParameters(GOAL, SCORE_RADIUS, SCORE_DEPTH)

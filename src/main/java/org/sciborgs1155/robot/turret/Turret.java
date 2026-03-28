@@ -1,6 +1,9 @@
 package org.sciborgs1155.robot.turret;
 
 import static edu.wpi.first.units.Units.*;
+import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.Seconds;
+import static edu.wpi.first.units.Units.Volts;
 import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.Constants.TUNING;
 import static org.sciborgs1155.robot.turret.TurretConstants.*;
@@ -30,6 +33,8 @@ import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.lib.Tuning;
 import org.sciborgs1155.robot.Robot;
+import yams.units.EasyCRT;
+import yams.units.EasyCRTConfig;
 
 /**
  * The {@code Turret} subsystem consists of a single motor that is used to aim a variable hood
@@ -60,6 +65,9 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
 
   /** Visualization. Green = Position, Red = Setpoint. */
   private final TurretVisualizer visualizer = new TurretVisualizer(6, 7);
+
+  private final EasyCRTConfig crtConfig;
+  private final EasyCRT crtSolver;
 
   /** System identification routine object. */
   private final SysIdRoutine sysIdRoutine;
@@ -101,6 +109,21 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
 
     controller.setTolerance(TOLERANCE.in(Radians));
     velocityController.setTolerance(TOLERANCE_V.in(DegreesPerSecond));
+
+    crtConfig =
+        new EasyCRTConfig(
+                () -> Rotations.of(hardware.encoderA()), () -> Rotations.of(hardware.encoderB()))
+            .withCommonDriveGear(1, TURRET_GEARING, ENCODER_A_GEARING, ENCODER_B_GEARING)
+            .withMatchTolerance(CRT_MATCH_TOLERANCE)
+            .withMechanismRange(MIN_ANGLE, MAX_ANGLE)
+            .withAbsoluteEncoderOffsets(Rotations.of(-0.442), Rotations.of(-0.847));
+
+    crtSolver = new EasyCRT(crtConfig);
+
+    crtSolver.getAngleOptional().ifPresentOrElse((angle) -> {
+      hardware.setPosition(angle);
+      System.out.println("yes i updated");
+    }, () -> System.out.println("no i DESTROYED THE CODE"));
 
     sysIdRoutine =
         new SysIdRoutine(
@@ -162,7 +185,7 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
    */
   @Logged
   public double position() {
-    return hardware.angle();
+    return hardware.getPosition().in(Radians);
   }
 
   /**
@@ -349,6 +372,9 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
   @Override
   public void periodic() {
     var command = getCurrentCommand();
+    LoggingUtils.log("Robot/turret/Encoder A", hardware.encoderA());
+    LoggingUtils.log("Robot/turret/Encoder B", hardware.encoderB());
+    // crtSolver.getAngleOptional().ifPresentOrElse((angle) -> LoggingUtils.log("Robot/turret/crtAngle", angle.in(Radians)), () -> LoggingUtils.log("Robot/turret/crtAngle", 0));
     LoggingUtils.log("Robot/turret/current command", command != null ? command.getName() : "None");
 
     hardware.periodic();

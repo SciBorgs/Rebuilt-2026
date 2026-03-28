@@ -7,7 +7,9 @@ import static edu.wpi.first.units.Units.Seconds;
 import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.turret.TurretConstants.*;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 
 /** Simulated hardware interface for the {@code Turret} subsystem. */
@@ -24,10 +26,25 @@ public class SimTurret implements TurretIO {
           false, // GRAVITY DISBLAED
           START_ANGLE.in(Radians)); // STARTING ANGLE
 
-  /** Turret angle in radians (mechanism space). */
-  @Override
-  public double angle() {
+  /** True turret angle in radians (mechanism space). */
+  public double trueAngleRad() {
     return simulation.getAngleRads();
+  }
+
+  @Override
+  public double encoderA() {
+    double turretRot = trueAngleRad() / (2.0 * Math.PI);
+    double encoderRot = turretRot * ((double) TURRET_GEARING / ENCODER_A_GEARING);
+
+    return MathUtil.inputModulus(encoderRot, 0.0, 1.0);
+  }
+
+  @Override
+  public double encoderB() {
+    double turretRot = trueAngleRad() / (2.0 * Math.PI);
+    double encoderRot = turretRot * ((double) TURRET_GEARING / ENCODER_B_GEARING);
+
+    return MathUtil.inputModulus(encoderRot, 0.0, 1.0);
   }
 
   @Override
@@ -48,4 +65,14 @@ public class SimTurret implements TurretIO {
 
   @Override
   public void close() throws Exception {}
+
+  @Override
+  public void setPosition(Angle angle) {
+    simulation.setState(angle.in(Radians), 0);
+  }
+
+  @Override
+  public Angle getPosition() {
+    return Radians.of(simulation.getAngleRads());
+  }
 }

@@ -30,7 +30,7 @@ public class ShooterConstants {
   public static final Transform3d CENTER_TO_SHOOTER =
       new Transform3d(Inches.of(5.975), Inches.of(5.975), Inches.of(13.375), new Rotation3d());
 
-  public static final AngularVelocity VELOCITY_TOLERANCE = RadiansPerSecond.of(3);
+  public static final AngularVelocity VELOCITY_TOLERANCE = RadiansPerSecond.of(5);
 
   public static final class ControlConstants {
     public static final double P = 0.01;

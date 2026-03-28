@@ -78,6 +78,10 @@ public final class Constants {
   /** Lookup tables mapping shot distance (meters) to shooter parameters. */
   public static final class ShootingData {
     public static final double SIGGYS_CONSTANT = 0;
+
+    // minimum velocity to use SOTM algorithm rather than stationary. measured in m/s
+    public static final double MINIMUM_VELOCITY = 0.01;
+
     public static final InterpolatingDoubleTreeMap DISTANCE_TO_RADS =
         new InterpolatingDoubleTreeMap();
     public static final InterpolatingDoubleTreeMap DISTANCE_TO_TOF =
@@ -114,13 +118,20 @@ public final class Constants {
     }
 
     static {
-      put(2.5, 25.0, 120.0, 0.95); // 3/26/2026, bxsci
-      put(2.06, 22.0, 112.5, 0.74); // 3/26/2026, bxsci
-      put(3.08, 27.0, 133.0, 1.02); // 3/26/2026, bxsci
-      put(3.95, 29.0, 165.0, 1.15); // 3/26/2026, bxsci
-      put(4.414, 40.0, 146.0, 0.95);
-      put(1.146, 15.0, 120.0, 0.85); // 3/26/2026, bxsci
-      put(5.057, 37.0, 170.0, 1.15); // 3/26/2026, bxsci
+      put(1.37, 15, 135, .89);
+      put(1.873, 18, 148, 1.08);
+      put(2.518, 27, 130, .95);
+      put(3.605, 30, 153, 1.09);
+      put(4.58, 34, 173, 1.09);
+      put(5.67, 38, 195, 1.25);
+
+      // put(2.5, 25.0, 120.0, 0.95); // 3/26/2026, bxsci
+      // put(2.06, 22.0, 112.5, 0.74); // 3/26/2026, bxsci
+      // put(3.08, 27.0, 133.0, 1.02); // 3/26/2026, bxsci
+      // put(3.95, 29.0, 165.0, 1.15); // 3/26/2026, bxsci
+      // put(4.414, 40.0, 146.0, 0.95);
+      // put(1.146, 15.0, 120.0, 0.85); // 3/26/2026, bxsci
+      // put(5.057, 37.0, 170.0, 1.15); // 3/26/2026, bxsci
     }
   }
 

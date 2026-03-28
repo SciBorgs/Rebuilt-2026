@@ -163,6 +163,7 @@ public class Robot extends CommandRobot {
         .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
 
     addPeriodic(this::updateAdvantageScopeModel, PERIOD);
+    addPeriodic(shooting::updateLogging, PERIOD);
 
     RobotController.setBrownoutVoltage(6.0);
 

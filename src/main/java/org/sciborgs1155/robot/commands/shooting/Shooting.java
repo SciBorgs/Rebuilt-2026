@@ -1,6 +1,6 @@
 package org.sciborgs1155.robot.commands.shooting;
 
-import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.fieldRelative;
 import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.fromLaunchParameters;
 import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.launchParameters;
@@ -28,6 +28,7 @@ import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.Visuali
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.VisualizerConstants.SHOOTING_SPEED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.VisualizerConstants.TRAJECTORY_ENABLED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.VisualizerConstants.VISUALIZER_RESOLUTION;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.toHoodAngle;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.toPitch;
 
 import edu.wpi.first.math.MathUtil;
@@ -39,10 +40,9 @@ import java.util.function.DoubleSupplier;
 import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.hood.Hood;
-import org.sciborgs1155.robot.hood.HoodConstants;
 import org.sciborgs1155.robot.shooter.Shooter;
+import org.sciborgs1155.robot.shooter.ShooterConstants;
 import org.sciborgs1155.robot.turret.Turret;
-import org.sciborgs1155.robot.turret.TurretConstants;
 
 /** A command factory for the shooting algorithm. */
 public class Shooting {
@@ -51,10 +51,12 @@ public class Shooting {
   private final Hood hood;
   private final Drive drive;
 
-  private String mode = "NONE";
-  private final double[] discreteLaunchParameters = {
-    0, HoodConstants.DEFAULT_ANGLE.in(Radians), TurretConstants.START_ANGLE.in(Radians)
-  };
+  private enum Algorithm {
+    DISCRETE, DYNAMIC, NONE
+  }
+
+  private Algorithm algorithm = Algorithm.NONE;
+  private final double[] discreteLaunchParameters;
 
   /** A command factory for the shooting algorithm. */
   public Shooting(Shooter shooter, Turret turret, Hood hood, Drive drive) {
@@ -62,6 +64,8 @@ public class Shooting {
     this.turret = turret;
     this.hood = hood;
     this.drive = drive;
+
+    discreteLaunchParameters = new double[]{0, toHoodAngle(MIN_PITCH), 0};
   }
 
   /**
@@ -76,7 +80,7 @@ public class Shooting {
    */
   public Command runDiscreteShooter(DoubleSupplier vx, DoubleSupplier vy, DoubleSupplier omega) {
     return Commands.parallel(
-            Commands.startEnd(() -> mode = "DISCRETE", () -> mode = "NONE"),
+            Commands.startEnd(() -> algorithm = Algorithm.DISCRETE, () -> algorithm = Algorithm.NONE),
             Commands.run(() -> update(vx.getAsDouble(), vy.getAsDouble(), omega.getAsDouble())),
             shooter.runShooter(() -> RollerTable.rollerSpeed(discreteLaunchParameters[SPEED])),
             turret.goToYaw(() -> Rotation2d.fromRadians(discreteLaunchParameters[YAW])),
@@ -98,7 +102,7 @@ public class Shooting {
    */
   public Command runDynamicShooter(DoubleSupplier vx, DoubleSupplier vy, DoubleSupplier omega) {
     return Commands.parallel(
-            Commands.startEnd(() -> mode = "DYNAMIC", () -> mode = "NONE"),
+            Commands.startEnd(() -> algorithm = Algorithm.DYNAMIC, () -> algorithm = Algorithm.NONE),
             Commands.run(() -> update(vx.getAsDouble(), vy.getAsDouble(), omega.getAsDouble())),
             shooter.runShooter(() -> RollerTable.rollerSpeed(discreteLaunchParameters[SPEED])),
             turret.goToYaw(() -> Rotation2d.fromRadians(discreteLaunchParameters[YAW])),
@@ -173,13 +177,7 @@ public class Shooting {
     discreteLaunchParameters[YAW] = newLaunchParameters[YAW];
 
     // LOGGING
-    LoggingUtils.log("Shooting/Mode", mode);
     LoggingUtils.log("Shooting/Possible", distance <= MAX_DISTANCE);
-    LoggingUtils.log("Shooting/Discrete/SPEED", discreteLaunchParameters[SPEED]);
-    LoggingUtils.log("Shooting/Discrete/PITCH", discreteLaunchParameters[PITCH]);
-    LoggingUtils.log("Shooting/Discrete/YAW", discreteLaunchParameters[YAW]);
-    LoggingUtils.log(
-        "Shooting/Discrete/RADS", RollerTable.rollerSpeed(discreteLaunchParameters[SPEED]));
   }
 
   /** Creates a visualizer that utilizes the subsystem positions to predict a trajectory. */
@@ -210,5 +208,37 @@ public class Shooting {
         .configGeneration(
             1 / SHOOTING_SPEED, MAX_AIR_TIME, VISUALIZER_RESOLUTION, VISUALIZER_RESOLUTION)
         .config(LAUNCH_ENABLED, TRAJECTORY_ENABLED);
+  }
+
+  /** Logs shooting data to NetworkTables. */
+  public void updateLogging() {
+    LoggingUtils.log("Shooting/Algorithm", algorithm);
+    LoggingUtils.log("Shooting/Discrete/SPEED", discreteLaunchParameters[SPEED]);
+    LoggingUtils.log("Shooting/Discrete/PITCH", discreteLaunchParameters[PITCH]);
+    LoggingUtils.log("Shooting/Discrete/YAW", discreteLaunchParameters[YAW]);
+
+    double rads = RollerTable.rollerSpeed(discreteLaunchParameters[SPEED]);
+    LoggingUtils.log("Shooting/Discrete/RADS", rads);
+
+    // SHOOTER ERROR
+    double shooterError =
+        Math.abs(shooter.velocity() - rads)
+            * 100
+            / ShooterConstants.MAX_VELOCITY.in(RadiansPerSecond);
+    LoggingUtils.log("Shooting/Mechanism Error/Shooter", shooterError);
+
+    // TURRET ERROR
+    double turretAbsolutePosition = MathUtil.angleModulus(turret.position());
+    double absoluteYaw = MathUtil.angleModulus(discreteLaunchParameters[YAW]);
+
+    double turretError = Math.abs(turretAbsolutePosition - absoluteYaw) * 100 / (Math.PI * 2);
+    LoggingUtils.log("Shooting/Mechanism Error/Turret", turretError);
+
+    // HOOD ERROR
+    double hoodAbsolutePosition = MathUtil.angleModulus(hood.angle());
+    double absoluteHoodAngle = toHoodAngle(MathUtil.angleModulus(discreteLaunchParameters[PITCH]));
+
+    double hoodError = Math.abs(hoodAbsolutePosition - absoluteHoodAngle) * 100 / (Math.PI * 2);
+    LoggingUtils.log("Shooting/Mechanism Error/Hood", hoodError);
   }
 }

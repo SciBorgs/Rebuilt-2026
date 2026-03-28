@@ -80,9 +80,9 @@ public final class FuelVisualizer extends ProjectileVisualizer {
     DoubleSupplier robotX = () -> drive.pose().getX();
     DoubleSupplier robotY = () -> drive.pose().getY();
     DoubleSupplier heading = () -> drive.heading().getRadians();
-    DoubleSupplier robotVx = () -> drive.fieldRelativeChassisSpeeds().vxMetersPerSecond;
-    DoubleSupplier robotVy = () -> drive.fieldRelativeChassisSpeeds().vyMetersPerSecond;
-    DoubleSupplier robotOmega = () -> drive.fieldRelativeChassisSpeeds().omegaRadiansPerSecond;
+    DoubleSupplier robotVx = () -> drive.velocity().getX();
+    DoubleSupplier robotVy = () -> drive.velocity().getY();
+    DoubleSupplier robotOmega = () -> drive.omega();
 
     CachedVector initialTranslation =
         new CachedVector(

@@ -92,7 +92,7 @@ public class Robot extends CommandRobot {
 
   // COMMANDS
   private final Alignment align = new Alignment(drive);
-  private final Shooting shooting = new Shooting(shooter, turret, hood, drive);
+  private final Shooting shooting = new Shooting(shooter, turret, hood, hopper, indexer, drive);
 
   @NotLogged private final ProjectileVisualizer fuelVisualizer = shooting.createVectorVisualizer();
 
@@ -126,6 +126,8 @@ public class Robot extends CommandRobot {
     DataLogManager.start();
     SignalLogger.enableAutoLogging(true);
     if (isReal()) addPeriodic(FaultLogger::update, 2);
+    addPeriodic(shooting::updateLogging, PERIOD);
+    addPeriodic(this::updateAdvantageScopeModel, PERIOD);
     Epilogue.bind(this);
 
     FaultLogger.register(pdh);

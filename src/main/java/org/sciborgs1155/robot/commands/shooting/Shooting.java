@@ -40,6 +40,8 @@ import java.util.function.DoubleSupplier;
 import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.hood.Hood;
+import org.sciborgs1155.robot.hopper.Hopper;
+import org.sciborgs1155.robot.indexer.Indexer;
 import org.sciborgs1155.robot.shooter.Shooter;
 import org.sciborgs1155.robot.shooter.ShooterConstants;
 import org.sciborgs1155.robot.turret.Turret;
@@ -49,6 +51,8 @@ public class Shooting {
   private final Shooter shooter;
   private final Turret turret;
   private final Hood hood;
+  private final Hopper hopper;
+  private final Indexer indexer;
   private final Drive drive;
 
   private enum Algorithm {
@@ -61,10 +65,13 @@ public class Shooting {
   private final double[] discreteLaunchParameters;
 
   /** A command factory for the shooting algorithm. */
-  public Shooting(Shooter shooter, Turret turret, Hood hood, Drive drive) {
+  public Shooting(
+      Shooter shooter, Turret turret, Hood hood, Hopper hopper, Indexer indexer, Drive drive) {
     this.shooter = shooter;
     this.turret = turret;
     this.hood = hood;
+    this.hopper = hopper;
+    this.indexer = indexer;
     this.drive = drive;
 
     discreteLaunchParameters = new double[] {0, toHoodAngle(MIN_PITCH), 0};
@@ -85,6 +92,8 @@ public class Shooting {
             Commands.startEnd(
                 () -> algorithm = Algorithm.DISCRETE, () -> algorithm = Algorithm.NONE),
             Commands.run(() -> update(vx.getAsDouble(), vy.getAsDouble(), omega.getAsDouble())),
+            hopper.intake(),
+            indexer.forward(),
             shooter.runShooter(() -> RollerTable.rollerSpeed(discreteLaunchParameters[SPEED])),
             turret.goToYaw(() -> Rotation2d.fromRadians(discreteLaunchParameters[YAW])),
             hood.goToShootingAngle(
@@ -108,6 +117,8 @@ public class Shooting {
             Commands.startEnd(
                 () -> algorithm = Algorithm.DYNAMIC, () -> algorithm = Algorithm.NONE),
             Commands.run(() -> update(vx.getAsDouble(), vy.getAsDouble(), omega.getAsDouble())),
+            hopper.intake(),
+            indexer.forward(),
             shooter.runShooter(() -> RollerTable.rollerSpeed(discreteLaunchParameters[SPEED])),
             turret.goToYaw(() -> Rotation2d.fromRadians(discreteLaunchParameters[YAW])),
             hood.goToShootingAngle(

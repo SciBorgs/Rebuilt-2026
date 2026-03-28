@@ -3,6 +3,7 @@ package org.sciborgs1155.robot.commands.shooting;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.toPitch;
 
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
+import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import java.io.BufferedWriter;
@@ -84,7 +85,7 @@ public final class RollerTable {
     rollerSpeedLookup.clear();
     speedLookup.clear();
 
-    Path path = Path.of("resources/shooting/%s.ankit".formatted(name));
+    Path path = Path.of(Filesystem.getDeployDirectory() + "/shooting/%s.ankit".formatted(name));
 
     status = false;
     entriesLoaded = 0;

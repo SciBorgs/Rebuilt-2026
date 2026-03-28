@@ -80,7 +80,7 @@ public class Robot extends CommandRobot {
 
   // SUBSYSTEMS
   private final Drive drive = Drive.create();
-  private final Vision vision = Vision.none();
+  private final Vision vision = Vision.create();
   private final Intake intake = Intake.create();
   private final Turret turret = Turret.create();
   private final Hood hood = Hood.create();
@@ -128,6 +128,8 @@ public class Robot extends CommandRobot {
     if (isReal()) addPeriodic(FaultLogger::update, 2);
     addPeriodic(shooting::updateLogging, PERIOD);
     addPeriodic(this::updateAdvantageScopeModel, PERIOD);
+    addPeriodic(ParameterLookup::updateLogging, PERIOD);
+    addPeriodic(RollerTable::updateLogging, PERIOD);
     Epilogue.bind(this);
 
     FaultLogger.register(pdh);
@@ -172,8 +174,6 @@ public class Robot extends CommandRobot {
 
       fuelVisualizer.startSimulation();
       addPeriodic(fuelVisualizer::updateLogging, PERIOD);
-      addPeriodic(ParameterLookup::updateLogging, PERIOD);
-      addPeriodic(RollerTable::updateLogging, PERIOD);
     }
   }
 
@@ -257,7 +257,7 @@ public class Robot extends CommandRobot {
     shooting
         .discrete(x, y, omega)
         .and(teleop())
-        .and(operator.a())
+        .and(driver.rightTrigger())
         .whileTrue(shooting.runDiscreteShooter(x, y, omega));
 
     shooting.shouldIndex().and(operator.a()).whileTrue(fuelVisualizer.launchProjectiles());

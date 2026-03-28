@@ -19,6 +19,7 @@ import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.Physica
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MIN_SPEED;
 
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
+import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import java.io.BufferedWriter;
@@ -71,7 +72,7 @@ public final class ParameterLookup {
     double increment = 1 / resolution;
 
     ShotOptimizer.clearCache();
-    Path path = Path.of("resources/shooting/%s.ankit".formatted(name));
+    Path path = Path.of("./deploy/shooting/%s.ankit".formatted(name));
 
     try (BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
 
@@ -114,7 +115,7 @@ public final class ParameterLookup {
     errorLookup.clear();
 
     double totalError = 0;
-    Path path = Path.of("resources/shooting/%s.ankit".formatted(name));
+    Path path = Path.of(Filesystem.getDeployDirectory() + "/shooting/%s.ankit".formatted(name));
 
     try (Scanner scanner = new Scanner(path, StandardCharsets.UTF_8)) {
 

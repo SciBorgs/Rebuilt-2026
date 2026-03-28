@@ -52,7 +52,9 @@ public class Shooting {
   private final Drive drive;
 
   private enum Algorithm {
-    DISCRETE, DYNAMIC, NONE
+    DISCRETE,
+    DYNAMIC,
+    NONE
   }
 
   private Algorithm algorithm = Algorithm.NONE;
@@ -65,7 +67,7 @@ public class Shooting {
     this.hood = hood;
     this.drive = drive;
 
-    discreteLaunchParameters = new double[]{0, toHoodAngle(MIN_PITCH), 0};
+    discreteLaunchParameters = new double[] {0, toHoodAngle(MIN_PITCH), 0};
   }
 
   /**
@@ -80,7 +82,8 @@ public class Shooting {
    */
   public Command runDiscreteShooter(DoubleSupplier vx, DoubleSupplier vy, DoubleSupplier omega) {
     return Commands.parallel(
-            Commands.startEnd(() -> algorithm = Algorithm.DISCRETE, () -> algorithm = Algorithm.NONE),
+            Commands.startEnd(
+                () -> algorithm = Algorithm.DISCRETE, () -> algorithm = Algorithm.NONE),
             Commands.run(() -> update(vx.getAsDouble(), vy.getAsDouble(), omega.getAsDouble())),
             shooter.runShooter(() -> RollerTable.rollerSpeed(discreteLaunchParameters[SPEED])),
             turret.goToYaw(() -> Rotation2d.fromRadians(discreteLaunchParameters[YAW])),
@@ -102,7 +105,8 @@ public class Shooting {
    */
   public Command runDynamicShooter(DoubleSupplier vx, DoubleSupplier vy, DoubleSupplier omega) {
     return Commands.parallel(
-            Commands.startEnd(() -> algorithm = Algorithm.DYNAMIC, () -> algorithm = Algorithm.NONE),
+            Commands.startEnd(
+                () -> algorithm = Algorithm.DYNAMIC, () -> algorithm = Algorithm.NONE),
             Commands.run(() -> update(vx.getAsDouble(), vy.getAsDouble(), omega.getAsDouble())),
             shooter.runShooter(() -> RollerTable.rollerSpeed(discreteLaunchParameters[SPEED])),
             turret.goToYaw(() -> Rotation2d.fromRadians(discreteLaunchParameters[YAW])),

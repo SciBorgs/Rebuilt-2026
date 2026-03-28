@@ -310,11 +310,11 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * Moves the turret to the closest valid position matching the given yaw supplier, handling the
-   * 90° overlap region by choosing whichever equivalent position requires less travel.
+   * Moves the turret to a field-relative yaw.
    *
-   * @param yaw The target yaw as a Rotation2d.
-   * @param heading The heading of the robot.
+   * @param yaw The field-relative yaw to move the turret to.
+   * @param heading The current heading of the robot.
+   * @return A command to move the robot to a field-relative yaw angle.
    */
   public Command goToFieldRelativeYaw(Supplier<Rotation2d> yaw, Supplier<Rotation2d> heading) {
     return goToYaw(() -> yaw.get().minus(heading.get())).withName("goToYaw field relative");

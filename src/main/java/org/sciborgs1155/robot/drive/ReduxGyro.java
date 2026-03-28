@@ -22,8 +22,8 @@ public class ReduxGyro implements GyroIO {
   private final Queue<Double> position;
   private final Queue<Double> timestamp;
 
-  private double lastAngularVelocity = 0;
-  private double alpha = 0;
+  private double lastAngularVelocity;
+  private double alpha;
 
   /** Creates a new ReduxGyro and configures it with appropriate settings. */
   public ReduxGyro() {
@@ -42,6 +42,9 @@ public class ReduxGyro implements GyroIO {
     position = OdometryThread.getInstance().registerSignal(canandgyro::getYaw);
     timestamp = OdometryThread.getInstance().makeTimestampQueue();
     canandgyro.clearStickyFaults();
+
+    lastAngularVelocity = 0;
+    alpha = 0;
   }
 
   @Override

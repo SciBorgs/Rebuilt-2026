@@ -20,8 +20,8 @@ public class NavXGyro implements GyroIO {
   private final Queue<Double> position;
   private final Queue<Double> timestamp;
 
-  private double lastAngularVelocity = 0;
-  private double alpha = 0;
+  private double lastAngularVelocity;
+  private double alpha;
 
   /** Creates a new NavXGyro and registers it with FaultLogger. */
   public NavXGyro() {
@@ -29,6 +29,9 @@ public class NavXGyro implements GyroIO {
 
     position = OdometryThread.getInstance().registerSignal(ahrs::getYaw);
     timestamp = OdometryThread.getInstance().makeTimestampQueue();
+
+    lastAngularVelocity = 0;
+    alpha = 0;
   }
 
   @Override

@@ -2,6 +2,7 @@ package org.sciborgs1155.robot;
 
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
+import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
@@ -16,12 +17,14 @@ import static org.sciborgs1155.robot.drive.DriveConstants.MAX_ANGULAR_ACCEL;
 import static org.sciborgs1155.robot.drive.DriveConstants.MAX_SPEED;
 import static org.sciborgs1155.robot.drive.DriveConstants.TELEOP_ANGULAR_SPEED;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.CENTER_TO_SHOOTER;
+import static org.sciborgs1155.robot.turret.TurretConstants.START_ANGLE;
 
 import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj.DataLogManager;
@@ -36,7 +39,6 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import java.util.Arrays;
-import java.util.Set;
 import org.littletonrobotics.urcl.URCL;
 import org.sciborgs1155.lib.CommandRobot;
 import org.sciborgs1155.lib.FaultLogger;
@@ -96,7 +98,7 @@ public class Robot extends CommandRobot {
 
   @NotLogged
   private final SendableChooser<Command> autos =
-      Autos.configureAutos(drive, intake, slapdown, shooting, climb, align);
+      Autos.configureAutos(drive, intake, slapdown, climb, align);
 
   @Logged private double speedMultiplier = FULL_SPEED_MULTIPLIER;
 
@@ -157,14 +159,6 @@ public class Robot extends CommandRobot {
                 vision.estimatedGlobalPoses(drive.gyroHeading(), disabled().getAsBoolean())),
         PERIOD);
 
-    driver
-        .x()
-        .onTrue(Commands.runOnce(() -> speedMultiplier = SLOW_SPEED_MULTIPLIER))
-        .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
-
-    addPeriodic(this::updateAdvantageScopeModel, PERIOD);
-    addPeriodic(shooting::updateLogging, PERIOD);
-
     RobotController.setBrownoutVoltage(6.0);
 
     if (isReal()) {
@@ -186,8 +180,13 @@ public class Robot extends CommandRobot {
     teleop().onTrue(ShiftTracker.startTracking());
 
     // x and y are switched: we use joystick Y axis to control field x motion
-    InputStream rawX = InputStream.of(driver::getLeftY).log("/Robot/raw x").negate();
-    InputStream rawY = InputStream.of(driver::getLeftX).log("/Robot/raw y").negate();
+    InputStream rawX = InputStream.of(driver::getLeftY).log("/Robot/raw x"); // .negate();
+    InputStream rawY = InputStream.of(driver::getLeftX).log("/Robot/raw y"); // .negate();
+
+    InputStream operatorRawX =
+        InputStream.of(operator::getLeftY).log("/Robot/operator raw x").negate();
+    InputStream operatorRawY =
+        InputStream.of(operator::getLeftX).log("/Robot/operator raw y").negate();
 
     // Apply speed multiplier, deadband, square inputs, and scale translation to max speed
     InputStream r =
@@ -233,8 +232,25 @@ public class Robot extends CommandRobot {
       disabled().onTrue(Commands.runOnce(() -> SignalLogger.stop()));
     }
 
-    autonomous().whileTrue(Commands.defer(autos::getSelected, Set.of(drive)).asProxy());
+    autonomous().whileTrue(Commands.deferredProxy(autos::getSelected).asProxy());
+
     test().whileTrue(systemsCheck());
+
+    driver.povUp().whileTrue(drive.zeroHeading());
+
+    driver
+        .x()
+        .onTrue(Commands.runOnce(() -> speedMultiplier = SLOW_SPEED_MULTIPLIER))
+        .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
+
+    operator
+        .y()
+        .whileTrue(turret.fromJoysticks(operatorRawX, operatorRawY).withName("joysticks"))
+        .onFalse(
+            turret.goToYaw(Rotation2d.fromRadians(START_ANGLE.in(Radians))).withName("back to 0"));
+
+    operator.leftTrigger().whileTrue(turret.goLeft().withName("left"));
+    operator.rightTrigger().whileTrue(turret.goRight().withName("right"));
 
     shooting
         .discrete(x, y, omega)

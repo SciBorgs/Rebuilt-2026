@@ -22,7 +22,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import org.sciborgs1155.robot.Constants;
 import org.sciborgs1155.robot.climb.Climb;
-import org.sciborgs1155.robot.commands.shooting.Shooting;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.drive.DriveConstants.ControlMode;
 import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Driving;
@@ -44,17 +43,12 @@ public final class Autos {
    */
   @NotLogged
   public static SendableChooser<Command> configureAutos(
-      Drive drive,
-      Intake intake,
-      Slapdown slapdown,
-      Shooting shooting,
-      Climb climb,
-      Alignment alignment) {
+      Drive drive, Intake intake, Slapdown slapdown, Climb climb, Alignment alignment) {
     AutoBuilder.configure(
         drive::pose,
         drive::resetOdometry,
         drive::robotRelativeChassisSpeeds,
-        (s, g) -> drive.setChassisSpeeds(s, ControlMode.CLOSED_LOOP_VELOCITY),
+        (s, g) -> drive.setChassisSpeeds(s, ControlMode.OPEN_LOOP_VELOCITY),
         new PPHolonomicDriveController(
             new PIDConstants(Translation.P, Translation.I, Translation.D),
             new PIDConstants(Rotation.P, Rotation.I, Rotation.D)),
@@ -72,8 +66,6 @@ public final class Autos {
         () -> alliance() != Alliance.Blue,
         drive);
 
-    PPHolonomicDriveController.overrideRotationFeedback(() -> drive.heading().getRadians());
-    NamedCommands.registerCommand("shoot", Commands.none()); // TODO: Update.
     NamedCommands.registerCommand("intake", intake.intake());
     NamedCommands.registerCommand("deploy", slapdown.extend().withTimeout(0.5));
     NamedCommands.registerCommand(

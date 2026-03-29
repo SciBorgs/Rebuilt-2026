@@ -185,11 +185,6 @@ public class Robot extends CommandRobot {
     InputStream rawX = InputStream.of(driver::getLeftY).log("/Robot/raw x"); // .negate();
     InputStream rawY = InputStream.of(driver::getLeftX).log("/Robot/raw y"); // .negate();
 
-    InputStream operatorRawX =
-        InputStream.of(operator::getLeftY).log("/Robot/operator raw x").negate();
-    InputStream operatorRawY =
-        InputStream.of(operator::getLeftX).log("/Robot/operator raw y").negate();
-
     // Apply speed multiplier, deadband, square inputs, and scale translation to max speed
     InputStream r =
         InputStream.hypot(rawX, rawY)
@@ -245,21 +240,12 @@ public class Robot extends CommandRobot {
         .onTrue(Commands.runOnce(() -> speedMultiplier = SLOW_SPEED_MULTIPLIER))
         .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
 
-    operator
-        .y()
-        .whileTrue(turret.fromJoysticks(operatorRawX, operatorRawY).withName("joysticks"))
-        .onFalse(
-            turret.goToYaw(Rotation2d.fromRadians(START_ANGLE.in(Radians))).withName("back to 0"));
-
-    operator.leftTrigger().whileTrue(turret.goLeft().withName("left"));
-    operator.rightTrigger().whileTrue(turret.goRight().withName("right"));
-
     shooting
         .discrete(x, y, omega)
-        .and(teleop())
-        .and(driver.rightTrigger())
-        .whileTrue(shooting.runDiscreteShooter(x, y, omega));
-
+        .and(operator.a())
+        .whileTrue(shooting.runDiscreteShooter(x, y, omega))
+        .whileFalse(shooting.runDynamicShooter(x, y, omega));
+    
     shooting.shouldIndex().and(operator.a()).whileTrue(fuelVisualizer.launchProjectiles());
 
     operator.b().onTrue(ParameterLookup.load());

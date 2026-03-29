@@ -6,7 +6,11 @@ import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Proj
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.fromTranslation;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.CENTER_TO_SHOOTER;
 
+import org.sciborgs1155.robot.Robot;
+
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.Filesystem;
+
 import org.sciborgs1155.robot.FieldConstants.Hub;
 import org.sciborgs1155.robot.hood.HoodConstants;
 
@@ -15,6 +19,8 @@ import org.sciborgs1155.robot.hood.HoodConstants;
 public final class ShootingConstants {
   // PREVENTS INSTANTIATION
   private ShootingConstants() {}
+
+  public static final String TABLE_DIRECTORY = Robot.isReal() ? Filesystem.getDeployDirectory() + "/shooting/" : "resources/shooting/";
 
   public static final class DistanceTableConstants {
     /** Array indices for data stored within the DistanceTable. */

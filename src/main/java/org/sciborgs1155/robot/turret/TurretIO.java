@@ -35,8 +35,10 @@ public interface TurretIO extends AutoCloseable {
    */
   double encoderB();
 
+  /** set the position of the turret (for crt) */
   void setPosition(Angle angle);
 
+  /** get position of the turret unwrapped */
   Angle getPosition();
 
   /** Called once per robot loop. Override to update internal state. */

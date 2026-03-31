@@ -20,7 +20,7 @@ public class TurretConstants {
   public static final double GEAR_RATIO = 686.0 / 15.0; // 686 / 15
   public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.0872);
   public static final AngularVelocity MAX_VELOCITY = RadiansPerSecond.of(25);
-  public static final AngularAcceleration MAX_ACCELERATION = RadiansPerSecondPerSecond.of(25);
+  public static final AngularAcceleration MAX_ACCELERATION = RadiansPerSecondPerSecond.of(10);
 
   public static final Angle MAX_ANGLE = Degrees.of(360 + 45);
   public static final Angle MIN_ANGLE = Degrees.of(0);
@@ -40,18 +40,24 @@ public class TurretConstants {
   public static final int ENCODER_A_GEARING = 12;
   public static final int ENCODER_B_GEARING = 13;
 
-  public static final Angle CRT_MATCH_TOLERANCE = Degrees.of(1);
+  public static final Angle CRT_MATCH_TOLERANCE = Degrees.of(2);
 
   public static final class ControlConstants {
     // PID CONSTANTS
-    public static final double P = 6;
-    public static final double I = 0;
-    public static final double D = 0.01;
+    public static final double P = 5; //6;
+    public static final double I = 0; //0;
+    public static final double D = 0.3; //0.01;
 
     // FEEDFORWARD CONSTANTS (VELOCITY IN RAD/SEC)
-    public static final double S = 0.65;
-    public static final double V = 0.3;
-    public static final double A = 0.016369;
+    //old values
+    //public static final double S = 0.65;
+    //public static final double V = 0.3;
+    //public static final double A = 0.016369;
+    
+    //new values
+    public static final double S = 0.12411;
+    public static final double V = 0.83988;
+    public static final double A = 0.02077;
 
     // TOLERANCES
     public static final Angle TOLERANCE = Degree.of(3);

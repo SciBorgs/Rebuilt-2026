@@ -69,6 +69,7 @@ public class Robot extends CommandRobot {
   private final CommandXboxController operator = new CommandXboxController(OI.OPERATOR);
   private final CommandXboxController driver = new CommandXboxController(OI.DRIVER);
 
+  @NotLogged
   private final PowerDistribution pdh = new PowerDistribution();
 
   // SUBSYSTEMS
@@ -137,7 +138,7 @@ public class Robot extends CommandRobot {
     addPeriodic(FaultLogger::update, 2);
     Epilogue.bind(this);
 
-    FaultLogger.register(pdh);
+    // FaultLogger.register(pdh);
     SmartDashboard.putData("Auto Chooser", autos);
 
     if (TUNING) {

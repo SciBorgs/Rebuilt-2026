@@ -16,6 +16,7 @@ import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.lib.Tuning;
+import org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.hood.Hood;
 import org.sciborgs1155.robot.hopper.Hopper;
@@ -34,6 +35,7 @@ public class Calibrator {
   private final Drive drive;
 
   private boolean shooting;
+  private static double[][] calibrationResults = new double[ENTRIES][4];
 
   private static final DoubleEntry shooterSpeed =
       Tuning.entry("Shooting/Calibrator/TEST RADS", STARTING_ROLLER_SPEED);
@@ -52,7 +54,15 @@ public class Calibrator {
 
   /** Records a calibration result. */
   public Command recordCalibration() {
-    return Commands.none();
+    return Commands.runOnce(
+        () -> {
+          if (index.get() < 0 || index.get() > ENTRIES)
+            throw new UnsupportedOperationException("Invalid calibration index!");
+          calibrationResults[(int) index.get()][DISTANCE] = distance(index.get());
+          calibrationResults[(int) index.get()][ROLLER_SPEED] = shooterSpeed.get();
+          calibrationResults[(int) index.get()][HOOD_ANGLE] = hoodAngle().getAsDouble();
+          calibrationResults[(int) index.get()][TIME_OF_FLIGHT] = 0;
+        });
   }
 
   /** Runs the shooter, hopper and indexer; launches FUEL. */
@@ -89,11 +99,19 @@ public class Calibrator {
     LoggingUtils.log("Shooting/Calibrator/Shooting", shooting);
     LoggingUtils.log(
         "Shooting/Calibrator/Calibration Pose", calibrationPose().get(), Pose2d.struct);
+
+    for (int index = 0; index < calibrationResults.length; index++)
+      LoggingUtils.log(
+          "Shooting/Calibrator/Results/Calibration" + index, calibrationResults[index]);
   }
 
   /** Returns the calibration pose for the specific calibration index. */
   private Supplier<Pose2d> calibrationPose() {
-    return () -> new Pose2d(GOAL[X] - distance(index.get()), GOAL[Y], Rotation2d.kZero);
+    return () ->
+        new Pose2d(
+            GOAL[X] - distance(index.get()) - PhysicalConstants.ROBOT_TO_SHOOTER[X],
+            GOAL[Y] - PhysicalConstants.ROBOT_TO_SHOOTER[Y],
+            Rotation2d.kZero);
   }
 
   /** A supplier for the angle of the hood. */

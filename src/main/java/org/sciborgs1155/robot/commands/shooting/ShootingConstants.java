@@ -32,14 +32,12 @@ public final class ShootingConstants {
     public static final double INCREMENT = (MAX_DISTANCE - MIN_DISTANCE) / ENTRIES;
 
     public static final double STARTING_ROLLER_SPEED = 200;
-  }
 
-  public static final class DistanceTableConstants {
     /** Array indices for data stored within the DistanceTable. */
     public static final int DISTANCE = 0, ROLLER_SPEED = 1, HOOD_ANGLE = 2, TIME_OF_FLIGHT = 3;
 
     /** The path to the standard lookup table (within the resources folder). */
-    public static final String TABLE_PATH = "DistanceTable";
+    public static final String TABLE_PATH = "CalibrationTable";
 
     public static final String DELIMITER = ",";
   }

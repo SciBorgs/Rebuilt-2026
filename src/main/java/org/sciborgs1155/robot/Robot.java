@@ -245,7 +245,7 @@ public class Robot extends CommandRobot {
 
     teleop().whileTrue(calibrator.prepareCalibration());
     operator.a().and(calibrator.readyForCalibration()).whileTrue(calibrator.runShooter());
-    operator.b().onTrue(ParameterTable.generate());
+    operator.b().onTrue(calibrator.recordCalibration());
   }
 
   /**

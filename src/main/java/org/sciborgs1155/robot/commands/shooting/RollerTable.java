@@ -12,7 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Scanner;
 import org.sciborgs1155.lib.LoggingUtils;
-import org.sciborgs1155.robot.commands.shooting.ShootingConstants.DistanceTableConstants;
+import org.sciborgs1155.robot.commands.shooting.ShootingConstants.CalibrationConstants;
 import org.sciborgs1155.robot.commands.shooting.ShootingConstants.RollerTableConstants;
 
 /** A utility class used to analyze shooting velocity data and compile it into a look up table. */
@@ -36,8 +36,7 @@ public final class RollerTable {
   public static Command generate() {
     return Commands.runOnce(
         () ->
-            generateRollerTable(
-                RollerTableConstants.TABLE_PATH, DistanceTableConstants.TABLE_PATH));
+            generateRollerTable(RollerTableConstants.TABLE_PATH, CalibrationConstants.TABLE_PATH));
   }
 
   private static void generateRollerTable(String name, String distanceTableName) {
@@ -50,13 +49,13 @@ public final class RollerTable {
       while (scanner.hasNextLine()) {
         String[] entry = scanner.nextLine().split(",");
 
-        double distance = Double.parseDouble(entry[DistanceTableConstants.DISTANCE]);
-        double rollerSpeed = Double.parseDouble(entry[DistanceTableConstants.ROLLER_SPEED]);
+        double distance = Double.parseDouble(entry[CalibrationConstants.DISTANCE]);
+        double rollerSpeed = Double.parseDouble(entry[CalibrationConstants.ROLLER_SPEED]);
         double hoodAngle =
-            Math.toRadians(Double.parseDouble(entry[DistanceTableConstants.HOOD_ANGLE]));
+            Math.toRadians(Double.parseDouble(entry[CalibrationConstants.HOOD_ANGLE]));
 
         double pitch = toPitch(hoodAngle);
-        double timeOfFlight = Double.parseDouble(entry[DistanceTableConstants.TIME_OF_FLIGHT]);
+        double timeOfFlight = Double.parseDouble(entry[CalibrationConstants.TIME_OF_FLIGHT]);
         double speed = ShotOptimizer.estimateSpeed(distance, pitch, timeOfFlight);
         double actualTimeOfFlight =
             ShotOptimizer.timeOfFlight(distance, new double[] {speed, pitch, 0});

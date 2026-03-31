@@ -67,7 +67,7 @@ public final class ParameterTable {
                         generateTable(
                             PARAMETER_TABLE_PATH, MIN_DISTANCE, MAX_DISTANCE, DISTANCE_RESOLUTION)))
         .andThen(Commands.idle())
-        .until(() ->  generationComplete);
+        .until(() -> generationComplete);
   }
 
   private static void generateTable(String name, double min, double max, double resolution) {

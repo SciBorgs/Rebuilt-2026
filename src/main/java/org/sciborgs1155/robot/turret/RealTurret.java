@@ -7,6 +7,7 @@ import static org.sciborgs1155.robot.Constants.SHOOTING_CANIVORE;
 import static org.sciborgs1155.robot.Ports.Turret.*;
 import static org.sciborgs1155.robot.turret.TurretConstants.*;
 
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -37,10 +38,14 @@ public class RealTurret implements TurretIO {
 
     motor.getConfigurator().apply(configuration);
 
-    // final CANcoderConfiguration encoderConfig = new CANcoderConfiguration();
-    // encoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1;
-    // encoderA.getConfigurator().apply(encoderConfig);
-    // encoderB.getConfigurator().apply(encoderConfig);
+    final CANcoderConfiguration encoderAConfig = new CANcoderConfiguration();
+    encoderAConfig.MagnetSensor.MagnetOffset = -0.461;
+    encoderAConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1;
+    final CANcoderConfiguration encoderBConfig = new CANcoderConfiguration();
+    encoderBConfig.MagnetSensor.MagnetOffset = -0.862;
+    encoderBConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1;
+    encoderA.getConfigurator().apply(encoderAConfig);
+    encoderB.getConfigurator().apply(encoderBConfig);
 
     // TALON UTILS
     TalonUtils.addMotor(motor);

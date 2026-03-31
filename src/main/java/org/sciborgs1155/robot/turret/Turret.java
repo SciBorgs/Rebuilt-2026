@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.*;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
+import static edu.wpi.first.wpilibj2.command.button.RobotModeTriggers.disabled;
 import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.Constants.TUNING;
 import static org.sciborgs1155.robot.turret.TurretConstants.*;
@@ -115,19 +116,10 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
                 () -> Rotations.of(hardware.encoderA()), () -> Rotations.of(hardware.encoderB()))
             .withCommonDriveGear(1, TURRET_GEARING, ENCODER_A_GEARING, ENCODER_B_GEARING)
             .withMatchTolerance(CRT_MATCH_TOLERANCE)
-            .withMechanismRange(MIN_ANGLE, MAX_ANGLE)
-            .withAbsoluteEncoderOffsets(Rotations.of(-0.442), Rotations.of(-0.847));
+            .withMechanismRange(MIN_ANGLE, MAX_ANGLE);
+    // .withAbsoluteEncoderOffsets(Rotations.of(-0.442), Rotations.of(-0.847));
 
     crtSolver = new EasyCRT(crtConfig);
-
-    crtSolver
-        .getAngleOptional()
-        .ifPresentOrElse(
-            (angle) -> {
-              hardware.setPosition(angle);
-              System.out.println("yes i updated");
-            },
-            () -> System.out.println("no i DESTROYED THE CODE"));
 
     sysIdRoutine =
         new SysIdRoutine(
@@ -378,9 +370,13 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
     var command = getCurrentCommand();
     LoggingUtils.log("Robot/turret/Encoder A", hardware.encoderA());
     LoggingUtils.log("Robot/turret/Encoder B", hardware.encoderB());
-    // crtSolver.getAngleOptional().ifPresentOrElse((angle) ->
-    // LoggingUtils.log("Robot/turret/crtAngle", angle.in(Radians)), () ->
-    // LoggingUtils.log("Robot/turret/crtAngle", 0));
+    crtSolver
+        .getAngleOptional()
+        .ifPresent(
+            (angle) -> {
+              LoggingUtils.log("Robot/turret/crtAngle", angle.in(Radians));
+              if (disabled().getAsBoolean()) hardware.setPosition(angle);
+            });
     LoggingUtils.log("Robot/turret/current command", command != null ? command.getName() : "None");
 
     hardware.periodic();

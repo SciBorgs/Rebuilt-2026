@@ -35,12 +35,14 @@ public final class RollerTable {
    */
   public static Command generate() {
     return Commands.runOnce(
-        () -> generateTable(RollerTableConstants.TABLE_PATH, DistanceTableConstants.TABLE_PATH));
+        () ->
+            generateRollerTable(
+                RollerTableConstants.TABLE_PATH, DistanceTableConstants.TABLE_PATH));
   }
 
-  private static void generateTable(String name, String standardTableName) {
+  private static void generateRollerTable(String name, String distanceTableName) {
     Path rollerTablePath = Path.of(TABLE_DIRECTORY + "%s.ankit".formatted(name));
-    Path distanceTablePath = Path.of(TABLE_DIRECTORY + "%s.ankit".formatted(standardTableName));
+    Path distanceTablePath = Path.of(TABLE_DIRECTORY + "%s.ankit".formatted(distanceTableName));
 
     try (BufferedWriter writer = Files.newBufferedWriter(rollerTablePath, StandardCharsets.UTF_8);
         Scanner scanner = new Scanner(distanceTablePath, StandardCharsets.UTF_8); ) {

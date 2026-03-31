@@ -1,6 +1,5 @@
 package org.sciborgs1155.robot.commands.shooting;
 
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.TABLE_DIRECTORY;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterTableConstants.DELIMITER;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterTableConstants.DISTANCE;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterTableConstants.DISTANCE_RESOLUTION;
@@ -17,6 +16,7 @@ import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.Physica
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MIN_DISTANCE;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MIN_PITCH;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MIN_SPEED;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.TABLE_DIRECTORY;
 
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -36,12 +36,13 @@ import org.sciborgs1155.robot.commands.shooting.ShootingConstants.LaunchParamete
  * A utility class used to generate a distance/speed/pitch/error lookup table which can be
  * referenced when calculating launch parameters for shooting.
  */
-public final class ParameterLookup {
+public final class ParameterTable {
   private static InterpolatingDoubleTreeMap speedLookup = new InterpolatingDoubleTreeMap();
   private static InterpolatingDoubleTreeMap pitchLookup = new InterpolatingDoubleTreeMap();
   private static InterpolatingDoubleTreeMap errorLookup = new InterpolatingDoubleTreeMap();
 
   private static boolean status;
+  private static boolean generationComplete;
   private static double averageError;
 
   private static int entriesGenerated;
@@ -51,7 +52,7 @@ public final class ParameterLookup {
       Executors.newScheduledThreadPool(
           1, runnable -> new Thread(runnable, "Parameter Lookup Table Generation"));
 
-  private ParameterLookup() {}
+  private ParameterTable() {}
 
   /**
    * Generates a new lookup table.
@@ -60,11 +61,13 @@ public final class ParameterLookup {
    */
   public static Command generate() {
     return Commands.runOnce(
-        () ->
-            executor.submit(
-                () ->
-                    generateTable(
-                        PARAMETER_TABLE_PATH, MIN_DISTANCE, MAX_DISTANCE, DISTANCE_RESOLUTION)));
+            () ->
+                executor.submit(
+                    () ->
+                        generateTable(
+                            PARAMETER_TABLE_PATH, MIN_DISTANCE, MAX_DISTANCE, DISTANCE_RESOLUTION)))
+        .andThen(Commands.idle())
+        .until(() ->  generationComplete);
   }
 
   private static void generateTable(String name, double min, double max, double resolution) {
@@ -74,6 +77,7 @@ public final class ParameterLookup {
     ShotOptimizer.clearCache();
     Path path = Path.of(TABLE_DIRECTORY + "%s.ankit".formatted(name));
 
+    generationComplete = false;
     try (BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
 
       for (double distance = max;
@@ -98,6 +102,8 @@ public final class ParameterLookup {
     } catch (IOException exception) {
       exception.printStackTrace();
     }
+
+    generationComplete = true;
   }
 
   /**
@@ -183,6 +189,7 @@ public final class ParameterLookup {
     LoggingUtils.log("Shooting/Parameter Lookup/Status", status);
     LoggingUtils.log("Shooting/Parameter Lookup/Average Error", averageError);
     LoggingUtils.log("Shooting/Parameter Lookup/Entries Generated", entriesGenerated);
+    LoggingUtils.log("Shooting/Parameter Lookup/Generation Complete", generationComplete);
     LoggingUtils.log("Shooting/Parameter Lookup/Entries Loaded", entriesLoaded);
   }
 }

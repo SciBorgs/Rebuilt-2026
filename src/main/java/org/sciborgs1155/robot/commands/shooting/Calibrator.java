@@ -1,0 +1,110 @@
+package org.sciborgs1155.robot.commands.shooting;
+
+import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.X;
+import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.Y;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.CalibrationConstants.*;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ScoringConstants.GOAL;
+
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.networktables.DoubleEntry;
+import edu.wpi.first.networktables.IntegerEntry;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
+import org.sciborgs1155.lib.LoggingUtils;
+import org.sciborgs1155.lib.Tuning;
+import org.sciborgs1155.robot.drive.Drive;
+import org.sciborgs1155.robot.hood.Hood;
+import org.sciborgs1155.robot.hopper.Hopper;
+import org.sciborgs1155.robot.indexer.Indexer;
+import org.sciborgs1155.robot.shooter.Shooter;
+import org.sciborgs1155.robot.turret.Turret;
+
+/** A command factory for shooter calibration. */
+@SuppressWarnings("PMD.FieldNamingConventions")
+public class Calibrator {
+  private final Shooter shooter;
+  private final Turret turret;
+  private final Hood hood;
+  private final Hopper hopper;
+  private final Indexer indexer;
+  private final Drive drive;
+
+  private boolean shooting;
+
+  private static final DoubleEntry shooterSpeed =
+      Tuning.entry("Shooting/Calibrator/TEST RADS", STARTING_ROLLER_SPEED);
+  private static final IntegerEntry index = Tuning.entry("Shooting/Calibrator/INDEX", 0);
+
+  /** A command factory for shooter calibration. */
+  public Calibrator(
+      Shooter shooter, Turret turret, Hood hood, Hopper hopper, Indexer indexer, Drive drive) {
+    this.shooter = shooter;
+    this.turret = turret;
+    this.hood = hood;
+    this.hopper = hopper;
+    this.indexer = indexer;
+    this.drive = drive;
+  }
+
+  /** Records a calibration result. */
+  public Command recordCalibration() {
+    return Commands.none();
+  }
+
+  /** Runs the shooter, hopper and indexer; launches FUEL. */
+  public Command runShooter() {
+    return shooter
+        .runShooter(shooterSpeed::get)
+        .until(shooter::atSetpoint)
+        .andThen(
+            hopper
+                .intake()
+                .alongWith(indexer.forward())
+                .alongWith(Commands.startEnd(() -> shooting = true, () -> shooting = false)))
+        .withName("run shooter");
+  }
+
+  /** Prepares the hood, turret, and drive for calibration. */
+  public Command prepareCalibration() {
+    return Commands.parallel(
+            drive.follow(calibrationPose()),
+            hood.goTo(hoodAngle()),
+            turret.goToYaw(Rotation2d.fromRadians(0)))
+        .withName("prepare calibration");
+  }
+
+  /** Whether or not the hood, turret, and drive are at setpoint. */
+  public Trigger readyForCalibration() {
+    return new Trigger(
+        () -> hood.atGoal() && turret.atGoal() && drive.atPose(calibrationPose().get()));
+  }
+
+  /** Logs shooting data to NetworkTables. */
+  public void updateLogging() {
+    LoggingUtils.log("Shooting/Calibrator/Ready", readyForCalibration().getAsBoolean());
+    LoggingUtils.log("Shooting/Calibrator/Shooting", shooting);
+    LoggingUtils.log(
+        "Shooting/Calibrator/Calibration Pose", calibrationPose().get(), Pose2d.struct);
+  }
+
+  /** Returns the calibration pose for the specific calibration index. */
+  private Supplier<Pose2d> calibrationPose() {
+    return () -> new Pose2d(GOAL[X] - distance(index.get()), GOAL[Y], Rotation2d.kZero);
+  }
+
+  /** A supplier for the angle of the hood. */
+  private DoubleSupplier hoodAngle() {
+    return () -> Math.PI / 2 - ParameterTable.pitch(distance(index.get()));
+  }
+
+  /** Returns the distance from the HUB at a specific calibration index; */
+  private static double distance(long index) {
+    if (index < 0 || index > ENTRIES)
+      throw new UnsupportedOperationException("Invalid calibration index!");
+    return MIN_DISTANCE + INCREMENT * index;
+  }
+}

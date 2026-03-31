@@ -2,7 +2,6 @@ package org.sciborgs1155.robot;
 
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
-import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
@@ -17,14 +16,12 @@ import static org.sciborgs1155.robot.drive.DriveConstants.MAX_ANGULAR_ACCEL;
 import static org.sciborgs1155.robot.drive.DriveConstants.MAX_SPEED;
 import static org.sciborgs1155.robot.drive.DriveConstants.TELEOP_ANGULAR_SPEED;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.CENTER_TO_SHOOTER;
-import static org.sciborgs1155.robot.turret.TurretConstants.START_ANGLE;
 
 import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj.DataLogManager;
@@ -49,7 +46,8 @@ import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.climb.Climb;
 import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
-import org.sciborgs1155.robot.commands.shooting.ParameterLookup;
+import org.sciborgs1155.robot.commands.shooting.Calibrator;
+import org.sciborgs1155.robot.commands.shooting.ParameterTable;
 import org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer;
 import org.sciborgs1155.robot.commands.shooting.RollerTable;
 import org.sciborgs1155.robot.commands.shooting.Shooting;
@@ -93,6 +91,8 @@ public class Robot extends CommandRobot {
   // COMMANDS
   private final Alignment align = new Alignment(drive);
   private final Shooting shooting = new Shooting(shooter, turret, hood, hopper, indexer, drive);
+  private final Calibrator calibrator =
+      new Calibrator(shooter, turret, hood, hopper, indexer, drive);
 
   @NotLogged private final ProjectileVisualizer fuelVisualizer = shooting.createVisualizer();
 
@@ -126,10 +126,13 @@ public class Robot extends CommandRobot {
     DataLogManager.start();
     SignalLogger.enableAutoLogging(true);
     if (isReal()) addPeriodic(FaultLogger::update, 2);
+
     addPeriodic(shooting::updateLogging, PERIOD);
     addPeriodic(this::updateAdvantageScopeModel, PERIOD);
-    addPeriodic(ParameterLookup::updateLogging, PERIOD);
+    addPeriodic(ParameterTable::updateLogging, PERIOD);
     addPeriodic(RollerTable::updateLogging, PERIOD);
+    addPeriodic(calibrator::updateLogging, PERIOD);
+
     Epilogue.bind(this);
 
     FaultLogger.register(pdh);
@@ -240,16 +243,9 @@ public class Robot extends CommandRobot {
         .onTrue(Commands.runOnce(() -> speedMultiplier = SLOW_SPEED_MULTIPLIER))
         .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
 
-    shooting
-        .discrete(x, y, omega)
-        .and(operator.a())
-        .whileTrue(shooting.runDiscreteShooter(x, y, omega))
-        .whileFalse(shooting.runDynamicShooter(x, y, omega));
-    
-    shooting.shouldIndex().and(operator.a()).whileTrue(fuelVisualizer.launchProjectiles());
-
-    operator.b().onTrue(ParameterLookup.load());
-    operator.x().onTrue(RollerTable.load());
+    teleop().whileTrue(calibrator.prepareCalibration());
+    operator.a().and(calibrator.readyForCalibration()).whileTrue(calibrator.runShooter());
+    operator.b().onTrue(ParameterTable.generate());
   }
 
   /**

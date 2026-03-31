@@ -1,26 +1,38 @@
 package org.sciborgs1155.robot.commands.shooting;
 
+import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.EPS;
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.AIR_DENSITY;
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.fromTranslation;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.CENTER_TO_SHOOTER;
 
-import org.sciborgs1155.robot.Robot;
-
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Filesystem;
-
 import org.sciborgs1155.robot.FieldConstants.Hub;
+import org.sciborgs1155.robot.Robot;
+import org.sciborgs1155.robot.drive.DriveConstants;
 import org.sciborgs1155.robot.hood.HoodConstants;
 
 /** Constants used in the shooting algorithm. */
 @SuppressWarnings("PMD.OneDeclarationPerLine")
 public final class ShootingConstants {
+  public static final String TABLE_DIRECTORY =
+      Robot.isReal() ? Filesystem.getDeployDirectory() + "/shooting/" : "resources/shooting/";
+
   // PREVENTS INSTANTIATION
   private ShootingConstants() {}
 
-  public static final String TABLE_DIRECTORY = Robot.isReal() ? Filesystem.getDeployDirectory() + "/shooting/" : "resources/shooting/";
+  public static final class CalibrationConstants {
+    public static final double MIN_DISTANCE =
+        Hub.WIDTH / 2 + DriveConstants.CHASSIS_WIDTH.in(Meters) / 2 + 0.1; // BUFFER
+    public static final double MAX_DISTANCE = 5;
+
+    public static final int ENTRIES = 10;
+    public static final double INCREMENT = (MAX_DISTANCE - MIN_DISTANCE) / ENTRIES;
+
+    public static final double STARTING_ROLLER_SPEED = 200;
+  }
 
   public static final class DistanceTableConstants {
     /** Array indices for data stored within the DistanceTable. */

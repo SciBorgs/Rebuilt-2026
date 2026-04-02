@@ -1,21 +1,7 @@
 package org.sciborgs1155.robot.commands.shooting;
 
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterTableConstants.DELIMITER;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterTableConstants.DISTANCE;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterTableConstants.DISTANCE_RESOLUTION;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterTableConstants.ERROR;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterTableConstants.FORMAT;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterTableConstants.MAX_ERROR;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterTableConstants.MAX_LOOKUP_TABLE_SIZE;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterTableConstants.PARAMETER_TABLE_PATH;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterTableConstants.PITCH;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterTableConstants.SPEED;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MAX_DISTANCE;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MAX_PITCH;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MAX_SPEED;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MIN_DISTANCE;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MIN_PITCH;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MIN_SPEED;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterTableConstants.*;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.*;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.TABLE_DIRECTORY;
 
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
@@ -30,166 +16,180 @@ import java.util.Scanner;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import org.sciborgs1155.lib.LoggingUtils;
-import org.sciborgs1155.robot.commands.shooting.ShootingConstants.LaunchParameters;
 
 /**
- * A utility class used to generate a distance/speed/pitch/error lookup table which can be
- * referenced when calculating launch parameters for shooting.
+ * Generates and stores a distance → pitch/speed lookup table for shooting parameter interpolation.
  */
 public final class ParameterTable {
-  private static InterpolatingDoubleTreeMap speedLookup = new InterpolatingDoubleTreeMap();
-  private static InterpolatingDoubleTreeMap pitchLookup = new InterpolatingDoubleTreeMap();
-  private static InterpolatingDoubleTreeMap errorLookup = new InterpolatingDoubleTreeMap();
 
-  private static boolean status;
+  /** Represents a single row in the parameter lookup table. */
+  public record ShotData(
+      double distance, double speed, double pitch, double error, double timeOfFlight) {
+
+    public static ShotData fromArray(String[] entry) {
+      if (entry.length != 5)
+        throw new IllegalArgumentException("Invalid entry: expected 5 fields, got " + entry.length);
+      return new ShotData(
+          Double.parseDouble(entry[0]),
+          Double.parseDouble(entry[1]),
+          Double.parseDouble(entry[2]),
+          Double.parseDouble(entry[3]),
+          Double.parseDouble(entry[4]));
+    }
+
+    public boolean isOutOfBounds() {
+      return distance < MIN_DISTANCE
+          || distance > MAX_DISTANCE
+          || speed < MIN_SPEED
+          || speed > MAX_SPEED
+          || pitch < MIN_PITCH
+          || pitch > MAX_PITCH
+          || error > MAX_ERROR;
+    }
+  }
+
+  private static final InterpolatingDoubleTreeMap speedLookup = new InterpolatingDoubleTreeMap();
+  private static final InterpolatingDoubleTreeMap pitchLookup = new InterpolatingDoubleTreeMap();
+  private static final InterpolatingDoubleTreeMap errorLookup = new InterpolatingDoubleTreeMap();
+
+  private static final ScheduledExecutorService executor =
+      Executors.newScheduledThreadPool(
+          1, runnable -> new Thread(runnable, "Parameter Table Generation"));
+
+  private static boolean loadComplete;
   private static boolean generationComplete;
   private static double averageError;
-
   private static int entriesGenerated;
   private static int entriesLoaded;
 
-  private static ScheduledExecutorService executor =
-      Executors.newScheduledThreadPool(
-          1, runnable -> new Thread(runnable, "Parameter Lookup Table Generation"));
-
   private ParameterTable() {}
 
+  private static Path tablePath() {
+    return Path.of(TABLE_DIRECTORY + "%s.ankit".formatted(PARAMETER_TABLE_PATH));
+  }
+
   /**
-   * Generates a new lookup table.
-   *
-   * @return a command to generate the lookup table
+   * @return a command that asynchronously generates and writes the lookup table to disk.
    */
   public static Command generate() {
-    return Commands.runOnce(
-            () ->
-                executor.submit(
-                    () ->
-                        generateTable(
-                            PARAMETER_TABLE_PATH, MIN_DISTANCE, MAX_DISTANCE, DISTANCE_RESOLUTION)))
+    return Commands.runOnce(ParameterTable::generateTable)
         .andThen(Commands.idle())
-        .until(() -> generationComplete);
+        .until(ParameterTable::generationStatus);
   }
 
-  private static void generateTable(String name, double min, double max, double resolution) {
-    entriesGenerated = 0;
-    double increment = 1 / resolution;
-
-    ShotOptimizer.clearCache();
-    Path path = Path.of(TABLE_DIRECTORY + "%s.ankit".formatted(name));
-
+  private static void generateTable() {
     generationComplete = false;
-    try (BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
+    entriesGenerated = 0;
+    ShotOptimizer.clearCache();
 
-      for (double distance = max;
-          distance >= min && entriesGenerated <= MAX_LOOKUP_TABLE_SIZE;
-          distance -= increment) {
-        double[] entry = ShotOptimizer.optimizeForAirTime(distance);
+    executor.submit(() -> {
+      try(BufferedWriter writer = Files.newBufferedWriter(tablePath(), StandardCharsets.UTF_8)) {
+        for (double distance = MAX_DISTANCE; distance >= MIN_DISTANCE; distance -= 1.0 / DISTANCE_RESOLUTION) {
+        if (entriesGenerated >= MAX_LOOKUP_TABLE_SIZE) break;
+          ShotData entry = ShotOptimizer.optimizeForAirTime(distance);
+          if (entry.isOutOfBounds()) continue;
+          writer.write(
+              FORMAT.formatted(
+                  entry.distance(),
+                  entry.speed(),
+                  entry.pitch(),
+                  entry.error(),
+                  entry.timeOfFlight()));
+          writer.newLine();
+          entriesGenerated++;
+        }
 
-        double speed = entry[LaunchParameters.SPEED];
-        double pitch = entry[LaunchParameters.PITCH];
-        double error = entry[LaunchParameters.ERROR];
-
-        if (speed > MAX_SPEED
-            || speed < MIN_SPEED
-            || pitch < MIN_PITCH
-            || pitch > MAX_PITCH
-            || error > MAX_ERROR) continue;
-
-        writer.write(FORMAT.formatted(distance, speed, pitch, error));
-        writer.newLine();
-        entriesGenerated++;
+        writer.close();
+        generationComplete = true;
+      } catch (IOException exception) {
+        exception.printStackTrace();
       }
-    } catch (IOException exception) {
-      exception.printStackTrace();
-    }
-
-    generationComplete = true;
+    });
   }
 
   /**
-   * Loads the lookup table from the resources folder.
-   *
-   * @return a command to load the lookup table
+   * @return a command that loads the lookup table from disk into the interpolators.
    */
   public static Command load() {
-    return Commands.runOnce(() -> loadTable(PARAMETER_TABLE_PATH));
+    return Commands.runOnce(ParameterTable::loadTable)
+        .andThen(Commands.idle())
+        .until(ParameterTable::loadStatus);
   }
 
-  private static void loadTable(String name) {
+  private static void loadTable() {
+    loadComplete = false;
+
     speedLookup.clear();
     pitchLookup.clear();
     errorLookup.clear();
 
     double totalError = 0;
-    Path path = Path.of(TABLE_DIRECTORY + "%s.ankit".formatted(name));
-
-    try (Scanner scanner = new Scanner(path, StandardCharsets.UTF_8)) {
-
+    try (Scanner scanner = new Scanner(tablePath(), StandardCharsets.UTF_8)) {
       for (entriesLoaded = 0;
           entriesLoaded < MAX_LOOKUP_TABLE_SIZE && scanner.hasNextLine();
           entriesLoaded++) {
-        String[] entry = scanner.nextLine().split(DELIMITER);
+        ShotData entry = ShotData.fromArray(scanner.nextLine().split(DELIMITER));
+        totalError += entry.error();
+        speedLookup.put(entry.distance(), entry.speed());
+        pitchLookup.put(entry.distance(), entry.pitch());
+        errorLookup.put(entry.distance(), entry.error());
 
-        double distance = Double.parseDouble(entry[DISTANCE]);
-        double error = Double.parseDouble(entry[ERROR]);
-        totalError += error;
-
-        speedLookup.put(distance, Double.parseDouble(entry[SPEED]));
-        pitchLookup.put(distance, Double.parseDouble(entry[PITCH]));
-        errorLookup.put(distance, error);
-      }
-
+      scanner.close();
       averageError = entriesLoaded == 0 ? 0 : totalError / entriesLoaded;
-      status = entriesLoaded > 0;
-
+      loadComplete = true;
+    }
     } catch (Exception exception) {
       exception.printStackTrace();
     }
   }
 
   /**
-   * The speed interpolated from the lookup table for the given distance.
-   *
-   * @param distance the planar distance of the shooter from the HUB in meters
+   * @param distance planar distance from the shooter to the HUB in meters
    */
   public static double speed(double distance) {
-    return status() ? speedLookup.get(distance) : MIN_SPEED;
+    return loadStatus() ? speedLookup.get(distance) : MIN_SPEED;
   }
 
   /**
-   * The pitch interpolated from the lookup table for the given distance.
-   *
-   * @param distance the planar distance of the shooter from the HUB in meters
+   * @param distance planar distance from the shooter to the HUB in meters
    */
   public static double pitch(double distance) {
-    return status() ? pitchLookup.get(distance) : MIN_PITCH;
+    return loadStatus() ? pitchLookup.get(distance) : MIN_PITCH;
   }
 
   /**
-   * The error interpolated from the lookup table for the given distance.
-   *
-   * @param distance the planar distance of the shooter from the HUB in meters
+   * @param distance planar distance from the shooter to the HUB in meters
    */
   public static double error(double distance) {
-    return status() ? errorLookup.get(distance) : 0;
+    return loadStatus() ? errorLookup.get(distance) : 0;
   }
 
-  /** Whether or not a table has been loaded into the interpolators. */
-  public static boolean status() {
-    return status;
+  /**
+   * @return whether a table has been successfully loaded into the interpolators
+   */
+  public static boolean loadStatus() {
+    return loadComplete;
   }
 
-  /** The average planar error of all the lookup table entries. */
+  /**
+   * @return whether the most recent table has been successfully generated
+   */
+  public static boolean generationStatus() {
+    return generationComplete;
+  }
+
+  /**
+   * @return average planar error across all loaded lookup table entries
+   */
   public static double averageError() {
     return averageError;
   }
 
-  /** Logs table data to NetworkTables. */
   public static void updateLogging() {
-    LoggingUtils.log("Shooting/Parameter Lookup/Status", status);
+    LoggingUtils.log("Shooting/Parameter Lookup/Load Status", loadComplete);
+    LoggingUtils.log("Shooting/Parameter Lookup/Generation Status", generationComplete);
     LoggingUtils.log("Shooting/Parameter Lookup/Average Error", averageError);
     LoggingUtils.log("Shooting/Parameter Lookup/Entries Generated", entriesGenerated);
-    LoggingUtils.log("Shooting/Parameter Lookup/Generation Complete", generationComplete);
     LoggingUtils.log("Shooting/Parameter Lookup/Entries Loaded", entriesLoaded);
   }
 }

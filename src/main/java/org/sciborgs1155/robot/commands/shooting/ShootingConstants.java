@@ -53,14 +53,10 @@ public final class ShootingConstants {
     public static final String ELEMENT_FORMAT = "%.4f";
 
     /** [SPEED,ROLLER_SPEED,ERROR] */
-    public static final String FORMAT =
-        ELEMENT_FORMAT + DELIMITER + ELEMENT_FORMAT + DELIMITER + ELEMENT_FORMAT;
+    public static final String FORMAT = ELEMENT_FORMAT + (DELIMITER + ELEMENT_FORMAT).repeat(2);
   }
 
   public static final class ParameterTableConstants {
-    /** Array indices for data stored within the ParameterTable. */
-    public static final int DISTANCE = 0, SPEED = 1, PITCH = 2, ERROR = 3;
-
     /** The resolution of the lookup table, in entries per meter. */
     public static final double DISTANCE_RESOLUTION = 100;
 
@@ -76,14 +72,7 @@ public final class ShootingConstants {
     public static final String ELEMENT_FORMAT = "%.4f";
 
     /** [DISTANCE,SPEED,PITCH,ERROR] */
-    public static final String FORMAT =
-        ELEMENT_FORMAT
-            + DELIMITER
-            + ELEMENT_FORMAT
-            + DELIMITER
-            + ELEMENT_FORMAT
-            + DELIMITER
-            + ELEMENT_FORMAT;
+    public static final String FORMAT = ELEMENT_FORMAT + (DELIMITER + ELEMENT_FORMAT).repeat(4);
   }
 
   public static final class LaunchParameters {

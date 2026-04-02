@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.DoubleFunction;
 import org.sciborgs1155.robot.commands.shooting.FuelVisualizer.Fuel;
+import org.sciborgs1155.robot.commands.shooting.ParameterTable.ShotData;
 
 /**
  * A utility class used to generate accurate launch parameters for launches from a given distance.
@@ -117,7 +118,7 @@ public final class ShotOptimizer {
    *
    * @param distance the planar distance of the shooter from the HUB in meters
    */
-  public static double[] optimizeForAirTime(double distance) {
+  public static ShotData optimizeForAirTime(double distance) {
     double increment = Math.PI * 2 / PITCH_RESOLUTION;
     double startingPitch = MIN_PITCH;
 
@@ -130,13 +131,16 @@ public final class ShotOptimizer {
         if (clearsRimHeight(distance, launchParameters)) {
           speedCache = testSpeed;
 
-          return new double[] {
-            testSpeed, testPitch, planarErrorFromHub(distance, launchParameters)
-          };
+          return new ShotData(
+              distance,
+              testSpeed,
+              testPitch,
+              planarErrorFromHub(distance, launchParameters),
+              timeOfFlight(distance, launchParameters));
         }
       }
 
-    return new double[] {0, 0, 0};
+    return new ShotData(0, 0, 0, 0, 0);
   }
 
   /**

@@ -5,7 +5,6 @@ import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Proj
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.Y;
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.Z;
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.fromTranslation;
-import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.norm;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.DRAG_CONSTANT;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.FUEL_RADIUS;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.LIFT_CONSTANT;
@@ -18,7 +17,6 @@ import static org.sciborgs1155.robot.hood.HoodConstants.MIN_ANGLE;
 import java.util.function.DoubleSupplier;
 import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.robot.FieldConstants.Hub;
-import org.sciborgs1155.robot.commands.shooting.ShotOptimizer.ShotData;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.turret.Turret;
 
@@ -257,16 +255,6 @@ public final class FuelVisualizer extends ProjectileVisualizer {
       cosPitch * sinYaw * speed,
       sinPitch * speed
     };
-  }
-
-  protected static ShotData launchParameters(double[] shotVelocity) {
-    double speed = norm(shotVelocity);
-    if (speed < EPS) return new ShotData();
-
-    double yaw = Math.atan2(shotVelocity[Y], shotVelocity[X]);
-    double pitch = Math.asin(shotVelocity[Z] / speed);
-
-    return ShotData.fromLaunchParameters(0, speed, pitch, yaw);
   }
 
   protected static double[] fieldRelative(double[] robotRelative, double heading) {

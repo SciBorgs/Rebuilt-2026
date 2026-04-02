@@ -6,9 +6,6 @@ import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Proj
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.Z;
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.fromTranslation;
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.norm;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.LaunchParameters.PITCH;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.LaunchParameters.SPEED;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.LaunchParameters.YAW;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.DRAG_CONSTANT;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.FUEL_RADIUS;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.LIFT_CONSTANT;
@@ -21,6 +18,7 @@ import static org.sciborgs1155.robot.hood.HoodConstants.MIN_ANGLE;
 import java.util.function.DoubleSupplier;
 import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.robot.FieldConstants.Hub;
+import org.sciborgs1155.robot.commands.shooting.ShotOptimizer.ShotData;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.turret.Turret;
 
@@ -217,8 +215,7 @@ public final class FuelVisualizer extends ProjectileVisualizer {
       double robotVy,
       double robotOmega,
       double yawOmega) {
-    double[] launchParameters = {speed, pitch, yaw};
-    double[] fieldRelative = fieldRelative(robotRelativeShotVelocity(launchParameters), heading);
+    double[] fieldRelative = fieldRelative(robotRelativeShotVelocity(speed, pitch, yaw), heading);
     double[] shooterVelocity = shooterVelocity(robotVx, robotVy, robotOmega, heading);
     double[] shooterToInitial = shooterToInitial(pitch, yaw, heading);
 
@@ -240,8 +237,7 @@ public final class FuelVisualizer extends ProjectileVisualizer {
     return 0;
   }
 
-  protected static double[] shooterVelocity(
-      double robotVx, double robotVy, double robotOmega, double heading) {
+  protected static double[] shooterVelocity(double robotVx, double robotVy, double robotOmega, double heading) {
     double[] robotToShooter = robotToShooter(heading);
 
     double shooterVx = robotVx - robotOmega * robotToShooter[Y];
@@ -250,30 +246,27 @@ public final class FuelVisualizer extends ProjectileVisualizer {
     return new double[] {shooterVx, shooterVy, 0};
   }
 
-  protected static double[] robotRelativeShotVelocity(double[] launchParameters) {
-    double pitch = launchParameters[PITCH];
-    double yaw = launchParameters[YAW];
-
+  protected static double[] robotRelativeShotVelocity(double speed, double pitch, double yaw) {
     double cosPitch = Math.cos(pitch);
     double sinPitch = Math.sin(pitch);
     double cosYaw = Math.cos(yaw);
     double sinYaw = Math.sin(yaw);
 
     return new double[] {
-      cosPitch * cosYaw * launchParameters[SPEED],
-      cosPitch * sinYaw * launchParameters[SPEED],
-      sinPitch * launchParameters[SPEED]
+      cosPitch * cosYaw * speed,
+      cosPitch * sinYaw * speed,
+      sinPitch * speed
     };
   }
 
-  protected static double[] launchParameters(double[] shotVelocity) {
+  protected static ShotData launchParameters(double[] shotVelocity) {
     double speed = norm(shotVelocity);
-    if (speed < EPS) return new double[3];
+    if (speed < EPS) return new ShotData();
 
     double yaw = Math.atan2(shotVelocity[Y], shotVelocity[X]);
     double pitch = Math.asin(shotVelocity[Z] / speed);
 
-    return new double[] {speed, pitch, yaw};
+    return ShotData.fromLaunchParameters(0, speed, pitch, yaw);
   }
 
   protected static double[] fieldRelative(double[] robotRelative, double heading) {

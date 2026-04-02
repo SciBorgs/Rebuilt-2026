@@ -12,13 +12,9 @@ import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.EPS;
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.X;
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.Y;
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.Z;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.LaunchParameters.PITCH;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.LaunchParameters.SPEED;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.LaunchParameters.YAW;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.DRAG_ENABLED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.LIFT_ENABLED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MAX_DISTANCE;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MAX_PITCH;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MIN_DISTANCE;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MIN_PITCH;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ScoringConstants.GOAL;
@@ -43,6 +39,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import java.util.function.DoubleSupplier;
 import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.LoggingUtils;
+import org.sciborgs1155.robot.commands.shooting.ShotOptimizer.ShotData;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.hood.Hood;
 import org.sciborgs1155.robot.hopper.Hopper;
@@ -68,7 +65,7 @@ public class Shooting {
   }
 
   private Algorithm algorithm = Algorithm.NONE;
-  private final double[] discreteLaunchParameters;
+  private ShotData discreteLaunchParameters;
 
   private double distance;
   private double shooterError;
@@ -85,7 +82,7 @@ public class Shooting {
     this.indexer = indexer;
     this.drive = drive;
 
-    discreteLaunchParameters = new double[] {0, toHoodAngle(MIN_PITCH), 0};
+    discreteLaunchParameters = ShotData.fromLaunchParameters(0, 0, toHoodAngle(MIN_PITCH), 0);
   }
 
   /**
@@ -104,10 +101,9 @@ public class Shooting {
                 () -> algorithm = Algorithm.DISCRETE, () -> algorithm = Algorithm.NONE),
             Commands.run(() -> update(vx.get(), vy.get(), omega.get())),
             hopper.intake().alongWith(indexer.forward()).onlyWhile(shouldIndex()),
-            shooter.runShooter(() -> RollerTable.rollerSpeed(discreteLaunchParameters[SPEED])),
-            turret.goToYaw(() -> Rotation2d.fromRadians(discreteLaunchParameters[YAW])),
-            hood.goToShootingAngle(
-                () -> MathUtil.inputModulus(discreteLaunchParameters[PITCH], MIN_PITCH, MAX_PITCH)),
+            shooter.runShooter(() -> ParameterLookup.rollerSpeed(discreteLaunchParameters.speed())),
+            turret.goToYaw(() -> Rotation2d.fromRadians(discreteLaunchParameters.yaw())),
+            hood.goToShootingAngle(discreteLaunchParameters::pitch),
             drive.drive(vx, vy, omega))
         .withName("Discrete Shooter");
   }
@@ -128,10 +124,9 @@ public class Shooting {
                 () -> algorithm = Algorithm.DYNAMIC, () -> algorithm = Algorithm.NONE),
             Commands.run(() -> update(vx.get(), vy.get(), omega.get())),
             hopper.intake().alongWith(indexer.forward()).onlyWhile(shouldIndex()),
-            shooter.runShooter(() -> RollerTable.rollerSpeed(discreteLaunchParameters[SPEED])),
-            turret.goToYaw(() -> Rotation2d.fromRadians(discreteLaunchParameters[YAW])),
-            hood.goToShootingAngle(
-                () -> MathUtil.inputModulus(discreteLaunchParameters[PITCH], MIN_PITCH, MAX_PITCH)),
+            shooter.runShooter(() -> ParameterLookup.rollerSpeed(discreteLaunchParameters.speed())),
+            turret.goToYaw(() -> Rotation2d.fromRadians(discreteLaunchParameters.yaw())),
+            hood.goToShootingAngle(discreteLaunchParameters::pitch),
             drive.drive(vx, vy, omega))
         .withName("Dynamic Shooter");
   }
@@ -158,7 +153,7 @@ public class Shooting {
     return new Trigger(
         () -> {
           // SHOOTER ERROR
-          double rads = RollerTable.rollerSpeed(discreteLaunchParameters[SPEED]);
+          double rads = ParameterLookup.rollerSpeed(discreteLaunchParameters.speed());
           shooterError =
               Math.abs(shooter.velocity() - rads)
                   * 100
@@ -166,14 +161,13 @@ public class Shooting {
 
           // TURRET ERROR
           double turretAbsolutePosition = MathUtil.angleModulus(turret.position());
-          double absoluteYaw = MathUtil.angleModulus(discreteLaunchParameters[YAW]);
+          double absoluteYaw = MathUtil.angleModulus(discreteLaunchParameters.yaw());
 
           turretError = Math.abs(turretAbsolutePosition - absoluteYaw) * 100 / (Math.PI * 2);
 
           // HOOD ERROR
           double hoodAbsolutePosition = MathUtil.angleModulus(hood.angle());
-          double absoluteHoodAngle =
-              toHoodAngle(MathUtil.angleModulus(discreteLaunchParameters[PITCH]));
+          double absoluteHoodAngle = toHoodAngle(discreteLaunchParameters.pitch());
 
           hoodError = Math.abs(hoodAbsolutePosition - absoluteHoodAngle) * 100 / (Math.PI * 2);
 
@@ -185,7 +179,7 @@ public class Shooting {
         });
   }
 
-  private static double[] discreteLaunchParameters(
+  private static ShotData discreteLaunchParameters(
       double robotX, double robotY, double heading, double vx, double vy, double omega) {
     double[] robotToShooter = robotToShooter(heading);
 
@@ -195,9 +189,7 @@ public class Shooting {
     double distance = Math.sqrt(x * x + y * y);
     double yaw = Math.atan2(y, x) - heading;
 
-    double[] robotRelativeShotVelocity =
-        robotRelativeShotVelocity(
-            new double[] {ParameterTable.speed(distance), ParameterTable.pitch(distance), yaw});
+    double[] robotRelativeShotVelocity = robotRelativeShotVelocity(ParameterLookup.speed(distance),ParameterLookup.pitch(distance),yaw);
 
     double[] stationaryShotVelocity = fieldRelative(robotRelativeShotVelocity, heading);
     double[] shooterVelocity = shooterVelocity(-vx, -vy, omega, heading);
@@ -226,17 +218,13 @@ public class Shooting {
     distance = Math.sqrt(x * x + y * y);
 
     // PARAMETER UPDATING
-    double[] newLaunchParameters = discreteLaunchParameters(robotX, robotY, heading, vx, vy, omega);
-
-    discreteLaunchParameters[SPEED] = newLaunchParameters[SPEED];
-    discreteLaunchParameters[PITCH] = newLaunchParameters[PITCH];
-    discreteLaunchParameters[YAW] = newLaunchParameters[YAW];
+    discreteLaunchParameters = discreteLaunchParameters(robotX, robotY, heading, vx, vy, omega);
   }
 
   /** Creates a visualizer that utilizes the subsystem positions to predict a trajectory. */
   public ProjectileVisualizer createVisualizer() {
     return fromLaunchParameters(
-            () -> RollerTable.speed(shooter.velocity()),
+            () -> ParameterLookup.speedFromRollers(shooter.velocity()),
             () -> toPitch(hood.angle()),
             () -> turret.position(),
             drive,
@@ -253,9 +241,9 @@ public class Shooting {
    */
   public ProjectileVisualizer createVectorVisualizer() {
     return fromLaunchParameters(
-            () -> discreteLaunchParameters[SPEED],
-            () -> discreteLaunchParameters[PITCH],
-            () -> discreteLaunchParameters[YAW],
+            () -> discreteLaunchParameters.speed(),
+            () -> discreteLaunchParameters.pitch(),
+            () -> discreteLaunchParameters.yaw(),
             drive,
             turret)
         .withScoringParameters(GOAL, SCORE_RADIUS, SCORE_DEPTH)
@@ -269,9 +257,9 @@ public class Shooting {
   public void updateLogging() {
     LoggingUtils.log("Shooting/Algorithm", algorithm);
     LoggingUtils.log("Shooting/Possible", distance <= MAX_DISTANCE && distance >= MIN_DISTANCE);
-    LoggingUtils.log("Shooting/Discrete/SPEED", discreteLaunchParameters[SPEED]);
-    LoggingUtils.log("Shooting/Discrete/PITCH", discreteLaunchParameters[PITCH]);
-    LoggingUtils.log("Shooting/Discrete/YAW", discreteLaunchParameters[YAW]);
+    LoggingUtils.log("Shooting/Discrete/SPEED", discreteLaunchParameters.speed());
+    LoggingUtils.log("Shooting/Discrete/PITCH", discreteLaunchParameters.pitch());
+    LoggingUtils.log("Shooting/Discrete/YAW", discreteLaunchParameters.yaw());
 
     LoggingUtils.log("Shooting/Mechanism Error/Shooter", shooterError);
     LoggingUtils.log("Shooting/Mechanism Error/Turret", turretError);

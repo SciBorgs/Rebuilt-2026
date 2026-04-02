@@ -47,9 +47,7 @@ import org.sciborgs1155.robot.climb.Climb;
 import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
 import org.sciborgs1155.robot.commands.shooting.Calibrator;
-import org.sciborgs1155.robot.commands.shooting.ParameterTable;
 import org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer;
-import org.sciborgs1155.robot.commands.shooting.RollerTable;
 import org.sciborgs1155.robot.commands.shooting.Shooting;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.hood.Hood;
@@ -129,8 +127,6 @@ public class Robot extends CommandRobot {
 
     addPeriodic(shooting::updateLogging, PERIOD);
     addPeriodic(this::updateAdvantageScopeModel, PERIOD);
-    addPeriodic(ParameterTable::updateLogging, PERIOD);
-    addPeriodic(RollerTable::updateLogging, PERIOD);
     addPeriodic(calibrator::updateLogging, PERIOD);
 
     Epilogue.bind(this);

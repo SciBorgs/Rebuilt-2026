@@ -97,8 +97,7 @@ public class Calibrator {
   public void updateLogging() {
     LoggingUtils.log("Shooting/Calibrator/Ready", readyForCalibration().getAsBoolean());
     LoggingUtils.log("Shooting/Calibrator/Shooting", shooting);
-    LoggingUtils.log(
-        "Shooting/Calibrator/Calibration Pose", calibrationPose().get(), Pose2d.struct);
+    LoggingUtils.log("Shooting/Calibrator/Calibration Pose", calibrationPose().get(), Pose2d.struct);
 
     for (int index = 0; index < calibrationResults.length; index++)
       LoggingUtils.log(
@@ -116,7 +115,7 @@ public class Calibrator {
 
   /** A supplier for the angle of the hood. */
   private DoubleSupplier hoodAngle() {
-    return () -> Math.PI / 2 - ParameterTable.pitch(distance(index.get()));
+    return () -> Math.PI / 2 - ParameterLookup.pitch(distance(index.get()));
   }
 
   /** Returns the distance from the HUB at a specific calibration index; */

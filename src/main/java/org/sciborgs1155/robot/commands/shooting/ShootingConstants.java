@@ -13,19 +13,21 @@ import org.sciborgs1155.robot.FieldConstants.Hub;
 import org.sciborgs1155.robot.Robot;
 import org.sciborgs1155.robot.drive.DriveConstants;
 import org.sciborgs1155.robot.hood.HoodConstants;
+import org.sciborgs1155.robot.turret.TurretConstants;
 
 /** Constants used in the shooting algorithm. */
 @SuppressWarnings("PMD.OneDeclarationPerLine")
 public final class ShootingConstants {
-  public static final String TABLE_DIRECTORY =
+  public static final String DIRECTORY =
       Robot.isReal() ? Filesystem.getDeployDirectory() + "/shooting/" : "resources/shooting/";
 
   // PREVENTS INSTANTIATION
   private ShootingConstants() {}
 
   public static final class CalibrationConstants {
-    public static final double MIN_DISTANCE =
-        Hub.WIDTH / 2 + DriveConstants.CHASSIS_WIDTH.in(Meters) / 2 + 0.1; // BUFFER
+    public static final double HUB_BUFFER = 0.1;
+
+    public static final double MIN_DISTANCE = Hub.WIDTH / 2 + DriveConstants.CHASSIS_WIDTH.in(Meters) / 2 + HUB_BUFFER;
     public static final double MAX_DISTANCE = 5;
 
     public static final int ENTRIES = 10;
@@ -40,44 +42,6 @@ public final class ShootingConstants {
     public static final String TABLE_PATH = "CalibrationTable";
 
     public static final String DELIMITER = ",";
-  }
-
-  public static final class RollerTableConstants {
-    /** Array indices for data stored within the RollerTable. */
-    public static final int LAUNCH_SPEED = 0, ROLLER_SPEED = 1, ERROR = 2;
-
-    /** The path to the velocity lookup table (within the resources/shooting folder). */
-    public static final String TABLE_PATH = "RollerTable";
-
-    public static final String DELIMITER = ",";
-    public static final String ELEMENT_FORMAT = "%.4f";
-
-    /** [SPEED,ROLLER_SPEED,ERROR] */
-    public static final String FORMAT = ELEMENT_FORMAT + (DELIMITER + ELEMENT_FORMAT).repeat(2);
-  }
-
-  public static final class ParameterTableConstants {
-    /** The resolution of the lookup table, in entries per meter. */
-    public static final double DISTANCE_RESOLUTION = 100;
-
-    public static final int MAX_LOOKUP_TABLE_SIZE = 50000;
-
-    /** Lookup Table entries with errors greater than this are removed from the table. */
-    public static final double MAX_ERROR = ScoringConstants.SCORE_RADIUS;
-
-    /** The path to the parameter lookup table (within the resources/shooting folder). */
-    public static final String PARAMETER_TABLE_PATH = "ParameterTable";
-
-    public static final String DELIMITER = ",";
-    public static final String ELEMENT_FORMAT = "%.4f";
-
-    /** [DISTANCE,SPEED,PITCH,ERROR] */
-    public static final String FORMAT = ELEMENT_FORMAT + (DELIMITER + ELEMENT_FORMAT).repeat(4);
-  }
-
-  public static final class LaunchParameters {
-    /** Array indices for storing launch parameters. */
-    public static final int SPEED = 0, PITCH = 1, YAW = 2, ERROR = 2;
   }
 
   public static final class VisualizerConstants {
@@ -160,6 +124,9 @@ public final class ShootingConstants {
 
     public static final double MIN_PITCH = toPitch(HoodConstants.MAX_ANGLE.in(Radians));
     public static final double MAX_PITCH = toPitch(HoodConstants.MIN_ANGLE.in(Radians));
+
+    public static final double MAX_YAW = TurretConstants.MAX_ANGLE.in(Radians);
+    public static final double MIN_YAW = TurretConstants.MIN_ANGLE.in(Radians);
 
     public static final double MIN_DISTANCE = 2.5;
     public static final double MAX_DISTANCE = 5;

@@ -34,11 +34,17 @@ public class Calibrator {
   private final Indexer indexer;
   private final Drive drive;
 
+  /** Whether the shooter is running or not. */
   private boolean shooting;
+
+  /** The results of the calibration. */
   private static double[][] calibrationResults = new double[ENTRIES][4];
 
+  /** The speed of the shooter roller in radians per second. */
   private static final DoubleEntry shooterSpeed =
       Tuning.entry("Shooting/Calibrator/TEST RADS", STARTING_ROLLER_SPEED);
+
+  /** The index of the calibration. */
   private static final IntegerEntry index = Tuning.entry("Shooting/Calibrator/INDEX", 0);
 
   /** A command factory for shooter calibration. */
@@ -97,7 +103,8 @@ public class Calibrator {
   public void updateLogging() {
     LoggingUtils.log("Shooting/Calibrator/Ready", readyForCalibration().getAsBoolean());
     LoggingUtils.log("Shooting/Calibrator/Shooting", shooting);
-    LoggingUtils.log("Shooting/Calibrator/Calibration Pose", calibrationPose().get(), Pose2d.struct);
+    LoggingUtils.log(
+        "Shooting/Calibrator/Calibration Pose", calibrationPose().get(), Pose2d.struct);
 
     for (int index = 0; index < calibrationResults.length; index++)
       LoggingUtils.log(
@@ -118,7 +125,11 @@ public class Calibrator {
     return () -> Math.PI / 2 - ParameterLookup.pitch(distance(index.get()));
   }
 
-  /** Returns the distance from the HUB at a specific calibration index; */
+  /**
+   * Returns the distance from the HUB at a specific calibration index.
+   *
+   * @param index the index of the calibration
+   */
   private static double distance(long index) {
     if (index < 0 || index > ENTRIES)
       throw new UnsupportedOperationException("Invalid calibration index!");

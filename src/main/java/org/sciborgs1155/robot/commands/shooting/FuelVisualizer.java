@@ -235,7 +235,8 @@ public final class FuelVisualizer extends ProjectileVisualizer {
     return 0;
   }
 
-  protected static double[] shooterVelocity(double robotVx, double robotVy, double robotOmega, double heading) {
+  protected static double[] shooterVelocity(
+      double robotVx, double robotVy, double robotOmega, double heading) {
     double[] robotToShooter = robotToShooter(heading);
 
     double shooterVx = robotVx - robotOmega * robotToShooter[Y];
@@ -250,11 +251,7 @@ public final class FuelVisualizer extends ProjectileVisualizer {
     double cosYaw = Math.cos(yaw);
     double sinYaw = Math.sin(yaw);
 
-    return new double[] {
-      cosPitch * cosYaw * speed,
-      cosPitch * sinYaw * speed,
-      sinPitch * speed
-    };
+    return new double[] {cosPitch * cosYaw * speed, cosPitch * sinYaw * speed, sinPitch * speed};
   }
 
   protected static double[] fieldRelative(double[] robotRelative, double heading) {

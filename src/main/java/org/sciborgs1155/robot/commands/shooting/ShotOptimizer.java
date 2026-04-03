@@ -6,7 +6,6 @@ import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.shooterToI
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.X;
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.Y;
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.Z;
-import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.diff;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.OptimizerConstants.MAX_AIR_TIME;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.OptimizerConstants.MAX_OPTIMIZER_ITERATIONS;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.OptimizerConstants.MAX_TOF_ANALYSIS_ITERATIONS;
@@ -21,10 +20,8 @@ import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.Optimiz
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.DRAG_ENABLED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.FUEL_RADIUS;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.LIFT_ENABLED;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MAX_DISTANCE;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MAX_PITCH;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MAX_SPEED;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MIN_DISTANCE;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MIN_PITCH;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MIN_SPEED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.ROBOT_TO_SHOOTER;
@@ -41,170 +38,142 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.DoubleFunction;
 import org.sciborgs1155.robot.commands.shooting.FuelVisualizer.Fuel;
+import org.sciborgs1155.robot.commands.shooting.ShootingConstants.LaunchParameters;
 
-/** A utility class that uses simulated trajectories and closed-loop iteration to estimate launch parameters from shot data. */
-@SuppressWarnings("PMD.MethodReturnsInternalArray")
+/**
+ * A utility class that uses simulated trajectories and closed-loop iteration to estimate launch
+ * parameters from shot data.
+ */
 public final class ShotOptimizer {
-  /** Cached speed value used for optimization. */
-  private static double speedCache;
-
-  /** Cached launch parameters used in simulating trajectory. */
-  private static ShotData launchParameterCache = new ShotData(0, 0, 0, 0, 0,0);
-
   /** Buffer used to store simulated trajectory. */
   private static double[][] trajectoryBuffer = new double[0][];
 
-  private static Fuel fuel =
-      (Fuel)
-          new Fuel()
-              .withScoringParameters(GOAL, SCORE_RADIUS, SCORE_DEPTH)
-              .config(RESOLUTION, true, DRAG_ENABLED, false, LIFT_ENABLED);
+  /** Cached launch parameters used in trajectory simulation. */
+  private static LaunchParameters launchParameterCache = new LaunchParameters(0, 0, 0);
+
+  /** The FUEL object used to simulate trajectory. */
+  private static Fuel fuel = new Fuel();
 
   // PREVENTS INSTANTIATION
   private ShotOptimizer() {}
 
-  /** Data for a single direct shot. */
-  public record ShotData(double distance, double speed, double pitch, double yaw, double error, double timeOfFlight) {
-    /** Creates a ShotData object from the specified launch parameters. Error and timeOfFlight are set to 0.  */
-    public static ShotData fromLaunchParameters(double distance, double speed, double pitch, double yaw) {
-      return new ShotData(distance, speed, pitch, 0, 0, 0);
-    }
+  /**
+   * Optimizes launch speed using a PD loop for maximum accuracy (intensive).
+   *
+   * @param launchParameters the launch parameters to optimize
+   * @param scoreRadius the maximum planar distance from the HUB origin to count as 'scored'
+   * @param scoreDepth the depth above/below the HUB rim to check for scoring
+   */
+  public static void optimizeForAccuracy(
+      LaunchParameters launchParameters, double scoreRadius, double scoreDepth) {
+    fuel.withScoringParameters(GOAL, scoreRadius, scoreDepth);
+    fuel.config(RESOLUTION, true, DRAG_ENABLED, true, LIFT_ENABLED);
 
-    /** 
-     * Whether or not this object contains the same launch parameters as another object.  
-     * @param other another ShotData object
-     */
-    public boolean equals(ShotData other) {
-      return diff(distance, other.distance) || diff(speed, other.speed) || diff(pitch, other.pitch);
-    }
+    double optimalSpeed =
+        runSimplePDLoop(
+            launchParameters.speed(),
+            MAX_OPTIMIZER_ITERATIONS,
+            OPTIMIZATION_THRESHOLD,
+            speed -> {
+              launchParameters.setSpeed(speed);
+              return planarErrorFromHub(simulateTrajectory(launchParameters));
+            },
+            SPEED_KP,
+            SPEED_KD,
+            MIN_SPEED,
+            MAX_SPEED);
 
-    /** Whether or not the shot specified by this object is impossible. */
-    public boolean isOutOfBounds() {
-      return distance < MIN_DISTANCE
-          || distance > MAX_DISTANCE
-          || speed < MIN_SPEED
-          || speed > MAX_SPEED
-          || pitch < MIN_PITCH
-          || pitch > MAX_PITCH;
-    }
-
-    /** Clones the data from this object into a new object. */
-    public ShotData clone() {
-      return new ShotData(distance, speed, pitch, yaw, error, timeOfFlight);
-    }
+    launchParameters.setSpeed(optimalSpeed);
   }
 
   /**
-   * Calculates the launch speed given a launch pitch and a planar distance from the target.
+   * Optimizes launch speed using a PD loop to attain the specified time-of-flight (intensive).
    *
-   * @param distance the planar distance of the shooter from the HUB in meters
-   * @param startingSpeed the speed to start the optimization process from (closer values yield
-   *     faster results)
-   * @param pitch the launch pitch of the FUEL in radians
+   * @param launchParameters the launch parameters to optimize
+   * @param timeOfFlight the target time-of-flight in seconds
    */
-  public static double optimizeForAccuracy(double distance, double startingSpeed, double pitch) {
-    fuel.withScoringParameters(GOAL, SCORE_RADIUS, SCORE_DEPTH);
+  public static void optimizeForTimeOfFlight(
+      LaunchParameters launchParameters, double timeOfFlight) {
+    optimizeForAccuracy(launchParameters, TOF_RADIUS, TOF_DEPTH);
 
-    return runSimplePIDLoop(
-        startingSpeed,
-        MAX_OPTIMIZER_ITERATIONS,
-        OPTIMIZATION_THRESHOLD,
-        speed -> finalTranslation(ShotData.fromLaunchParameters(distance, speed, pitch,0))[X] - GOAL[X],
-        SPEED_KP,
-        SPEED_KD,
-        MIN_SPEED,
-        MAX_SPEED);
-  }
+    double optimalSpeed =
+        runSimplePDLoop(
+            launchParameters.speed(),
+            MAX_TOF_ANALYSIS_ITERATIONS,
+            TOF_ANALYSIS_THRESHOLD,
+            speed -> {
+              launchParameters.setSpeed(speed);
+              return timeOfFlight(simulateTrajectory(launchParameters)) - timeOfFlight;
+            },
+            TOF_KP,
+            TOF_KD,
+            MIN_SPEED,
+            MAX_SPEED);
 
-  /**
-   * Estimates the launch speed given the pitch and time-of-flight of a successful shot.
-   *
-   * @param distance the planar distance of the shooter from the HUB in meters
-   * @param pitch the launch pitch of the FUEL in radians
-   * @param timeOfFlight the time from the FUEL losing contact with the robot to the time it cross
-   *     the plane formed by the rim of the HUB
-   */
-  public static double estimateSpeed(double distance, double pitch, double timeOfFlight) {
-    fuel.withScoringParameters(GOAL, TOF_RADIUS, TOF_DEPTH);
-
-    return runSimplePIDLoop(
-        optimizeForAccuracy(distance, MAX_SPEED, pitch),
-        MAX_TOF_ANALYSIS_ITERATIONS,
-        TOF_ANALYSIS_THRESHOLD,
-        speed -> timeOfFlight(ShotData.fromLaunchParameters(distance, speed, pitch,0)) - timeOfFlight,
-        TOF_KP,
-        TOF_KD,
-        MIN_SPEED,
-        MAX_SPEED);
+    launchParameters.setSpeed(optimalSpeed);
   }
 
   /**
    * Returns the optimal launch parameters for the given distance (minimal airtime). Clear cache
    * when generating a new table or doing a single optimization.
    *
-   * @param distance the planar distance of the shooter from the HUB in meters
+   * @param launchParameters the planar distance of the shooter from the HUB in meters
    */
-  public static ShotData optimizeForAirTime(double distance) {
+  public static void optimizeForAirTime(LaunchParameters launchParameters) {
     double increment = Math.PI * 2 / PITCH_RESOLUTION;
-    double startingPitch = MIN_PITCH;
+    LaunchParameters maxLaunchParameters =
+        new LaunchParameters(launchParameters.distance(), MAX_SPEED, MIN_PITCH);
 
-    for (double testPitch = startingPitch; testPitch <= MAX_PITCH; testPitch += increment)
-      if (canReachHub(ShotData.fromLaunchParameters(distance, MAX_SPEED, startingPitch,0))) {
-        double startingSpeed = speedCache == 0 ? MAX_SPEED : speedCache;
-        double testSpeed = optimizeForAccuracy(distance, startingSpeed, testPitch);
-        ShotData launchParameters = ShotData.fromLaunchParameters(distance, testSpeed, testPitch,0);
+    for (double testPitch = MIN_PITCH; testPitch <= MAX_PITCH; testPitch += increment) {
+      maxLaunchParameters.setPitch(testPitch);
+      if (!reachesHub(simulateTrajectory(maxLaunchParameters))) continue;
 
-        if (clearsRimHeight(launchParameters)) {
-          speedCache = testSpeed;
+      launchParameters.setPitch(testPitch);
+      optimizeForAccuracy(launchParameters, SCORE_RADIUS, SCORE_DEPTH);
+      if (clearsRimHeight(simulateTrajectory(launchParameters))) return;
+    }
 
-          return new ShotData(
-              distance,
-              testSpeed,
-              testPitch,
-              planarErrorFromHub(launchParameters),
-              timeOfFlight(launchParameters),0);
-        }
-      }
-
-    return new ShotData(0, 0, 0, 0, 0,0);
+    throw new UnsupportedOperationException("Impossible shot!");
   }
 
   /**
    * Whether or not the projectile is able to reach the planar target origin when launched with the
    * given parameters.
-   * @param launchParameters the launch parameters for the shot
+   *
+   * @param trajectory the trajectory of the shot (array of [X, Y, Z] coordinates)
    */
-  public static boolean canReachHub(ShotData launchParameters) {
-    double[] finalTranslation = finalTranslation(launchParameters);
+  public static boolean reachesHub(double[][] trajectory) {
+    double[] finalTranslation = finalTranslation(trajectory);
     return !(finalTranslation[X] - GOAL[X] < 0 || finalTranslation[Z] < FUEL_RADIUS);
   }
 
   /**
    * The final planar distance from the target origin when launched with the given parameters.
-   * @param launchParameters the launch parameters for the shot
+   *
+   * @param trajectory the trajectory of the shot (array of [X, Y, Z] coordinates)
    */
-  public static double planarErrorFromHub(ShotData launchParameters) {
-    return finalTranslation(launchParameters)[X] - GOAL[X];
+  public static double planarErrorFromHub(double[][] trajectory) {
+    return finalTranslation(trajectory)[X] - GOAL[X];
   }
 
   /**
    * The time-of-flight of the FUEL when launched with the given parameters.
-   * @param launchParameters the launch parameters for the shot
+   *
+   * @param trajectory the trajectory of the shot (array of [X, Y, Z] coordinates)
    */
-  public static double timeOfFlight(ShotData launchParameters) {
-    return simulateTrajectory(launchParameters).length * 1.0 / RESOLUTION;
+  public static double timeOfFlight(double[][] trajectory) {
+    return trajectory.length * 1.0 / RESOLUTION;
   }
 
   /**
    * Whether or not the projectile clears the specified height over the rim of the target when
    * launched with the given parameters.
-   * @param launchParameters the launch parameters for the shot
+   *
+   * @param trajectory the trajectory of the shot (array of [X, Y, Z] coordinates)
    */
-  public static boolean clearsRimHeight(ShotData launchParameters) {
-    simulateTrajectory(launchParameters);
-
-    for (int index = trajectoryBuffer.length - 1; index >= 0; index--) {
-      double[] translation = trajectoryBuffer[index];
+  public static boolean clearsRimHeight(double[][] trajectory) {
+    for (int index = trajectory.length - 1; index >= 0; index--) {
+      double[] translation = trajectory[index];
 
       if (translation[X] - GOAL[X] <= -CLEARANCE_CHECK) return false;
       if (translation[Z] > GOAL[Z] + CLEARANCE) return true;
@@ -213,44 +182,41 @@ public final class ShotOptimizer {
     return false;
   }
 
-  /** The current trajectory stored in the buffer. */
-  public static double[][] buffer() {
-    return trajectoryBuffer.clone();
-  }
-
-  /** Clears cached speed and trajectory. */
-  public static void clearCache() {
-    speedCache = 0;
-  }
-
   /**
    * The final translation of the FUEL launched with the given parameters.
    *
    * @param distance the planar distance of the shooter from the HUB in meters
-   * @param launchParameters the launch parameters for the shot
+   * @param trajectory the trajectory of the shot (array of [X, Y, Z] coordinates)
    */
-  public static double[] finalTranslation(ShotData launchParameters) {
-    simulateTrajectory(launchParameters);
-    if (trajectoryBuffer.length > 0) return trajectoryBuffer[trajectoryBuffer.length - 1];
+  public static double[] finalTranslation(double[][] trajectory) {
+    if (trajectory.length > 0) return trajectory[trajectory.length - 1];
     else return new double[] {0, 0, 0};
   }
 
   /**
-   * Generates a trajectory with the given parameters.
+   * Generates a trajectory with the given parameters and stores it in the buffer.
    *
    * @param distance the planar distance of the shooter from the HUB in meters
    * @param launchParameters the launch parameters for the shot
    */
-  public static double[][] simulateTrajectory(ShotData launchParameters) {
+  @SuppressWarnings("PMD.MethodReturnsInternalArray")
+  public static double[][] simulateTrajectory(LaunchParameters launchParameters) {
     if (launchParameters.equals(launchParameterCache)) return trajectoryBuffer;
-    launchParameterCache = launchParameters.clone();
+    if (launchParameters.isOutOfBounds())
+      throw new UnsupportedOperationException("Cannot simulate out-of-bounds trajectory!");
+
+    double distance = launchParameters.distance();
+    double speed = launchParameters.speed();
+    double pitch = launchParameters.pitch();
+
+    launchParameterCache = new LaunchParameters(distance, speed, pitch);
 
     fuel.reset();
-    final List<double[]> poseList = new ArrayList<>();
+    final List<double[]> poseList = new ArrayList<>(512);
 
-    double[] shotVelocity = robotRelativeShotVelocity(launchParameters.speed(), launchParameters.pitch(), 0);
-    double[] shooterToInitial = shooterToInitial(launchParameters.pitch(), 0, 0);
-    double[] shooterTranslation = {GOAL[X] - launchParameters.distance(), GOAL[Y], ROBOT_TO_SHOOTER[Z]};
+    double[] shotVelocity = robotRelativeShotVelocity(speed, pitch, 0);
+    double[] shooterToInitial = shooterToInitial(pitch, 0, 0);
+    double[] shooterTranslation = {GOAL[X] - distance, GOAL[Y], ROBOT_TO_SHOOTER[Z]};
     double initialRotationalVelocity = initialRotationalVelocity();
 
     fuel.initialize(
@@ -267,22 +233,32 @@ public final class ShotOptimizer {
     for (int frames = 0; frames <= maxFrames; frames++) {
       poseList.add(new double[] {fuel.x, fuel.y, fuel.z});
       fuel.step();
-
-      if (fuel.willScore()) break;
-      if (fuel.willMiss()) break;
+      if (fuel.willScore() || fuel.willMiss()) break;
     }
 
     trajectoryBuffer = poseList.toArray(new double[0][]);
     return trajectoryBuffer;
   }
 
-  private static double runSimplePIDLoop(
+  /**
+   * Runs a simple PD loop on the variable.
+   *
+   * @param initialValue the initial value of the variable
+   * @param maxIterations the maximum number of loop iterations to run
+   * @param threshold the error threshold that once reached, will end the loop
+   * @param errorFunction a function of the variable that returns the error
+   * @param proportionalConstant the proportional constant in the PD controller
+   * @param derivativeConstant the derivative constant in the PD controller
+   * @param minimum the minimum value of the variable
+   * @param maximum the maximum value of the variable
+   */
+  private static double runSimplePDLoop(
       double initialValue,
       int maxIterations,
       double threshold,
       DoubleFunction<Double> errorFunction,
-      double kp,
-      double kd,
+      double proportionalConstant,
+      double derivativeConstant,
       double minimum,
       double maximum) {
     double value = initialValue;
@@ -292,8 +268,8 @@ public final class ShotOptimizer {
       double error = errorFunction.apply(value);
       if (Math.abs(error) <= threshold) return value;
 
-      double proportional = kp * -error;
-      double derivative = (iteration == 0) ? 0 : kd * (previousError - error);
+      double proportional = proportionalConstant * -error;
+      double derivative = (iteration == 0) ? 0 : derivativeConstant * (previousError - error);
 
       value = MathUtil.clamp(value + proportional + derivative, minimum, maximum);
       previousError = error;

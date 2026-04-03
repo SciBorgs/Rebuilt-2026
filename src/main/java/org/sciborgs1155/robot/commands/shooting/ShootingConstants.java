@@ -21,13 +21,95 @@ public final class ShootingConstants {
   public static final String DIRECTORY =
       Robot.isReal() ? Filesystem.getDeployDirectory() + "/shooting/" : "resources/shooting/";
 
+  private static boolean diff(double a, double b) {
+    return Math.abs(a - b) > EPS;
+  }
+
+  /** Launch parameters for a single direct shot to the HUB (no yaw). */
+  public static class LaunchParameters {
+    private double distance;
+    private double speed;
+    private double pitch;
+
+    /** Launch parameters for a single direct shot to the HUB (no yaw). */
+    public LaunchParameters(double distance, double speed, double pitch) {
+      this.distance = distance;
+      this.speed = speed;
+      this.pitch = pitch;
+    }
+
+    /** The planar distance of the shooter from the HUB in meters. */
+    public double distance() {
+      return distance;
+    }
+
+    /** The launch speed of the FUEL in meters per second. */
+    public double speed() {
+      return speed;
+    }
+
+    /** The launch pitch of the FUEL in radians. */
+    public double pitch() {
+      return pitch;
+    }
+
+    /**
+     * Updates the launch distance parameter.
+     *
+     * @param distance the planar distance of the shooter from the HUB in meters
+     */
+    public void setDistance(double distance) {
+      this.distance = distance;
+    }
+
+    /**
+     * Updates the launch speed of the FUEL.
+     *
+     * @param speed the launch speed of the FUEL in meters per second
+     */
+    public void setSpeed(double speed) {
+      this.speed = speed;
+    }
+
+    /**
+     * Updates the launch pitch of the FUEL.
+     *
+     * @param pitch the launch pitch of the FUEL in radians
+     */
+    public void setPitch(double pitch) {
+      this.pitch = pitch;
+    }
+
+    /**
+     * Whether or not these launch parameters are the same as the given launch parameters.
+     *
+     * @param launchParameters the launch parameters to compare to
+     */
+    public boolean differsFrom(LaunchParameters launchParameters) {
+      return diff(distance, launchParameters.distance())
+          || diff(speed, launchParameters.speed())
+          || diff(pitch, launchParameters.pitch());
+    }
+
+    /** Whether or not the shot specified by this object is impossible. */
+    public boolean isOutOfBounds() {
+      return distance < PhysicalConstants.MIN_DISTANCE
+          || distance > PhysicalConstants.MAX_DISTANCE
+          || speed < PhysicalConstants.MIN_SPEED
+          || speed > PhysicalConstants.MAX_SPEED
+          || pitch < PhysicalConstants.MIN_PITCH
+          || pitch > PhysicalConstants.MAX_PITCH;
+    }
+  }
+
   // PREVENTS INSTANTIATION
   private ShootingConstants() {}
 
   public static final class CalibrationConstants {
     public static final double HUB_BUFFER = 0.1;
 
-    public static final double MIN_DISTANCE = Hub.WIDTH / 2 + DriveConstants.CHASSIS_WIDTH.in(Meters) / 2 + HUB_BUFFER;
+    public static final double MIN_DISTANCE =
+        Hub.WIDTH / 2 + DriveConstants.CHASSIS_WIDTH.in(Meters) / 2 + HUB_BUFFER;
     public static final double MAX_DISTANCE = 5;
 
     public static final int ENTRIES = 10;

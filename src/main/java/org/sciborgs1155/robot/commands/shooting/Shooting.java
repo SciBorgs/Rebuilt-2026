@@ -153,6 +153,7 @@ public class Shooting {
   }
 
   /** Whether or not to run the indexer/hopper. */
+  @SuppressWarnings("PMD.LinguisticNaming")
   public Trigger shouldIndex() {
     return new Trigger(
         () -> {
@@ -191,16 +192,23 @@ public class Shooting {
     double y = GOAL[Y] - robotToShooter[Y] - robotY;
 
     double distance = Math.sqrt(x * x + y * y);
-    double yaw = Math.atan2(y, x) - heading;
+    double stationaryYaw = Math.atan2(y, x) - heading;
 
-    double[] robotRelativeShotVelocity = robotRelativeShotVelocity(ParameterLookup.speed(distance),ParameterLookup.pitch(distance),yaw);
+    double[] robotRelativeStationaryShotVelocity =
+        robotRelativeShotVelocity(
+            ParameterLookup.speed(distance), ParameterLookup.pitch(distance), stationaryYaw);
 
-    double[] fieldRelativeStationaryShotVelocity = fieldRelative(robotRelativeShotVelocity, heading);
+    double[] fieldRelativeStationaryShotVelocity =
+        fieldRelative(robotRelativeStationaryShotVelocity, heading);
     double[] shooterVelocity = shooterVelocity(-vx, -vy, omega, heading);
 
-    double[] fieldRelativeMovingShotVelocity = {fieldRelativeStationaryShotVelocity[X] - shooterVelocity[X], fieldRelativeStationaryShotVelocity[Y] - shooterVelocity[Y], fieldRelativeStationaryShotVelocity[Z] - shooterVelocity[Z]};
+    double[] fieldRelativeMovingShotVelocity = {
+      fieldRelativeStationaryShotVelocity[X] - shooterVelocity[X],
+      fieldRelativeStationaryShotVelocity[Y] - shooterVelocity[Y],
+      fieldRelativeStationaryShotVelocity[Z] - shooterVelocity[Z]
+    };
     double[] shotVelocity = robotRelative(fieldRelativeMovingShotVelocity, heading);
-    
+
     speed = MathUtil.clamp(norm(shotVelocity), MIN_SPEED, MAX_SPEED);
     pitch = MathUtil.clamp(Math.asin(shotVelocity[Z] / speed), MIN_PITCH, MAX_PITCH);
     yaw = MathUtil.clamp(Math.atan2(shotVelocity[Y], shotVelocity[X]), MIN_YAW, MAX_YAW);

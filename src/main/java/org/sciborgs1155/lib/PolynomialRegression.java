@@ -1,5 +1,8 @@
 package org.sciborgs1155.lib;
 
+import java.util.Arrays;
+import java.util.function.Function;
+
 /** Polynomial Regression with automatic degree selection (thanks Claude). */
 @SuppressWarnings("PMD")
 public class PolynomialRegression {
@@ -403,6 +406,46 @@ public class PolynomialRegression {
       if (Math.abs(v) >= 1e4 || (Math.abs(v) < 0.01 && v != 0)) return String.format("%.3e", v);
       return String.format("%.4f", v);
     }
+
+    public static PolynomialRegression regression(double[][] dataTable, int xIndex, int yIndex, int maxDegree) {
+    double[] x = new double[dataTable.length];
+    double[] y = new double[dataTable.length];
+
+    for (int index = 0; index < dataTable.length; index++) {
+      x[index] = dataTable[index][xIndex];
+      y[index] = dataTable[index][yIndex];
+    }
+
+    ModelSelector modelSelector = new ModelSelector(x, y, 1, 5);
+    int degree = modelSelector.crossValidation(maxDegree).bestDegree;
+
+    return new PolynomialRegression(x, y, degree);
+  }
+
+  public static double[][] dataTable(
+      Function<Double, double[]> function, double minimum, double maximum, double increment) {
+    int entries = (int) ((maximum - minimum) / increment);
+    double[][] table = new double[entries][];
+
+    for (int entry = 0; entry < table.length; entry++)
+      table[entry] = function.apply(minimum + entry * increment);
+
+    return table;
+  }
+
+  public static record RegressionModel(int degree, double[] coefficients) {
+    /** Prediction using horners method, courtesy of Claude AI. */
+    public double predict(double x) {
+      double result = coefficients[degree];
+      for (int index = degree - 1; index >= 0; index--) result = result * x + coefficients[index];
+      return result;
+    }
+
+    @Override
+    public final String toString() {
+      return Arrays.toString(coefficients);
+    }
+  }
 
     // --- Result record ---
 

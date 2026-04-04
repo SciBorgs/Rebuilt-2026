@@ -40,6 +40,7 @@ import org.littletonrobotics.urcl.URCL;
 import org.sciborgs1155.lib.CommandRobot;
 import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.lib.InputStream;
+import org.sciborgs1155.lib.ProjectileVisualizer;
 import org.sciborgs1155.lib.ShiftTracker;
 import org.sciborgs1155.lib.Tracer;
 import org.sciborgs1155.robot.Ports.OI;
@@ -47,7 +48,7 @@ import org.sciborgs1155.robot.climb.Climb;
 import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
 import org.sciborgs1155.robot.commands.shooting.Calibrator;
-import org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer;
+import org.sciborgs1155.robot.commands.shooting.ParameterLookup;
 import org.sciborgs1155.robot.commands.shooting.Shooting;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.hood.Hood;
@@ -92,7 +93,7 @@ public class Robot extends CommandRobot {
   private final Calibrator calibrator =
       new Calibrator(shooter, turret, hood, hopper, indexer, drive);
 
-  @NotLogged private final ProjectileVisualizer fuelVisualizer = shooting.createVisualizer();
+  @NotLogged private final ProjectileVisualizer fuelVisualizer = shooting.createVectorVisualizer();
 
   @NotLogged
   private final SendableChooser<Command> autos =
@@ -126,8 +127,9 @@ public class Robot extends CommandRobot {
     if (isReal()) addPeriodic(FaultLogger::update, 2);
 
     addPeriodic(shooting::updateLogging, PERIOD);
-    addPeriodic(this::updateAdvantageScopeModel, PERIOD);
     addPeriodic(calibrator::updateLogging, PERIOD);
+    addPeriodic(ParameterLookup::updateLogging, PERIOD);
+    addPeriodic(this::updateAdvantageScopeModel, PERIOD);
 
     Epilogue.bind(this);
 
@@ -238,10 +240,11 @@ public class Robot extends CommandRobot {
         .x()
         .onTrue(Commands.runOnce(() -> speedMultiplier = SLOW_SPEED_MULTIPLIER))
         .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
+    
+    teleop().whileTrue(shooting.runDiscreteShooter(x, y, omega));
 
-    teleop().whileTrue(calibrator.prepareCalibration());
-    operator.a().and(calibrator.readyForCalibration()).whileTrue(calibrator.runShooter());
-    operator.b().onTrue(calibrator.recordCalibration());
+    operator.a().whileTrue(fuelVisualizer.launchProjectiles());
+    operator.b().onTrue(ParameterLookup.generateLookup());
   }
 
   /**

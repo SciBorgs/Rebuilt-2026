@@ -1,8 +1,9 @@
 package org.sciborgs1155.robot.commands.shooting;
 
-import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.X;
-import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.Y;
+import static org.sciborgs1155.lib.ProjectileVisualizer.X;
+import static org.sciborgs1155.lib.ProjectileVisualizer.Y;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.CalibrationConstants.*;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MIN_DISTANCE;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ScoringConstants.GOAL;
 
 import edu.wpi.first.math.geometry.Pose2d;

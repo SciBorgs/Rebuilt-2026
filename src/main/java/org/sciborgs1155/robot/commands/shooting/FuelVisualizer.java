@@ -1,10 +1,6 @@
 package org.sciborgs1155.robot.commands.shooting;
 
 import static edu.wpi.first.units.Units.Radians;
-import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.X;
-import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.Y;
-import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.Z;
-import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.fromTranslation;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.DRAG_CONSTANT;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.FUEL_RADIUS;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.LIFT_CONSTANT;
@@ -16,11 +12,12 @@ import static org.sciborgs1155.robot.hood.HoodConstants.MIN_ANGLE;
 
 import java.util.function.DoubleSupplier;
 import org.sciborgs1155.lib.LoggingUtils;
+import org.sciborgs1155.lib.ProjectileVisualizer;
 import org.sciborgs1155.robot.FieldConstants.Hub;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.turret.Turret;
 
-@SuppressWarnings({"PMD.OneDeclarationPerLine", "PMD.MethodReturnsInternalArray"})
+@SuppressWarnings("PMD.OneDeclarationPerLine")
 public final class FuelVisualizer extends ProjectileVisualizer {
   private double scoreTolerance = Hub.INNER_WIDTH / 2;
   private final double[] targetPose = fromTranslation(Hub.TOP_CENTER_POINT);
@@ -218,7 +215,7 @@ public final class FuelVisualizer extends ProjectileVisualizer {
     double[] shooterToInitial = shooterToInitial(pitch, yaw, heading);
 
     double turretAppliedVx = yawOmega * shooterToInitial[Y];
-    double turretAppliedVy = yawOmega * shooterToInitial[X];
+    double turretAppliedVy = -yawOmega * shooterToInitial[X];
 
     return new double[] {
       fieldRelative[X] + shooterVelocity[X] + turretAppliedVx,
@@ -282,46 +279,50 @@ public final class FuelVisualizer extends ProjectileVisualizer {
     protected boolean inScoringPlane, inScoringRadius;
     private double prevX, prevY, prevZ;
 
-    protected final double[] drag = new double[3];
-    protected final double[] lift = new double[3];
+    protected Fuel() {
+      // Wire up all strategy functions at construction time.
+      // The output buffer 'out' replaces the old pre-allocated drag[]/lift[] fields.
+      withDrag(
+          (state, out) -> {
+            // https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/drag-of-a-sphere/
+            double scale =
+                -DRAG_CONSTANT
+                    * Math.sqrt(state.vx * state.vx + state.vy * state.vy + state.vz * state.vz);
+            out[X] = state.vx * scale;
+            out[Y] = state.vy * scale;
+            out[Z] = state.vz * scale;
+          });
+
+      withLift(
+          (state, out) -> {
+            // https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/ideal-lift-of-a-spinning-ball/
+            double scale = LIFT_CONSTANT * state.omega;
+            out[X] = scale * state.vz;
+            out[Y] = 0;
+            out[Z] = scale * -state.vx;
+          });
+
+      withTorque(state -> 0.0);
+
+      withScore(state -> inScoringPlane && inScoringRadius);
+      withMiss(
+          state -> (inScoringPlane && !inScoringRadius) || (state.z < FUEL_RADIUS && state.vz < 0));
+    }
 
     protected Fuel withScoringParameters(double[] goal, double tolerance, double depth) {
       System.arraycopy(goal, 0, targetPose, 0, 3);
-
       scoreDepth = depth;
       scoreRadius = tolerance + FUEL_RADIUS;
       scoreRadiusSq = scoreRadius * scoreRadius;
-
       return this;
     }
 
+    /**
+     * Overridden solely to snapshot the pre-step position and run the plane-crossing check
+     * afterward. All physics are handled by super.step().
+     */
     @Override
-    protected double[] drag() {
-      // https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/drag-of-a-sphere/
-      double scale = -DRAG_CONSTANT * Math.sqrt(vx * vx + vy * vy + vz * vz);
-      drag[X] = vx * scale;
-      drag[Y] = vy * scale;
-      drag[Z] = vz * scale;
-      return drag;
-    }
-
-    @Override
-    protected double[] lift() {
-      // https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/ideal-lift-of-a-spinning-ball/
-      double scale = LIFT_CONSTANT * omega;
-      lift[X] = scale * -vx;
-      lift[Y] = 0;
-      lift[Z] = scale * vz;
-      return lift;
-    }
-
-    @Override
-    protected double torque() {
-      return 0;
-    }
-
-    @Override
-    protected void step() {
+    public void step() {
       prevX = x;
       prevY = y;
       prevZ = z;
@@ -331,20 +332,9 @@ public final class FuelVisualizer extends ProjectileVisualizer {
       checkScoringCrossing();
     }
 
-    @Override
-    protected boolean willScore() {
-      return inScoringPlane && inScoringRadius;
-    }
-
-    @Override
-    protected boolean willMiss() {
-      return (inScoringPlane && !inScoringRadius) || (z < FUEL_RADIUS && vz < 0);
-    }
-
     private void checkScoringCrossing() {
       double planeZ = targetPose[Z] + scoreDepth;
 
-      // CHECK IF PLANE WAS CROSSED
       boolean crossedPlane = prevZ > planeZ && z <= planeZ && vz < 0;
 
       if (!crossedPlane) {
@@ -352,7 +342,7 @@ public final class FuelVisualizer extends ProjectileVisualizer {
         return;
       }
 
-      // INTERPOLATION
+      // Interpolate the exact XY position when the ball crossed the scoring plane
       double t = (planeZ - prevZ) / (z - prevZ);
 
       double intersectX = prevX + t * (x - prevX);
@@ -361,16 +351,13 @@ public final class FuelVisualizer extends ProjectileVisualizer {
       double dx = intersectX - targetPose[X];
       double dy = intersectY - targetPose[Y];
 
-      double distSq = dx * dx + dy * dy;
-
       inScoringPlane = true;
-      inScoringRadius = distSq <= scoreRadiusSq;
+      inScoringRadius = (dx * dx + dy * dy) <= scoreRadiusSq;
     }
 
     @Override
-    protected void reset() {
+    public void reset() {
       super.reset();
-
       inScoringPlane = false;
       inScoringRadius = false;
     }

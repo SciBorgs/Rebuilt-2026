@@ -50,6 +50,9 @@ public final class Constants {
   /** States if we are in tuning mode. Ideally, keep it at false when not used. */
   public static final boolean TUNING = true;
 
+  /** Tolerance used to detect input changes. */
+  public static final double EPS = 1e-6;
+
   public static final Pose2d CLIMB_POSE = new Pose2d(1.52, 3.74, new Rotation2d(Degrees.of(180)));
 
   // Prevents instantiation

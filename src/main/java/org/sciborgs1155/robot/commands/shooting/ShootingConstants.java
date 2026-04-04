@@ -2,13 +2,26 @@ package org.sciborgs1155.robot.commands.shooting;
 
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
-import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.EPS;
-import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.AIR_DENSITY;
-import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.fromTranslation;
+import static org.sciborgs1155.lib.ProjectileVisualizer.Projectile.AIR_DENSITY;
+import static org.sciborgs1155.robot.Constants.EPS;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.CalibrationConstants.INCREMENT;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterLookupConstants.DISTANCE;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterLookupConstants.ERROR;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterLookupConstants.PITCH;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterLookupConstants.SPEED;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MAX_DISTANCE;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MAX_SPEED;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MIN_DISTANCE;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.CENTER_TO_SHOOTER;
+
+import java.util.function.BiFunction;
 
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Filesystem;
+import org.sciborgs1155.lib.ProjectileVisualizer;
+import org.sciborgs1155.lib.PolynomialRegression;
+import org.sciborgs1155.lib.PolynomialRegression.ModelSelector;
+import org.sciborgs1155.lib.PolynomialRegression.ModelSelector.RegressionModel;
 import org.sciborgs1155.robot.FieldConstants.Hub;
 import org.sciborgs1155.robot.Robot;
 import org.sciborgs1155.robot.drive.DriveConstants;
@@ -26,13 +39,13 @@ public final class ShootingConstants {
   }
 
   /** Launch parameters for a single direct shot to the HUB (no yaw). */
-  public static class LaunchParameters {
+  public static class DirectLaunchParameters {
     private double distance;
     private double speed;
     private double pitch;
 
     /** Launch parameters for a single direct shot to the HUB (no yaw). */
-    public LaunchParameters(double distance, double speed, double pitch) {
+    public DirectLaunchParameters(double distance, double speed, double pitch) {
       this.distance = distance;
       this.speed = speed;
       this.pitch = pitch;
@@ -85,7 +98,7 @@ public final class ShootingConstants {
      *
      * @param launchParameters the launch parameters to compare to
      */
-    public boolean differsFrom(LaunchParameters launchParameters) {
+    public boolean differsFrom(DirectLaunchParameters launchParameters) {
       return diff(distance, launchParameters.distance())
           || diff(speed, launchParameters.speed())
           || diff(pitch, launchParameters.pitch());
@@ -102,22 +115,61 @@ public final class ShootingConstants {
     }
   }
 
+  public static class LaunchParameterRegressionModel {
+    private final RegressionModel speedRegression;
+    private final RegressionModel pitchRegression;
+    private final RegressionModel errorRegression;
+
+    public LaunchParameterRegressionModel(RegressionModel speedRegression, RegressionModel pitchRegression, RegressionModel errorRegression) {
+      this.speedRegression = speedRegression;
+      this.pitchRegression = pitchRegression;
+      this.errorRegression = errorRegression;
+    }
+
+    public double speed(double distance) {
+      return speedRegression.predict(distance);
+    }
+
+    public double pitch(double distance) {
+      return pitchRegression.predict(distance);
+    }
+
+    public double error(double distance) {
+      return errorRegression.predict(distance);
+    }
+
+    public static LaunchParameterRegressionModel createLookup(BiFunction<Double, DirectLaunchParameters, double[]> function) {
+      DirectLaunchParameters launchParameters =
+          new DirectLaunchParameters(MIN_DISTANCE, MAX_SPEED, Math.PI / 4);
+      double[][] dataTable = ModelSelector.dataTable(distance -> function.apply(distance, launchParameters), MIN_DISTANCE, MAX_DISTANCE, INCREMENT);
+
+      PolynomialRegression speed = ModelSelector.regression(dataTable, DISTANCE, SPEED, 5);
+      PolynomialRegression pitch = ModelSelector.regression(dataTable, DISTANCE, PITCH, 5);
+      PolynomialRegression error = ModelSelector.regression(dataTable, DISTANCE, ERROR, 5);
+
+      return new LaunchParameterRegressionModel(new RegressionModel(speed.getDegree(), speed.getCoefficients()), new RegressionModel(pitch.getDegree(), pitch.getCoefficients()), new RegressionModel(error.getDegree(), error.getCoefficients()));
+    }
+  }
+
   // PREVENTS INSTANTIATION
   private ShootingConstants() {}
 
+  public static final class ParameterLookupConstants {
+    /** Array indices for data stored within the parameter table. */
+    public static final int DISTANCE = 0, SPEED = 1, PITCH = 2, ERROR = 3;
+
+    /** Array indices for a lookup model within the model selector. */
+    public static final int AIR_TIME_MODEL = 0;
+  }
+
   public static final class CalibrationConstants {
-    public static final double HUB_BUFFER = 0.1;
-
-    public static final double MIN_DISTANCE =
-        Hub.WIDTH / 2 + DriveConstants.CHASSIS_WIDTH.in(Meters) / 2 + HUB_BUFFER;
-    public static final double MAX_DISTANCE = 5;
-
     public static final int ENTRIES = 10;
-    public static final double INCREMENT = (MAX_DISTANCE - MIN_DISTANCE) / ENTRIES;
+    public static final double INCREMENT =
+        (PhysicalConstants.MAX_DISTANCE - PhysicalConstants.MIN_DISTANCE) / ENTRIES;
 
     public static final double STARTING_ROLLER_SPEED = 200;
 
-    /** Array indices for data stored within the DistanceTable. */
+    /** Array indices for data stored within the calibration table. */
     public static final int DISTANCE = 0, ROLLER_SPEED = 1, HOOD_ANGLE = 2, TIME_OF_FLIGHT = 3;
 
     /** The path to the standard lookup table (within the resources folder). */
@@ -162,7 +214,7 @@ public final class ShootingConstants {
     public static final double TOF_RADIUS = Hub.INNER_WIDTH / 2;
 
     /** The target translation for the FUEL to hit. */
-    public static final double[] GOAL = fromTranslation(Hub.TOP_CENTER_POINT);
+    public static final double[] GOAL = ProjectileVisualizer.fromTranslation(Hub.TOP_CENTER_POINT);
   }
 
   public static final class OptimizerConstants {
@@ -184,10 +236,12 @@ public final class ShootingConstants {
     public static final int RESOLUTION = 1000;
 
     /** The resolution of the pitches in the lookup table, in samples per 2pi radians. */
-    public static final double PITCH_RESOLUTION = 512;
+    public static final double PITCH_RESOLUTION = 720;
   }
 
   public static final class PhysicalConstants {
+    public static final double HUB_BUFFER = 0.5;
+
     /** The translation from the center of the robot the center of the turret */
     public static final double[] ROBOT_TO_SHOOTER = {
       CENTER_TO_SHOOTER.getX(), CENTER_TO_SHOOTER.getY(), CENTER_TO_SHOOTER.getZ()
@@ -201,7 +255,7 @@ public final class ShootingConstants {
     public static final double FUEL_MASS = 0.225;
     public static final double FUEL_RADIUS = 0.075;
 
-    public static final double MAX_SPEED = 10;
+    public static final double MAX_SPEED = 15;
     public static final double MIN_SPEED = EPS;
 
     public static final double MIN_PITCH = toPitch(HoodConstants.MAX_ANGLE.in(Radians));
@@ -210,7 +264,8 @@ public final class ShootingConstants {
     public static final double MAX_YAW = TurretConstants.MAX_ANGLE.in(Radians);
     public static final double MIN_YAW = TurretConstants.MIN_ANGLE.in(Radians);
 
-    public static final double MIN_DISTANCE = 2.5;
+    public static final double MIN_DISTANCE =
+        Hub.WIDTH / 2 + DriveConstants.CHASSIS_WIDTH.in(Meters) / 2 + HUB_BUFFER;
     public static final double MAX_DISTANCE = 5;
 
     /**

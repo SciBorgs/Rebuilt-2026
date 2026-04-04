@@ -1,17 +1,16 @@
 package org.sciborgs1155.robot.commands.shooting;
 
-import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static org.sciborgs1155.lib.ProjectileVisualizer.X;
+import static org.sciborgs1155.lib.ProjectileVisualizer.Y;
+import static org.sciborgs1155.lib.ProjectileVisualizer.Z;
+import static org.sciborgs1155.lib.ProjectileVisualizer.norm;
+import static org.sciborgs1155.robot.Constants.EPS;
 import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.fieldRelative;
 import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.fromLaunchParameters;
 import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.robotRelative;
 import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.robotRelativeShotVelocity;
 import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.robotToShooter;
 import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.shooterVelocity;
-import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.EPS;
-import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.X;
-import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.Y;
-import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.Z;
-import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.norm;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.DRAG_ENABLED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.LIFT_ENABLED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MAX_DISTANCE;
@@ -44,12 +43,12 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import java.util.function.DoubleSupplier;
 import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.LoggingUtils;
+import org.sciborgs1155.lib.ProjectileVisualizer;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.hood.Hood;
 import org.sciborgs1155.robot.hopper.Hopper;
 import org.sciborgs1155.robot.indexer.Indexer;
 import org.sciborgs1155.robot.shooter.Shooter;
-import org.sciborgs1155.robot.shooter.ShooterConstants;
 import org.sciborgs1155.robot.turret.Turret;
 
 /** A command factory for the shooting algorithm. */
@@ -105,7 +104,7 @@ public class Shooting {
                 () -> algorithm = Algorithm.DISCRETE, () -> algorithm = Algorithm.NONE),
             Commands.run(() -> update(vx.get(), vy.get(), omega.get())),
             hopper.intake().alongWith(indexer.forward()).onlyWhile(shouldIndex()),
-            shooter.runShooter(() -> ParameterLookup.rollerSpeed(speed)),
+            shooter.runShooter(() -> 0),
             turret.goToYaw(() -> Rotation2d.fromRadians(yaw)),
             hood.goToShootingAngle(() -> pitch),
             drive.drive(vx, vy, omega))
@@ -128,7 +127,7 @@ public class Shooting {
                 () -> algorithm = Algorithm.DYNAMIC, () -> algorithm = Algorithm.NONE),
             Commands.run(() -> update(vx.get(), vy.get(), omega.get())),
             hopper.intake().alongWith(indexer.forward()).onlyWhile(shouldIndex()),
-            shooter.runShooter(() -> ParameterLookup.rollerSpeed(speed)),
+            shooter.runShooter(() -> 0),
             turret.goToYaw(() -> Rotation2d.fromRadians(yaw)),
             hood.goToShootingAngle(() -> pitch),
             drive.drive(vx, vy, omega))
@@ -157,13 +156,6 @@ public class Shooting {
   public Trigger shouldIndex() {
     return new Trigger(
         () -> {
-          // SHOOTER ERROR
-          double rads = ParameterLookup.rollerSpeed(speed);
-          shooterError =
-              Math.abs(shooter.velocity() - rads)
-                  * 100
-                  / ShooterConstants.MAX_VELOCITY.in(RadiansPerSecond);
-
           // TURRET ERROR
           double turretAbsolutePosition = MathUtil.angleModulus(turret.position());
           double absoluteYaw = MathUtil.angleModulus(yaw);
@@ -232,7 +224,7 @@ public class Shooting {
   /** Creates a visualizer that utilizes the subsystem positions to predict a trajectory. */
   public ProjectileVisualizer createVisualizer() {
     return fromLaunchParameters(
-            () -> ParameterLookup.speedFromRollers(shooter.velocity()),
+            () -> speed,
             () -> toPitch(hood.angle()),
             () -> turret.position(),
             drive,

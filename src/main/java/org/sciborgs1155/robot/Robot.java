@@ -51,6 +51,7 @@ import org.sciborgs1155.robot.hood.Hood;
 import org.sciborgs1155.robot.hopper.Hopper;
 import org.sciborgs1155.robot.indexer.Indexer;
 import org.sciborgs1155.robot.intake.Intake;
+// import org.sciborgs1155.robot.led.LEDs;
 import org.sciborgs1155.robot.shooter.Shooter;
 import org.sciborgs1155.robot.shooter.ShooterConstants;
 import org.sciborgs1155.robot.slapdown.Slapdown;
@@ -69,8 +70,7 @@ public class Robot extends CommandRobot {
   private final CommandXboxController operator = new CommandXboxController(OI.OPERATOR);
   private final CommandXboxController driver = new CommandXboxController(OI.DRIVER);
 
-  @NotLogged
-  private final PowerDistribution pdh = new PowerDistribution();
+  @NotLogged private final PowerDistribution pdh = new PowerDistribution();
 
   // SUBSYSTEMS
   private final Drive drive = Drive.create();
@@ -81,8 +81,10 @@ public class Robot extends CommandRobot {
   private final Shooter shooter = Shooter.create();
   private final Indexer indexer = Indexer.create();
   private final Hopper hopper = Hopper.create();
-  private final Slapdown slapdown = Slapdown.none();
+  private final Slapdown slapdown = Slapdown.create();
   private final Climb climb = Climb.none();
+
+//   private final LEDs leds = LEDs.create();
 
   // COMMANDS
   private final Alignment align = new Alignment(drive);
@@ -239,7 +241,8 @@ public class Robot extends CommandRobot {
       disabled().onTrue(Commands.runOnce(() -> SignalLogger.stop()));
     }
 
-    autonomous().whileTrue(Commands.deferredProxy(autos::getSelected).asProxy());
+    autonomous()
+        .whileTrue(Commands.deferredProxy(autos::getSelected).asProxy());
 
     test().whileTrue(systemsCheck());
 
@@ -252,6 +255,9 @@ public class Robot extends CommandRobot {
 
     // INTAKE TOGGLE
     driver.leftTrigger().whileTrue(intake.intake());
+
+    driver.povDown().or(operator.povDown()).whileTrue(slapdown.extendVolts()).onFalse(slapdown.nothing()); // jank jank jank
+    driver.povRight().or(operator.povRight()).whileTrue(slapdown.retractVolts()).onFalse(slapdown.nothing()); // jank jank jank
 
     // OUTTAKE THE INTAKE
     driver
@@ -282,7 +288,7 @@ public class Robot extends CommandRobot {
                 .alongWith(indexer.forward().alongWith(shooter.runShooter(120)))
                 .withName("fallback"));
 
-    // driver.b().whileTrue(drive.goForward());
+    driver.b().whileTrue(slapdown.squeezeVolts()).onFalse(slapdown.extend());
 
     // CLIMB
     // operator

@@ -5,6 +5,12 @@
     "data": {
       "commands": [
         {
+          "type": "named",
+          "data": {
+            "name": "deploy"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "BlueHPMiddle.0"

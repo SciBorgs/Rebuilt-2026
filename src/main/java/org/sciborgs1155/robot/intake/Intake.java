@@ -42,7 +42,7 @@ public class Intake extends SubsystemBase implements AutoCloseable {
     TalonFXConfiguration config = new TalonFXConfiguration();
     config.CurrentLimits.SupplyCurrentLimit = CURRENT_LIMIT.in(Amps);
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
     config.Feedback.SensorToMechanismRatio = GEARING;
     return SimpleMotor.talon(motor, config);
   }

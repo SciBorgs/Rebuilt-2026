@@ -54,7 +54,7 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
     pid.reset(hardware.position());
     pid.setGoal(START_ANGLE.in(Radians));
 
-    // setDefaultCommand(retract());
+    // setDefaultCommand(nothing());
 
     sysIdRoutine =
         new SysIdRoutine(
@@ -122,6 +122,26 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
   }
 
   /**
+   * @return slap down the intake with volts
+   */
+  public Command extendVolts() {
+    return Commands.run(() -> hardware.setVoltage(EXTEND_VOLTAGE)).withTimeout(SQUEEZE_EXTEND);
+  }
+
+  /**
+   * @return bring up the intake with volts
+   */
+  public Command retractVolts() {
+    return Commands.run(() -> hardware.setVoltage(RETRACT_VOLTAGE)).withTimeout(SQUEEZE_RETRACT);
+  }
+  
+  /**
+   * @return nothing command?
+   */
+  public Command nothing() {
+    return Commands.run(() -> hardware.setVoltage(0));
+  }
+  /**
    * @return slap down the intake
    */
   public Command extend() {
@@ -145,6 +165,18 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
             retract().until(() -> atGoal()).withTimeout(SQUEEZE_RETRACT),
             extend().until(() -> atGoal()).withTimeout(SQUEEZE_EXTEND))
         .repeatedly();
+  }
+
+    /**
+   * A repeating sequence of retracting and extending the hopper to help feed fuel into the indexer.
+   *
+   * @return The repeating sequence.
+   */
+  public Command squeezeVolts() {
+    return Commands.sequence(
+            retractVolts().withTimeout(SQUEEZE_RETRACT),
+            extendVolts().withTimeout(SQUEEZE_EXTEND))
+        .repeatedly().finallyDo(() -> hardware.setVoltage(0)); // TODO jank jank jank
   }
 
   /**

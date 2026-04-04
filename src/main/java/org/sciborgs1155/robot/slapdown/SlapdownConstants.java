@@ -26,6 +26,9 @@ public class SlapdownConstants {
   public static final double G = 0.7;
   public static final double A = 0;
 
+  public static final double EXTEND_VOLTAGE = -3.0; // down
+  public static final double RETRACT_VOLTAGE = 3.0; // up
+
   public static final Velocity<VoltageUnit> RAMP_RATE = Volts.of(0.5).per(Second);
   public static final Voltage STEP_VOLTAGE = Volts.of(0.3);
   public static final Time TIME_OUT = Seconds.of(1);
@@ -46,6 +49,6 @@ public class SlapdownConstants {
 
   public static final Angle POSITION_TOLERANCE = Radians.of(0.05);
 
-  public static final Time SQUEEZE_RETRACT = Seconds.of(3);
-  public static final Time SQUEEZE_EXTEND = Seconds.of(2);
+  public static final Time SQUEEZE_RETRACT = Seconds.of(1.2);
+  public static final Time SQUEEZE_EXTEND = Seconds.of(1.2);
 }

@@ -44,17 +44,17 @@ public class TurretConstants {
 
   public static final class ControlConstants {
     // PID CONSTANTS
-    public static final double P = 5; //6;
-    public static final double I = 0; //0;
-    public static final double D = 0.3; //0.01;
+    public static final double P = 5; // 6;
+    public static final double I = 0; // 0;
+    public static final double D = 0.3; // 0.01;
 
     // FEEDFORWARD CONSTANTS (VELOCITY IN RAD/SEC)
-    //old values
-    //public static final double S = 0.65;
-    //public static final double V = 0.3;
-    //public static final double A = 0.016369;
-    
-    //new values
+    // old values
+    // public static final double S = 0.65;
+    // public static final double V = 0.3;
+    // public static final double A = 0.016369;
+
+    // new values
     public static final double S = 0.12411;
     public static final double V = 0.83988;
     public static final double A = 0.02077;

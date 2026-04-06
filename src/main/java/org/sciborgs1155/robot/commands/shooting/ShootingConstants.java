@@ -328,7 +328,6 @@ public final class ShootingConstants {
      *
      * @param speedCoefficients the coefficients for the speed polynomial
      * @param pitchCoefficients the coefficients for the pitch polynomial
-     * @param errorCoefficients the coefficients for the error polynomial
      */
     public static LaunchParameterLookup fromCoefficients(
         double[] speedCoefficients, double[] pitchCoefficients) {

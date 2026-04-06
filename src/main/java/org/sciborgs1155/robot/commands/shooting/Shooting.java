@@ -135,7 +135,7 @@ public class Shooting {
   }
 
   /**
-   * True if the robot is moving, false if the robot is not moving.
+   * True if the robot is not moving, false if the robot is moving.
    *
    * @param vx A supplier for the velocity of the robot along the x axis (perpendicular to the
    *     alliance side).

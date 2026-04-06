@@ -140,7 +140,7 @@ public final class ShotOptimizer {
   }
 
   /**
-   * Returns the optimal launch parameters for the given distance (lowest pitch --> less airtime).
+   * Modifies the given launch parameters in-place to minimize air time (lowest pitch).
    *
    * @param launchParameters the launch parameters to optimize
    */
@@ -157,7 +157,7 @@ public final class ShotOptimizer {
   }
 
   /**
-   * Returns the optimal launch parameters for the given distance (highest pitch --> more robust).
+   * Modifies the given launch parameters in-place to maximize accuracy (highest pitch).
    *
    * @param launchParameters the launch parameters to optimize
    */
@@ -183,7 +183,7 @@ public final class ShotOptimizer {
   }
 
   /**
-   * The planar error from the HUB (meters). Positive value indicated overshoot.
+   * The planar error from the HUB (meters). Positive value indicates overshoot.
    *
    * @param trajectory the trajectory of the shot (array of [X, Y, Z] coordinates)
    */
@@ -220,7 +220,6 @@ public final class ShotOptimizer {
   /**
    * The final translation of the FUEL.
    *
-   * @param distance the planar distance of the shooter from the HUB in meters
    * @param trajectory the trajectory of the shot (array of [X, Y, Z] coordinates)
    */
   public static double[] finalTranslation(double[][] trajectory) {

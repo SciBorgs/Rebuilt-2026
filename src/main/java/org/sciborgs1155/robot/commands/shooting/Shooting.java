@@ -5,12 +5,11 @@ import static org.sciborgs1155.lib.ProjectileVisualizer.Y;
 import static org.sciborgs1155.lib.ProjectileVisualizer.Z;
 import static org.sciborgs1155.lib.ProjectileVisualizer.norm;
 import static org.sciborgs1155.robot.Constants.EPS;
-import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.fieldRelative;
 import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.fromLaunchParameters;
-import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.robotRelative;
 import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.robotRelativeShotVelocity;
 import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.robotToShooter;
 import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.shooterVelocity;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.toPitch;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.DRAG_ENABLED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.LIFT_ENABLED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MAX_DISTANCE;
@@ -22,25 +21,16 @@ import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.Physica
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MIN_SPEED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MIN_YAW;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ScoringConstants.GOAL;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ScoringConstants.HOOD_ERROR_THRESHOLD;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ScoringConstants.SCORE_DEPTH;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ScoringConstants.SCORE_RADIUS;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ScoringConstants.SHOOTER_ERROR_THRESHOLD;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ScoringConstants.TURRET_ERROR_THRESHOLD;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.VisualizerConstants.LAUNCH_ENABLED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.VisualizerConstants.MAX_AIR_TIME;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.VisualizerConstants.SHOOTING_SPEED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.VisualizerConstants.TRAJECTORY_ENABLED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.VisualizerConstants.VISUALIZER_RESOLUTION;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.toHoodAngle;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.toPitch;
 
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import java.util.function.DoubleSupplier;
+
 import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.lib.ProjectileVisualizer;
@@ -50,6 +40,12 @@ import org.sciborgs1155.robot.hopper.Hopper;
 import org.sciborgs1155.robot.indexer.Indexer;
 import org.sciborgs1155.robot.shooter.Shooter;
 import org.sciborgs1155.robot.turret.Turret;
+
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 /** A command factory for the shooting algorithm. */
 public class Shooting {
@@ -68,14 +64,10 @@ public class Shooting {
 
   private Algorithm algorithm = Algorithm.NONE;
 
+  private double distance;
   private double speed;
   private double pitch;
   private double yaw;
-
-  private double distance;
-  private double shooterError;
-  private double turretError;
-  private double hoodError;
 
   /** A command factory for the shooting algorithm. */
   public Shooting(
@@ -102,7 +94,15 @@ public class Shooting {
     return Commands.parallel(
             Commands.startEnd(
                 () -> algorithm = Algorithm.DISCRETE, () -> algorithm = Algorithm.NONE),
-            Commands.run(() -> update(vx.get(), vy.get(), omega.get())),
+            Commands.run(
+                () ->
+                    updateLaunchParameters(
+                        drive.pose().getX(),
+                        drive.pose().getY(),
+                        drive.heading().getRadians(),
+                        vx.get(),
+                        vy.get(),
+                        omega.get())),
             hopper.intake().alongWith(indexer.forward()).onlyWhile(shouldIndex()),
             shooter.runShooter(() -> 0),
             turret.goToYaw(() -> Rotation2d.fromRadians(yaw)),
@@ -125,7 +125,15 @@ public class Shooting {
     return Commands.parallel(
             Commands.startEnd(
                 () -> algorithm = Algorithm.DYNAMIC, () -> algorithm = Algorithm.NONE),
-            Commands.run(() -> update(vx.get(), vy.get(), omega.get())),
+            Commands.run(
+                () ->
+                    updateLaunchParameters(
+                        drive.pose().getX(),
+                        drive.pose().getY(),
+                        drive.heading().getRadians(),
+                        vx.get(),
+                        vy.get(),
+                        omega.get())),
             hopper.intake().alongWith(indexer.forward()).onlyWhile(shouldIndex()),
             shooter.runShooter(() -> 0),
             turret.goToYaw(() -> Rotation2d.fromRadians(yaw)),
@@ -155,70 +163,35 @@ public class Shooting {
   @SuppressWarnings("PMD.LinguisticNaming")
   public Trigger shouldIndex() {
     return new Trigger(
-        () -> {
-          // TURRET ERROR
-          double turretAbsolutePosition = MathUtil.angleModulus(turret.position());
-          double absoluteYaw = MathUtil.angleModulus(yaw);
-
-          turretError = Math.abs(turretAbsolutePosition - absoluteYaw) * 100 / (Math.PI * 2);
-
-          // HOOD ERROR
-          double hoodAbsolutePosition = MathUtil.angleModulus(hood.angle());
-          double absoluteHoodAngle = toHoodAngle(pitch);
-
-          hoodError = Math.abs(hoodAbsolutePosition - absoluteHoodAngle) * 100 / (Math.PI * 2);
-
-          return turretError < TURRET_ERROR_THRESHOLD
-              && shooterError < SHOOTER_ERROR_THRESHOLD
-              && hoodError < HOOD_ERROR_THRESHOLD
-              && distance <= MAX_DISTANCE
-              && distance >= MIN_DISTANCE;
-        });
+        () ->
+            turret.atGoal()
+                && shooter.atSetpoint()
+                && hood.atGoal()
+                && distance <= MAX_DISTANCE
+                && distance >= MIN_DISTANCE);
   }
 
   private void updateLaunchParameters(
       double robotX, double robotY, double heading, double vx, double vy, double omega) {
     double[] robotToShooter = robotToShooter(heading);
+    double[] shooterTranslation = {robotToShooter[X] + robotX, robotToShooter[Y] + robotY};
+    double[] shooterVelocity = shooterVelocity(robotX, robotY, omega, heading);
+    double[] hubToShooter = {GOAL[X] - shooterTranslation[X], GOAL[Y] - shooterTranslation[Y]};
 
-    double x = GOAL[X] - robotToShooter[X] - robotX;
-    double y = GOAL[Y] - robotToShooter[Y] - robotY;
+    distance = Math.hypot(hubToShooter[X], hubToShooter[Y]);
+    double directPitch = ParameterLookup.pitch(distance);
+    double directSpeed = ParameterLookup.speed(distance);
+    double stationaryYaw = Math.atan2(hubToShooter[Y], hubToShooter[X]);
 
-    double distance = Math.sqrt(x * x + y * y);
-    double stationaryYaw = Math.atan2(y, x) - heading;
-
-    double[] robotRelativeStationaryShotVelocity =
-        robotRelativeShotVelocity(
-            ParameterLookup.speed(distance), ParameterLookup.pitch(distance), stationaryYaw);
-
-    double[] fieldRelativeStationaryShotVelocity =
-        fieldRelative(robotRelativeStationaryShotVelocity, heading);
-    double[] shooterVelocity = shooterVelocity(-vx, -vy, omega, heading);
-
-    double[] fieldRelativeMovingShotVelocity = {
-      fieldRelativeStationaryShotVelocity[X] - shooterVelocity[X],
-      fieldRelativeStationaryShotVelocity[Y] - shooterVelocity[Y],
-      fieldRelativeStationaryShotVelocity[Z] - shooterVelocity[Z]
+    double[] shotVelocity = robotRelativeShotVelocity(directSpeed, directPitch, stationaryYaw);
+    double[] movingShotVelocity = {
+      shotVelocity[X] - shooterVelocity[X], shotVelocity[Y] - shooterVelocity[Y], shotVelocity[Z]
     };
-    double[] shotVelocity = robotRelative(fieldRelativeMovingShotVelocity, heading);
 
-    speed = MathUtil.clamp(norm(shotVelocity), MIN_SPEED, MAX_SPEED);
-    pitch = MathUtil.clamp(Math.asin(shotVelocity[Z] / speed), MIN_PITCH, MAX_PITCH);
-    yaw = MathUtil.clamp(Math.atan2(shotVelocity[Y], shotVelocity[X]), MIN_YAW, MAX_YAW);
-  }
-
-  private void update(double vx, double vy, double omega) {
-    double robotX = drive.pose().getX();
-    double robotY = drive.pose().getY();
-    double heading = drive.heading().getRadians();
-
-    // DISTANCE CALCULATION
-    double[] robotToShooter = robotToShooter(heading);
-
-    double x = GOAL[X] - robotToShooter[X] - robotX;
-    double y = GOAL[Y] - robotToShooter[Y] - robotY;
-
-    distance = Math.sqrt(x * x + y * y);
-    updateLaunchParameters(robotX, robotY, heading, vx, vy, omega);
+    speed = MathUtil.clamp(norm(movingShotVelocity), MIN_SPEED, MAX_SPEED);
+    pitch = MathUtil.clamp(Math.asin(movingShotVelocity[Z] / speed), MIN_PITCH, MAX_PITCH);
+    yaw =
+        MathUtil.clamp(Math.atan2(movingShotVelocity[Y], movingShotVelocity[X]), MIN_YAW, MAX_YAW);
   }
 
   /** Creates a visualizer that utilizes the subsystem positions to predict a trajectory. */
@@ -252,13 +225,8 @@ public class Shooting {
     LoggingUtils.log("Shooting/Discrete/PITCH", pitch);
     LoggingUtils.log("Shooting/Discrete/YAW", yaw);
 
-    LoggingUtils.log("Shooting/Mechanism Error/Shooter", shooterError);
-    LoggingUtils.log("Shooting/Mechanism Error/Turret", turretError);
-    LoggingUtils.log("Shooting/Mechanism Error/Hood", hoodError);
-
-    LoggingUtils.log(
-        "Shooting/Mechanism Setpoints/Shooter", shooterError < SHOOTER_ERROR_THRESHOLD);
-    LoggingUtils.log("Shooting/Mechanism Setpoints/Turret", turretError < TURRET_ERROR_THRESHOLD);
-    LoggingUtils.log("Shooting/Mechanism Setpoints/Hood", hoodError < HOOD_ERROR_THRESHOLD);
+    LoggingUtils.log("Shooting/Mechanism Setpoints/Shooter", shooter.atSetpoint());
+    LoggingUtils.log("Shooting/Mechanism Setpoints/Turret", turret.atGoal());
+    LoggingUtils.log("Shooting/Mechanism Setpoints/Hood", hood.atGoal());
   }
 }

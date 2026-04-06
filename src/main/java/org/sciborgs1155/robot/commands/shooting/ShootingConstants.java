@@ -42,13 +42,22 @@ public final class ShootingConstants {
     public static final int DISTANCE = 0, SPEED = 1, PITCH = 2;
 
     /** Identifiers for specific lookup models. */
-    public static enum LookupID {
-      MINIMAL_AIR_TIME, MAXIMUM_ACCURACY
+    public enum LookupID {
+      MINIMAL_AIR_TIME,
+      MAXIMUM_ACCURACY
     }
 
     /** A map for each launch-parameter model. */
-    public static final Map<LookupID, LaunchParameterLookup> lookupSelector =
+    public static final Map<LookupID, LaunchParameterLookup> parameterLookupSelector =
         new ConcurrentHashMap<>();
+
+    static {
+      ParameterLookup.addLookup(
+          LookupID.MINIMAL_AIR_TIME,
+          LaunchParameterLookup.fromCoefficients(
+              new double[] {1.765, -0.440, 0.074, -0.005, 0.012},
+              new double[] {6.807, -1.586, 0.962, -0.176, 0.012}));
+    }
   }
 
   public static final class CalibrationConstants {
@@ -80,15 +89,6 @@ public final class ShootingConstants {
   }
 
   public static final class ScoringConstants {
-    /** Maximum allowable turret error for the indexer to run (% of full circle). */
-    public static final double TURRET_ERROR_THRESHOLD = 10;
-
-    /** Maximum allowable hood error for the indexer to run (% of full circle). */
-    public static final double HOOD_ERROR_THRESHOLD = 10;
-
-    /** Maximum allowable turret error for the indexer to run (% relative to setpoint). */
-    public static final double SHOOTER_ERROR_THRESHOLD = 10;
-
     public static final double CLEARANCE = 0.2;
     public static final double CLEARANCE_CHECK = Hub.INNER_WIDTH / 2;
 

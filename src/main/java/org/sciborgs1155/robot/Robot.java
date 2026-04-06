@@ -50,6 +50,8 @@ import org.sciborgs1155.robot.commands.Autos;
 import org.sciborgs1155.robot.commands.shooting.Calibrator;
 import org.sciborgs1155.robot.commands.shooting.ParameterLookup;
 import org.sciborgs1155.robot.commands.shooting.Shooting;
+import org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterLookupConstants.LookupID;
+import org.sciborgs1155.robot.commands.shooting.ShotOptimizer;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.hood.Hood;
 import org.sciborgs1155.robot.hood.HoodVisualizer;
@@ -244,6 +246,12 @@ public class Robot extends CommandRobot {
     teleop().whileTrue(shooting.runDiscreteShooter(x, y, omega));
 
     operator.a().whileTrue(fuelVisualizer.launchProjectiles());
+    operator
+        .b()
+        .onTrue(
+            ParameterLookup.startGeneration(
+                LookupID.MINIMAL_AIR_TIME,
+                (launchParameters) -> ShotOptimizer.optimizeForAirTime(launchParameters)));
   }
 
   /**

@@ -224,11 +224,7 @@ public class Shooting {
   /** Creates a visualizer that utilizes the subsystem positions to predict a trajectory. */
   public ProjectileVisualizer createVisualizer() {
     return fromLaunchParameters(
-            () -> speed,
-            () -> toPitch(hood.angle()),
-            () -> turret.position(),
-            drive,
-            turret)
+            () -> speed, () -> toPitch(hood.angle()), () -> turret.position(), drive, turret)
         .withScoringParameters(GOAL, SCORE_RADIUS, SCORE_DEPTH)
         .configPhysics(true, DRAG_ENABLED, false, LIFT_ENABLED)
         .configGeneration(

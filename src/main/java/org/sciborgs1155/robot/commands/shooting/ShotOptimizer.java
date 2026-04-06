@@ -11,6 +11,8 @@ import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.Optimiz
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.OptimizerConstants.MAX_OPTIMIZER_ITERATIONS;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.OptimizerConstants.MAX_TOF_ANALYSIS_ITERATIONS;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.OptimizerConstants.OPTIMIZATION_THRESHOLD;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.OptimizerConstants.PITCH_KD;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.OptimizerConstants.PITCH_KP;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.OptimizerConstants.PITCH_RESOLUTION;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.OptimizerConstants.RESOLUTION;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.OptimizerConstants.SPEED_KD;
@@ -68,27 +70,49 @@ public final class ShotOptimizer {
    * @param scoreRadius the maximum planar distance from the HUB origin to count as 'scored'
    * @param scoreDepth the depth above/below the HUB rim to check for scoring
    */
-  public static void optimizeForAccuracy(
+  public static void optimizeSpeedForAccuracy(
       DirectLaunchParameters launchParameters, double scoreRadius, double scoreDepth) {
     fuel.withScoringParameters(GOAL, scoreRadius, scoreDepth);
     fuel.config(RESOLUTION, true, DRAG_ENABLED, true, LIFT_ENABLED);
 
-    double optimalSpeed =
-        runSimplePDLoop(
-            launchParameters.speed(),
-            MAX_OPTIMIZER_ITERATIONS,
-            OPTIMIZATION_THRESHOLD,
-            speed -> {
-              launchParameters.setSpeed(speed);
-              displayTrajectory(launchParameters);
-              return hubError(simulateTrajectory(launchParameters));
-            },
-            SPEED_KP,
-            SPEED_KD,
-            MIN_SPEED,
-            MAX_SPEED);
+    runSimplePDLoop(
+        launchParameters.speed(),
+        MAX_OPTIMIZER_ITERATIONS,
+        OPTIMIZATION_THRESHOLD,
+        speed -> {
+          launchParameters.setSpeed(speed);
+          return hubError(simulateTrajectory(launchParameters));
+        },
+        SPEED_KP,
+        SPEED_KD,
+        MIN_SPEED,
+        MAX_SPEED);
+  }
 
-    launchParameters.setSpeed(optimalSpeed);
+  /**
+   * Optimizes launch pitch using a PD loop for maximum accuracy (intensive).
+   *
+   * @param launchParameters the launch parameters to optimize
+   * @param scoreRadius the maximum planar distance from the HUB origin to count as 'scored'
+   * @param scoreDepth the depth above/below the HUB rim to check for scoring
+   */
+  public static void optimizePitchForAccuracy(
+      DirectLaunchParameters launchParameters, double scoreRadius, double scoreDepth) {
+    fuel.withScoringParameters(GOAL, scoreRadius, scoreDepth);
+    fuel.config(RESOLUTION, true, DRAG_ENABLED, true, LIFT_ENABLED);
+
+    runSimplePDLoop(
+        launchParameters.speed(),
+        MAX_OPTIMIZER_ITERATIONS,
+        OPTIMIZATION_THRESHOLD,
+        pitch -> {
+          launchParameters.setPitch(pitch);
+          return hubError(simulateTrajectory(launchParameters));
+        },
+        PITCH_KP,
+        PITCH_KD,
+        MIN_PITCH,
+        MAX_PITCH);
   }
 
   /**
@@ -97,44 +121,52 @@ public final class ShotOptimizer {
    * @param launchParameters the launch parameters to optimize
    * @param timeOfFlight the target time-of-flight in seconds
    */
-  public static void optimizeForTimeOfFlight(
+  public static void optimizeSpeedForTimeOfFlight(
       DirectLaunchParameters launchParameters, double timeOfFlight) {
-    optimizeForAccuracy(launchParameters, TOF_RADIUS, TOF_DEPTH);
+    optimizeSpeedForAccuracy(launchParameters, TOF_RADIUS, TOF_DEPTH);
 
-    double optimalSpeed =
-        runSimplePDLoop(
-            launchParameters.speed(),
-            MAX_TOF_ANALYSIS_ITERATIONS,
-            TOF_ANALYSIS_THRESHOLD,
-            speed -> {
-              launchParameters.setSpeed(speed);
-              return timeOfFlight(simulateTrajectory(launchParameters)) - timeOfFlight;
-            },
-            TOF_KP,
-            TOF_KD,
-            MIN_SPEED,
-            MAX_SPEED);
-
-    launchParameters.setSpeed(optimalSpeed);
+    runSimplePDLoop(
+        launchParameters.speed(),
+        MAX_TOF_ANALYSIS_ITERATIONS,
+        TOF_ANALYSIS_THRESHOLD,
+        speed -> {
+          launchParameters.setSpeed(speed);
+          return timeOfFlight(simulateTrajectory(launchParameters)) - timeOfFlight;
+        },
+        TOF_KP,
+        TOF_KD,
+        MIN_SPEED,
+        MAX_SPEED);
   }
 
   /**
-   * Returns the optimal launch parameters for the given distance (minimal airtime). Clear cache
-   * when generating a new table or doing a single optimization.
+   * Returns the optimal launch parameters for the given distance (lowest pitch --> less airtime).
    *
-   * @param launchParameters the planar distance of the shooter from the HUB in meters
+   * @param launchParameters the launch parameters to optimize
    */
   public static void optimizeForAirTime(DirectLaunchParameters launchParameters) {
     double increment = Math.PI * 2 / PITCH_RESOLUTION;
-    DirectLaunchParameters maxLaunchParameters =
-        new DirectLaunchParameters(launchParameters.distance(), MAX_SPEED, Math.PI / 4);
 
     for (double testPitch = MIN_PITCH; testPitch <= MAX_PITCH; testPitch += increment) {
-      maxLaunchParameters.setPitch(testPitch);
-      if (!clearsRimHeight(simulateTrajectory(maxLaunchParameters))) continue;
-
       launchParameters.setPitch(testPitch);
-      optimizeForAccuracy(launchParameters, SCORE_RADIUS, SCORE_DEPTH);
+      optimizeSpeedForAccuracy(launchParameters, SCORE_RADIUS, SCORE_DEPTH);
+      if (clearsRimHeight(simulateTrajectory(launchParameters))) return;
+    }
+
+    throw new UnsupportedOperationException("Impossible shot!");
+  }
+
+  /**
+   * Returns the optimal launch parameters for the given distance (highest pitch --> more robust).
+   *
+   * @param launchParameters the launch parameters to optimize
+   */
+  public static void optimizeForAccuracy(DirectLaunchParameters launchParameters) {
+    double increment = Math.PI * 2 / PITCH_RESOLUTION;
+
+    for (double testPitch = MAX_PITCH; testPitch >= MIN_PITCH; testPitch -= increment) {
+      launchParameters.setPitch(testPitch);
+      optimizePitchForAccuracy(launchParameters, SCORE_RADIUS, SCORE_DEPTH);
       if (clearsRimHeight(simulateTrajectory(launchParameters))) return;
     }
 
@@ -143,6 +175,7 @@ public final class ShotOptimizer {
 
   /**
    * The time-of-flight of the FUEL when launched with the given parameters (seconds).
+   *
    * @param trajectory the trajectory of the shot (array of [X, Y, Z] coordinates)
    */
   public static double timeOfFlight(double[][] trajectory) {
@@ -150,7 +183,8 @@ public final class ShotOptimizer {
   }
 
   /**
-   * The planar error from the HUB (meters).
+   * The planar error from the HUB (meters). Positive value indicated overshoot.
+   *
    * @param trajectory the trajectory of the shot (array of [X, Y, Z] coordinates)
    */
   public static double hubError(double[][] trajectory) {
@@ -159,14 +193,16 @@ public final class ShotOptimizer {
 
   /**
    * Whether or not the projectile clears the specified height over the rim of the HUB.
+   *
    * @param trajectory the trajectory of the shot (array of [X, Y, Z] coordinates)
    */
   public static boolean clearsRimHeight(double[][] trajectory) {
     for (int index = trajectory.length - 1; index >= 0; index--) {
       double[] translation = trajectory[index];
+      double distance = Math.abs(translation[X] - GOAL[X]);
+      double verticalDistance = translation[Z] - GOAL[Z];
 
-      if (translation[X] - GOAL[X] <= -CLEARANCE_CHECK) return false;
-      if (translation[Z] > GOAL[Z] + CLEARANCE) return true;
+      if (distance >= CLEARANCE_CHECK) return verticalDistance > CLEARANCE;
     }
 
     return false;
@@ -174,6 +210,7 @@ public final class ShotOptimizer {
 
   /**
    * Whether or not the projectile fails to reach the HUB plane.
+   *
    * @param trajectory the trajectory of the shot (array of [X, Y, Z] coordinates)
    */
   public static boolean endsOnGround(double[][] trajectory) {
@@ -182,6 +219,7 @@ public final class ShotOptimizer {
 
   /**
    * The final translation of the FUEL.
+   *
    * @param distance the planar distance of the shooter from the HUB in meters
    * @param trajectory the trajectory of the shot (array of [X, Y, Z] coordinates)
    */
@@ -310,6 +348,7 @@ public final class ShotOptimizer {
       previousError = error;
     }
 
+    errorFunction.apply(value);
     return value;
   }
 }

@@ -240,11 +240,10 @@ public class Robot extends CommandRobot {
         .x()
         .onTrue(Commands.runOnce(() -> speedMultiplier = SLOW_SPEED_MULTIPLIER))
         .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
-    
+
     teleop().whileTrue(shooting.runDiscreteShooter(x, y, omega));
 
     operator.a().whileTrue(fuelVisualizer.launchProjectiles());
-    operator.b().onTrue(ParameterLookup.generateLookup());
   }
 
   /**

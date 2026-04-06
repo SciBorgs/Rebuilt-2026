@@ -280,33 +280,32 @@ public final class FuelVisualizer extends ProjectileVisualizer {
     private double prevX, prevY, prevZ;
 
     protected Fuel() {
-      // Wire up all strategy functions at construction time.
-      // The output buffer 'out' replaces the old pre-allocated drag[]/lift[] fields.
       withDrag(
-          (state, out) -> {
+          (state, output) -> {
             // https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/drag-of-a-sphere/
             double scale =
                 -DRAG_CONSTANT
                     * Math.sqrt(state.vx * state.vx + state.vy * state.vy + state.vz * state.vz);
-            out[X] = state.vx * scale;
-            out[Y] = state.vy * scale;
-            out[Z] = state.vz * scale;
+            output[X] = state.vx * scale;
+            output[Y] = state.vy * scale;
+            output[Z] = state.vz * scale;
           });
 
       withLift(
-          (state, out) -> {
+          (state, output) -> {
             // https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/ideal-lift-of-a-spinning-ball/
             double scale = LIFT_CONSTANT * state.omega;
-            out[X] = scale * state.vz;
-            out[Y] = 0;
-            out[Z] = scale * -state.vx;
+            output[X] = scale * state.vz;
+            output[Y] = 0;
+            output[Z] = scale * -state.vx;
           });
 
       withTorque(state -> 0.0);
 
-      withScore(state -> inScoringPlane && inScoringRadius);
-      withMiss(
-          state -> (inScoringPlane && !inScoringRadius) || (state.z < FUEL_RADIUS && state.vz < 0));
+      withScoreCondition(state -> inScoringPlane && inScoringRadius);
+      withMissCondition(
+          state ->
+              (inScoringPlane && !inScoringRadius) || (state.z < targetPose[Z] && state.vz < 0));
     }
 
     protected Fuel withScoringParameters(double[] goal, double tolerance, double depth) {
@@ -317,10 +316,6 @@ public final class FuelVisualizer extends ProjectileVisualizer {
       return this;
     }
 
-    /**
-     * Overridden solely to snapshot the pre-step position and run the plane-crossing check
-     * afterward. All physics are handled by super.step().
-     */
     @Override
     public void step() {
       prevX = x;

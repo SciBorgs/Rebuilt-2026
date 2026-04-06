@@ -567,12 +567,12 @@ public abstract class ProjectileVisualizer {
       return this;
     }
 
-    public Projectile withScore(Predicate<MutableState> f) {
+    public Projectile withScoreCondition(Predicate<MutableState> f) {
       scoreFunction = f;
       return this;
     }
 
-    public Projectile withMiss(Predicate<MutableState> f) {
+    public Projectile withMissCondition(Predicate<MutableState> f) {
       missFunction = f;
       return this;
     }

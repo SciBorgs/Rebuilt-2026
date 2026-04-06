@@ -407,45 +407,46 @@ public class PolynomialRegression {
       return String.format("%.4f", v);
     }
 
-    public static PolynomialRegression regression(double[][] dataTable, int xIndex, int yIndex, int maxDegree) {
-    double[] x = new double[dataTable.length];
-    double[] y = new double[dataTable.length];
+    public static PolynomialRegression regression(
+        double[][] dataTable, int xIndex, int yIndex, int maxDegree) {
+      double[] x = new double[dataTable.length];
+      double[] y = new double[dataTable.length];
 
-    for (int index = 0; index < dataTable.length; index++) {
-      x[index] = dataTable[index][xIndex];
-      y[index] = dataTable[index][yIndex];
+      for (int index = 0; index < dataTable.length; index++) {
+        x[index] = dataTable[index][xIndex];
+        y[index] = dataTable[index][yIndex];
+      }
+
+      ModelSelector modelSelector = new ModelSelector(x, y, 1, 5);
+      int degree = modelSelector.crossValidation(maxDegree).bestDegree;
+
+      return new PolynomialRegression(x, y, degree);
     }
 
-    ModelSelector modelSelector = new ModelSelector(x, y, 1, 5);
-    int degree = modelSelector.crossValidation(maxDegree).bestDegree;
+    public static double[][] dataTable(
+        Function<Double, double[]> function, double minimum, double maximum, double increment) {
+      int entries = (int) ((maximum - minimum) / increment);
+      double[][] table = new double[entries][];
 
-    return new PolynomialRegression(x, y, degree);
-  }
+      for (int entry = 0; entry < table.length; entry++)
+        table[entry] = function.apply(minimum + entry * increment);
 
-  public static double[][] dataTable(
-      Function<Double, double[]> function, double minimum, double maximum, double increment) {
-    int entries = (int) ((maximum - minimum) / increment);
-    double[][] table = new double[entries][];
-
-    for (int entry = 0; entry < table.length; entry++)
-      table[entry] = function.apply(minimum + entry * increment);
-
-    return table;
-  }
-
-  public static record RegressionModel(int degree, double[] coefficients) {
-    /** Prediction using horners method, courtesy of Claude AI. */
-    public double predict(double x) {
-      double result = coefficients[degree];
-      for (int index = degree - 1; index >= 0; index--) result = result * x + coefficients[index];
-      return result;
+      return table;
     }
 
-    @Override
-    public final String toString() {
-      return Arrays.toString(coefficients);
+    public static record RegressionModel(int degree, double[] coefficients) {
+      /** Prediction using horners method, courtesy of Claude AI. */
+      public double predict(double x) {
+        double result = coefficients[degree];
+        for (int index = degree - 1; index >= 0; index--) result = result * x + coefficients[index];
+        return result;
+      }
+
+      @Override
+      public final String toString() {
+        return Arrays.toString(coefficients);
+      }
     }
-  }
 
     // --- Result record ---
 

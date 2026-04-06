@@ -4,24 +4,20 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
 import static org.sciborgs1155.lib.ProjectileVisualizer.Projectile.AIR_DENSITY;
 import static org.sciborgs1155.robot.Constants.EPS;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.CalibrationConstants.INCREMENT;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterLookupConstants.DISTANCE;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterLookupConstants.ERROR;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterLookupConstants.PITCH;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterLookupConstants.SPEED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MAX_DISTANCE;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MAX_PITCH;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MAX_SPEED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MIN_DISTANCE;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MIN_PITCH;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MIN_SPEED;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.CENTER_TO_SHOOTER;
-
-import java.util.function.BiFunction;
 
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Filesystem;
-import org.sciborgs1155.lib.ProjectileVisualizer;
-import org.sciborgs1155.lib.PolynomialRegression;
-import org.sciborgs1155.lib.PolynomialRegression.ModelSelector;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import org.sciborgs1155.lib.PolynomialRegression.ModelSelector.RegressionModel;
+import org.sciborgs1155.lib.ProjectileVisualizer;
 import org.sciborgs1155.robot.FieldConstants.Hub;
 import org.sciborgs1155.robot.Robot;
 import org.sciborgs1155.robot.drive.DriveConstants;
@@ -38,134 +34,26 @@ public final class ShootingConstants {
     return Math.abs(a - b) > EPS;
   }
 
-  /** Launch parameters for a single direct shot to the HUB (no yaw). */
-  public static class DirectLaunchParameters {
-    private double distance;
-    private double speed;
-    private double pitch;
-
-    /** Launch parameters for a single direct shot to the HUB (no yaw). */
-    public DirectLaunchParameters(double distance, double speed, double pitch) {
-      this.distance = distance;
-      this.speed = speed;
-      this.pitch = pitch;
-    }
-
-    /** The planar distance of the shooter from the HUB in meters. */
-    public double distance() {
-      return distance;
-    }
-
-    /** The launch speed of the FUEL in meters per second. */
-    public double speed() {
-      return speed;
-    }
-
-    /** The launch pitch of the FUEL in radians. */
-    public double pitch() {
-      return pitch;
-    }
-
-    /**
-     * Updates the launch distance parameter.
-     *
-     * @param distance the planar distance of the shooter from the HUB in meters
-     */
-    public void setDistance(double distance) {
-      this.distance = distance;
-    }
-
-    /**
-     * Updates the launch speed of the FUEL.
-     *
-     * @param speed the launch speed of the FUEL in meters per second
-     */
-    public void setSpeed(double speed) {
-      this.speed = speed;
-    }
-
-    /**
-     * Updates the launch pitch of the FUEL.
-     *
-     * @param pitch the launch pitch of the FUEL in radians
-     */
-    public void setPitch(double pitch) {
-      this.pitch = pitch;
-    }
-
-    /**
-     * Whether or not these launch parameters are the same as the given launch parameters.
-     *
-     * @param launchParameters the launch parameters to compare to
-     */
-    public boolean differsFrom(DirectLaunchParameters launchParameters) {
-      return diff(distance, launchParameters.distance())
-          || diff(speed, launchParameters.speed())
-          || diff(pitch, launchParameters.pitch());
-    }
-
-    /** Whether or not the shot specified by this object is impossible. */
-    public boolean isOutOfBounds() {
-      return distance < PhysicalConstants.MIN_DISTANCE
-          || distance > PhysicalConstants.MAX_DISTANCE
-          || speed < PhysicalConstants.MIN_SPEED
-          || speed > PhysicalConstants.MAX_SPEED
-          || pitch < PhysicalConstants.MIN_PITCH
-          || pitch > PhysicalConstants.MAX_PITCH;
-    }
-  }
-
-  public static class LaunchParameterRegressionModel {
-    private final RegressionModel speedRegression;
-    private final RegressionModel pitchRegression;
-    private final RegressionModel errorRegression;
-
-    public LaunchParameterRegressionModel(RegressionModel speedRegression, RegressionModel pitchRegression, RegressionModel errorRegression) {
-      this.speedRegression = speedRegression;
-      this.pitchRegression = pitchRegression;
-      this.errorRegression = errorRegression;
-    }
-
-    public double speed(double distance) {
-      return speedRegression.predict(distance);
-    }
-
-    public double pitch(double distance) {
-      return pitchRegression.predict(distance);
-    }
-
-    public double error(double distance) {
-      return errorRegression.predict(distance);
-    }
-
-    public static LaunchParameterRegressionModel createLookup(BiFunction<Double, DirectLaunchParameters, double[]> function) {
-      DirectLaunchParameters launchParameters =
-          new DirectLaunchParameters(MIN_DISTANCE, MAX_SPEED, Math.PI / 4);
-      double[][] dataTable = ModelSelector.dataTable(distance -> function.apply(distance, launchParameters), MIN_DISTANCE, MAX_DISTANCE, INCREMENT);
-
-      PolynomialRegression speed = ModelSelector.regression(dataTable, DISTANCE, SPEED, 5);
-      PolynomialRegression pitch = ModelSelector.regression(dataTable, DISTANCE, PITCH, 5);
-      PolynomialRegression error = ModelSelector.regression(dataTable, DISTANCE, ERROR, 5);
-
-      return new LaunchParameterRegressionModel(new RegressionModel(speed.getDegree(), speed.getCoefficients()), new RegressionModel(pitch.getDegree(), pitch.getCoefficients()), new RegressionModel(error.getDegree(), error.getCoefficients()));
-    }
-  }
-
   // PREVENTS INSTANTIATION
   private ShootingConstants() {}
 
   public static final class ParameterLookupConstants {
     /** Array indices for data stored within the parameter table. */
-    public static final int DISTANCE = 0, SPEED = 1, PITCH = 2, ERROR = 3;
+    public static final int DISTANCE = 0, SPEED = 1, PITCH = 2;
 
-    /** Array indices for a lookup model within the model selector. */
-    public static final int AIR_TIME_MODEL = 0;
+    /** Identifiers for specific lookup models. */
+    public static enum LookupID {
+      MINIMAL_AIR_TIME, MAXIMUM_ACCURACY
+    }
+
+    /** A map for each launch-parameter model. */
+    public static final Map<LookupID, LaunchParameterLookup> lookupSelector =
+        new ConcurrentHashMap<>();
   }
 
   public static final class CalibrationConstants {
     public static final int ENTRIES = 10;
-    public static final double INCREMENT =
-        (PhysicalConstants.MAX_DISTANCE - PhysicalConstants.MIN_DISTANCE) / ENTRIES;
+    public static final double INCREMENT = (MAX_DISTANCE - MIN_DISTANCE) / ENTRIES;
 
     public static final double STARTING_ROLLER_SPEED = 200;
 
@@ -201,7 +89,7 @@ public final class ShootingConstants {
     /** Maximum allowable turret error for the indexer to run (% relative to setpoint). */
     public static final double SHOOTER_ERROR_THRESHOLD = 10;
 
-    public static final double CLEARANCE = 0.5;
+    public static final double CLEARANCE = 0.2;
     public static final double CLEARANCE_CHECK = Hub.INNER_WIDTH / 2;
 
     public static final double SCORE_DEPTH = 0;
@@ -228,6 +116,9 @@ public final class ShootingConstants {
 
     public static final double SPEED_KP = 0.5;
     public static final double SPEED_KD = 0.05;
+
+    public static final double PITCH_KP = 0.5;
+    public static final double PITCH_KD = 0.05;
 
     public static final int MAX_OPTIMIZER_ITERATIONS = 3000;
     public static final double OPTIMIZATION_THRESHOLD = 0.01;
@@ -304,5 +195,146 @@ public final class ShootingConstants {
    */
   public static double toPitch(double hoodAngle) {
     return Math.PI / 2 - hoodAngle;
+  }
+
+  /** Launch parameters for a single direct shot to the HUB (no yaw). */
+  public static class DirectLaunchParameters {
+    private double distance;
+    private double speed;
+    private double pitch;
+
+    /** Launch parameters for a single direct shot to the HUB (no yaw). */
+    public DirectLaunchParameters(double distance, double speed, double pitch) {
+      this.distance = distance;
+      this.speed = speed;
+      this.pitch = pitch;
+    }
+
+    /** The planar distance of the shooter from the HUB in meters. */
+    public double distance() {
+      return distance;
+    }
+
+    /** The launch speed of the FUEL in meters per second. */
+    public double speed() {
+      return speed;
+    }
+
+    /** The launch pitch of the FUEL in radians. */
+    public double pitch() {
+      return pitch;
+    }
+
+    /**
+     * Updates the launch distance parameter.
+     *
+     * @param distance the planar distance of the shooter from the HUB in meters
+     */
+    public void setDistance(double distance) {
+      this.distance = distance;
+    }
+
+    /**
+     * Updates the launch speed of the FUEL.
+     *
+     * @param speed the launch speed of the FUEL in meters per second
+     */
+    public void setSpeed(double speed) {
+      this.speed = speed;
+    }
+
+    /**
+     * Updates the launch pitch of the FUEL.
+     *
+     * @param pitch the launch pitch of the FUEL in radians
+     */
+    public void setPitch(double pitch) {
+      this.pitch = pitch;
+    }
+
+    /**
+     * Whether or not these launch parameters are the same as the given launch parameters.
+     *
+     * @param launchParameters the launch parameters to compare to
+     */
+    public boolean differsFrom(DirectLaunchParameters launchParameters) {
+      return diff(distance, launchParameters.distance())
+          || diff(speed, launchParameters.speed())
+          || diff(pitch, launchParameters.pitch());
+    }
+
+    /** Whether or not the shot specified by this object is impossible. */
+    public boolean isOutOfBounds() {
+      return distance < MIN_DISTANCE
+          || distance > MAX_DISTANCE
+          || speed < MIN_SPEED
+          || speed > MAX_SPEED
+          || pitch < MIN_PITCH
+          || pitch > MAX_PITCH;
+    }
+  }
+
+  /**
+   * Compiles polynomial regression models into a singular launch parameter model which acts as a
+   * lookup table.
+   */
+  public static class LaunchParameterLookup {
+    private final RegressionModel speedRegression;
+    private final RegressionModel pitchRegression;
+
+    /**
+     * Compiles polynomial regression models into a singular launch parameter model which acts as a
+     * lookup table.
+     *
+     * @param speedRegression the regression model for launch speed
+     * @param pitchRegression the regression model for launch pitch
+     */
+    public LaunchParameterLookup(RegressionModel speedRegression, RegressionModel pitchRegression) {
+      this.speedRegression = speedRegression;
+      this.pitchRegression = pitchRegression;
+    }
+
+    /**
+     * The launch speed of the FUEL from the given distance estimated using the model (meters per
+     * second).
+     *
+     * @param distance the planar distance from the HUB to the shooter's origin, in meters
+     */
+    public double speed(double distance) {
+      return speedRegression.predict(distance);
+    }
+
+    /** The coefficients for the speed regression model. */
+    public double[] speedRegression() {
+      return speedRegression.coefficients();
+    }
+
+    /**
+     * The launch pitch of the FUEL from the given distance estimated using the model (radians).
+     *
+     * @param distance the planar distance from the HUB to the shooter's origin, in meters
+     */
+    public double pitch(double distance) {
+      return pitchRegression.predict(distance);
+    }
+
+    /** The coefficients for the pitch regression model. */
+    public double[] pitchRegression() {
+      return pitchRegression.coefficients();
+    }
+
+    /**
+     * Generates a new launch-parameter lookup from coefficient arrays.
+     *
+     * @param speedCoefficients the coefficients for the speed polynomial
+     * @param pitchCoefficients the coefficients for the pitch polynomial
+     * @param errorCoefficients the coefficients for the error polynomial
+     */
+    public static LaunchParameterLookup fromCoefficients(
+        double[] speedCoefficients, double[] pitchCoefficients) {
+      return new LaunchParameterLookup(
+          new RegressionModel(speedCoefficients.length - 1, speedCoefficients),
+          new RegressionModel(pitchCoefficients.length - 1, pitchCoefficients));
+    }
   }
 }

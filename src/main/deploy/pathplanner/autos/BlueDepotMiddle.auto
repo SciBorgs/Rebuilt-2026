@@ -5,9 +5,22 @@
     "data": {
       "commands": [
         {
-          "type": "path",
+          "type": "parallel",
           "data": {
-            "pathName": "BlueMiddleDepot.0"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "deploy"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "BlueMiddleDepot.0"
+                }
+              }
+            ]
           }
         },
         {
@@ -55,13 +68,19 @@
           }
         },
         {
+          "type": "path",
+          "data": {
+            "pathName": "BlueMiddleDepot.3"
+          }
+        },
+        {
           "type": "deadline",
           "data": {
             "commands": [
               {
                 "type": "path",
                 "data": {
-                  "pathName": "BlueMiddleDepot.3"
+                  "pathName": "BlueMiddleDepot.4"
                 }
               },
               {
@@ -71,18 +90,6 @@
                 }
               }
             ]
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "BlueMiddleDepot.4"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "shoot"
           }
         }
       ]

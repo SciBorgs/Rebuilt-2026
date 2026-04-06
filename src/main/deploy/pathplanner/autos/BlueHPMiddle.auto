@@ -5,15 +5,22 @@
     "data": {
       "commands": [
         {
-          "type": "named",
+          "type": "parallel",
           "data": {
-            "name": "deploy"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "BlueHPMiddle.0"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "deploy"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "BlueHPMiddle.0"
+                }
+              }
+            ]
           }
         },
         {

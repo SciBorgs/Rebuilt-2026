@@ -50,7 +50,7 @@ public class Shooting {
    * can be used to account for errors in the model, resulting from missing the shot while moving
    * (but not stationary).
    */
-  public static final DoubleEntry LATENCY_TIME = Tuning.entry("/ShootingData/Latency Time", .1);
+  public static final DoubleEntry LATENCY_TIME = Tuning.entry("/ShootingData/Latency Time", 0.1);
 
   public static final DoubleEntry RADS_TEST = Tuning.entry("/ShootingData/RADS", 100.0);
   public static final DoubleEntry HOOD_DEGREES_TEST =

@@ -45,7 +45,7 @@ public final class DriveConstants {
   public static final Distance CHASSIS_WIDTH = Inches.of(32.645);
 
   // Percentage of the max speed we can do while shooting
-  public static final double SHOOTING_TRANSLATIONAL_SPEED = .5;
+  public static final double SHOOTING_TRANSLATIONAL_SPEED = 0.5;
   public static final double SHOOTING_ANGULAR_SPEED = 0;
   // Maximum achievable translational and rotation velocities and accelerations of the robot.
   public static final LinearVelocity MAX_SPEED = MetersPerSecond.of(5);

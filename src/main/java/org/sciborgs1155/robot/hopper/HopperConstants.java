@@ -32,5 +32,5 @@ public class HopperConstants {
   public static final double RADIANS_PER_SEC =
       PASSTHROUGH_SPEED.in(MetersPerSecond) / BIG_WHEEL_RADIUS.in(Meters);
 
-  public static final double GEARING = 5.;
+  public static final double GEARING = 5.0;
 }

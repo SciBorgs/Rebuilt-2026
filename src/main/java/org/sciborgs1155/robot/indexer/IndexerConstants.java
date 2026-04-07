@@ -32,5 +32,5 @@ public class IndexerConstants {
   public static final double RADIANS_PER_SEC =
       PASSTHROUGH_SPEED.in(MetersPerSecond) / STAGE_ONE_RADIUS.in(Meters);
 
-  public static final double GEARING = 3.;
+  public static final double GEARING = 3.0;
 }

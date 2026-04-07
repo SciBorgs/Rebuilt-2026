@@ -1,6 +1,5 @@
 package org.sciborgs1155.lib;
 
-import java.util.Arrays;
 import java.util.function.Function;
 
 /** Polynomial Regression with automatic degree selection (thanks Claude). */
@@ -407,8 +406,7 @@ public class PolynomialRegression {
       return String.format("%.4f", v);
     }
 
-    public static PolynomialRegression regression(
-        double[][] dataTable, int xIndex, int yIndex, int maxDegree) {
+    public static double rSquared(PolynomialRegression regression, double[][] dataTable, int xIndex, int yIndex) {
       double[] x = new double[dataTable.length];
       double[] y = new double[dataTable.length];
 
@@ -417,8 +415,18 @@ public class PolynomialRegression {
         y[index] = dataTable[index][yIndex];
       }
 
-      ModelSelector modelSelector = new ModelSelector(x, y, 1, 5);
-      int degree = modelSelector.crossValidation(maxDegree).bestDegree;
+      return regression.rSquared(x, y);
+    }
+
+    public static PolynomialRegression regression(
+        double[][] dataTable, int xIndex, int yIndex, int degree) {
+      double[] x = new double[dataTable.length];
+      double[] y = new double[dataTable.length];
+
+      for (int index = 0; index < dataTable.length; index++) {
+        x[index] = dataTable[index][xIndex];
+        y[index] = dataTable[index][yIndex];
+      }
 
       return new PolynomialRegression(x, y, degree);
     }
@@ -432,20 +440,6 @@ public class PolynomialRegression {
         table[entry] = function.apply(minimum + entry * increment);
 
       return table;
-    }
-
-    public static record RegressionModel(int degree, double[] coefficients) {
-      /** Prediction using horners method, courtesy of Claude AI. */
-      public double predict(double x) {
-        double result = coefficients[degree];
-        for (int index = degree - 1; index >= 0; index--) result = result * x + coefficients[index];
-        return result;
-      }
-
-      @Override
-      public final String toString() {
-        return Arrays.toString(coefficients);
-      }
     }
 
     // --- Result record ---

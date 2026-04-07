@@ -13,23 +13,16 @@ import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.Physica
 import static org.sciborgs1155.robot.shooter.ShooterConstants.CENTER_TO_SHOOTER;
 
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.Filesystem;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import org.sciborgs1155.lib.PolynomialRegression.ModelSelector.RegressionModel;
 import org.sciborgs1155.lib.ProjectileVisualizer;
 import org.sciborgs1155.robot.FieldConstants.Hub;
-import org.sciborgs1155.robot.Robot;
 import org.sciborgs1155.robot.drive.DriveConstants;
 import org.sciborgs1155.robot.hood.HoodConstants;
-import org.sciborgs1155.robot.turret.TurretConstants;
 
 /** Constants used in the shooting algorithm. */
 @SuppressWarnings("PMD.OneDeclarationPerLine")
 public final class ShootingConstants {
-  public static final String DIRECTORY =
-      Robot.isReal() ? Filesystem.getDeployDirectory() + "/shooting/" : "resources/shooting/";
-
   private static boolean diff(double a, double b) {
     return Math.abs(a - b) > EPS;
   }
@@ -54,9 +47,10 @@ public final class ShootingConstants {
     static {
       ParameterLookup.addLookup(
           LookupID.MINIMAL_AIR_TIME,
-          LaunchParameterLookup.fromCoefficients(
-              new double[] {1.765, -0.440, 0.074, -0.005, 0.012},
-              new double[] {6.807, -1.586, 0.962, -0.176, 0.012}));
+          new LaunchParameterLookup(
+              new double[] {5.977, -0.329, 0.288, -0.023},
+              new double[] {1.765, -0.440, 0.074, -0.005},
+              MIN_DISTANCE, MAX_DISTANCE));
     }
   }
 
@@ -152,8 +146,8 @@ public final class ShootingConstants {
     public static final double MIN_PITCH = toPitch(HoodConstants.MAX_ANGLE.in(Radians));
     public static final double MAX_PITCH = toPitch(HoodConstants.MIN_ANGLE.in(Radians));
 
-    public static final double MAX_YAW = TurretConstants.MAX_ANGLE.in(Radians);
-    public static final double MIN_YAW = TurretConstants.MIN_ANGLE.in(Radians);
+    public static final double MAX_YAW = Integer.MAX_VALUE;
+    public static final double MIN_YAW = Integer.MIN_VALUE;
 
     public static final double MIN_DISTANCE =
         Hub.WIDTH / 2 + DriveConstants.CHASSIS_WIDTH.in(Meters) / 2 + HUB_BUFFER;
@@ -274,66 +268,75 @@ public final class ShootingConstants {
     }
   }
 
-  /**
-   * Compiles polynomial regression models into a singular launch parameter model which acts as a
-   * lookup table.
-   */
+  /** Compiles polynomial regression models into a singular parameter lookup. */
   public static class LaunchParameterLookup {
-    private final RegressionModel speedRegression;
-    private final RegressionModel pitchRegression;
+    private final double minDistance, maxDistance;
+    private final double[] speedCoefficients;
+    private final double[] pitchCoefficients;
 
     /**
-     * Compiles polynomial regression models into a singular launch parameter model which acts as a
-     * lookup table.
+     * Compiles polynomial regression models into a singular parameter lookup.
      *
-     * @param speedRegression the regression model for launch speed
-     * @param pitchRegression the regression model for launch pitch
+     * @param speedRegression the polynomial coefficients to model launch speed as a function of distance
+     * @param pitchRegression the polynomial coefficients to model launch pitch as a function of distance
+     * @param minDistance the minimum distance from the HUB, in meters
+     * @param maxDistance the maximum distance from the HUB, in meters
      */
-    public LaunchParameterLookup(RegressionModel speedRegression, RegressionModel pitchRegression) {
-      this.speedRegression = speedRegression;
-      this.pitchRegression = pitchRegression;
+    public LaunchParameterLookup(double[] speedCoefficients, double[] pitchCoefficients, double minDistance, double maxDistance) {
+      this.speedCoefficients = speedCoefficients;
+      this.pitchCoefficients = pitchCoefficients;
+
+      this.minDistance = minDistance;
+      this.maxDistance = maxDistance;
     }
 
     /**
-     * The launch speed of the FUEL from the given distance estimated using the model (meters per
-     * second).
+     * The launch speed of the FUEL (meters per second).
      *
      * @param distance the planar distance from the HUB to the shooter's origin, in meters
      */
     public double speed(double distance) {
-      return speedRegression.predict(distance);
+      return inBounds(distance) ? evaluate(distance, speedCoefficients) : 0;
     }
 
     /** The coefficients for the speed regression model. */
     public double[] speedRegression() {
-      return speedRegression.coefficients();
+      return speedCoefficients.clone();
     }
 
     /**
-     * The launch pitch of the FUEL from the given distance estimated using the model (radians).
+     * The launch pitch of the FUEL (radians).
      *
      * @param distance the planar distance from the HUB to the shooter's origin, in meters
      */
     public double pitch(double distance) {
-      return pitchRegression.predict(distance);
+      return inBounds(distance) ? evaluate(distance, pitchCoefficients) : 0;
     }
 
     /** The coefficients for the pitch regression model. */
     public double[] pitchRegression() {
-      return pitchRegression.coefficients();
+      return pitchCoefficients.clone();
     }
 
     /**
-     * Generates a new launch-parameter lookup from coefficient arrays.
-     *
-     * @param speedCoefficients the coefficients for the speed polynomial
-     * @param pitchCoefficients the coefficients for the pitch polynomial
+     * Whether or not the lookup table covers the specified distance.
+     * @param distance the distance from the HUB, in meters
      */
-    public static LaunchParameterLookup fromCoefficients(
-        double[] speedCoefficients, double[] pitchCoefficients) {
-      return new LaunchParameterLookup(
-          new RegressionModel(speedCoefficients.length - 1, speedCoefficients),
-          new RegressionModel(pitchCoefficients.length - 1, pitchCoefficients));
+    public boolean inBounds(double distance) {
+      return distance >= minDistance && distance <= maxDistance;
+    }
+
+    /**
+     * Evaluates the value of a polynomial at a specified x value.
+     * 
+     * @param x the x value to input into the polynomial
+     * @param coefficients an array of coefficients describing the polynomial
+     */
+    public static double evaluate(double x, double[] coefficients) {
+      double result = 0;
+      for (int degree = 0; degree < coefficients.length; degree++)
+        result += coefficients[degree] * Math.pow(x, degree);
+      return result;
     }
   }
 }

@@ -16,7 +16,6 @@ import java.util.function.Consumer;
 import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.lib.PolynomialRegression;
 import org.sciborgs1155.lib.PolynomialRegression.ModelSelector;
-import org.sciborgs1155.lib.PolynomialRegression.ModelSelector.RegressionModel;
 import org.sciborgs1155.robot.commands.shooting.ShootingConstants.DirectLaunchParameters;
 import org.sciborgs1155.robot.commands.shooting.ShootingConstants.LaunchParameterLookup;
 import org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterLookupConstants.LookupID;
@@ -60,14 +59,8 @@ public final class ParameterLookup {
   public static void updateLogging() {
     LoggingUtils.log("Shooting/Model/INDEX", lookupID);
     LoggingUtils.log("Shooting/Model/LOADED", parameterLookupSelector.containsKey(lookupID));
-    LoggingUtils.log("Shooting/Model/PROGRESS", progress);
-    LoggingUtils.log("Shooting/Model/GENERATION COMPLETE", done);
-
-    if (!parameterLookupSelector.containsKey(lookupID)) return;
-    LoggingUtils.log(
-        "Shooting/Model/SPEED", parameterLookupSelector.get(lookupID).speedRegression());
-    LoggingUtils.log(
-        "Shooting/Model/PITCH", parameterLookupSelector.get(lookupID).pitchRegression());
+    LoggingUtils.log("Shooting/Model/Generation/PROGRESS", progress);
+    LoggingUtils.log("Shooting/Model/Generation/COMPLETE", done);
   }
 
   /**
@@ -128,12 +121,21 @@ public final class ParameterLookup {
             MAX_DISTANCE,
             INCREMENT);
 
-    PolynomialRegression speed = ModelSelector.regression(dataTable, DISTANCE, SPEED, 5);
-    PolynomialRegression pitch = ModelSelector.regression(dataTable, DISTANCE, PITCH, 5);
+    PolynomialRegression speed = ModelSelector.regression(dataTable, DISTANCE, SPEED, 3);
+    PolynomialRegression pitch = ModelSelector.regression(dataTable, DISTANCE, PITCH, 3);
+
+    double speedR2 = ModelSelector.rSquared(speed, dataTable, DISTANCE, SPEED);
+    double pitchR2 = ModelSelector.rSquared(pitch, dataTable, DISTANCE, PITCH);
 
     done = true;
-    return new LaunchParameterLookup(
-        new RegressionModel(speed.getDegree(), speed.getCoefficients()),
-        new RegressionModel(pitch.getDegree(), pitch.getCoefficients()));
+    
+    LaunchParameterLookup lookup = new LaunchParameterLookup(speed.getCoefficients(), pitch.getCoefficients(), MIN_DISTANCE, MAX_DISTANCE);
+
+    LoggingUtils.log("Shooting/Model/Generation/Speed/Coefficients", speed.getCoefficients());
+    LoggingUtils.log("Shooting/Model/Generation/Pitch/Coefficients", pitch.getCoefficients());
+    LoggingUtils.log("Shooting/Model/Generation/Speed/R^2", speedR2);
+    LoggingUtils.log("Shooting/Model/Generation/Pitch/R^2", pitchR2);
+    
+    return lookup;
   }
 }

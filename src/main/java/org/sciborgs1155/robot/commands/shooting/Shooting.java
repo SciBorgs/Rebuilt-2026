@@ -8,7 +8,6 @@ import static org.sciborgs1155.robot.Constants.EPS;
 import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.fromLaunchParameters;
 import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.robotRelativeShotVelocity;
 import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.robotToShooter;
-import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.shooterVelocity;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.toPitch;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.DRAG_ENABLED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.LIFT_ENABLED;
@@ -175,23 +174,18 @@ public class Shooting {
       double robotX, double robotY, double heading, double vx, double vy, double omega) {
     double[] robotToShooter = robotToShooter(heading);
     double[] shooterTranslation = {robotToShooter[X] + robotX, robotToShooter[Y] + robotY};
-    double[] shooterVelocity = shooterVelocity(robotX, robotY, omega, heading);
     double[] hubToShooter = {GOAL[X] - shooterTranslation[X], GOAL[Y] - shooterTranslation[Y]};
 
     distance = Math.hypot(hubToShooter[X], hubToShooter[Y]);
     double directPitch = ParameterLookup.pitch(distance);
     double directSpeed = ParameterLookup.speed(distance);
-    double stationaryYaw = Math.atan2(hubToShooter[Y], hubToShooter[X]);
+    double stationaryYaw = Math.atan2(hubToShooter[Y], hubToShooter[X]) - heading;
 
     double[] shotVelocity = robotRelativeShotVelocity(directSpeed, directPitch, stationaryYaw);
-    double[] movingShotVelocity = {
-      shotVelocity[X] - shooterVelocity[X], shotVelocity[Y] - shooterVelocity[Y], shotVelocity[Z]
-    };
-
-    speed = MathUtil.clamp(norm(movingShotVelocity), MIN_SPEED, MAX_SPEED);
-    pitch = MathUtil.clamp(Math.asin(movingShotVelocity[Z] / speed), MIN_PITCH, MAX_PITCH);
-    yaw =
-        MathUtil.clamp(Math.atan2(movingShotVelocity[Y], movingShotVelocity[X]), MIN_YAW, MAX_YAW);
+    
+    speed = MathUtil.clamp(norm(shotVelocity), MIN_SPEED, MAX_SPEED);
+    pitch = MathUtil.clamp(Math.asin(shotVelocity[Z] / speed), MIN_PITCH, MAX_PITCH);
+    yaw = MathUtil.clamp(Math.atan2(shotVelocity[Y], shotVelocity[X]), MIN_YAW, MAX_YAW);
   }
 
   /** Creates a visualizer that utilizes the subsystem positions to predict a trajectory. */

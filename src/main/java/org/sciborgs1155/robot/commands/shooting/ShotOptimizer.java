@@ -75,7 +75,6 @@ public final class ShotOptimizer {
   public static void optimizeSpeedForAccuracy(
       DirectLaunchParameters launchParameters, double scoreRadius, double scoreDepth) {
     fuel.withScoringParameters(GOAL, scoreRadius, scoreDepth);
-    fuel.config(RESOLUTION, true, DRAG_ENABLED, true, LIFT_ENABLED);
 
     runSimplePDLoop(
         launchParameters.speed(),
@@ -101,7 +100,6 @@ public final class ShotOptimizer {
   public static void optimizePitchForAccuracy(
       DirectLaunchParameters launchParameters, double scoreRadius, double scoreDepth) {
     fuel.withScoringParameters(GOAL, scoreRadius, scoreDepth);
-    fuel.config(RESOLUTION, true, DRAG_ENABLED, true, LIFT_ENABLED);
 
     runSimplePDLoop(
         launchParameters.speed(),

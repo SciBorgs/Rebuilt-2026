@@ -42,9 +42,4 @@ public class SimSlapdown implements SlapdownIO {
   public void resetPosition() {
     sim.setState(MIN_ANGLE.in(Radians), 0);
   }
-
-  @Override
-  public double velocity() {
-    return sim.getVelocityRadPerSec();
-  }
 }

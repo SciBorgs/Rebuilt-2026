@@ -33,7 +33,7 @@ public class SlapdownConstants {
   public static final Voltage STEP_VOLTAGE = Volts.of(0.7);
   public static final Time TIME_OUT = Seconds.of(30);
 
-  public static final AngularVelocity MAX_VELOCITY = RadiansPerSecond.of(1);
+  public static final AngularVelocity MAX_VELOCITY = RadiansPerSecond.of(4);
   public static final AngularAcceleration MAX_ACCELERATION = RadiansPerSecondPerSecond.of(7);
   public static final TrapezoidProfile.Constraints CONSTRAINTS =
       new TrapezoidProfile.Constraints(
@@ -49,7 +49,7 @@ public class SlapdownConstants {
 
   public static final Angle POSITION_TOLERANCE = Radians.of(0.05);
 
-  public static final AngularVelocity VELOCITY_TOLERANCE = RadiansPerSecond.of(0.1);
+  public static final AngularVelocity VELOCITY_TOLERANCE = RadiansPerSecond.of(0.5);
 
   public static final Angle SQUEEZE_RETRACT = Degrees.of(0);
   public static final Angle SQUEEZE_EXTEND = Degrees.of(60);

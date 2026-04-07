@@ -51,7 +51,7 @@ import org.sciborgs1155.robot.hood.Hood;
 import org.sciborgs1155.robot.hopper.Hopper;
 import org.sciborgs1155.robot.indexer.Indexer;
 import org.sciborgs1155.robot.intake.Intake;
-// import org.sciborgs1155.robot.led.LEDs;
+import org.sciborgs1155.robot.led.LEDs;
 import org.sciborgs1155.robot.shooter.Shooter;
 import org.sciborgs1155.robot.shooter.ShooterConstants;
 import org.sciborgs1155.robot.slapdown.Slapdown;
@@ -83,8 +83,7 @@ public class Robot extends CommandRobot {
   private final Hopper hopper = Hopper.create();
   private final Slapdown slapdown = Slapdown.create();
   private final Climb climb = Climb.none();
-
-  //   private final LEDs leds = LEDs.create();
+  private final LEDs leds = LEDs.create();
 
   // COMMANDS
   private final Alignment align = new Alignment(drive);
@@ -241,7 +240,8 @@ public class Robot extends CommandRobot {
       disabled().onTrue(Commands.runOnce(() -> SignalLogger.stop()));
     }
 
-    autonomous().whileTrue(Commands.deferredProxy(autos::getSelected).asProxy());
+    autonomous()
+        .whileTrue(Commands.deferredProxy(autos::getSelected).asProxy().alongWith(leds.autos()));
 
     test().whileTrue(systemsCheck());
 
@@ -292,7 +292,7 @@ public class Robot extends CommandRobot {
         .whileTrue(
             hopper
                 .intake()
-                .alongWith(indexer.forward().alongWith(shooter.runShooter(120)))
+                .alongWith(indexer.forward().alongWith(shooter.runShooter(170)))
                 .withName("fallback"));
 
     driver.b().whileTrue(slapdown.squeeze()).onFalse(slapdown.extend());
@@ -320,7 +320,7 @@ public class Robot extends CommandRobot {
     operator.leftTrigger().whileTrue(turret.goLeft().withName("left"));
     operator.rightTrigger().whileTrue(turret.goRight().withName("right"));
 
-    operator.povLeft().whileTrue(slapdown.homingSequence());
+    // operator.povLeft().whileTrue(slapdown.homingSequence());
 
     shooting
         .crossingAlliance()

@@ -1,15 +1,5 @@
 package org.sciborgs1155.robot.drive;
 
-<<<<<<< HEAD
-=======
-import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.MetersPerSecond;
-import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
-import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.Second;
-import static edu.wpi.first.units.Units.Seconds;
-import static edu.wpi.first.units.Units.Volts;
->>>>>>> b936e9db79b60cafcb8f09683c27871b4a1ce574
 import static java.lang.Math.atan;
 import java.util.Arrays;
 import java.util.List;
@@ -88,6 +78,7 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 import edu.wpi.first.units.measure.Angle;

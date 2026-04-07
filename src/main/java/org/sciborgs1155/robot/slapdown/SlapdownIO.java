@@ -11,4 +11,8 @@ public interface SlapdownIO extends AutoCloseable {
    * @return the position of the intake when it is extended
    */
   double position();
+
+  void resetPosition();
+
+  double velocity();
 }

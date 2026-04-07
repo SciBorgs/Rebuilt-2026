@@ -235,6 +235,7 @@ public class TalonModule implements ModuleIO {
     Rotation2d rotation = rotation();
     // Optimize the reference state to avoid spinning further than 90 degrees
     voltage.optimize(rotation);
+    voltage.cosineScale(rotation);
 
     setDriveVoltage(voltage.speedMetersPerSecond);
 

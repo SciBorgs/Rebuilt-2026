@@ -320,6 +320,8 @@ public class Robot extends CommandRobot {
     operator.leftTrigger().whileTrue(turret.goLeft().withName("left"));
     operator.rightTrigger().whileTrue(turret.goRight().withName("right"));
 
+    operator.povLeft().whileTrue(slapdown.homingSequence());
+
     shooting
         .crossingAlliance()
         .whileTrue(

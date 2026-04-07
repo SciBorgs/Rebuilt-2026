@@ -1,6 +1,7 @@
 package org.sciborgs1155.robot.slapdown;
 
 import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 import static org.sciborgs1155.robot.Constants.*;
 import static org.sciborgs1155.robot.slapdown.SlapdownConstants.*;
@@ -169,6 +170,12 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
   public Command squeeze() {
     return Commands.sequence(goTo(SQUEEZE_EXTEND.in(Radians)), goTo(SQUEEZE_RETRACT.in(Radians)))
         .repeatedly();
+  }
+
+  public Command homingSequence() {
+    return run(() -> hardware.setVoltage(-1.5))
+        .until(() -> hardware.velocity() < VELOCITY_TOLERANCE.in(RadiansPerSecond))
+        .andThen(runOnce(() -> hardware.resetPosition()));
   }
 
   //   /**

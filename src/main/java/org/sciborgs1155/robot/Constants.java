@@ -77,7 +77,7 @@ public final class Constants {
 
   /** Lookup tables mapping shot distance (meters) to shooter parameters. */
   public static final class ShootingData {
-    public static final double SIGGYS_CONSTANT = 0;
+    public static final double SIGGYS_CONSTANT = 1.5;
 
     // minimum velocity to use SOTM algorithm rather than stationary. measured in m/s
     public static final double MINIMUM_VELOCITY = 0.01;

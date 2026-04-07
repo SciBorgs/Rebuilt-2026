@@ -2,6 +2,7 @@ package org.sciborgs1155.robot.slapdown;
 
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static org.sciborgs1155.robot.Constants.INTAKE_CANIVORE;
 import static org.sciborgs1155.robot.Ports.Slapdown.*;
 import static org.sciborgs1155.robot.slapdown.SlapdownConstants.*;
@@ -53,5 +54,15 @@ public class RealSlapdown implements SlapdownIO {
   @Override
   public void close() throws Exception {
     motor.close();
+  }
+
+  @Override
+  public void resetPosition() {
+    motor.setPosition(MIN_ANGLE);
+  }
+
+  @Override
+  public double velocity() {
+    return motor.getVelocity().getValue().in(RadiansPerSecond);
   }
 }

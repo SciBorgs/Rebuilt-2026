@@ -258,12 +258,12 @@ public class Robot extends CommandRobot {
     driver
         .povDown()
         .or(operator.povDown())
-        .whileTrue(slapdown.extendVolts())
+        .whileTrue(slapdown.extend())
         .onFalse(slapdown.nothing()); // jank jank jank
     driver
         .povRight()
         .or(operator.povRight())
-        .whileTrue(slapdown.retractVolts())
+        .whileTrue(slapdown.retract())
         .onFalse(slapdown.nothing()); // jank jank jank
 
     // OUTTAKE THE INTAKE
@@ -308,14 +308,14 @@ public class Robot extends CommandRobot {
         .leftBumper()
         .whileTrue(intake.intake().alongWith(indexer.forward()).alongWith(hopper.intake()));
 
-    operator
-        .y()
-        .whileTrue(turret.fromJoysticks(operatorRawX, operatorRawY).withName("joysticks"))
-        .onFalse(
-            turret.goToYaw(Rotation2d.fromRadians(START_ANGLE.in(Radians))).withName("back to 0"));
+    operator.y().whileTrue(hopper.intake());
 
     // operator.a().whileTrue(turret.goTo(() -> 3 * Math.PI / 2));
-    operator.b().whileTrue(turret.goTo(() -> Math.PI / 2));
+    operator.b().whileTrue(hopper.outtake());
+
+    operator.a().whileTrue(indexer.forward());
+
+    operator.povUp().whileTrue(indexer.backward());
 
     operator.leftTrigger().whileTrue(turret.goLeft().withName("left"));
     operator.rightTrigger().whileTrue(turret.goRight().withName("right"));

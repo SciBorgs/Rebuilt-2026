@@ -14,12 +14,12 @@ public class IndexerConstants {
   public static final Current CURRENT_LIMIT = Amps.of(30);
   public static final double INTAKING_VELOCITY = 1;
 
-  public static final double P = 0.0;
+  public static final double P = 0.05;
   public static final double I = 0.0;
   public static final double D = 0.0;
 
-  public static final double S = 0.0;
-  public static final double V = 0.0;
+  public static final double S = 0.3;
+  public static final double V = 0.1;
   public static final double A = 0.0;
 
   public static final double MAX_VOLTAGE = 9;
@@ -31,4 +31,6 @@ public class IndexerConstants {
 
   public static final double RADIANS_PER_SEC =
       PASSTHROUGH_SPEED.in(MetersPerSecond) / STAGE_ONE_RADIUS.in(Meters);
+
+  public static final double GEARING = 3.;
 }

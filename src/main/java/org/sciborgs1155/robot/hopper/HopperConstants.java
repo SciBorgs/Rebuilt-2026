@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
+import static org.sciborgs1155.robot.shooter.ShooterConstants.GEARING;
 
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
@@ -14,12 +15,12 @@ public class HopperConstants {
   public static final Current CURRENT_LIMIT = Amps.of(30);
   public static final double INTAKING_VELOCITY = 1;
 
-  public static final double P = 0.0;
+  public static final double P = 0.1;
   public static final double I = 0.0;
   public static final double D = 0.0;
 
-  public static final double S = 0.0;
-  public static final double V = 0.0;
+  public static final double S = 0.2;
+  public static final double V = 0.09;
   public static final double A = 0.0;
 
   public static final double MAX_VOLTAGE = 9;
@@ -30,4 +31,6 @@ public class HopperConstants {
 
   public static final double RADIANS_PER_SEC =
       PASSTHROUGH_SPEED.in(MetersPerSecond) / BIG_WHEEL_RADIUS.in(Meters);
+
+  public static final double GEARING = 5.;
 }

@@ -3,7 +3,7 @@ package org.sciborgs1155.robot.hopper;
 import static edu.wpi.first.units.Units.Amps;
 import static org.sciborgs1155.robot.Constants.INTAKE_CANIVORE;
 import static org.sciborgs1155.robot.Ports.Hopper.MOTOR;
-import static org.sciborgs1155.robot.hopper.HopperConstants.CURRENT_LIMIT;
+import static org.sciborgs1155.robot.hopper.HopperConstants.*;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -18,6 +18,7 @@ public class RealHopper implements HopperIO {
 
     config.CurrentLimits.SupplyCurrentLimit = CURRENT_LIMIT.in(Amps);
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    config.Feedback.SensorToMechanismRatio = GEARING;
 
     motor.getConfigurator().apply(config);
   }

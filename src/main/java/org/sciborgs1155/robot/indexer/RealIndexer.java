@@ -1,9 +1,9 @@
 package org.sciborgs1155.robot.indexer;
 
 import static edu.wpi.first.units.Units.Amps;
-import static org.sciborgs1155.robot.Constants.INTAKE_CANIVORE;
+import static org.sciborgs1155.robot.Constants.SHOOTING_CANIVORE;
 import static org.sciborgs1155.robot.Ports.Indexer.MOTOR;
-import static org.sciborgs1155.robot.indexer.IndexerConstants.CURRENT_LIMIT;
+import static org.sciborgs1155.robot.indexer.IndexerConstants.*;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -14,12 +14,14 @@ public class RealIndexer implements IndexerIO {
   private final TalonFX motor;
 
   public RealIndexer() {
-    motor = new TalonFX(MOTOR, INTAKE_CANIVORE);
+    motor = new TalonFX(MOTOR, SHOOTING_CANIVORE);
     TalonFXConfiguration config = new TalonFXConfiguration();
 
     config.CurrentLimits.SupplyCurrentLimit = CURRENT_LIMIT.in(Amps);
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    config.Feedback.SensorToMechanismRatio = GEARING;
+
 
     motor.getConfigurator().apply(config);
   }

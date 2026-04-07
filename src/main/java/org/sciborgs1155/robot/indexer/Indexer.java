@@ -12,6 +12,8 @@ import static org.sciborgs1155.robot.indexer.IndexerConstants.P;
 import static org.sciborgs1155.robot.indexer.IndexerConstants.S;
 import static org.sciborgs1155.robot.indexer.IndexerConstants.V;
 
+import java.util.function.DoubleSupplier;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -69,22 +71,22 @@ public final class Indexer extends SubsystemBase implements AutoCloseable {
    * @param velocity velocity of indexer motors in radians/sec
    * @return Run command that sets given velocity to motor velocity
    */
-  public Command runIndexer(double velocity) {
-    return run(() -> update(velocity));
+  public Command runIndexer(DoubleSupplier velocity) {
+    return run(() -> update(velocity.getAsDouble()));
   }
 
   /**
    * @return returns a run command to spin the motors at {@value IndexerConstants#INTAKING_VELOCITY} rad/sec
    */
   public Command intake() {
-    return runIndexer(INTAKING_VELOCITY);
+    return runIndexer(() -> INTAKING_VELOCITY);
   }
 
   /**
    * @return returns a run command to spin the motors at negative {@value IndexerConstants#INTAKING_VELOCITY} rad/sec
    */
   public Command outtake() {
-    return runIndexer(-INTAKING_VELOCITY);
+    return runIndexer(() -> -INTAKING_VELOCITY);
   }
 
   /**

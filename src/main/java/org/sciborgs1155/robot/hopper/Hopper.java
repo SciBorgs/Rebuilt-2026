@@ -12,6 +12,8 @@ import static org.sciborgs1155.robot.hopper.HopperConstants.P;
 import static org.sciborgs1155.robot.hopper.HopperConstants.S;
 import static org.sciborgs1155.robot.hopper.HopperConstants.V;
 
+import java.util.function.DoubleSupplier;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -69,22 +71,22 @@ public final class Hopper extends SubsystemBase implements AutoCloseable {
    * @param velocity velocity of hopper motors in radians/sec
    * @return Run command that sets given velocity to motor velocity
    */
-  public Command runHopper(double velocity) {
-    return run(() -> update(velocity));
+  public Command runHopper(DoubleSupplier velocity) {
+    return run(() -> update(velocity.getAsDouble()));
   }
 
   /**
    * @return returns a run command to spin the motors at {@value HopperConstants#INTAKING_VELOCITY} rad/sec
    */
   public Command intake() {
-    return runHopper(INTAKING_VELOCITY);
+    return runHopper(() -> INTAKING_VELOCITY);
   }
 
   /**
    * @return returns a run command to spin the motors at negative {@value HopperConstants#INTAKING_VELOCITY} rad/sec
    */
   public Command outtake() {
-    return runHopper(-INTAKING_VELOCITY);
+    return runHopper(() -> -INTAKING_VELOCITY);
   }
 
   /**

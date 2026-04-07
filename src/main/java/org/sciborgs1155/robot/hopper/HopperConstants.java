@@ -1,7 +1,12 @@
 package org.sciborgs1155.robot.hopper;
 
 import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+
 import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.LinearVelocity;
 
 public class HopperConstants {
 
@@ -18,4 +23,7 @@ public class HopperConstants {
 
   public static final double MAX_VOLTAGE = 9;
 
+  public static final Distance BIG_WHEEL_RADIUS = Inches.of(1.5);
+
+  public static final LinearVelocity PASSTHROUGH_SPEED = MetersPerSecond.of(1);
 }

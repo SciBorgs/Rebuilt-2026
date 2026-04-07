@@ -1,6 +1,7 @@
 package org.sciborgs1155.robot.commands;
 
 import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 import static org.sciborgs1155.robot.Constants.ShootingData.MINIMUM_VELOCITY;
@@ -9,6 +10,7 @@ import static org.sciborgs1155.robot.shooter.ShooterConstants.CENTER_TO_SHOOTER;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.IDLE_VELOCITY;
 
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -39,7 +41,9 @@ import org.sciborgs1155.robot.drive.DriveConstants;
 import org.sciborgs1155.robot.hood.Hood;
 import org.sciborgs1155.robot.hood.HoodConstants;
 import org.sciborgs1155.robot.hopper.Hopper;
+import org.sciborgs1155.robot.hopper.HopperConstants;
 import org.sciborgs1155.robot.indexer.Indexer;
+import org.sciborgs1155.robot.indexer.IndexerConstants;
 import org.sciborgs1155.robot.shooter.Shooter;
 import org.sciborgs1155.robot.turret.Turret;
 
@@ -119,8 +123,8 @@ public class Shooting {
                     && turret.atGoal())
         .andThen(
             Commands.parallel(
-                hopper.intake(),
-                indexer.forward(),
+                hopper.runHopper(() -> HopperConstants.PASSTHROUGH_SPEED.in(MetersPerSecond) / HopperConstants.BIG_WHEEL_RADIUS.in(Meters)),
+                indexer.runIndexer(() -> IndexerConstants.PASSTHROUGH_SPEED.in(MetersPerSecond) / IndexerConstants.STAGE_ONE_RADIUS.in(Meters)),
                 Commands.run(
                     () -> {
                       if (fuelVisualizer != null) fuelVisualizer.launchProjectile();

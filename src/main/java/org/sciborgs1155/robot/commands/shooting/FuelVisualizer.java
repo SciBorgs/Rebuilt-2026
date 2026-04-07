@@ -16,7 +16,6 @@ import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.lib.ProjectileVisualizer;
 import org.sciborgs1155.robot.FieldConstants.Hub;
 import org.sciborgs1155.robot.drive.Drive;
-import org.sciborgs1155.robot.turret.Turret;
 
 @SuppressWarnings("PMD.OneDeclarationPerLine")
 public final class FuelVisualizer extends ProjectileVisualizer {
@@ -71,14 +70,13 @@ public final class FuelVisualizer extends ProjectileVisualizer {
   }
 
   protected static FuelVisualizer fromLaunchParameters(
-      DoubleSupplier speed, DoubleSupplier pitch, DoubleSupplier yaw, Drive drive, Turret turret) {
+      DoubleSupplier speed, DoubleSupplier pitch, DoubleSupplier yaw, Drive drive) {
     DoubleSupplier robotX = () -> drive.pose().getX();
     DoubleSupplier robotY = () -> drive.pose().getY();
     DoubleSupplier heading = () -> drive.heading().getRadians();
     DoubleSupplier robotVx = () -> drive.velocity().getX();
     DoubleSupplier robotVy = () -> drive.velocity().getY();
     DoubleSupplier robotOmega = () -> drive.omega();
-    DoubleSupplier yawOmega = () -> turret.velocity();
 
     CachedVector initialTranslation =
         new CachedVector(
@@ -100,8 +98,7 @@ public final class FuelVisualizer extends ProjectileVisualizer {
                     heading.getAsDouble(),
                     robotVx.getAsDouble(),
                     robotVy.getAsDouble(),
-                    robotOmega.getAsDouble(),
-                    yawOmega.getAsDouble()));
+                    robotOmega.getAsDouble()));
 
     CachedVector initialRotation =
         new CachedVector(() -> initialRotation(yaw.getAsDouble(), heading.getAsDouble()));
@@ -209,18 +206,13 @@ public final class FuelVisualizer extends ProjectileVisualizer {
       double heading,
       double robotVx,
       double robotVy,
-      double robotOmega,
-      double yawOmega) {
+      double robotOmega) {
     double[] fieldRelative = fieldRelative(robotRelativeShotVelocity(speed, pitch, yaw), heading);
     double[] shooterVelocity = shooterVelocity(robotVx, robotVy, robotOmega, heading);
-    double[] shooterToInitial = shooterToInitial(pitch, yaw, heading);
-
-    double turretAppliedVx = yawOmega * shooterToInitial[Y];
-    double turretAppliedVy = -yawOmega * shooterToInitial[X];
 
     return new double[] {
-      fieldRelative[X] + shooterVelocity[X] + turretAppliedVx,
-      fieldRelative[Y] + shooterVelocity[Y] + turretAppliedVy,
+      fieldRelative[X] + shooterVelocity[X],
+      fieldRelative[Y] + shooterVelocity[Y],
       fieldRelative[Z] + shooterVelocity[Z]
     };
   }

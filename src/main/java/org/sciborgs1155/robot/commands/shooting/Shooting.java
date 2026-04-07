@@ -5,9 +5,12 @@ import static org.sciborgs1155.lib.ProjectileVisualizer.Y;
 import static org.sciborgs1155.lib.ProjectileVisualizer.Z;
 import static org.sciborgs1155.lib.ProjectileVisualizer.norm;
 import static org.sciborgs1155.robot.Constants.EPS;
+import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.fieldRelative;
 import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.fromLaunchParameters;
+import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.robotRelative;
 import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.robotRelativeShotVelocity;
 import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.robotToShooter;
+import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.shooterVelocity;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.toPitch;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.DRAG_ENABLED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.LIFT_ENABLED;
@@ -182,16 +185,24 @@ public class Shooting {
     double stationaryYaw = Math.atan2(hubToShooter[Y], hubToShooter[X]) - heading;
 
     double[] shotVelocity = robotRelativeShotVelocity(directSpeed, directPitch, stationaryYaw);
-    
-    speed = MathUtil.clamp(norm(shotVelocity), MIN_SPEED, MAX_SPEED);
-    pitch = MathUtil.clamp(Math.asin(shotVelocity[Z] / speed), MIN_PITCH, MAX_PITCH);
-    yaw = MathUtil.clamp(Math.atan2(shotVelocity[Y], shotVelocity[X]), MIN_YAW, MAX_YAW);
+    double[] fieldRelativeShotVelocity = fieldRelative(shotVelocity, heading);
+    double[] shooterVelocity = shooterVelocity(-vx, -vy, omega, heading);
+
+    double[] trueShotVelocity = robotRelative(new double[]{
+      fieldRelativeShotVelocity[X] - shooterVelocity[X],
+      fieldRelativeShotVelocity[Y] - shooterVelocity[Y],
+      fieldRelativeShotVelocity[Z] - shooterVelocity[Z]
+    }, heading);
+
+    speed = MathUtil.clamp(norm(trueShotVelocity), MIN_SPEED, MAX_SPEED);
+    pitch = MathUtil.clamp(Math.asin(trueShotVelocity[Z] / norm(trueShotVelocity)), MIN_PITCH, MAX_PITCH);
+    yaw = MathUtil.clamp(Math.atan2(trueShotVelocity[Y], trueShotVelocity[X]), MIN_YAW, MAX_YAW);
   }
 
   /** Creates a visualizer that utilizes the subsystem positions to predict a trajectory. */
   public ProjectileVisualizer createVisualizer() {
     return fromLaunchParameters(
-            () -> speed, () -> toPitch(hood.angle()), () -> turret.position(), drive, turret)
+            () -> speed, () -> toPitch(hood.angle()), () -> turret.position(), drive)
         .withScoringParameters(GOAL, SCORE_RADIUS, SCORE_DEPTH)
         .configPhysics(true, DRAG_ENABLED, false, LIFT_ENABLED)
         .configGeneration(
@@ -203,7 +214,7 @@ public class Shooting {
    * Creates a FuelVisualizer with the settings used to generate shots for the shooting algorithm.
    */
   public ProjectileVisualizer createVectorVisualizer() {
-    return fromLaunchParameters(() -> speed, () -> pitch, () -> yaw, drive, turret)
+    return fromLaunchParameters(() -> speed, () -> pitch, () -> yaw, drive)
         .withScoringParameters(GOAL, SCORE_RADIUS, SCORE_DEPTH)
         .configPhysics(true, DRAG_ENABLED, false, LIFT_ENABLED)
         .configGeneration(

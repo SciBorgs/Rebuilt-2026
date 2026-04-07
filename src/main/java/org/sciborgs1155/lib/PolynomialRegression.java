@@ -406,7 +406,8 @@ public class PolynomialRegression {
       return String.format("%.4f", v);
     }
 
-    public static double rSquared(PolynomialRegression regression, double[][] dataTable, int xIndex, int yIndex) {
+    public static double rSquared(
+        PolynomialRegression regression, double[][] dataTable, int xIndex, int yIndex) {
       double[] x = new double[dataTable.length];
       double[] y = new double[dataTable.length];
 

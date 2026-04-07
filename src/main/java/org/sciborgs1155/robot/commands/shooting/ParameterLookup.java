@@ -9,10 +9,11 @@ import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.Physica
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MAX_SPEED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MIN_DISTANCE;
 
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
-
 import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.lib.PolynomialRegression;
 import org.sciborgs1155.lib.PolynomialRegression.ModelSelector;
@@ -20,15 +21,12 @@ import org.sciborgs1155.robot.commands.shooting.ShootingConstants.DirectLaunchPa
 import org.sciborgs1155.robot.commands.shooting.ShootingConstants.LaunchParameterLookup;
 import org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterLookupConstants.LookupID;
 
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-
 /**
  * A class used to analyze and compile shot data into a polynomial regression model that can be used
  * to determine the direct launch parameters for a given distance.
  */
 public final class ParameterLookup {
-  private static LookupID lookupID = LookupID.MINIMAL_AIR_TIME;
+  private static LookupID lookupID = LookupID.MAXIMUM_SPEED;
   private static final ExecutorService executor =
       Executors.newSingleThreadExecutor(runnable -> new Thread(runnable, "Parameter Lookup"));
 
@@ -128,14 +126,16 @@ public final class ParameterLookup {
     double pitchR2 = ModelSelector.rSquared(pitch, dataTable, DISTANCE, PITCH);
 
     done = true;
-    
-    LaunchParameterLookup lookup = new LaunchParameterLookup(speed.getCoefficients(), pitch.getCoefficients(), MIN_DISTANCE, MAX_DISTANCE);
+
+    LaunchParameterLookup lookup =
+        new LaunchParameterLookup(
+            speed.getCoefficients(), pitch.getCoefficients(), MIN_DISTANCE, MAX_DISTANCE);
 
     LoggingUtils.log("Shooting/Model/Generation/Speed/Coefficients", speed.getCoefficients());
     LoggingUtils.log("Shooting/Model/Generation/Pitch/Coefficients", pitch.getCoefficients());
     LoggingUtils.log("Shooting/Model/Generation/Speed/R^2", speedR2);
     LoggingUtils.log("Shooting/Model/Generation/Pitch/R^2", pitchR2);
-    
+
     return lookup;
   }
 }

@@ -1,17 +1,16 @@
 package org.sciborgs1155.robot.commands.shooting;
 
 import static edu.wpi.first.units.Units.Radians;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.toHoodAngle;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.DRAG_CONSTANT;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.FUEL_RADIUS;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.LIFT_CONSTANT;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.ROBOT_TO_SHOOTER;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.SHOOTER_RADIUS;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.SHOOTER_TO_FLYWHEEL;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.toHoodAngle;
 import static org.sciborgs1155.robot.hood.HoodConstants.MIN_ANGLE;
 
 import java.util.function.DoubleSupplier;
-
 import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.lib.ProjectileVisualizer;
 import org.sciborgs1155.robot.FieldConstants.Hub;

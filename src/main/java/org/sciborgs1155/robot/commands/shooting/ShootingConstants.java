@@ -37,7 +37,7 @@ public final class ShootingConstants {
     /** Identifiers for specific lookup models. */
     public enum LookupID {
       MINIMAL_AIR_TIME,
-      MAXIMUM_ACCURACY
+      MAXIMUM_SPEED
     }
 
     /** A map for each launch-parameter model. */
@@ -50,7 +50,16 @@ public final class ShootingConstants {
           new LaunchParameterLookup(
               new double[] {5.977, -0.329, 0.288, -0.023},
               new double[] {1.765, -0.440, 0.074, -0.005},
-              MIN_DISTANCE, MAX_DISTANCE));
+              MIN_DISTANCE,
+              MAX_DISTANCE));
+      
+      ParameterLookup.addLookup(
+          LookupID.MAXIMUM_SPEED,
+          new LaunchParameterLookup(
+              new double[] {4.059, 1.635, -0.023, -0.002},
+              new double[] {1.309, 0.0, 0.0, 0.0},
+              MIN_DISTANCE,
+              MAX_DISTANCE));
     }
   }
 
@@ -103,8 +112,8 @@ public final class ShootingConstants {
     public static final double TOF_KP = 0.5;
     public static final double TOF_KD = 0.05;
 
-    public static final int MAX_TOF_ANALYSIS_ITERATIONS = 3000;
-    public static final double TOF_ANALYSIS_THRESHOLD = 0.001;
+    public static final int MAX_TOF_ANALYSIS_ITERATIONS = 300;
+    public static final double TOF_ANALYSIS_THRESHOLD = 0.01;
 
     public static final double MAX_AIR_TIME = 10;
 
@@ -114,14 +123,17 @@ public final class ShootingConstants {
     public static final double PITCH_KP = 0.5;
     public static final double PITCH_KD = 0.05;
 
-    public static final int MAX_OPTIMIZER_ITERATIONS = 3000;
-    public static final double OPTIMIZATION_THRESHOLD = 0.01;
+    public static final int MAX_OPTIMIZER_ITERATIONS = 300;
+    public static final double OPTIMIZATION_THRESHOLD = 0.1;
 
     /** The resolution of the trajectory used in the ShotOptimizer. */
-    public static final int RESOLUTION = 1000;
+    public static final int RESOLUTION = 500;
 
-    /** The resolution of the pitches in the lookup table, in samples per 2pi radians. */
-    public static final double PITCH_RESOLUTION = 720;
+    /** The resolution of the pitches in the lookup table, in samples per range. */
+    public static final double PITCH_RESOLUTION = 500;
+
+    /** The resolution of the speed in the lookup table, in samples per range. */
+    public static final double SPEED_RESOLUTION = 100;
   }
 
   public static final class PhysicalConstants {
@@ -277,14 +289,20 @@ public final class ShootingConstants {
     /**
      * Compiles polynomial regression models into a singular parameter lookup.
      *
-     * @param speedRegression the polynomial coefficients to model launch speed as a function of distance
-     * @param pitchRegression the polynomial coefficients to model launch pitch as a function of distance
+     * @param speedRegression the polynomial coefficients to model launch speed as a function of
+     *     distance
+     * @param pitchRegression the polynomial coefficients to model launch pitch as a function of
+     *     distance
      * @param minDistance the minimum distance from the HUB, in meters
      * @param maxDistance the maximum distance from the HUB, in meters
      */
-    public LaunchParameterLookup(double[] speedCoefficients, double[] pitchCoefficients, double minDistance, double maxDistance) {
-      this.speedCoefficients = speedCoefficients;
-      this.pitchCoefficients = pitchCoefficients;
+    public LaunchParameterLookup(
+        double[] speedCoefficients,
+        double[] pitchCoefficients,
+        double minDistance,
+        double maxDistance) {
+      this.speedCoefficients = speedCoefficients.clone();
+      this.pitchCoefficients = pitchCoefficients.clone();
 
       this.minDistance = minDistance;
       this.maxDistance = maxDistance;
@@ -320,6 +338,7 @@ public final class ShootingConstants {
 
     /**
      * Whether or not the lookup table covers the specified distance.
+     *
      * @param distance the distance from the HUB, in meters
      */
     public boolean inBounds(double distance) {
@@ -328,7 +347,7 @@ public final class ShootingConstants {
 
     /**
      * Evaluates the value of a polynomial at a specified x value.
-     * 
+     *
      * @param x the x value to input into the polynomial
      * @param coefficients an array of coefficients describing the polynomial
      */

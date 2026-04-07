@@ -1,5 +1,7 @@
 package org.sciborgs1155.robot.commands.shooting;
 
+import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 import static org.sciborgs1155.lib.ProjectileVisualizer.X;
 import static org.sciborgs1155.lib.ProjectileVisualizer.Y;
 import static org.sciborgs1155.lib.ProjectileVisualizer.Z;
@@ -11,7 +13,6 @@ import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.robotRelat
 import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.robotRelativeShotVelocity;
 import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.robotToShooter;
 import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.shooterVelocity;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.toPitch;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.DRAG_ENABLED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.LIFT_ENABLED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MAX_DISTANCE;
@@ -30,9 +31,17 @@ import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.Visuali
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.VisualizerConstants.SHOOTING_SPEED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.VisualizerConstants.TRAJECTORY_ENABLED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.VisualizerConstants.VISUALIZER_RESOLUTION;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.toPitch;
+import static org.sciborgs1155.robot.drive.DriveConstants.MAX_ACCEL;
+import static org.sciborgs1155.robot.drive.DriveConstants.MAX_ANGULAR_ACCEL;
 
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import java.util.function.DoubleSupplier;
-
 import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.lib.ProjectileVisualizer;
@@ -42,12 +51,6 @@ import org.sciborgs1155.robot.hopper.Hopper;
 import org.sciborgs1155.robot.indexer.Indexer;
 import org.sciborgs1155.robot.shooter.Shooter;
 import org.sciborgs1155.robot.turret.Turret;
-
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 /** A command factory for the shooting algorithm. */
 public class Shooting {
@@ -102,9 +105,9 @@ public class Shooting {
                         drive.pose().getX(),
                         drive.pose().getY(),
                         drive.heading().getRadians(),
-                        vx.get(),
-                        vy.get(),
-                        omega.get())),
+                        drive.fieldRelativeChassisSpeeds().vxMetersPerSecond,
+                        drive.fieldRelativeChassisSpeeds().vyMetersPerSecond,
+                        drive.omega())),
             hopper.intake().alongWith(indexer.forward()).onlyWhile(shouldIndex()),
             shooter.runShooter(() -> 0),
             turret.goToYaw(() -> Rotation2d.fromRadians(yaw)),
@@ -133,9 +136,9 @@ public class Shooting {
                         drive.pose().getX(),
                         drive.pose().getY(),
                         drive.heading().getRadians(),
-                        vx.get(),
-                        vy.get(),
-                        omega.get())),
+                        drive.fieldRelativeChassisSpeeds().vxMetersPerSecond,
+                        drive.fieldRelativeChassisSpeeds().vyMetersPerSecond,
+                        drive.omega())),
             hopper.intake().alongWith(indexer.forward()).onlyWhile(shouldIndex()),
             shooter.runShooter(() -> 0),
             turret.goToYaw(() -> Rotation2d.fromRadians(yaw)),
@@ -174,7 +177,7 @@ public class Shooting {
   }
 
   private void updateLaunchParameters(
-      double robotX, double robotY, double heading, double vx, double vy, double omega) {
+      double robotX, double robotY, double heading, double robotVx, double robotVy, double robotOmega) {
     double[] robotToShooter = robotToShooter(heading);
     double[] shooterTranslation = {robotToShooter[X] + robotX, robotToShooter[Y] + robotY};
     double[] hubToShooter = {GOAL[X] - shooterTranslation[X], GOAL[Y] - shooterTranslation[Y]};
@@ -186,17 +189,48 @@ public class Shooting {
 
     double[] shotVelocity = robotRelativeShotVelocity(directSpeed, directPitch, stationaryYaw);
     double[] fieldRelativeShotVelocity = fieldRelative(shotVelocity, heading);
-    double[] shooterVelocity = shooterVelocity(-vx, -vy, omega, heading);
+    double[] shooterVelocity = shooterVelocity(robotVx, robotVy, robotOmega, heading);
 
-    double[] trueShotVelocity = robotRelative(new double[]{
-      fieldRelativeShotVelocity[X] - shooterVelocity[X],
-      fieldRelativeShotVelocity[Y] - shooterVelocity[Y],
-      fieldRelativeShotVelocity[Z] - shooterVelocity[Z]
-    }, heading);
+    double[] trueShotVelocity =
+        robotRelative(
+            new double[] {
+              fieldRelativeShotVelocity[X] - shooterVelocity[X],
+              fieldRelativeShotVelocity[Y] - shooterVelocity[Y],
+              fieldRelativeShotVelocity[Z] - shooterVelocity[Z]
+            },
+            heading);
 
     speed = MathUtil.clamp(norm(trueShotVelocity), MIN_SPEED, MAX_SPEED);
     pitch = MathUtil.clamp(Math.asin(trueShotVelocity[Z] / norm(trueShotVelocity)), MIN_PITCH, MAX_PITCH);
     yaw = MathUtil.clamp(Math.atan2(trueShotVelocity[Y], trueShotVelocity[X]), MIN_YAW, MAX_YAW);
+  }
+
+  public static ChassisSpeeds predictRobotVelocity(double vx, double vy, double omega, ChassisSpeeds robotVelocity, double delta) {
+    double xAcceleration = vx - robotVelocity.vxMetersPerSecond;
+    double yAcceleration = vy - robotVelocity.vyMetersPerSecond;
+
+    double acceleration = Math.hypot(xAcceleration, yAcceleration);
+    double rotationalAcceleration = omega - robotVelocity.omegaRadiansPerSecond;
+
+    double maxAcceleration = MAX_ACCEL.in(MetersPerSecondPerSecond) * delta;
+    double maxRotationalAcceleration = MAX_ANGULAR_ACCEL.in(RadiansPerSecondPerSecond) * delta;
+    
+    double predictedXAcceleration = xAcceleration;
+    double predictedYAcceleration = yAcceleration;
+    double predictedRotationalAcceleration = rotationalAcceleration;
+
+    if (acceleration > maxAcceleration) {
+      predictedXAcceleration *= (maxAcceleration / acceleration);
+      predictedYAcceleration *= (maxAcceleration / acceleration);
+    }
+
+    if (rotationalAcceleration > maxRotationalAcceleration)
+      predictedRotationalAcceleration = maxRotationalAcceleration;
+
+    return new ChassisSpeeds(
+      robotVelocity.vxMetersPerSecond + predictedXAcceleration,
+      robotVelocity.vyMetersPerSecond + predictedYAcceleration,
+      predictedRotationalAcceleration);
   }
 
   /** Creates a visualizer that utilizes the subsystem positions to predict a trajectory. */

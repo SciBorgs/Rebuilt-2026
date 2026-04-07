@@ -250,8 +250,8 @@ public class Robot extends CommandRobot {
         .b()
         .onTrue(
             ParameterLookup.startGeneration(
-                LookupID.MINIMAL_AIR_TIME,
-                (launchParameters) -> ShotOptimizer.optimizeForAirTime(launchParameters)));
+                LookupID.MAXIMUM_SPEED,
+                (launchParameters) -> ShotOptimizer.optimizeForSpeed(launchParameters)));
   }
 
   /**

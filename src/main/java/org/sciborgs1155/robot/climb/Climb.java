@@ -1,10 +1,10 @@
 package org.sciborgs1155.robot.climb;
 
-import java.util.function.DoubleSupplier;
-
-import org.sciborgs1155.lib.Tuning;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
+import static edu.wpi.first.units.Units.Volts;
 import static org.sciborgs1155.robot.Constants.TUNING;
-import org.sciborgs1155.robot.Robot;
 import static org.sciborgs1155.robot.climb.ClimbConstants.A;
 import static org.sciborgs1155.robot.climb.ClimbConstants.D;
 import static org.sciborgs1155.robot.climb.ClimbConstants.G;
@@ -19,23 +19,21 @@ import static org.sciborgs1155.robot.climb.ClimbConstants.S;
 import static org.sciborgs1155.robot.climb.ClimbConstants.V;
 
 import com.ctre.phoenix6.SignalLogger;
-
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.networktables.DoubleEntry;
-import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.MetersPerSecond;
-import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
-import static edu.wpi.first.units.Units.Volts;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import java.util.function.DoubleSupplier;
+import org.sciborgs1155.lib.Tuning;
+import org.sciborgs1155.robot.Robot;
 
 @Logged
 public final class Climb extends SubsystemBase implements AutoCloseable {

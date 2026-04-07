@@ -8,7 +8,7 @@ public interface HopperIO extends AutoCloseable {
    * @param volt The voltage to set the motor to.
    */
   void setVoltage(double volt);
-  
+
   /**
    * Returns velocity of hopper in radians/s.
    *

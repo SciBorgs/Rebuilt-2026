@@ -2,6 +2,7 @@ package org.sciborgs1155.robot.indexer;
 
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 
 import edu.wpi.first.units.measure.Current;
@@ -27,4 +28,7 @@ public class IndexerConstants {
   public static final Distance STAGE_TWO_RADIUS = Inches.of(0.75);
 
   public static final LinearVelocity PASSTHROUGH_SPEED = MetersPerSecond.of(1.5);
+
+  public static final double RADIANS_PER_SEC =
+      PASSTHROUGH_SPEED.in(MetersPerSecond) / STAGE_ONE_RADIUS.in(Meters);
 }

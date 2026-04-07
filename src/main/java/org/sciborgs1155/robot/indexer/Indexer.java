@@ -1,18 +1,13 @@
 package org.sciborgs1155.robot.indexer;
 
-import org.sciborgs1155.lib.Beambreak;
 import static org.sciborgs1155.robot.Ports.Indexer.BEAMBREAK;
-import org.sciborgs1155.robot.Robot;
 import static org.sciborgs1155.robot.indexer.IndexerConstants.A;
 import static org.sciborgs1155.robot.indexer.IndexerConstants.D;
 import static org.sciborgs1155.robot.indexer.IndexerConstants.I;
-import static org.sciborgs1155.robot.indexer.IndexerConstants.INTAKING_VELOCITY;
 import static org.sciborgs1155.robot.indexer.IndexerConstants.MAX_VOLTAGE;
 import static org.sciborgs1155.robot.indexer.IndexerConstants.P;
 import static org.sciborgs1155.robot.indexer.IndexerConstants.S;
 import static org.sciborgs1155.robot.indexer.IndexerConstants.V;
-
-import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
@@ -20,12 +15,15 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import java.util.function.DoubleSupplier;
+import org.sciborgs1155.lib.Beambreak;
+import org.sciborgs1155.robot.Robot;
 
 public final class Indexer extends SubsystemBase implements AutoCloseable {
   private final IndexerIO hardware;
   private final Beambreak beambreak;
   public final Trigger blocked;
-  
+
   private final PIDController pid = new PIDController(P, I, D);
 
   private final SimpleMotorFeedforward ff = new SimpleMotorFeedforward(S, V, A);
@@ -76,17 +74,19 @@ public final class Indexer extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * @return returns a run command to spin the motors at {@value IndexerConstants#INTAKING_VELOCITY} rad/sec
+   * @return returns a run command to spin the motors at {@value IndexerConstants#RADIANS_PER_SEC}
+   *     rad/sec
    */
-  public Command intake() {
-    return runIndexer(() -> INTAKING_VELOCITY);
+  public Command forward() {
+    return runIndexer(() -> IndexerConstants.RADIANS_PER_SEC);
   }
 
   /**
-   * @return returns a run command to spin the motors at negative {@value IndexerConstants#INTAKING_VELOCITY} rad/sec
+   * @return returns a run command to spin the motors at negative {@value
+   *     IndexerConstants#RADIANS_PER_SEC} rad/sec
    */
-  public Command outtake() {
-    return runIndexer(() -> -INTAKING_VELOCITY);
+  public Command backward() {
+    return runIndexer(() -> -IndexerConstants.RADIANS_PER_SEC);
   }
 
   /**

@@ -1,10 +1,9 @@
 package org.sciborgs1155.robot.drive;
 
-import org.sciborgs1155.robot.drive.DriveConstants.ControlMode;
-
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import org.sciborgs1155.robot.drive.DriveConstants.ControlMode;
 
 /** Generalized hardware internals for a swerve module */
 public interface ModuleIO extends AutoCloseable {

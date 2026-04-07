@@ -8,7 +8,7 @@ public interface IndexerIO extends AutoCloseable {
    * @param volt The voltage to set the motor to.
    */
   void setVoltage(double volt);
-  
+
   /**
    * Returns velocity of indexer in radians/s.
    *

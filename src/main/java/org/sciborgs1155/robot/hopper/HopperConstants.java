@@ -2,6 +2,7 @@ package org.sciborgs1155.robot.hopper;
 
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 
 import edu.wpi.first.units.measure.Current;
@@ -26,4 +27,7 @@ public class HopperConstants {
   public static final Distance BIG_WHEEL_RADIUS = Inches.of(1.5);
 
   public static final LinearVelocity PASSTHROUGH_SPEED = MetersPerSecond.of(1);
+
+  public static final double RADIANS_PER_SEC =
+      PASSTHROUGH_SPEED.in(MetersPerSecond) / BIG_WHEEL_RADIUS.in(Meters);
 }

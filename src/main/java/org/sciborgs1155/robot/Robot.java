@@ -1,11 +1,6 @@
 package org.sciborgs1155.robot;
 
-import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.MetersPerSecond;
-import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.Second;
-import static edu.wpi.first.units.Units.Seconds;
+import static edu.wpi.first.units.Units.*;
 import static edu.wpi.first.wpilibj2.command.button.RobotModeTriggers.autonomous;
 import static edu.wpi.first.wpilibj2.command.button.RobotModeTriggers.disabled;
 import static edu.wpi.first.wpilibj2.command.button.RobotModeTriggers.teleop;
@@ -37,7 +32,6 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import java.util.Arrays;
-import java.util.Set;
 import org.littletonrobotics.urcl.URCL;
 import org.sciborgs1155.lib.CommandRobot;
 import org.sciborgs1155.lib.FaultLogger;
@@ -57,6 +51,7 @@ import org.sciborgs1155.robot.hood.Hood;
 import org.sciborgs1155.robot.hopper.Hopper;
 import org.sciborgs1155.robot.indexer.Indexer;
 import org.sciborgs1155.robot.intake.Intake;
+// import org.sciborgs1155.robot.led.LEDs;
 import org.sciborgs1155.robot.shooter.Shooter;
 import org.sciborgs1155.robot.shooter.ShooterConstants;
 import org.sciborgs1155.robot.slapdown.Slapdown;
@@ -75,7 +70,7 @@ public class Robot extends CommandRobot {
   private final CommandXboxController operator = new CommandXboxController(OI.OPERATOR);
   private final CommandXboxController driver = new CommandXboxController(OI.DRIVER);
 
-  private final PowerDistribution pdh = new PowerDistribution();
+  @NotLogged private final PowerDistribution pdh = new PowerDistribution();
 
   // SUBSYSTEMS
   private final Drive drive = Drive.create();
@@ -86,8 +81,10 @@ public class Robot extends CommandRobot {
   private final Shooter shooter = Shooter.create();
   private final Indexer indexer = Indexer.create();
   private final Hopper hopper = Hopper.create();
-  private final Slapdown slapdown = Slapdown.none();
+  private final Slapdown slapdown = Slapdown.create();
   private final Climb climb = Climb.none();
+
+  //   private final LEDs leds = LEDs.create();
 
   // COMMANDS
   private final Alignment align = new Alignment(drive);
@@ -143,7 +140,7 @@ public class Robot extends CommandRobot {
     addPeriodic(FaultLogger::update, 2);
     Epilogue.bind(this);
 
-    FaultLogger.register(pdh);
+    // FaultLogger.register(pdh);
     SmartDashboard.putData("Auto Chooser", autos);
 
     if (TUNING) {
@@ -172,13 +169,6 @@ public class Robot extends CommandRobot {
         () ->
             drive.updateEstimates(
                 vision.estimatedGlobalPoses(drive.gyroHeading(), disabled().getAsBoolean())),
-        PERIOD);
-
-    addPeriodic(
-        () ->
-            SmartDashboard.putNumber(
-                "Hypothetical Turret Shooting Goal",
-                shooting.calculateShot(Shooting.HUB_TARGET).turretAngle()),
         PERIOD);
 
     RobotController.setBrownoutVoltage(6.0);
@@ -251,7 +241,7 @@ public class Robot extends CommandRobot {
       disabled().onTrue(Commands.runOnce(() -> SignalLogger.stop()));
     }
 
-    autonomous().whileTrue(Commands.defer(autos::getSelected, Set.of(drive)).asProxy());
+    autonomous().whileTrue(Commands.deferredProxy(autos::getSelected).asProxy());
 
     test().whileTrue(systemsCheck());
 
@@ -263,32 +253,56 @@ public class Robot extends CommandRobot {
         .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
 
     // INTAKE TOGGLE
-    driver.leftTrigger().toggleOnTrue(intake.intake());
+    driver.leftTrigger().whileTrue(intake.intake());
+
+    driver
+        .povDown()
+        .or(operator.povDown())
+        .whileTrue(slapdown.extend())
+        .onFalse(slapdown.nothing()); // jank jank jank
+    driver
+        .povRight()
+        .or(operator.povRight())
+        .whileTrue(slapdown.retract())
+        .onFalse(slapdown.nothing()); // jank jank jank
 
     // OUTTAKE THE INTAKE
-    driver.a().whileTrue(intake.outtake().alongWith(hopper.outtake()).alongWith(indexer.backward()));
+    driver
+        .a()
+        .whileTrue(intake.outtake().alongWith(hopper.outtake()).alongWith(indexer.backward()));
 
     // FEED CONTINUOUS (LEFT SIDE)
-    driver.leftBumper().whileTrue(shooting.shootDriving(Shooting.LEFT_FEED, x, y, omega));
+    driver
+        .leftBumper()
+        .whileTrue(shooting.shootDriving(Shooting.LEFT_FEED, x, y, omega).withName("left feed"));
 
     // FEED CONTINUOUS (RIGHT SIDE)
-    driver.rightBumper().whileTrue(shooting.shootDriving(Shooting.RIGHT_FEED, x, y, omega));
+    driver
+        .rightBumper()
+        .whileTrue(shooting.shootDriving(Shooting.RIGHT_FEED, x, y, omega).withName("right feed"));
 
     // SCORE CONTINUOUS
-    driver.rightTrigger().whileTrue(shooting.shootDriving(Shooting.HUB_TARGET, x, y, omega));
+    driver
+        .rightTrigger()
+        .whileTrue(shooting.shootDriving(Shooting.HUB_TARGET, x, y, omega).withName("HUB"));
 
     // SCORING FALL BACK (FIXED POSITION)
     driver
         .y()
-        .whileTrue(hopper.intake().alongWith(indexer.forward().alongWith(shooter.runShooter(120))));
+        .whileTrue(
+            hopper
+                .intake()
+                .alongWith(indexer.forward().alongWith(shooter.runShooter(120)))
+                .withName("fallback"));
 
+    driver.b().whileTrue(slapdown.squeeze()).onFalse(slapdown.extend());
     // CLIMB
     // operator
     //     .y()
     //     .whileTrue(climb.extend())
     //     .onFalse(climb.retract());
 
-    operator.x().whileTrue(shooting.shootWithTestData());
+    operator.x().whileTrue(shooting.shootWithTestData().withName("test data"));
 
     operator
         .leftBumper()
@@ -303,12 +317,18 @@ public class Robot extends CommandRobot {
     // operator.a().whileTrue(turret.goTo(() -> 3 * Math.PI / 2));
     operator.b().whileTrue(turret.goTo(() -> Math.PI / 2));
 
-    operator.leftTrigger().whileTrue(turret.goLeft());
-    operator.rightTrigger().whileTrue(turret.goRight());
+    operator.leftTrigger().whileTrue(turret.goLeft().withName("left"));
+    operator.rightTrigger().whileTrue(turret.goRight().withName("right"));
+
+    operator.povLeft().whileTrue(slapdown.homingSequence());
 
     shooting
         .crossingAlliance()
-        .whileTrue(shooting.hideAway().withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
+        .whileTrue(
+            shooting
+                .hideAway()
+                .withInterruptBehavior(InterruptionBehavior.kCancelIncoming)
+                .withName("crossing"));
 
     // DEBUG
     // TODO: various operator debug stuff (turret, hood, shooter)

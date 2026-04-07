@@ -5,9 +5,22 @@
     "data": {
       "commands": [
         {
-          "type": "path",
+          "type": "parallel",
           "data": {
-            "pathName": "BlueDepotSafe.0"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "deploy"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "BlueDepotSafe.0"
+                }
+              }
+            ]
           }
         },
         {

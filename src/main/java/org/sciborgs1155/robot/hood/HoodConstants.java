@@ -44,8 +44,8 @@ public class HoodConstants {
     public static final double I = Robot.isReal() ? 0 : 0.000001;
     public static final double D = Robot.isReal() ? 0.2 : 0.000001;
     public static final double S = 0.295;
-    public static final double V = .7;
-    public static final double G = .015;
+    public static final double V = 0.7;
+    public static final double G = 0.015;
     public static final double A = 0;
   }
 }

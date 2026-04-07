@@ -38,7 +38,7 @@ public final class Constants {
   public static final double MAX_RATE =
       DriveConstants.MAX_ACCEL.baseUnitMagnitude()
           / DriveConstants.MAX_ANGULAR_SPEED.baseUnitMagnitude();
-  public static final double SLOW_SPEED_MULTIPLIER = 0.33;
+  public static final double SLOW_SPEED_MULTIPLIER = 1.0;
   public static final double FULL_SPEED_MULTIPLIER = 1.0;
 
   // The name of seperate canivore, set to rio if no seperate canivore
@@ -76,13 +76,26 @@ public final class Constants {
   }
 
   /** Lookup tables mapping shot distance (meters) to shooter parameters. */
-  public static class ShootingData {
+  public static final class ShootingData {
+    public static final double SIGGYS_CONSTANT = 1.5;
+
+    // minimum velocity to use SOTM algorithm rather than stationary. measured in m/s
+    public static final double MINIMUM_VELOCITY = 0.01;
+
     public static final InterpolatingDoubleTreeMap DISTANCE_TO_RADS =
         new InterpolatingDoubleTreeMap();
     public static final InterpolatingDoubleTreeMap DISTANCE_TO_TOF =
         new InterpolatingDoubleTreeMap();
     public static final InterpolatingTreeMap<Double, Rotation2d> DISTANCE_TO_HOOD_ANGLE =
         new InterpolatingTreeMap<>(InverseInterpolator.forDouble(), Rotation2d::interpolate);
+    public static final InterpolatingDoubleTreeMap DISTANCE_TO_HORIZONTAL_VELOCITY =
+        new InterpolatingDoubleTreeMap();
+    public static final InterpolatingDoubleTreeMap VELOCITY_TO_RADS =
+        new InterpolatingDoubleTreeMap();
+    public static final InterpolatingTreeMap<Double, Rotation2d> VELOCITY_TO_HOOD_ANGLE =
+        new InterpolatingTreeMap<>(InverseInterpolator.forDouble(), Rotation2d::interpolate);
+
+    private ShootingData() {}
 
     /**
      * Applies a point to the three linear interpolations.
@@ -93,24 +106,40 @@ public final class Constants {
      * @param tof
      */
     public static void put(double dist, double degIncline, double speed, double tof) {
-      DISTANCE_TO_HOOD_ANGLE.put(dist, Rotation2d.fromDegrees(degIncline));
+      Rotation2d hoodAngle = Rotation2d.fromDegrees(degIncline);
+      DISTANCE_TO_HOOD_ANGLE.put(dist, hoodAngle);
       DISTANCE_TO_RADS.put(dist, speed);
       DISTANCE_TO_TOF.put(dist, tof);
+
+      double velocity = dist / tof;
+      DISTANCE_TO_HORIZONTAL_VELOCITY.put(dist, velocity);
+      VELOCITY_TO_RADS.put(velocity, speed);
+      VELOCITY_TO_HOOD_ANGLE.put(velocity, hoodAngle);
     }
 
     static {
-      put(2.44, 20.0, 120.0, 1.0);
-      put(2.5, 25.0, 117.0, 1.01);
-      put(3.7, 30, 130, 0.97);
-      put(4.414, 40.0, 146.0, 0.95);
+      put(1.37, 15, 135, .89);
+      put(1.873, 18, 148, 1.08);
+      put(2.518, 27, 130, .95);
+      put(3.605, 30, 153, 1.09);
+      put(4.58, 34, 173, 1.09);
+      put(5.67, 38, 195, 1.25);
+
+      // put(2.5, 25.0, 120.0, 0.95); // 3/26/2026, bxsci
+      // put(2.06, 22.0, 112.5, 0.74); // 3/26/2026, bxsci
+      // put(3.08, 27.0, 133.0, 1.02); // 3/26/2026, bxsci
+      // put(3.95, 29.0, 165.0, 1.15); // 3/26/2026, bxsci
+      // put(4.414, 40.0, 146.0, 0.95);
+      // put(1.146, 15.0, 120.0, 0.85); // 3/26/2026, bxsci
+      // put(5.057, 37.0, 170.0, 1.15); // 3/26/2026, bxsci
     }
   }
 
   // TODO: UPDATE ALL OF THESE VALUES.
   /** Describes physical properites of the robot. */
   public static class Robot {
-    public static final Mass MASS = Pounds.of(110);
-    public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.2);
+    public static final Mass MASS = Pounds.of(130.37);
+    public static final MomentOfInertia MOI = KilogramSquareMeters.of(6.9);
     public static final Distance SHOOTER_LENGTH = Inches.of(4); // TODO: UPDATE.
     public static final Translation3d ROBOT_TO_SHOOTER =
         new Translation3d(-0.14006, 0.13983, 0.3286252);

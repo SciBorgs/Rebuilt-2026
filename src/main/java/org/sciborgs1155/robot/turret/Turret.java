@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.*;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
+import static edu.wpi.first.wpilibj2.command.button.RobotModeTriggers.disabled;
 import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.Constants.TUNING;
 import static org.sciborgs1155.robot.turret.TurretConstants.*;
@@ -32,6 +33,8 @@ import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.lib.Tuning;
 import org.sciborgs1155.robot.Robot;
+import yams.units.EasyCRT;
+import yams.units.EasyCRTConfig;
 
 /**
  * The {@code Turret} subsystem consists of a single motor that is used to aim a variable hood
@@ -59,6 +62,9 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
 
   /** Visualization. Green = Position, Red = Setpoint. */
   private final TurretVisualizer visualizer = new TurretVisualizer(6, 7);
+
+  private final EasyCRTConfig crtConfig;
+  private final EasyCRT crtSolver;
 
   /** System identification routine object. */
   private final SysIdRoutine sysIdRoutine;
@@ -96,6 +102,16 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
     hardware = turretIO;
 
     controller.setTolerance(TOLERANCE.in(Radians));
+
+    crtConfig =
+        new EasyCRTConfig(
+                () -> Rotations.of(hardware.encoderA()), () -> Rotations.of(hardware.encoderB()))
+            .withCommonDriveGear(1, TURRET_GEARING, ENCODER_A_GEARING, ENCODER_B_GEARING)
+            .withMatchTolerance(CRT_MATCH_TOLERANCE)
+            .withMechanismRange(MIN_ANGLE, MAX_ANGLE);
+    // .withAbsoluteEncoderOffsets(Rotations.of(-0.442), Rotations.of(-0.847));
+
+    crtSolver = new EasyCRT(crtConfig);
 
     sysIdRoutine =
         new SysIdRoutine(
@@ -157,7 +173,7 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
    */
   @Logged
   public double position() {
-    return hardware.angle();
+    return hardware.getPosition().in(Radians);
   }
 
   /**
@@ -265,6 +281,13 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
     return goToYaw(() -> yaw);
   }
 
+  /**
+   * Moves the turret to a field-relative yaw.
+   *
+   * @param yaw The field-relative yaw to move the turret to.
+   * @param heading The current heading of the robot.
+   * @return A command to move the robot to a field-relative yaw angle.
+   */
   public Command goToFieldRelativeYaw(Supplier<Rotation2d> yaw, Supplier<Rotation2d> heading) {
     return goToYaw(() -> yaw.get().minus(heading.get())).withName("goToYaw field relative");
   }
@@ -298,6 +321,15 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
   @Override
   public void periodic() {
     var command = getCurrentCommand();
+    LoggingUtils.log("Robot/turret/Encoder A", hardware.encoderA());
+    LoggingUtils.log("Robot/turret/Encoder B", hardware.encoderB());
+    crtSolver
+        .getAngleOptional()
+        .ifPresent(
+            (angle) -> {
+              LoggingUtils.log("Robot/turret/crtAngle", angle.in(Radians));
+              if (disabled().getAsBoolean()) hardware.setPosition(angle);
+            });
     LoggingUtils.log("Robot/turret/current command", command != null ? command.getName() : "None");
 
     hardware.periodic();

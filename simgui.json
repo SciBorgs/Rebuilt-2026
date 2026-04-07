@@ -58,11 +58,6 @@
       "Robot/turret/controller": "ProfiledPIDController"
     },
     "windows": {
-      "/FMSInfo": {
-        "window": {
-          "visible": true
-        }
-      },
       "/SmartDashboard/Auto Chooser": {
         "window": {
           "visible": true
@@ -75,11 +70,6 @@
         "right": 3942,
         "top": 118,
         "width": 16.54119300842285,
-        "window": {
-          "visible": true
-        }
-      },
-      "/SmartDashboard/Robot/turret/TurretVisualizer": {
         "window": {
           "visible": true
         }

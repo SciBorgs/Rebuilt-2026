@@ -3,6 +3,7 @@ package org.sciborgs1155.robot.commands;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
+import static org.sciborgs1155.robot.Constants.ShootingData.MINIMUM_VELOCITY;
 import static org.sciborgs1155.robot.FieldConstants.allianceReflect;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.CENTER_TO_SHOOTER;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.IDLE_VELOCITY;
@@ -31,6 +32,7 @@ import org.sciborgs1155.lib.Tuning;
 import org.sciborgs1155.robot.FieldConstants;
 import org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer;
 import org.sciborgs1155.robot.commands.shooting.ShootingAlgorithm;
+import org.sciborgs1155.robot.commands.shooting.StationaryShooting;
 import org.sciborgs1155.robot.commands.shooting.TOFIteration;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.drive.DriveConstants;
@@ -64,6 +66,7 @@ public class Shooting {
   public static final Translation2d RIGHT_FEED = FieldConstants.Hub.RIGHT_FEED.toTranslation2d();
 
   private final ShootingAlgorithm algorithm = new TOFIteration();
+  private final ShootingAlgorithm stationaryShooting = new StationaryShooting();
 
   private Translation2d lastTarget = new Translation2d();
 
@@ -123,7 +126,7 @@ public class Shooting {
                       if (fuelVisualizer != null) fuelVisualizer.launchProjectile();
                     })))
         .deadlineFor(
-            runShooterSuperstructure(() -> calculateShot(HUB_TARGET)),
+            runShooterSuperstructure(() -> calculateShot(target)),
             drive.drive(
                 vx.scale(DriveConstants.SHOOTING_TRANSLATIONAL_SPEED),
                 vy.scale(DriveConstants.SHOOTING_TRANSLATIONAL_SPEED),
@@ -235,14 +238,11 @@ public class Shooting {
     Translation3d displacement =
         new Translation3d(reflectedTarget.minus(turretPose.getTranslation()));
 
-    Translation2d linearAccel = drive.acceleration();
-
     // Run the shooting algorithm to get field-relative firing vector
     Vector<N3> firingVec =
-        algorithm.calculate(
-            displacement.plus(
-                new Translation3d(linearAccel.times(Math.pow(LATENCY_TIME.getAsDouble(), 2) / 2))),
-            turretSpeeds.plus(linearAccel.times(LATENCY_TIME.getAsDouble()).toVector()));
+        turretSpeeds.norm() > MINIMUM_VELOCITY // moving at less than a cm/s
+            ? algorithm.calculate(displacement, turretSpeeds)
+            : stationaryShooting.calculate(displacement, VecBuilder.fill(0, 0));
 
     double vx = firingVec.get(0);
     double vy = firingVec.get(1);

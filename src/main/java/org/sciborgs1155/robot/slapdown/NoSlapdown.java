@@ -12,4 +12,12 @@ public class NoSlapdown implements SlapdownIO {
 
   @Override
   public void close() throws Exception {}
+
+  @Override
+  public void resetPosition() {}
+
+  @Override
+  public double velocity() {
+    return 0;
+  }
 }

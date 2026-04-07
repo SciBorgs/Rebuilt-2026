@@ -134,12 +134,12 @@ public class SimModule implements ModuleIO {
   }
 
   @Override
-  public void updateInputs(Rotation2d angle, double voltage) {
-    setpoint.angle = angle;
+  public void updateInputs(SwerveModuleState voltage) {
+    setpoint.angle = voltage.angle;
 
     double turnVolts = turnFeedback.calculate(rotation().getRadians(), setpoint.angle.getRadians());
 
-    setDriveVoltage(voltage);
+    setDriveVoltage(voltage.speedMetersPerSecond);
     setTurnVoltage(turnVolts);
   }
 

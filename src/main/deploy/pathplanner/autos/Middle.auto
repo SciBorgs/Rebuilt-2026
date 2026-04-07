@@ -5,9 +5,22 @@
     "data": {
       "commands": [
         {
-          "type": "path",
+          "type": "parallel",
           "data": {
-            "pathName": "Middle"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Middle.0"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "deploy"
+                }
+              }
+            ]
           }
         },
         {

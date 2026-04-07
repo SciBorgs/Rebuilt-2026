@@ -9,6 +9,7 @@ import static org.sciborgs1155.robot.slapdown.SlapdownConstants.GEARING;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.lib.TalonUtils;
@@ -25,9 +26,10 @@ public class RealSlapdown implements SlapdownIO {
 
     TalonFXConfiguration motorConfig = new TalonFXConfiguration();
 
-    motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     motorConfig.CurrentLimits.SupplyCurrentLimit = CURRENT_LIMIT.in(Amps);
     motorConfig.Feedback.SensorToMechanismRatio = GEARING;
+    motorConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
     motor.getConfigurator().apply(motorConfig);
     motor.setPosition(MAX_ANGLE);

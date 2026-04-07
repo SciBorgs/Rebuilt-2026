@@ -7,5 +7,5 @@ import edu.wpi.first.units.measure.Current;
 public class HopperConstants {
 
   public static final Current CURRENT_LIMIT = Amps.of(30);
-  public static final double INTAKING_POWER = 0.75;
+  public static final double INTAKING_POWER = 1;
 }

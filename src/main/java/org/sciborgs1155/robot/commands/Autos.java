@@ -78,7 +78,7 @@ public final class Autos {
             .withTimeout(7)
             .asProxy());
     NamedCommands.registerCommand("intake", intake.intake());
-    NamedCommands.registerCommand("deploy", slapdown.extendVolts().withTimeout(0.75));
+    NamedCommands.registerCommand("deploy", slapdown.extend());
     NamedCommands.registerCommand(
         "climb",
         alignment

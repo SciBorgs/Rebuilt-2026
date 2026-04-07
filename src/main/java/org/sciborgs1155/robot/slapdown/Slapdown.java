@@ -5,6 +5,7 @@ import static edu.wpi.first.units.Units.Volts;
 import static org.sciborgs1155.robot.Constants.*;
 import static org.sciborgs1155.robot.slapdown.SlapdownConstants.*;
 
+import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.MathUtil;
@@ -58,31 +59,35 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
 
     sysIdRoutine =
         new SysIdRoutine(
-            new Config(RAMP_RATE, STEP_VOLTAGE, TIME_OUT),
+            new Config(
+                RAMP_RATE,
+                STEP_VOLTAGE,
+                TIME_OUT,
+                (state) -> SignalLogger.writeString("slapdown state", state.toString())),
             new Mechanism(voltage -> hardware.setVoltage(voltage.in(Volts)), null, this));
     SmartDashboard.putData(
         "Robot/slapdown/quasistatic forward",
         sysIdRoutine
             .quasistatic(Direction.kForward)
-            .until(() -> atPosition(MAX_ANGLE.in(Radians)))
+            // .until(() -> atPosition(MAX_ANGLE.in(Radians)))
             .withName("slapdown quasistatic forward"));
     SmartDashboard.putData(
         "Robot/slapdown/quasistatic backward",
         sysIdRoutine
             .quasistatic(Direction.kReverse)
-            .until(() -> atPosition(MIN_ANGLE.in(Radians)))
+            // .until(() -> atPosition(MIN_ANGLE.in(Radians)))
             .withName("slapdown quasistatic backward"));
     SmartDashboard.putData(
         "Robot/slapdown/dynamic forward",
         sysIdRoutine
             .dynamic(Direction.kForward)
-            .until(() -> atPosition(MAX_ANGLE.in(Radians)))
+            // .until(() -> atPosition(MAX_ANGLE.in(Radians)))
             .withName("slapdown dynamic forward"));
     SmartDashboard.putData(
         "Robot/slapdown/dynamic backward",
         sysIdRoutine
             .dynamic(Direction.kReverse)
-            .until(() -> atPosition(MIN_ANGLE.in(Radians)))
+            // .until(() -> atPosition(MIN_ANGLE.in(Radians)))
             .withName("slapdown dynamic backward"));
   }
 
@@ -125,22 +130,23 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
    * @return slap down the intake with volts
    */
   public Command extendVolts() {
-    return Commands.run(() -> hardware.setVoltage(EXTEND_VOLTAGE)).withTimeout(SQUEEZE_EXTEND);
+    return Commands.run(() -> hardware.setVoltage(EXTEND_VOLTAGE));
   }
 
   /**
    * @return bring up the intake with volts
    */
   public Command retractVolts() {
-    return Commands.run(() -> hardware.setVoltage(RETRACT_VOLTAGE)).withTimeout(SQUEEZE_RETRACT);
+    return Commands.run(() -> hardware.setVoltage(RETRACT_VOLTAGE));
   }
-  
+
   /**
-   * @return nothing command?
+   * @return 0 Volt Command
    */
   public Command nothing() {
     return Commands.run(() -> hardware.setVoltage(0));
   }
+
   /**
    * @return slap down the intake
    */
@@ -161,23 +167,22 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
    * @return The repeating sequence.
    */
   public Command squeeze() {
-    return Commands.sequence(
-            retract().until(() -> atGoal()).withTimeout(SQUEEZE_RETRACT),
-            extend().until(() -> atGoal()).withTimeout(SQUEEZE_EXTEND))
+    return Commands.sequence(goTo(SQUEEZE_EXTEND.in(Radians)), goTo(SQUEEZE_RETRACT.in(Radians)))
         .repeatedly();
   }
 
-    /**
-   * A repeating sequence of retracting and extending the hopper to help feed fuel into the indexer.
-   *
-   * @return The repeating sequence.
-   */
-  public Command squeezeVolts() {
-    return Commands.sequence(
-            retractVolts().withTimeout(SQUEEZE_RETRACT),
-            extendVolts().withTimeout(SQUEEZE_EXTEND))
-        .repeatedly().finallyDo(() -> hardware.setVoltage(0)); // TODO jank jank jank
-  }
+  //   /**
+  //  * A repeating sequence of retracting and extending the hopper to help feed fuel into the
+  // indexer.
+  //  *
+  //  * @return The repeating sequence.
+  //  */
+  // public Command squeezeVolts() {
+  //   return Commands.sequence(
+  //           retractVolts().withTimeout(SQUEEZE_RETRACT),
+  //           extendVolts().withTimeout(SQUEEZE_EXTEND))
+  //       .repeatedly().finallyDo(() -> hardware.setVoltage(0)); // TODO jank jank jank
+  // }
 
   /**
    * @return the position of the slapdown
@@ -192,7 +197,7 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
    */
   @Logged
   public double setpoint() {
-    return pid.getGoal().position;
+    return pid.getSetpoint().position;
   }
 
   /**

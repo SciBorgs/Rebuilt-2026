@@ -29,6 +29,7 @@ import org.sciborgs1155.robot.hood.Hood;
 import org.sciborgs1155.robot.hopper.Hopper;
 import org.sciborgs1155.robot.indexer.Indexer;
 import org.sciborgs1155.robot.shooter.Shooter;
+import org.sciborgs1155.robot.slapdown.Slapdown;
 import org.sciborgs1155.robot.turret.Turret;
 
 public class ShootingTest {
@@ -56,6 +57,7 @@ public class ShootingTest {
             drive,
             Hopper.none(),
             Indexer.none(),
+            Slapdown.none(),
             new FuelVisualizer(
                 () -> new double[] {0, 0, 0},
                 () -> new double[] {0, 0, 0},

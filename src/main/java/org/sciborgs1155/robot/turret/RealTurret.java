@@ -23,8 +23,8 @@ public class RealTurret implements TurretIO {
   /** Motor controller that operates a motor which is used to rotate the turret. */
   private final TalonFX motor = new TalonFX(MOTOR, SHOOTING_CANIVORE);
 
-  private final CANcoder encoderA = new CANcoder(ENCODER_A, "shooting");
-  private final CANcoder encoderB = new CANcoder(ENCODER_B, "shooting");
+  private final CANcoder encoderA = new CANcoder(ENCODER_A, SHOOTING_CANIVORE);
+  private final CANcoder encoderB = new CANcoder(ENCODER_B, SHOOTING_CANIVORE);
 
   /** Real hardware interface for the {@code Turret} subsystem. */
   public RealTurret() {

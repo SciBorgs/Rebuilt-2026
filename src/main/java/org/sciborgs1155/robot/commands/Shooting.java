@@ -41,6 +41,7 @@ import org.sciborgs1155.robot.hood.HoodConstants;
 import org.sciborgs1155.robot.hopper.Hopper;
 import org.sciborgs1155.robot.indexer.Indexer;
 import org.sciborgs1155.robot.shooter.Shooter;
+import org.sciborgs1155.robot.slapdown.Slapdown;
 import org.sciborgs1155.robot.turret.Turret;
 
 public class Shooting {
@@ -76,6 +77,7 @@ public class Shooting {
   private final Drive drive;
   private final Hopper hopper;
   private final Indexer indexer;
+  private final Slapdown slapdown;
 
   ProjectileVisualizer fuelVisualizer;
 
@@ -91,6 +93,7 @@ public class Shooting {
       Drive drive,
       Hopper hopper,
       Indexer indexer,
+      Slapdown slapdown,
       ProjectileVisualizer fuelVisualizer) {
     this.shooter = shooter;
     this.turret = turret;
@@ -98,6 +101,7 @@ public class Shooting {
     this.drive = drive;
     this.hopper = hopper;
     this.indexer = indexer;
+    this.slapdown = slapdown;
     this.fuelVisualizer = fuelVisualizer;
   }
 
@@ -121,6 +125,7 @@ public class Shooting {
             Commands.parallel(
                 hopper.intake(),
                 indexer.forward(),
+                slapdown.squeeze(),
                 Commands.run(
                     () -> {
                       if (fuelVisualizer != null) fuelVisualizer.launchProjectile();

@@ -105,7 +105,7 @@ public class Robot extends CommandRobot {
               .config(true, true);
 
   private final Shooting shooting =
-      new Shooting(shooter, turret, hood, drive, hopper, indexer, fuelVisualizer);
+      new Shooting(shooter, turret, hood, drive, hopper, indexer, slapdown, fuelVisualizer);
 
   @NotLogged
   private final SendableChooser<Command> autos =
@@ -258,12 +258,12 @@ public class Robot extends CommandRobot {
     driver
         .povDown()
         .or(operator.povDown())
-        .whileTrue(slapdown.extend())
+        .whileTrue(slapdown.extendVolts())
         .onFalse(slapdown.nothing()); // jank jank jank
     driver
         .povRight()
         .or(operator.povRight())
-        .whileTrue(slapdown.retract())
+        .whileTrue(slapdown.retractVolts())
         .onFalse(slapdown.nothing()); // jank jank jank
 
     // OUTTAKE THE INTAKE

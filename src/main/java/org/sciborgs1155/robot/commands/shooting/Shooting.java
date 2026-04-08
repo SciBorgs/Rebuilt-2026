@@ -13,6 +13,10 @@ import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.robotRelat
 import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.robotRelativeShotVelocity;
 import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.robotToShooter;
 import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.shooterVelocity;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterLookupConstants.DISTANCE;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterLookupConstants.PITCH;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterLookupConstants.SPEED;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterLookupConstants.YAW;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterLookupConstants.velocityLookup;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.DRAG_ENABLED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.LIFT_ENABLED;
@@ -38,7 +42,6 @@ import static org.sciborgs1155.robot.drive.DriveConstants.MAX_ANGULAR_ACCEL;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -70,11 +73,10 @@ public class Shooting {
 
   private Algorithm algorithm = Algorithm.NONE;
 
-  private double distance;
-  private double speed;
-  private double rollerSpeed;
-  private double pitch;
-  private double yaw;
+  private double distance, speed, pitch, yaw;
+  private double rollerSpeed, yawOmega;
+
+  private static final double PREDICTION_DELTA = 0.1;
 
   /** A command factory for the shooting algorithm. */
   public Shooting(
@@ -101,15 +103,7 @@ public class Shooting {
     return Commands.parallel(
             Commands.startEnd(
                 () -> algorithm = Algorithm.DISCRETE, () -> algorithm = Algorithm.NONE),
-            Commands.run(
-                () ->
-                    updateLaunchParameters(
-                        drive.pose().getX(),
-                        drive.pose().getY(),
-                        drive.heading().getRadians(),
-                        drive.fieldRelativeChassisSpeeds().vxMetersPerSecond,
-                        drive.fieldRelativeChassisSpeeds().vyMetersPerSecond,
-                        drive.omega())),
+            Commands.run(() -> updateLaunchParameters(vx.get(), vy.get(), omega.get())),
             hopper.intake().alongWith(indexer.forward()).onlyWhile(shouldIndex()),
             shooter.runShooter(() -> rollerSpeed),
             turret.goToYaw(() -> Rotation2d.fromRadians(yaw)),
@@ -132,18 +126,10 @@ public class Shooting {
     return Commands.parallel(
             Commands.startEnd(
                 () -> algorithm = Algorithm.DYNAMIC, () -> algorithm = Algorithm.NONE),
-            Commands.run(
-                () ->
-                    updateLaunchParameters(
-                        drive.pose().getX(),
-                        drive.pose().getY(),
-                        drive.heading().getRadians(),
-                        drive.fieldRelativeChassisSpeeds().vxMetersPerSecond,
-                        drive.fieldRelativeChassisSpeeds().vyMetersPerSecond,
-                        drive.omega())),
+            Commands.run(() -> updateLaunchParameters(vx.get(), vy.get(), omega.get())),
             hopper.intake().alongWith(indexer.forward()).onlyWhile(shouldIndex()),
             shooter.runShooter(() -> rollerSpeed),
-            turret.goToYaw(() -> Rotation2d.fromRadians(yaw)),
+            turret.goToVelocity(() -> yawOmega),
             hood.goToShootingAngle(() -> pitch),
             drive.drive(vx, vy, omega))
         .withName("Dynamic Shooter");
@@ -177,7 +163,62 @@ public class Shooting {
                 && distance >= MIN_DISTANCE);
   }
 
-  private void updateLaunchParameters(
+  /**
+   * Updates the launch parameter fields based on th current state of the robot.
+   * 
+   * @param vx the velocity of the robot along the x axis (from controller)
+   * @param vy the velocity of the robot along the y axis (from controller)
+   * @param omega A supplier for the angular velocity of the robot (from controller)
+   */
+  private void updateLaunchParameters(double vx, double vy, double omega) {
+    double robotX = drive.pose().getX();
+    double robotY = drive.pose().getY();
+
+    double robotVx = drive.fieldRelativeChassisSpeeds().vxMetersPerSecond;
+    double robotVy = drive.fieldRelativeChassisSpeeds().vyMetersPerSecond;
+
+    double heading = drive.heading().getRadians();
+    double robotOmega = drive.omega();
+
+    double[] robotAcceleration = robotAcceleration(vx, vy, omega, robotVx, robotVy, robotOmega, PREDICTION_DELTA);
+
+    double xAcceleration = robotAcceleration[X];
+    double yAcceleration = robotAcceleration[Y];
+    double rotationalAcceleration = robotAcceleration[Z];
+
+    double xDelta = robotVx * PREDICTION_DELTA + 0.5 * xAcceleration * PREDICTION_DELTA * PREDICTION_DELTA;
+    double yDelta = robotVy * PREDICTION_DELTA + 0.5 * yAcceleration * PREDICTION_DELTA * PREDICTION_DELTA;
+    double headingDelta = robotOmega * PREDICTION_DELTA + 0.5 * rotationalAcceleration * PREDICTION_DELTA * PREDICTION_DELTA;
+    
+    double[] currentLaunchParameters = completeLaunchParameters(robotX, robotY, heading, robotVx, robotVy, robotOmega);
+    double[] futureLaunchParameters = completeLaunchParameters(
+        robotX + xDelta, robotY + yDelta,
+        heading + headingDelta,
+        robotVx + xAcceleration * PREDICTION_DELTA,
+        robotVy + yAcceleration * PREDICTION_DELTA,
+        robotOmega + rotationalAcceleration * PREDICTION_DELTA);
+    
+    distance = currentLaunchParameters[DISTANCE];
+    speed = currentLaunchParameters[SPEED];
+    rollerSpeed = velocityLookup.rollerSpeed(speed);
+
+    pitch = currentLaunchParameters[PITCH];
+    yaw = currentLaunchParameters[YAW];
+    yawOmega = (futureLaunchParameters[YAW] - currentLaunchParameters[YAW]) / PREDICTION_DELTA;
+  }
+
+  /**
+   * Computes a launch vector that will accurately shoot FUEL into the HUB.
+   * 
+   * @param robotX the x-position of the robot, in meters
+   * @param robotY the y-position of the robot, in meters
+   * @param heading the heading of the robot, in radians
+   * @param robotVx the x-velocity of the robot, in meters per second
+   * @param robotVy the y-velocity of the robot, in meters per second
+   * @param robotOmega the rotational velocity of the robot, in radians per second
+   * @return a double[] containing {distance (meters), speed (meters per second), pitch (radians), and yaw (radians)}
+   */
+  private static double[] completeLaunchParameters(
       double robotX,
       double robotY,
       double heading,
@@ -188,7 +229,7 @@ public class Shooting {
     double[] shooterTranslation = {robotToShooter[X] + robotX, robotToShooter[Y] + robotY};
     double[] hubToShooter = {GOAL[X] - shooterTranslation[X], GOAL[Y] - shooterTranslation[Y]};
 
-    distance = Math.hypot(hubToShooter[X], hubToShooter[Y]);
+    double distance = Math.hypot(hubToShooter[X], hubToShooter[Y]);
     double directPitch = ParameterLookup.pitch(distance);
     double directSpeed = ParameterLookup.speed(distance);
     double stationaryYaw = Math.atan2(hubToShooter[Y], hubToShooter[X]) - heading;
@@ -206,24 +247,33 @@ public class Shooting {
             },
             heading);
 
-    speed = MathUtil.clamp(norm(trueShotVelocity), MIN_SPEED, MAX_SPEED);
-    pitch =
+    double speed = MathUtil.clamp(norm(trueShotVelocity), MIN_SPEED, MAX_SPEED);
+    double pitch =
         MathUtil.clamp(
             Math.asin(trueShotVelocity[Z] / norm(trueShotVelocity)), MIN_PITCH, MAX_PITCH);
-    yaw = MathUtil.clamp(Math.atan2(trueShotVelocity[Y], trueShotVelocity[X]), MIN_YAW, MAX_YAW);
-    rollerSpeed = velocityLookup.rollerSpeed(speed);
+    double yaw = MathUtil.clamp(Math.atan2(trueShotVelocity[Y], trueShotVelocity[X]), MIN_YAW, MAX_YAW);
+
+    return new double[]{distance, speed, pitch, yaw};
   }
 
-  public static ChassisSpeeds predictRobotVelocity(
-      double vx, double vy, double omega, ChassisSpeeds robotVelocity, double delta) {
-    double xAcceleration = vx - robotVelocity.vxMetersPerSecond;
-    double yAcceleration = vy - robotVelocity.vyMetersPerSecond;
+  /**
+   * Predicts the robot's acceleration using euler integration.
+   * 
+   * @param vx the velocity of the robot along the x axis (from controller)
+   * @param vy the velocity of the robot along the y axis (from controller)
+   * @param omega A supplier for the angular velocity of the robot (from controller)
+   * @param robotVelocity the actual velocity of the robot (from encoders)
+   * @param delta the time to look ahead and use to predict acceleration
+   * @return a double[] containing the predicted {x, y, omega} accelerations
+   */
+  private static double[] robotAcceleration(double vx, double vy, double omega, double robotVx, double robotVy, double robotOmega, double delta) {
+    double xAcceleration = (vx - robotVx) / delta;
+    double yAcceleration = (vy - robotVy) / delta;
+    double rotationalAcceleration = (omega - robotOmega) / delta;
 
     double acceleration = Math.hypot(xAcceleration, yAcceleration);
-    double rotationalAcceleration = omega - robotVelocity.omegaRadiansPerSecond;
-
-    double maxAcceleration = MAX_ACCEL.in(MetersPerSecondPerSecond) * delta;
-    double maxRotationalAcceleration = MAX_ANGULAR_ACCEL.in(RadiansPerSecondPerSecond) * delta;
+    double maxAcceleration = MAX_ACCEL.in(MetersPerSecondPerSecond);
+    double maxRotationalAcceleration = MAX_ANGULAR_ACCEL.in(RadiansPerSecondPerSecond);
 
     double predictedXAcceleration = xAcceleration;
     double predictedYAcceleration = yAcceleration;
@@ -234,13 +284,11 @@ public class Shooting {
       predictedYAcceleration *= (maxAcceleration / acceleration);
     }
 
-    if (rotationalAcceleration > maxRotationalAcceleration)
-      predictedRotationalAcceleration = maxRotationalAcceleration;
+    if (Math.abs(rotationalAcceleration) > maxRotationalAcceleration)
+      predictedRotationalAcceleration = 
+          Math.copySign(maxRotationalAcceleration, rotationalAcceleration);
 
-    return new ChassisSpeeds(
-        robotVelocity.vxMetersPerSecond + predictedXAcceleration,
-        robotVelocity.vyMetersPerSecond + predictedYAcceleration,
-        predictedRotationalAcceleration);
+    return new double[]{predictedXAcceleration, predictedYAcceleration, predictedRotationalAcceleration};
   }
 
   /** Creates a visualizer that utilizes the subsystem positions to predict a trajectory. */

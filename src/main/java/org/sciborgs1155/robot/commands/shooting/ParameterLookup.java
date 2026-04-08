@@ -26,7 +26,7 @@ import org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterLooku
  * to determine the direct launch parameters for a given distance.
  */
 public final class ParameterLookup {
-  private static LookupID lookupID = LookupID.MAXIMUM_SPEED;
+  private static LookupID lookupID = LookupID.MINIMAL_AIR_TIME;
   private static final ExecutorService executor =
       Executors.newSingleThreadExecutor(runnable -> new Thread(runnable, "Parameter Lookup"));
 

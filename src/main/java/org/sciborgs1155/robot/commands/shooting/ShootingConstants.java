@@ -45,7 +45,7 @@ public final class ShootingConstants {
         (MAX_DISTANCE - MIN_DISTANCE) / PARAMETER_ENTRIES;
 
     /** Array indices for data stored within the parameter table. */
-    public static final int DISTANCE = 0, SPEED = 1, PITCH = 2;
+    public static final int DISTANCE = 0, SPEED = 1, PITCH = 2, YAW = 3;
 
     /** Identifiers for specific lookup models. */
     public enum LookupID {

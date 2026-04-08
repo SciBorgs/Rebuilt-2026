@@ -34,8 +34,6 @@ import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.Scoring
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ScoringConstants.GOAL;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ScoringConstants.SCORE_DEPTH;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ScoringConstants.SCORE_RADIUS;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ScoringConstants.TOF_DEPTH;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ScoringConstants.TOF_RADIUS;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -122,7 +120,7 @@ public final class ShotOptimizer {
    */
   public static void optimizeSpeedForTimeOfFlight(
       DirectLaunchParameters launchParameters, double timeOfFlight) {
-    optimizeSpeedForAccuracy(launchParameters, TOF_RADIUS, TOF_DEPTH);
+    optimizeSpeedForAccuracy(launchParameters, SCORE_RADIUS, SCORE_DEPTH);
 
     runSimplePDLoop(
         launchParameters.speed(),
@@ -145,31 +143,11 @@ public final class ShotOptimizer {
    */
   public static void optimizeForAirTime(DirectLaunchParameters launchParameters) {
     double increment = Math.PI * 2 / PITCH_RESOLUTION;
-    
+
     double linePitch = Math.atan((GOAL[Z] - ROBOT_TO_SHOOTER[Z]) / launchParameters.distance());
     double startingPitch = Math.max(linePitch, MIN_PITCH);
 
     for (double testPitch = startingPitch; testPitch <= MAX_PITCH; testPitch += increment) {
-      launchParameters.setPitch(testPitch);
-      optimizeSpeedForAccuracy(launchParameters, SCORE_RADIUS, SCORE_DEPTH);
-
-      double[][] trajectory = simulateTrajectory(launchParameters);
-      if (Math.abs(hubError(trajectory)) > OPTIMIZATION_THRESHOLD) continue;
-      if (clearsRimHeight(trajectory)) return;
-    }
-
-    throw new UnsupportedOperationException("Impossible shot!");
-  }
-
-  /**
-   * Modifies the given launch parameters in-place to maximize accuracy (highest pitch).
-   * 
-   * @param launchParameters the launch parameters to optimize
-   */
-  public static void optimizeForAccuracy(DirectLaunchParameters launchParameters) {
-    double increment = (MAX_PITCH - MIN_PITCH) / PITCH_RESOLUTION;
-
-    for (double testPitch = MAX_PITCH; testPitch >= MIN_PITCH; testPitch -= increment) {
       launchParameters.setPitch(testPitch);
       optimizeSpeedForAccuracy(launchParameters, SCORE_RADIUS, SCORE_DEPTH);
 
@@ -200,7 +178,6 @@ public final class ShotOptimizer {
 
     throw new UnsupportedOperationException("Impossible shot!");
   }
-
 
   /**
    * The time-of-flight of the FUEL when launched with the given parameters (seconds).
@@ -373,7 +350,7 @@ public final class ShotOptimizer {
       double derivative = (iteration == 0) ? 0 : derivativeConstant * (previousError - error);
 
       value = MathUtil.clamp(value + proportional + derivative, minimum, maximum);
-      
+
       if (error == previousError) return value;
       previousError = error;
     }

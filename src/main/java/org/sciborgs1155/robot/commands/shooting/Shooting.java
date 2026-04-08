@@ -13,6 +13,7 @@ import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.robotRelat
 import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.robotRelativeShotVelocity;
 import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.robotToShooter;
 import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.shooterVelocity;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterLookupConstants.velocityLookup;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.DRAG_ENABLED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.LIFT_ENABLED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MAX_DISTANCE;
@@ -71,6 +72,7 @@ public class Shooting {
 
   private double distance;
   private double speed;
+  private double rollerSpeed;
   private double pitch;
   private double yaw;
 
@@ -109,7 +111,7 @@ public class Shooting {
                         drive.fieldRelativeChassisSpeeds().vyMetersPerSecond,
                         drive.omega())),
             hopper.intake().alongWith(indexer.forward()).onlyWhile(shouldIndex()),
-            shooter.runShooter(() -> 0),
+            shooter.runShooter(() -> rollerSpeed),
             turret.goToYaw(() -> Rotation2d.fromRadians(yaw)),
             hood.goToShootingAngle(() -> pitch),
             drive.drive(vx, vy, omega))
@@ -140,7 +142,7 @@ public class Shooting {
                         drive.fieldRelativeChassisSpeeds().vyMetersPerSecond,
                         drive.omega())),
             hopper.intake().alongWith(indexer.forward()).onlyWhile(shouldIndex()),
-            shooter.runShooter(() -> 0),
+            shooter.runShooter(() -> rollerSpeed),
             turret.goToYaw(() -> Rotation2d.fromRadians(yaw)),
             hood.goToShootingAngle(() -> pitch),
             drive.drive(vx, vy, omega))
@@ -165,7 +167,6 @@ public class Shooting {
   }
 
   /** Whether or not to run the indexer/hopper. */
-  @SuppressWarnings("PMD.LinguisticNaming")
   public Trigger shouldIndex() {
     return new Trigger(
         () ->
@@ -177,7 +178,12 @@ public class Shooting {
   }
 
   private void updateLaunchParameters(
-      double robotX, double robotY, double heading, double robotVx, double robotVy, double robotOmega) {
+      double robotX,
+      double robotY,
+      double heading,
+      double robotVx,
+      double robotVy,
+      double robotOmega) {
     double[] robotToShooter = robotToShooter(heading);
     double[] shooterTranslation = {robotToShooter[X] + robotX, robotToShooter[Y] + robotY};
     double[] hubToShooter = {GOAL[X] - shooterTranslation[X], GOAL[Y] - shooterTranslation[Y]};
@@ -201,11 +207,15 @@ public class Shooting {
             heading);
 
     speed = MathUtil.clamp(norm(trueShotVelocity), MIN_SPEED, MAX_SPEED);
-    pitch = MathUtil.clamp(Math.asin(trueShotVelocity[Z] / norm(trueShotVelocity)), MIN_PITCH, MAX_PITCH);
+    pitch =
+        MathUtil.clamp(
+            Math.asin(trueShotVelocity[Z] / norm(trueShotVelocity)), MIN_PITCH, MAX_PITCH);
     yaw = MathUtil.clamp(Math.atan2(trueShotVelocity[Y], trueShotVelocity[X]), MIN_YAW, MAX_YAW);
+    rollerSpeed = velocityLookup.rollerSpeed(speed);
   }
 
-  public static ChassisSpeeds predictRobotVelocity(double vx, double vy, double omega, ChassisSpeeds robotVelocity, double delta) {
+  public static ChassisSpeeds predictRobotVelocity(
+      double vx, double vy, double omega, ChassisSpeeds robotVelocity, double delta) {
     double xAcceleration = vx - robotVelocity.vxMetersPerSecond;
     double yAcceleration = vy - robotVelocity.vyMetersPerSecond;
 
@@ -214,7 +224,7 @@ public class Shooting {
 
     double maxAcceleration = MAX_ACCEL.in(MetersPerSecondPerSecond) * delta;
     double maxRotationalAcceleration = MAX_ANGULAR_ACCEL.in(RadiansPerSecondPerSecond) * delta;
-    
+
     double predictedXAcceleration = xAcceleration;
     double predictedYAcceleration = yAcceleration;
     double predictedRotationalAcceleration = rotationalAcceleration;
@@ -228,15 +238,18 @@ public class Shooting {
       predictedRotationalAcceleration = maxRotationalAcceleration;
 
     return new ChassisSpeeds(
-      robotVelocity.vxMetersPerSecond + predictedXAcceleration,
-      robotVelocity.vyMetersPerSecond + predictedYAcceleration,
-      predictedRotationalAcceleration);
+        robotVelocity.vxMetersPerSecond + predictedXAcceleration,
+        robotVelocity.vyMetersPerSecond + predictedYAcceleration,
+        predictedRotationalAcceleration);
   }
 
   /** Creates a visualizer that utilizes the subsystem positions to predict a trajectory. */
   public ProjectileVisualizer createVisualizer() {
     return fromLaunchParameters(
-            () -> speed, () -> toPitch(hood.angle()), () -> turret.position(), drive)
+            () -> velocityLookup.launchSpeed(shooter.velocity()),
+            () -> toPitch(hood.angle()),
+            () -> turret.position(),
+            drive)
         .withScoringParameters(GOAL, SCORE_RADIUS, SCORE_DEPTH)
         .configPhysics(true, DRAG_ENABLED, false, LIFT_ENABLED)
         .configGeneration(

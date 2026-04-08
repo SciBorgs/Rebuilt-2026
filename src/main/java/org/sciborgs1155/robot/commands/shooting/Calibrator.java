@@ -2,13 +2,12 @@ package org.sciborgs1155.robot.commands.shooting;
 
 import static org.sciborgs1155.lib.ProjectileVisualizer.X;
 import static org.sciborgs1155.lib.ProjectileVisualizer.Y;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.CalibrationConstants.CALIBRATION_ENTRIES;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.CalibrationConstants.CALIBRATION_INCREMENT;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.CalibrationConstants.DISTANCE;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.CalibrationConstants.ENTRIES;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.CalibrationConstants.HOOD_ANGLE;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.CalibrationConstants.INCREMENT;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.CalibrationConstants.ROLLER_SPEED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.CalibrationConstants.STARTING_ROLLER_SPEED;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.CalibrationConstants.TIME_OF_FLIGHT;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MIN_DISTANCE;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ScoringConstants.GOAL;
 
@@ -23,6 +22,7 @@ import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.lib.Tuning;
+import org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterLookupConstants.LookupID;
 import org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.hood.Hood;
@@ -45,7 +45,7 @@ public class Calibrator {
   private boolean shooting;
 
   /** The results of the calibration. */
-  private static double[][] calibrationResults = new double[ENTRIES][4];
+  private static double[][] calibrationResults = new double[CALIBRATION_ENTRIES][3];
 
   /** The speed of the shooter roller in radians per second. */
   private static final DoubleEntry shooterSpeed =
@@ -69,12 +69,11 @@ public class Calibrator {
   public Command recordCalibration() {
     return Commands.runOnce(
         () -> {
-          if (index.get() < 0 || index.get() > ENTRIES)
+          if (index.get() < 0 || index.get() > CALIBRATION_ENTRIES)
             throw new UnsupportedOperationException("Invalid calibration index!");
           calibrationResults[(int) index.get()][DISTANCE] = distance(index.get());
           calibrationResults[(int) index.get()][ROLLER_SPEED] = shooterSpeed.get();
           calibrationResults[(int) index.get()][HOOD_ANGLE] = hoodAngle().getAsDouble();
-          calibrationResults[(int) index.get()][TIME_OF_FLIGHT] = 0;
         });
   }
 
@@ -129,6 +128,7 @@ public class Calibrator {
 
   /** A supplier for the angle of the hood. */
   private DoubleSupplier hoodAngle() {
+    ParameterLookup.useLookup(LookupID.MINIMAL_AIR_TIME);
     return () -> Math.PI / 2 - ParameterLookup.pitch(distance(index.get()));
   }
 
@@ -138,8 +138,8 @@ public class Calibrator {
    * @param index the index of the calibration
    */
   private static double distance(long index) {
-    if (index < 0 || index > ENTRIES)
+    if (index < 0 || index > CALIBRATION_ENTRIES)
       throw new UnsupportedOperationException("Invalid calibration index!");
-    return MIN_DISTANCE + INCREMENT * index;
+    return MIN_DISTANCE + CALIBRATION_INCREMENT * index;
   }
 }

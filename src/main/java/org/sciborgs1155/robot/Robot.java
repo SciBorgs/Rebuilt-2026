@@ -50,8 +50,6 @@ import org.sciborgs1155.robot.commands.Autos;
 import org.sciborgs1155.robot.commands.shooting.Calibrator;
 import org.sciborgs1155.robot.commands.shooting.ParameterLookup;
 import org.sciborgs1155.robot.commands.shooting.Shooting;
-import org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterLookupConstants.LookupID;
-import org.sciborgs1155.robot.commands.shooting.ShotOptimizer;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.hood.Hood;
 import org.sciborgs1155.robot.hood.HoodVisualizer;
@@ -95,7 +93,7 @@ public class Robot extends CommandRobot {
   private final Calibrator calibrator =
       new Calibrator(shooter, turret, hood, hopper, indexer, drive);
 
-  @NotLogged private final ProjectileVisualizer fuelVisualizer = shooting.createVectorVisualizer();
+  @NotLogged private final ProjectileVisualizer fuelVisualizer = shooting.createVisualizer();
 
   @NotLogged
   private final SendableChooser<Command> autos =
@@ -244,14 +242,7 @@ public class Robot extends CommandRobot {
         .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
 
     teleop().whileTrue(shooting.runDiscreteShooter(x, y, omega));
-
-    operator.a().whileTrue(fuelVisualizer.launchProjectiles());
-    operator
-        .b()
-        .onTrue(
-            ParameterLookup.startGeneration(
-                LookupID.MAXIMUM_SPEED,
-                (launchParameters) -> ShotOptimizer.optimizeForSpeed(launchParameters)));
+    shooting.shouldIndex().whileTrue(fuelVisualizer.launchProjectiles());
   }
 
   /**

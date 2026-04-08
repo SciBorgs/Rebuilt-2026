@@ -1,7 +1,7 @@
 package org.sciborgs1155.robot.commands.shooting;
 
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.CalibrationConstants.INCREMENT;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterLookupConstants.DISTANCE;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterLookupConstants.PARAMETER_INCREMENT;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterLookupConstants.PITCH;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterLookupConstants.SPEED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterLookupConstants.parameterLookupSelector;
@@ -84,6 +84,15 @@ public final class ParameterLookup {
   }
 
   /**
+   * Switches the lookup model used by the speed and pitch methods.
+   *
+   * @param lookupID the identifier for the lookup model being loaded
+   */
+  public static void useLookup(LookupID lookupID) {
+    ParameterLookup.lookupID = lookupID;
+  }
+
+  /**
    * Adds a launch parameter lookup model to the selector.
    *
    * @param lookupID the identifier for the lookup model being added
@@ -117,7 +126,7 @@ public final class ParameterLookup {
             },
             MIN_DISTANCE,
             MAX_DISTANCE,
-            INCREMENT);
+            PARAMETER_INCREMENT);
 
     PolynomialRegression speed = ModelSelector.regression(dataTable, DISTANCE, SPEED, 3);
     PolynomialRegression pitch = ModelSelector.regression(dataTable, DISTANCE, PITCH, 3);

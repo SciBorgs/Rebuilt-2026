@@ -2,23 +2,32 @@ package org.sciborgs1155.robot.commands.shooting;
 
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static org.sciborgs1155.lib.ProjectileVisualizer.Projectile.AIR_DENSITY;
 import static org.sciborgs1155.robot.Constants.EPS;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.CalibrationConstants.DISTANCE;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.CalibrationConstants.HOOD_ANGLE;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.CalibrationConstants.ROLLER_SPEED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MAX_DISTANCE;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MAX_PITCH;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MAX_SPEED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MIN_DISTANCE;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MIN_PITCH;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MIN_SPEED;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ScoringConstants.CALIBRATION_DEPTH;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ScoringConstants.CALIBRATION_RADIUS;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.CENTER_TO_SHOOTER;
 
 import edu.wpi.first.math.util.Units;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import org.sciborgs1155.lib.PolynomialRegression;
+import org.sciborgs1155.lib.PolynomialRegression.ModelSelector;
 import org.sciborgs1155.lib.ProjectileVisualizer;
 import org.sciborgs1155.robot.FieldConstants.Hub;
 import org.sciborgs1155.robot.drive.DriveConstants;
 import org.sciborgs1155.robot.hood.HoodConstants;
+import org.sciborgs1155.robot.shooter.ShooterConstants;
 
 /** Constants used in the shooting algorithm. */
 @SuppressWarnings("PMD.OneDeclarationPerLine")
@@ -31,6 +40,10 @@ public final class ShootingConstants {
   private ShootingConstants() {}
 
   public static final class ParameterLookupConstants {
+    public static final int PARAMETER_ENTRIES = 50;
+    public static final double PARAMETER_INCREMENT =
+        (MAX_DISTANCE - MIN_DISTANCE) / PARAMETER_ENTRIES;
+
     /** Array indices for data stored within the parameter table. */
     public static final int DISTANCE = 0, SPEED = 1, PITCH = 2;
 
@@ -40,7 +53,24 @@ public final class ShootingConstants {
       MAXIMUM_SPEED
     }
 
-    /** A map for each launch-parameter model. */
+    /** A model for the conversion between launch speed and roller speed. */
+    public static final VelocityLookup velocityLookup =
+        new VelocityLookup(
+            new double[][] {
+              {1.512, 10, 0.262}, // ENTRY 1
+              {1.972, 20, 0.262}, // ENTRY 2
+              {2.433, 50, 0.262}, // ENTRY 3
+              {2.894, 100, 0.262}, // ENTRY 4
+              {3.355, 150, 0.262}, // ENTRY 5
+              {3.816, 200, 0.262}, // ENTRY 6
+              {4.277, 250, 0.262}, // ENTRY 7
+              {4.277, 300, 0.262}, // ENTRY 8
+              {5.198, 350, 0.262}, // ENTRY 9
+              {5.658, 400, 0.262}, // ENTRY 10
+            },
+            ShooterConstants.MAX_VELOCITY.in(RadiansPerSecond));
+
+    /** A map for each launch-parameter lookup model. */
     public static final Map<LookupID, LaunchParameterLookup> parameterLookupSelector =
         new ConcurrentHashMap<>();
 
@@ -48,15 +78,15 @@ public final class ShootingConstants {
       ParameterLookup.addLookup(
           LookupID.MINIMAL_AIR_TIME,
           new LaunchParameterLookup(
-              new double[] {5.977, -0.329, 0.288, -0.023},
-              new double[] {1.765, -0.440, 0.074, -0.005},
+              new double[] {5.396, 0.189, 0.150, -0.011},
+              new double[] {1.844, -0.491, 0.079, -0.005},
               MIN_DISTANCE,
               MAX_DISTANCE));
-      
+
       ParameterLookup.addLookup(
           LookupID.MAXIMUM_SPEED,
           new LaunchParameterLookup(
-              new double[] {4.059, 1.635, -0.023, -0.002},
+              new double[] {3.797, 1.939, -0.127, 0.008},
               new double[] {1.309, 0.0, 0.0, 0.0},
               MIN_DISTANCE,
               MAX_DISTANCE));
@@ -64,13 +94,14 @@ public final class ShootingConstants {
   }
 
   public static final class CalibrationConstants {
-    public static final int ENTRIES = 10;
-    public static final double INCREMENT = (MAX_DISTANCE - MIN_DISTANCE) / ENTRIES;
+    public static final int CALIBRATION_ENTRIES = 10;
+    public static final double CALIBRATION_INCREMENT =
+        (MAX_DISTANCE - MIN_DISTANCE) / CALIBRATION_ENTRIES;
 
     public static final double STARTING_ROLLER_SPEED = 200;
 
     /** Array indices for data stored within the calibration table. */
-    public static final int DISTANCE = 0, ROLLER_SPEED = 1, HOOD_ANGLE = 2, TIME_OF_FLIGHT = 3;
+    public static final int DISTANCE = 0, ROLLER_SPEED = 1, HOOD_ANGLE = 2;
 
     /** The path to the standard lookup table (within the resources folder). */
     public static final String TABLE_PATH = "CalibrationTable";
@@ -98,11 +129,8 @@ public final class ShootingConstants {
     public static final double SCORE_DEPTH = 0;
     public static final double SCORE_RADIUS = Hub.INNER_WIDTH / 2;
 
-    /** Used in TOF analysis. */
-    public static final double TOF_DEPTH = 0;
-
-    /** Used in TOF analysis. */
-    public static final double TOF_RADIUS = Hub.INNER_WIDTH / 2;
+    public static final double CALIBRATION_DEPTH = 0;
+    public static final double CALIBRATION_RADIUS = Hub.INNER_WIDTH / 2;
 
     /** The target translation for the FUEL to hit. */
     public static final double[] GOAL = ProjectileVisualizer.fromTranslation(Hub.TOP_CENTER_POINT);
@@ -152,8 +180,8 @@ public final class ShootingConstants {
     public static final double FUEL_MASS = 0.225;
     public static final double FUEL_RADIUS = 0.075;
 
-    public static final double MAX_SPEED = 15;
-    public static final double MIN_SPEED = EPS;
+    public static final double MAX_SPEED = 20;
+    public static final double MIN_SPEED = 0;
 
     public static final double MIN_PITCH = toPitch(HoodConstants.MAX_ANGLE.in(Radians));
     public static final double MAX_PITCH = toPitch(HoodConstants.MIN_ANGLE.in(Radians));
@@ -163,7 +191,7 @@ public final class ShootingConstants {
 
     public static final double MIN_DISTANCE =
         Hub.WIDTH / 2 + DriveConstants.CHASSIS_WIDTH.in(Meters) / 2 + HUB_BUFFER;
-    public static final double MAX_DISTANCE = 5;
+    public static final double MAX_DISTANCE = 6.12;
 
     /**
      * The radius of the arc formed by the starting translation of the FUEL as the hood angle
@@ -280,14 +308,14 @@ public final class ShootingConstants {
     }
   }
 
-  /** Compiles polynomial regression models into a singular parameter lookup. */
+  /** Combines polynomial regression models into a singular parameter lookup. */
   public static class LaunchParameterLookup {
     private final double minDistance, maxDistance;
     private final double[] speedCoefficients;
     private final double[] pitchCoefficients;
 
     /**
-     * Compiles polynomial regression models into a singular parameter lookup.
+     * Combines polynomial regression models into a singular parameter lookup.
      *
      * @param speedRegression the polynomial coefficients to model launch speed as a function of
      *     distance
@@ -318,7 +346,7 @@ public final class ShootingConstants {
     }
 
     /** The coefficients for the speed regression model. */
-    public double[] speedRegression() {
+    public double[] speedCoefficients() {
       return speedCoefficients.clone();
     }
 
@@ -332,7 +360,7 @@ public final class ShootingConstants {
     }
 
     /** The coefficients for the pitch regression model. */
-    public double[] pitchRegression() {
+    public double[] pitchCoefficients() {
       return pitchCoefficients.clone();
     }
 
@@ -343,6 +371,127 @@ public final class ShootingConstants {
      */
     public boolean inBounds(double distance) {
       return distance >= minDistance && distance <= maxDistance;
+    }
+
+    /**
+     * Evaluates the value of a polynomial at a specified x value.
+     *
+     * @param x the x value to input into the polynomial
+     * @param coefficients an array of coefficients describing the polynomial
+     */
+    public static double evaluate(double x, double[] coefficients) {
+      double result = 0;
+      for (int degree = 0; degree < coefficients.length; degree++)
+        result += coefficients[degree] * Math.pow(x, degree);
+      return result;
+    }
+  }
+
+  /**
+   * Consolidates polynomial regression models to both convert roller speed to launch speed and
+   * vice-versa.
+   */
+  public static class VelocityLookup {
+    /** The polynomial coefficients to model roller speed as a function of launch speed */
+    private final double[] rollerSpeedCoefficients;
+
+    /** The polynomial coefficients to model launch speed as a function of roller speed */
+    private final double[] launchSpeedCoefficients;
+
+    private final double maxRollerSpeed;
+    private final double maxLaunchSpeed;
+
+    /**
+     * Consolidates polynomial regression models to both convert roller speed to launch speed and
+     * vice-versa.
+     *
+     * @param calibrationResults calibration data in the form of a table with distance, roller
+     *     speed, and hood angle; the table is assumed to contain data from perfect shots
+     * @param maxRollerSpeed the maximum speed of the rollers, in radians per second
+     */
+    public VelocityLookup(double[][] calibrationResults, double maxRollerSpeed) {
+      if (calibrationResults.length < 1) {
+        this.rollerSpeedCoefficients = new double[0];
+        this.launchSpeedCoefficients = new double[0];
+
+        this.maxRollerSpeed = maxRollerSpeed;
+        this.maxLaunchSpeed = evaluate(maxRollerSpeed, launchSpeedCoefficients);
+        return;
+      }
+
+      DirectLaunchParameters launchParameters =
+          new DirectLaunchParameters(MIN_DISTANCE, MAX_SPEED, Math.PI / 4);
+
+      // [LAUNCH SPEED, ROLLER SPEED]
+      double[][] calibrationDataTable = new double[calibrationResults.length][];
+      for (int index = 0; index < calibrationDataTable.length; index++) {
+        launchParameters.setDistance(calibrationResults[index][DISTANCE]);
+        launchParameters.setPitch(toPitch(calibrationResults[index][HOOD_ANGLE]));
+        ShotOptimizer.optimizeSpeedForAccuracy(
+            launchParameters, CALIBRATION_RADIUS, CALIBRATION_DEPTH);
+        calibrationDataTable[index] =
+            new double[] {launchParameters.speed(), calibrationResults[index][ROLLER_SPEED]};
+      }
+
+      // LAUNCH SPEED INPUT --> ROLLER SPEED OUTPUT
+      PolynomialRegression rollerSpeedRegression =
+          ModelSelector.regression(calibrationDataTable, 0, 1, 3);
+
+      // ROLLER SPEED INPUT --> LAUNCH SPEED OUTPUT
+      PolynomialRegression launchSpeedRegression =
+          ModelSelector.regression(calibrationDataTable, 1, 0, 3);
+
+      this.rollerSpeedCoefficients = rollerSpeedRegression.getCoefficients();
+      this.launchSpeedCoefficients = launchSpeedRegression.getCoefficients();
+
+      this.maxRollerSpeed = maxRollerSpeed;
+      this.maxLaunchSpeed = evaluate(maxRollerSpeed, launchSpeedCoefficients);
+    }
+
+    /**
+     * Whether or not the roller speed exceeds the maximum roller speed.
+     *
+     * @param rollerSpeed the speed of the rollers, in radians per second
+     */
+    public boolean inRollerBounds(double rollerSpeed) {
+      return rollerSpeed < maxRollerSpeed;
+    }
+
+    /**
+     * Whether or not the launch speed exceeds the maximum launch speed.
+     *
+     * @param launchSpeed the speed of the FUEL at launch, in meters per second
+     */
+    public boolean inLaunchBounds(double launchSpeed) {
+      return launchSpeed < maxLaunchSpeed;
+    }
+
+    /** The coefficients for the roller speed regression model (launch speed --> roller speed). */
+    public double[] rollerSpeedCoefficients() {
+      return rollerSpeedCoefficients.clone();
+    }
+
+    /** The coefficients for the launch speed regression model (roller speed --> launch speed). */
+    public double[] launchSpeedCoefficients() {
+      return launchSpeedCoefficients.clone();
+    }
+
+    /**
+     * The launch speed of the FUEL (meters per second).
+     *
+     * @param rollerSpeed the speed of the rollers, in radians per second
+     */
+    public double launchSpeed(double rollerSpeed) {
+      return inRollerBounds(rollerSpeed) ? evaluate(rollerSpeed, launchSpeedCoefficients) : 0;
+    }
+
+    /**
+     * The speed of the rollers (meters per second).
+     *
+     * @param launchSpeed the launch speed of the FUEL, in meters per second
+     */
+    public double rollerSpeed(double launchSpeed) {
+      return inLaunchBounds(launchSpeed) ? evaluate(launchSpeed, rollerSpeedCoefficients) : 0;
     }
 
     /**

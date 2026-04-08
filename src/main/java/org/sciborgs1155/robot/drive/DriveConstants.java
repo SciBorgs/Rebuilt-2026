@@ -130,10 +130,10 @@ public final class DriveConstants {
 
       public static final double GEARING = 5.68;
 
-      public static final Current STATOR_LIMIT = Amps.of(80); // 120A max slip current
-      public static final Current SUPPLY_LIMIT = Amps.of(70);
+      public static final Current STATOR_LIMIT = Amps.of(100); // 120A max slip current
+      public static final Current SUPPLY_LIMIT = Amps.of(100);
 
-      public static final Current CURRENT_LIMIT = Amps.of(50);
+      public static final Current CURRENT_LIMIT = Amps.of(80);
 
       public static final FFConstants FRONT_RIGHT_FF = new FFConstants(0.27372, 2.3131, 0.2385);
       public static final FFConstants FRONT_LEFT_FF = new FFConstants(0.14985, 2.313, 0.19269);
@@ -157,7 +157,7 @@ public final class DriveConstants {
       public static final Current CURRENT_LIMIT = Amps.of(20);
 
       public static final class PID {
-        public static final double P = 70;
+        public static final double P = 100;
         public static final double I = 0.0;
         public static final double D = 0.5;
       }

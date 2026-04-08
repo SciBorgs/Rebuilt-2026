@@ -1,12 +1,9 @@
 package org.sciborgs1155.robot.commands.shooting;
 
-import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
-import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 import static org.sciborgs1155.lib.ProjectileVisualizer.X;
 import static org.sciborgs1155.lib.ProjectileVisualizer.Y;
 import static org.sciborgs1155.lib.ProjectileVisualizer.Z;
 import static org.sciborgs1155.lib.ProjectileVisualizer.norm;
-import static org.sciborgs1155.robot.Constants.EPS;
 import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.fieldRelative;
 import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.fromLaunchParameters;
 import static org.sciborgs1155.robot.commands.shooting.FuelVisualizer.robotRelative;
@@ -37,15 +34,12 @@ import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.Visuali
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.VisualizerConstants.TRAJECTORY_ENABLED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.VisualizerConstants.VISUALIZER_RESOLUTION;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.toPitch;
-import static org.sciborgs1155.robot.drive.DriveConstants.MAX_ACCEL;
-import static org.sciborgs1155.robot.drive.DriveConstants.MAX_ANGULAR_ACCEL;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import java.util.function.DoubleSupplier;
 import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.lib.ProjectileVisualizer;
@@ -72,11 +66,7 @@ public class Shooting {
   }
 
   private Algorithm algorithm = Algorithm.NONE;
-
-  private double distance, speed, pitch, yaw;
-  private double rollerSpeed, yawOmega;
-
-  private static final double PREDICTION_DELTA = 0.1;
+  private double distance, speed, pitch, yaw, rollerSpeed;
 
   /** A command factory for the shooting algorithm. */
   public Shooting(
@@ -90,8 +80,7 @@ public class Shooting {
   }
 
   /**
-   * Drives the robot while shooting at the HUB. The turret is controlled with position setpoints as
-   * opposed to velocity setpoints in dynamic control.
+   * Drives the robot while shooting at the HUB. The turret is controlled with position setpoints.
    *
    * @param vx A supplier for the velocity of the robot along the x axis (perpendicular to the
    *     alliance side).
@@ -99,7 +88,7 @@ public class Shooting {
    *     side).
    * @param omega A supplier for the angular velocity of the robot.
    */
-  public Command runDiscreteShooter(InputStream vx, InputStream vy, InputStream omega) {
+  public Command runShooter(InputStream vx, InputStream vy, InputStream omega) {
     return Commands.parallel(
             Commands.startEnd(
                 () -> algorithm = Algorithm.DISCRETE, () -> algorithm = Algorithm.NONE),
@@ -109,47 +98,7 @@ public class Shooting {
             turret.goToYaw(() -> Rotation2d.fromRadians(yaw)),
             hood.goToShootingAngle(() -> pitch),
             drive.drive(vx, vy, omega))
-        .withName("Discrete Shooter");
-  }
-
-  /**
-   * Drives the robot while shooting at the HUB. The turret is controlled with velocity setpoints as
-   * opposed to position setpoints in discrete control.
-   *
-   * @param vx A supplier for the velocity of the robot along the x axis (perpendicular to the
-   *     alliance side).
-   * @param vy A supplier for the velocity of the robot along the y axis (parallel to the alliance
-   *     side).
-   * @param omega A supplier for the angular velocity of the robot.
-   */
-  public Command runDynamicShooter(InputStream vx, InputStream vy, InputStream omega) {
-    return Commands.parallel(
-            Commands.startEnd(
-                () -> algorithm = Algorithm.DYNAMIC, () -> algorithm = Algorithm.NONE),
-            Commands.run(() -> updateLaunchParameters(vx.get(), vy.get(), omega.get())),
-            hopper.intake().alongWith(indexer.forward()).onlyWhile(shouldIndex()),
-            shooter.runShooter(() -> rollerSpeed),
-            turret.goToVelocity(() -> yawOmega),
-            hood.goToShootingAngle(() -> pitch),
-            drive.drive(vx, vy, omega))
-        .withName("Dynamic Shooter");
-  }
-
-  /**
-   * True if the robot is not moving, false if the robot is moving.
-   *
-   * @param vx A supplier for the velocity of the robot along the x axis (perpendicular to the
-   *     alliance side).
-   * @param vy A supplier for the velocity of the robot along the y axis (parallel to the alliance
-   *     side).
-   * @param omega A supplier for the angular velocity of the robot.
-   */
-  public Trigger discrete(DoubleSupplier vx, DoubleSupplier vy, DoubleSupplier omega) {
-    return new Trigger(
-        () ->
-            Math.abs(vx.getAsDouble()) < EPS
-                && Math.abs(vy.getAsDouble()) < EPS
-                && Math.abs(omega.getAsDouble()) < EPS);
+        .withName("Shooting");
   }
 
   /** Whether or not to run the indexer/hopper. */
@@ -165,12 +114,16 @@ public class Shooting {
 
   /**
    * Updates the launch parameter fields based on th current state of the robot.
-   * 
+   *
    * @param vx the velocity of the robot along the x axis (from controller)
    * @param vy the velocity of the robot along the y axis (from controller)
    * @param omega A supplier for the angular velocity of the robot (from controller)
    */
   private void updateLaunchParameters(double vx, double vy, double omega) {
+    LoggingUtils.log("Shooting/Input/vx", vx);
+    LoggingUtils.log("Shooting/Input/vy", vy);
+    LoggingUtils.log("Shooting/Input/omega", omega);
+
     double robotX = drive.pose().getX();
     double robotY = drive.pose().getY();
 
@@ -180,43 +133,28 @@ public class Shooting {
     double heading = drive.heading().getRadians();
     double robotOmega = drive.omega();
 
-    double[] robotAcceleration = robotAcceleration(vx, vy, omega, robotVx, robotVy, robotOmega, PREDICTION_DELTA);
+    double[] currentLaunchParameters =
+        completeLaunchParameters(robotX, robotY, heading, robotVx, robotVy, robotOmega);
 
-    double xAcceleration = robotAcceleration[X];
-    double yAcceleration = robotAcceleration[Y];
-    double rotationalAcceleration = robotAcceleration[Z];
-
-    double xDelta = robotVx * PREDICTION_DELTA + 0.5 * xAcceleration * PREDICTION_DELTA * PREDICTION_DELTA;
-    double yDelta = robotVy * PREDICTION_DELTA + 0.5 * yAcceleration * PREDICTION_DELTA * PREDICTION_DELTA;
-    double headingDelta = robotOmega * PREDICTION_DELTA + 0.5 * rotationalAcceleration * PREDICTION_DELTA * PREDICTION_DELTA;
-    
-    double[] currentLaunchParameters = completeLaunchParameters(robotX, robotY, heading, robotVx, robotVy, robotOmega);
-    double[] futureLaunchParameters = completeLaunchParameters(
-        robotX + xDelta, robotY + yDelta,
-        heading + headingDelta,
-        robotVx + xAcceleration * PREDICTION_DELTA,
-        robotVy + yAcceleration * PREDICTION_DELTA,
-        robotOmega + rotationalAcceleration * PREDICTION_DELTA);
-    
     distance = currentLaunchParameters[DISTANCE];
     speed = currentLaunchParameters[SPEED];
-    rollerSpeed = velocityLookup.rollerSpeed(speed);
-
     pitch = currentLaunchParameters[PITCH];
     yaw = currentLaunchParameters[YAW];
-    yawOmega = (futureLaunchParameters[YAW] - currentLaunchParameters[YAW]) / PREDICTION_DELTA;
+
+    rollerSpeed = velocityLookup.rollerSpeed(speed);
   }
 
   /**
    * Computes a launch vector that will accurately shoot FUEL into the HUB.
-   * 
+   *
    * @param robotX the x-position of the robot, in meters
    * @param robotY the y-position of the robot, in meters
    * @param heading the heading of the robot, in radians
    * @param robotVx the x-velocity of the robot, in meters per second
    * @param robotVy the y-velocity of the robot, in meters per second
    * @param robotOmega the rotational velocity of the robot, in radians per second
-   * @return a double[] containing {distance (meters), speed (meters per second), pitch (radians), and yaw (radians)}
+   * @return a double[] containing {distance (meters), speed (meters per second), pitch (radians),
+   *     and yaw (radians)}
    */
   private static double[] completeLaunchParameters(
       double robotX,
@@ -251,44 +189,10 @@ public class Shooting {
     double pitch =
         MathUtil.clamp(
             Math.asin(trueShotVelocity[Z] / norm(trueShotVelocity)), MIN_PITCH, MAX_PITCH);
-    double yaw = MathUtil.clamp(Math.atan2(trueShotVelocity[Y], trueShotVelocity[X]), MIN_YAW, MAX_YAW);
+    double yaw =
+        MathUtil.clamp(Math.atan2(trueShotVelocity[Y], trueShotVelocity[X]), MIN_YAW, MAX_YAW);
 
-    return new double[]{distance, speed, pitch, yaw};
-  }
-
-  /**
-   * Predicts the robot's acceleration using euler integration.
-   * 
-   * @param vx the velocity of the robot along the x axis (from controller)
-   * @param vy the velocity of the robot along the y axis (from controller)
-   * @param omega A supplier for the angular velocity of the robot (from controller)
-   * @param robotVelocity the actual velocity of the robot (from encoders)
-   * @param delta the time to look ahead and use to predict acceleration
-   * @return a double[] containing the predicted {x, y, omega} accelerations
-   */
-  private static double[] robotAcceleration(double vx, double vy, double omega, double robotVx, double robotVy, double robotOmega, double delta) {
-    double xAcceleration = (vx - robotVx) / delta;
-    double yAcceleration = (vy - robotVy) / delta;
-    double rotationalAcceleration = (omega - robotOmega) / delta;
-
-    double acceleration = Math.hypot(xAcceleration, yAcceleration);
-    double maxAcceleration = MAX_ACCEL.in(MetersPerSecondPerSecond);
-    double maxRotationalAcceleration = MAX_ANGULAR_ACCEL.in(RadiansPerSecondPerSecond);
-
-    double predictedXAcceleration = xAcceleration;
-    double predictedYAcceleration = yAcceleration;
-    double predictedRotationalAcceleration = rotationalAcceleration;
-
-    if (acceleration > maxAcceleration) {
-      predictedXAcceleration *= (maxAcceleration / acceleration);
-      predictedYAcceleration *= (maxAcceleration / acceleration);
-    }
-
-    if (Math.abs(rotationalAcceleration) > maxRotationalAcceleration)
-      predictedRotationalAcceleration = 
-          Math.copySign(maxRotationalAcceleration, rotationalAcceleration);
-
-    return new double[]{predictedXAcceleration, predictedYAcceleration, predictedRotationalAcceleration};
+    return new double[] {distance, speed, pitch, yaw};
   }
 
   /** Creates a visualizer that utilizes the subsystem positions to predict a trajectory. */

@@ -486,7 +486,7 @@ public final class ShootingConstants {
     }
 
     /**
-     * The speed of the rollers (meters per second).
+     * The speed of the rollers (radians per second).
      *
      * @param launchSpeed the launch speed of the FUEL, in meters per second
      */

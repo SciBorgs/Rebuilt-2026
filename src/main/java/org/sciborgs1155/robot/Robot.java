@@ -241,9 +241,7 @@ public class Robot extends CommandRobot {
         .onTrue(Commands.runOnce(() -> speedMultiplier = SLOW_SPEED_MULTIPLIER))
         .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
 
-    teleop().and(shooting.discrete(x, y, omega))
-      .whileTrue(shooting.runDiscreteShooter(x, y, omega))
-      .whileFalse(shooting.runDynamicShooter(x, y, omega));
+    teleop().whileTrue(shooting.runShooter(x, y, omega));
     shooting.shouldIndex().whileTrue(fuelVisualizer.launchProjectiles());
   }
 

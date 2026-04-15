@@ -12,6 +12,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 public class RealHopper implements HopperIO {
   private final TalonFX motor;
 
+  /** creates a HopperIO with a real motor implementation */
   public RealHopper() {
     motor = new TalonFX(MOTOR, INTAKE_CANIVORE);
     TalonFXConfiguration config = new TalonFXConfiguration();

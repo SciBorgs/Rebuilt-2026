@@ -11,14 +11,12 @@ import static org.sciborgs1155.robot.drive.DriveConstants.MAX_ANGULAR_ACCEL;
 import static org.sciborgs1155.robot.drive.DriveConstants.MAX_SPEED;
 import static org.sciborgs1155.robot.drive.DriveConstants.TELEOP_ANGULAR_SPEED;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.CENTER_TO_SHOOTER;
-import static org.sciborgs1155.robot.turret.TurretConstants.START_ANGLE;
 
 import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
@@ -73,15 +71,15 @@ public class Robot extends CommandRobot {
   @NotLogged private final PowerDistribution pdh = new PowerDistribution();
 
   // SUBSYSTEMS
-  private final Drive drive = Drive.create();
-  private final Vision vision = Vision.create();
+  private final Drive drive = Drive.none();
+  private final Vision vision = Vision.none();
   private final Intake intake = Intake.none(); // no opening we defense
-  private final Turret turret = Turret.create();
-  private final Hood hood = Hood.create();
-  private final Shooter shooter = Shooter.create();
-  private final Indexer indexer = Indexer.create();
-  private final Hopper hopper = Hopper.create();
-  private final Slapdown slapdown = Slapdown.none(); // no opening we defense
+  private final Turret turret = Turret.none();
+  private final Hood hood = Hood.none();
+  private final Shooter shooter = Shooter.none();
+  private final Indexer indexer = Indexer.none();
+  private final Hopper hopper = Hopper.none();
+  private final Slapdown slapdown = Slapdown.create(); // no opening we defense
   private final Climb climb = Climb.none();
   private final LEDs leds = LEDs.create();
 
@@ -192,11 +190,6 @@ public class Robot extends CommandRobot {
     // x and y are switched: we use joystick Y axis to control field x motion
     InputStream rawX = InputStream.of(driver::getLeftY).log("/Robot/raw x").negate();
     InputStream rawY = InputStream.of(driver::getLeftX).log("/Robot/raw y").negate();
-
-    InputStream operatorRawX =
-        InputStream.of(operator::getLeftY).log("/Robot/operator raw x").negate();
-    InputStream operatorRawY =
-        InputStream.of(operator::getLeftX).log("/Robot/operator raw y").negate();
 
     // Apply speed multiplier, deadband, square inputs, and scale translation to max speed
     InputStream r =

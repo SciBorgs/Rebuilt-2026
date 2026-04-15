@@ -12,7 +12,6 @@ import edu.wpi.first.units.measure.Mass;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.units.measure.Voltage;
-import org.sciborgs1155.robot.Robot;
 
 public class HoodConstants {
   public static final Angle MIN_ANGLE = Degrees.of(15);
@@ -23,7 +22,7 @@ public class HoodConstants {
   public static final Current STATOR_LIMIT = Amps.of(30);
   public static final AngularAcceleration MAX_ACCEL = RadiansPerSecondPerSecond.of(20);
   public static final AngularVelocity MAX_VELOCITY = RadiansPerSecond.of(20);
-  public static final Angle POSITION_TOLERANCE = Radians.of(0.03);
+  public static final Angle POSITION_TOLERANCE = Radians.of(0.06);
   public static final AngularVelocity VELOCITY_TOLERANCE = RadiansPerSecond.of(0.01);
   public static final Angle SHOOTING_ANGLE_OFFSET = Degrees.of(90);
   public static final Time HOOD_DOWN_TIME = Seconds.of(0.5);
@@ -40,9 +39,9 @@ public class HoodConstants {
   public static final double GEARING = 95.33333;
 
   public class PID {
-    public static final double P = Robot.isReal() ? 20 : 10;
-    public static final double I = Robot.isReal() ? 0 : 0.000001;
-    public static final double D = Robot.isReal() ? 0.2 : 0.000001;
+    public static final double P = 20;
+    public static final double I = 0;
+    public static final double D = 0.2;
     public static final double S = 0.295;
     public static final double V = 0.7;
     public static final double G = 0.015;

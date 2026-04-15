@@ -147,6 +147,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
   private final SwerveDrivePoseEstimator odometry;
 
   private ChassisSpeeds desiredSpeeds = new ChassisSpeeds();
+  private ChassisSpeeds prevSpeeds = new ChassisSpeeds();
 
   // Faster Odometry
   private SwerveModulePosition[] lastPositions;
@@ -646,7 +647,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
    */
   public void setChassisSpeeds(ChassisSpeeds desired, ControlMode mode) {
     desiredSpeeds = desired;
-    ChassisSpeeds speeds = robotRelativeChassisSpeeds();
+    ChassisSpeeds speeds = prevSpeeds;
     Vector<N2> currentVelocity =
         VecBuilder.fill(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
 
@@ -664,12 +665,16 @@ public class Drive extends SubsystemBase implements AutoCloseable {
         new ChassisSpeeds(
             limitedVelocity.get(0), limitedVelocity.get(1), desired.omegaRadiansPerSecond);
 
+    log("/Robot/tuning/drive/changeInSpeeds", newSpeeds.minus(new ChassisSpeeds(currentVelocity.get(0), currentVelocity.get(1), desired.omegaRadiansPerSecond)), ChassisSpeeds.struct);
+
     SwerveModuleState[] states = kinematics.toSwerveModuleStates(newSpeeds);
     SwerveDriveKinematics.desaturateWheelSpeeds(states, MAX_SPEED.in(MetersPerSecond));
     setModuleStates(
         kinematics.toSwerveModuleStates(
             ChassisSpeeds.discretize(kinematics.toChassisSpeeds(states), PERIOD.in(Seconds))),
         mode);
+
+    prevSpeeds = newSpeeds;
   }
 
   /**

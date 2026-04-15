@@ -855,11 +855,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
     for (int i = 0; i < modules.size(); i++) {
       states[i] = modules.get(i).desiredState();
     }
-    // return
-    // modules.stream().map(ModuleIO::state).toArray(SwerveModuleState[]::new);
     return states;
-    // return
-    // modules.stream().map(ModuleIO::desiredState).toArray(SwerveModuleState[]::new);
   }
 
   /** Returns the module positions. */

@@ -13,6 +13,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 public class RealIndexer implements IndexerIO {
   private final TalonFX motor;
 
+  /** Creates a IndexerIO implementations with a real motor */
   public RealIndexer() {
     motor = new TalonFX(MOTOR, SHOOTING_CANIVORE);
     TalonFXConfiguration config = new TalonFXConfiguration();
@@ -21,7 +22,6 @@ public class RealIndexer implements IndexerIO {
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     config.Feedback.SensorToMechanismRatio = GEARING;
-
 
     motor.getConfigurator().apply(config);
   }

@@ -15,6 +15,7 @@ import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
 import java.util.List;
+import org.sciborgs1155.robot.Robot;
 
 /**
  * Constants for our 2026 Swerve X2t drivetrain! All fields in this file should be updated for the
@@ -157,7 +158,7 @@ public final class DriveConstants {
       public static final Current CURRENT_LIMIT = Amps.of(20);
 
       public static final class PID {
-        public static final double P = 100;
+        public static final double P = Robot.isReal() ? 100 : 50;
         public static final double I = 0.0;
         public static final double D = 0.5;
       }

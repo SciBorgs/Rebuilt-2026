@@ -75,7 +75,8 @@ public final class Ports {
   }
 
   public static final class Slapdown {
-    public static final int EXTENSION = 20;
+    //public static final int EXTENSION = 20;
+    public static final int EXTENSION = 27;
   }
 
   public static final class Hopper {

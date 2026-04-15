@@ -24,11 +24,8 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.networktables.DoubleEntry;
-
 import java.util.Queue;
 import org.sciborgs1155.lib.TalonUtils;
-import org.sciborgs1155.lib.Tuning;
 import org.sciborgs1155.robot.drive.DriveConstants.ControlMode;
 import org.sciborgs1155.robot.drive.DriveConstants.FFConstants;
 import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Driving;
@@ -46,7 +43,6 @@ public class TalonModule implements ModuleIO {
   private final Queue<Double> position;
   private final Queue<Double> rotation;
   private final Queue<Double> timestamp;
-  
 
   private final SimpleMotorFeedforward driveFF;
 

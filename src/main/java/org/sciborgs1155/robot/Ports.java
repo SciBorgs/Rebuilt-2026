@@ -1,8 +1,7 @@
 package org.sciborgs1155.robot;
 
-import static java.util.Map.entry;
-
 import java.util.Map;
+import static java.util.Map.entry;
 
 public final class Ports {
   // TODO: Add and change all ports as needed.
@@ -76,6 +75,7 @@ public final class Ports {
 
   public static final class Slapdown {
     public static final int EXTENSION = 20;
+    public static final int ENCODER = 6767;
   }
 
   public static final class Hopper {

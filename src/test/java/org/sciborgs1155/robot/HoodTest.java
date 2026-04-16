@@ -42,7 +42,7 @@ public class HoodTest {
     double setpoint = random.nextDouble(MIN_ANGLE.in(Radians), MAX_ANGLE.in(Radians));
     CommandScheduler.getInstance()
         .schedule(hood.goTo(() -> setpoint).withDeadline(Commands.waitSeconds(4)));
-    fastForward(Seconds.of(4));
+    fastForward(Seconds.of(3));
     assertEquals(hood.angle(), setpoint, POSITION_TOLERANCE.in(Radians));
   }
 }

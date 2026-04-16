@@ -75,7 +75,7 @@ public class Robot extends CommandRobot {
   private final Vision vision = Vision.none();
   private final Intake intake = Intake.none(); // no opening we defense
   private final Turret turret = Turret.none();
-  private final Hood hood = Hood.none();
+  private final Hood hood = Hood.create();
   private final Shooter shooter = Shooter.none();
   private final Indexer indexer = Indexer.none();
   private final Hopper hopper = Hopper.none();
@@ -306,7 +306,8 @@ public class Robot extends CommandRobot {
     // operator.a().whileTrue(turret.goTo(() -> 3 * Math.PI / 2));
     operator.b().whileTrue(hopper.outtake());
 
-    operator.a().whileTrue(indexer.forward());
+    // operator.a().whileTrue(indexer.forward());
+    operator.a().whileTrue(hood.goTo(Radians.of(3)));
 
     operator.povUp().whileTrue(indexer.backward());
 

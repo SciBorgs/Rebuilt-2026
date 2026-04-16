@@ -665,7 +665,12 @@ public class Drive extends SubsystemBase implements AutoCloseable {
         new ChassisSpeeds(
             limitedVelocity.get(0), limitedVelocity.get(1), desired.omegaRadiansPerSecond);
 
-    log("/Robot/tuning/drive/changeInSpeeds", newSpeeds.minus(new ChassisSpeeds(currentVelocity.get(0), currentVelocity.get(1), desired.omegaRadiansPerSecond)), ChassisSpeeds.struct);
+    log(
+        "/Robot/tuning/drive/changeInSpeeds",
+        newSpeeds.minus(
+            new ChassisSpeeds(
+                currentVelocity.get(0), currentVelocity.get(1), desired.omegaRadiansPerSecond)),
+        ChassisSpeeds.struct);
 
     SwerveModuleState[] states = kinematics.toSwerveModuleStates(newSpeeds);
     SwerveDriveKinematics.desaturateWheelSpeeds(states, MAX_SPEED.in(MetersPerSecond));

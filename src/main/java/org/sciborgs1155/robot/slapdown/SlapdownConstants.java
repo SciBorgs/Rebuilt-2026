@@ -13,11 +13,12 @@ import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.units.measure.Voltage;
+import org.sciborgs1155.robot.Robot;
 
 public class SlapdownConstants {
   public static final Current CURRENT_LIMIT = Amps.of(30);
 
-  public static final double P = 5;
+  public static final double P = Robot.isReal() ? 5 : 10;
   public static final double I = 0;
   public static final double D = 0.1;
 
@@ -39,7 +40,7 @@ public class SlapdownConstants {
       new TrapezoidProfile.Constraints(
           MAX_VELOCITY.in(RadiansPerSecond), MAX_ACCELERATION.in(RadiansPerSecondPerSecond));
 
-  //4-bar, old
+  // 4-bar, old
   public static final DCMotor GEARBOX = DCMotor.getKrakenX44(1);
   public static final double GEARING = 27; // ratio of gearing
   public static final double MOI = 0.2135396026; // moment of inertia
@@ -48,7 +49,7 @@ public class SlapdownConstants {
   public static final Angle MAX_ANGLE = Degrees.of(83.7);
   public static final Angle START_ANGLE = MAX_ANGLE;
 
-  //new slapdown
+  // new slapdown
   // public static final DCMotor GEARBOX = DCMotor.getKrakenX60(1);
   // public static final double GEARING = 25.0 * 2.5; // ratio of gearing
   // public static final double MOI = 0.2135396026; // moment of inertia
@@ -57,7 +58,7 @@ public class SlapdownConstants {
   // public static final Angle MAX_ANGLE = Degrees.of(130);
   // public static final Angle START_ANGLE = MAX_ANGLE;
 
-  public static final Angle POSITION_TOLERANCE = Radians.of(0.05);
+  public static final Angle POSITION_TOLERANCE = Radians.of(0.07);
 
   public static final AngularVelocity VELOCITY_TOLERANCE = RadiansPerSecond.of(0.5);
 

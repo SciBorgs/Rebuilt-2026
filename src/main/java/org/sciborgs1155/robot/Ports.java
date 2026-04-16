@@ -1,7 +1,8 @@
 package org.sciborgs1155.robot;
 
-import java.util.Map;
 import static java.util.Map.entry;
+
+import java.util.Map;
 
 public final class Ports {
   // TODO: Add and change all ports as needed.

@@ -31,7 +31,9 @@ public class RepulsorFieldPlanner {
           new CircleObstacle(
               new Translation2d(4.49, 4), 0.6, Units.inchesToMeters(65.5 / 2.0), true),
           new CircleObstacle(
-              new Translation2d(13.08, 4), 0.6, Units.inchesToMeters(65.5 / 2.0), true));
+              new Translation2d(13.08, 4), 0.6, Units.inchesToMeters(65.5 / 2.0), true)
+
+  );
 
   public static final List<Obstacle> WALLS =
       List.of(
@@ -244,6 +246,40 @@ public class RepulsorFieldPlanner {
       return new Force(distToForceMag(x - position.getX(), 1), 0);
     }
   }
+
+  // public static class RectangularObstacle extends Obstacle {
+
+  //   Obstacle topSide;
+  //   Obstacle bottomSide;
+  //   Obstacle leftSide;
+  //   Obstacle rightSide;
+
+  //   /**
+  //    * Creates a new rectangular obstacle.
+  //    * 
+  //    * @param topRightCorner the top right corner of the rectangle
+  //    * @param bottomLeftCorner the bottom left corner of the rectangle
+  //    * @param strength The strength of the repulsor field.
+  //    * @param positive Whether the force is positive (repelling) or negative (attracting).
+  //    */
+  //   public RectangularObstacle(Translation2d topRightCorner, Translation2d bottomLeftCorner, double strength, boolean positive) {
+  //     super(strength, positive);
+
+  //     this.bottomSide = new HorizontalObstacle(bottomLeftCorner.getY(), strength, positive);
+  //     this.topSide = new HorizontalObstacle(topRightCorner.getY(), strength, positive);
+  //     this.leftSide = new VerticalObstacle(bottomLeftCorner.getX(), strength, positive);
+  //     this.rightSide = new VerticalObstacle(topRightCorner.getX(), strength, positive);
+
+  //   }
+    
+  //   @Override
+  //   public Force getForceAtPosition(Translation2d position, Translation2d target) {
+  //     return new Force(distToForceMag(bottomSide. - position.getX(), 1), 0);
+  //   }
+
+
+    
+  // }
 
   /**
    * Returns the current goal position as a Pose2d.

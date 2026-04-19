@@ -283,7 +283,7 @@ public class Robot extends CommandRobot {
     operator.a().onTrue(ParameterLookup.generate(() -> false));
     operator.b().onTrue(ParameterLookup.load());
     operator.x().onTrue(RollerTable.load());
-    operator.y().whileTrue(turret.goLeft());
+    operator.y().whileTrue(align.trenchDrive());
   }
 
   public static InputStream r(InputStream rawX, InputStream rawY) {

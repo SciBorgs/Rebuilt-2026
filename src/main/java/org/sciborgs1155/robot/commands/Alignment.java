@@ -2,12 +2,15 @@ package org.sciborgs1155.robot.commands;
 
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.Rotation;
 import static org.sciborgs1155.lib.LoggingUtils.log;
 import static org.sciborgs1155.robot.FieldConstants.allianceFromPose;
 
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -19,8 +22,11 @@ import org.sciborgs1155.lib.FaultLogger.Fault;
 import org.sciborgs1155.lib.FaultLogger.FaultType;
 import org.sciborgs1155.lib.RepulsorFieldPlanner;
 import org.sciborgs1155.lib.Tracer;
+import org.sciborgs1155.robot.FieldConstants;
+import org.sciborgs1155.robot.Constants.Robot;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.drive.DriveConstants;
+import org.sciborgs1155.robot.drive.DriveConstants.Rotation;
 import org.sciborgs1155.robot.drive.DriveConstants.Translation;
 
 public class Alignment {
@@ -148,4 +154,30 @@ public class Alignment {
         .andThen(() -> System.out.println("[Alignment] Finished warmup"))
         .ignoringDisable(true);
   }
+
+  //UTILITY COMMANDS
+
+  //Aligns the robot to face parallel to the driverstation
+  public Command alignParallel() {
+    return alignTo(() -> new Pose2d(drive.pose().getX(), drive.pose().getY(), new Rotation2d(0, 90)))
+    .withName("align parallel");
+  }
+
+  //Aligns the robot to face perpendicular to the driverstation
+  public Command alignPerpendicular() {
+    return alignTo(() -> new Pose2d(drive.pose().getX(), drive.pose().getY(), new Rotation2d(90, 0)))
+    .withName("align perpendicular");
+  }
+
+  public Command trenchDrive() {
+    return Commands.either(
+      alignTo(() -> FieldConstants.FIELD_LAYOUT.getTags().get(27).pose.toPose2d()), 
+      alignTo(() -> FieldConstants.FIELD_LAYOUT.getTags().get(22).pose.toPose2d()),
+      () -> drive.pose().getY() < 4);
+  
+  }
+
+
+
+
 }

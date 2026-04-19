@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
@@ -46,6 +47,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -61,9 +63,11 @@ import org.photonvision.EstimatedRobotPose;
 import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.lib.FaultLogger.FaultType;
 import org.sciborgs1155.lib.InputStream;
+import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.lib.Tracer;
 import org.sciborgs1155.lib.Tuning;
 import org.sciborgs1155.robot.Robot;
+import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.drive.DriveConstants.Assisted;
 import org.sciborgs1155.robot.drive.DriveConstants.ControlMode;
 import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Driving;
@@ -1060,6 +1064,15 @@ public class Drive extends SubsystemBase implements AutoCloseable {
         .andThen(speedChecks)
         .andThen(atAngle);
   }
+
+  // public Command rotateTo(Rotation2d rotation) {
+  //   return runOnce(() -> log("testing/rotation", rotation, Rotation2d.struct)).andThen(() -> rotateTo(new Rotation2d()));
+  // }
+
+  //UTILITY COMMANDS
+
+
+
 
   @Override
   public void close() throws Exception {

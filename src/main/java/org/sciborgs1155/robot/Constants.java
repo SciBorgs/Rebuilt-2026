@@ -52,6 +52,9 @@ public final class Constants {
   /** States if we are in tuning mode. Ideally, keep it at false when not used. */
   public static final boolean TUNING = true;
 
+  /** Tolerance used to detect input changes. */
+  public static final double EPS = 1e-6;
+
   public static final Pose2d CLIMB_POSE = new Pose2d(1.52, 3.74, new Rotation2d(Degrees.of(180)));
 
   // Prevents instantiation
@@ -124,14 +127,6 @@ public final class Constants {
       put(3.605, 30, 153, 1.09);
       put(4.58, 34, 173, 1.09);
       put(5.67, 38, 195, 1.25);
-
-      // put(2.5, 25.0, 120.0, 0.95); // 3/26/2026, bxsci
-      // put(2.06, 22.0, 112.5, 0.74); // 3/26/2026, bxsci
-      // put(3.08, 27.0, 133.0, 1.02); // 3/26/2026, bxsci
-      // put(3.95, 29.0, 165.0, 1.15); // 3/26/2026, bxsci
-      // put(4.414, 40.0, 146.0, 0.95);
-      // put(1.146, 15.0, 120.0, 0.85); // 3/26/2026, bxsci
-      // put(5.057, 37.0, 170.0, 1.15); // 3/26/2026, bxsci
     }
   }
 

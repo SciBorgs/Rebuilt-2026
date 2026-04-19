@@ -10,15 +10,12 @@ import static org.sciborgs1155.robot.Constants.*;
 import static org.sciborgs1155.robot.drive.DriveConstants.MAX_ANGULAR_ACCEL;
 import static org.sciborgs1155.robot.drive.DriveConstants.MAX_SPEED;
 import static org.sciborgs1155.robot.drive.DriveConstants.TELEOP_ANGULAR_SPEED;
-import static org.sciborgs1155.robot.shooter.ShooterConstants.CENTER_TO_SHOOTER;
-import static org.sciborgs1155.robot.turret.TurretConstants.START_ANGLE;
 
 import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
@@ -27,7 +24,6 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -36,16 +32,16 @@ import org.littletonrobotics.urcl.URCL;
 import org.sciborgs1155.lib.CommandRobot;
 import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.lib.InputStream;
+import org.sciborgs1155.lib.ProjectileVisualizer;
 import org.sciborgs1155.lib.ShiftTracker;
 import org.sciborgs1155.lib.Tracer;
 import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.climb.Climb;
 import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
-import org.sciborgs1155.robot.commands.Shooting;
-import org.sciborgs1155.robot.commands.shooting.FuelVisualizer;
-import org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer;
-import org.sciborgs1155.robot.commands.shooting.ShootingAlgorithm;
+import org.sciborgs1155.robot.commands.shooting.Calibrator;
+import org.sciborgs1155.robot.commands.shooting.ParameterLookup;
+import org.sciborgs1155.robot.commands.shooting.Shooting;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.hood.Hood;
 import org.sciborgs1155.robot.hopper.Hopper;
@@ -53,7 +49,6 @@ import org.sciborgs1155.robot.indexer.Indexer;
 import org.sciborgs1155.robot.intake.Intake;
 import org.sciborgs1155.robot.led.LEDs;
 import org.sciborgs1155.robot.shooter.Shooter;
-import org.sciborgs1155.robot.shooter.ShooterConstants;
 import org.sciborgs1155.robot.slapdown.Slapdown;
 import org.sciborgs1155.robot.turret.Turret;
 import org.sciborgs1155.robot.vision.Vision;
@@ -88,24 +83,14 @@ public class Robot extends CommandRobot {
   // COMMANDS
   private final Alignment align = new Alignment(drive);
 
-  @NotLogged
-  private final ProjectileVisualizer fuelVisualizer =
-      isReal()
-          ? null
-          : new FuelVisualizer(
-                  ShootingAlgorithm.toShotVelocitySupplier(
-                      () -> shooter.velocity() * ShooterConstants.RADIUS.in(Meters),
-                      () -> Math.PI / 2 - hood.angle(),
-                      () -> turret.position(),
-                      drive::pose3d),
-                  () -> drive.pose3d().plus(CENTER_TO_SHOOTER),
-                  drive::fieldRelativeChassisSpeeds)
-              .configPhysics(true, true, false, false)
-              .configGeneration(.5, 80, 60)
-              .config(true, true);
-
   private final Shooting shooting =
-      new Shooting(shooter, turret, hood, drive, hopper, indexer, slapdown, fuelVisualizer);
+      new Shooting(shooter, turret, hood, hopper, indexer, slapdown, drive);
+
+  private final Calibrator calibrator =
+      new Calibrator(shooter, turret, hood, hopper, indexer, slapdown, drive);
+
+  @NotLogged
+  private final ProjectileVisualizer fuelVisualizer = isReal() ? null : shooting.createVisualizer();
 
   @NotLogged
   private final SendableChooser<Command> autos =
@@ -137,6 +122,9 @@ public class Robot extends CommandRobot {
     DataLogManager.start();
     SignalLogger.enableAutoLogging(true);
     addPeriodic(FaultLogger::update, 2);
+    addPeriodic(ParameterLookup::updateLogging, PERIOD);
+    addPeriodic(shooting::updateLogging, PERIOD);
+    addPeriodic(calibrator::updateLogging, PERIOD);
     Epilogue.bind(this);
 
     // FaultLogger.register(pdh);
@@ -179,9 +167,7 @@ public class Robot extends CommandRobot {
     } else {
       DriverStation.silenceJoystickConnectionWarning(true);
       addPeriodic(fuelVisualizer::updateLogging, PERIOD);
-      addPeriodic(fuelVisualizer::updateLaunchSimulation, ProjectileVisualizer.LAUNCH_PERIOD);
-      addPeriodic(
-          fuelVisualizer::updateTrajectorySimulation, ProjectileVisualizer.TRAJECTORY_PERIOD);
+      fuelVisualizer.startSimulation();
     }
   }
 
@@ -259,12 +245,12 @@ public class Robot extends CommandRobot {
         .povDown()
         .or(operator.povDown())
         .whileTrue(slapdown.extend())
-        .onFalse(slapdown.nothing()); // jank jank jank
+        .onFalse(slapdown.nothing());
     driver
         .povRight()
         .or(operator.povRight())
         .whileTrue(slapdown.retract())
-        .onFalse(slapdown.nothing()); // jank jank jank
+        .onFalse(slapdown.nothing());
 
     // OUTTAKE THE INTAKE
     driver
@@ -272,19 +258,13 @@ public class Robot extends CommandRobot {
         .whileTrue(intake.outtake().alongWith(hopper.outtake()).alongWith(indexer.backward()));
 
     // FEED CONTINUOUS (LEFT SIDE)
-    driver
-        .leftBumper()
-        .whileTrue(shooting.shootDriving(Shooting.LEFT_FEED, x, y, omega).withName("left feed"));
+    driver.leftBumper().whileTrue(shooting.feedLeft());
 
     // FEED CONTINUOUS (RIGHT SIDE)
-    driver
-        .rightBumper()
-        .whileTrue(shooting.shootDriving(Shooting.RIGHT_FEED, x, y, omega).withName("right feed"));
+    driver.rightBumper().whileTrue(shooting.feedRight());
 
     // SCORE CONTINUOUS
-    driver
-        .rightTrigger()
-        .whileTrue(shooting.shootDriving(Shooting.HUB_TARGET, x, y, omega).withName("HUB"));
+    operator.x().whileTrue(shooting.scoreHub());
 
     // SCORING FALL BACK (FIXED POSITION)
     driver
@@ -296,13 +276,8 @@ public class Robot extends CommandRobot {
                 .withName("fallback"));
 
     driver.b().whileTrue(slapdown.squeeze()).onFalse(slapdown.extend());
-    // CLIMB
-    // operator
-    //     .y()
-    //     .whileTrue(climb.extend())
-    //     .onFalse(climb.retract());
 
-    operator.x().whileTrue(shooting.shootWithTestData().withName("test data"));
+    operator.y().whileTrue(climb.extend()).onFalse(climb.retract());
 
     operator
         .leftBumper()
@@ -310,7 +285,6 @@ public class Robot extends CommandRobot {
 
     operator.y().whileTrue(hopper.intake());
 
-    // operator.a().whileTrue(turret.goTo(() -> 3 * Math.PI / 2));
     operator.b().whileTrue(hopper.outtake());
 
     operator.a().whileTrue(indexer.forward());
@@ -320,32 +294,10 @@ public class Robot extends CommandRobot {
     operator.leftTrigger().whileTrue(turret.goLeft().withName("left"));
     operator.rightTrigger().whileTrue(turret.goRight().withName("right"));
 
-    // operator.povLeft().whileTrue(slapdown.homingSequence());
+    operator.povLeft().whileTrue(slapdown.homingSequence());
 
-    shooting
-        .crossingAlliance()
-        .whileTrue(
-            shooting
-                .hideAway()
-                .withInterruptBehavior(InterruptionBehavior.kCancelIncoming)
-                .withName("crossing"));
-
-    // DEBUG
-    // TODO: various operator debug stuff (turret, hood, shooter)
-
-    // operator
-    //     .a()
-    //     .whileTrue(turret.goTo(() ->
-    // TurretConstants.MIN_ANGLE.plus(Degrees.of(20)).in(Radians)));
-    // operator.y().whileTrue(turret.goTo(() -> 0));
-    // operator.leftTrigger().whileTrue(hood.goTo(Degrees.of(45)).withName("goto 45"));
-    // operator.rightTrigger().whileTrue(hood.goTo(Degrees.of(25)).withName("goto 25"));
-    // operator.a().whileTrue(hood.homingSequence());
-
-    // operator
-    //     .leftBumper()
-    //     .or(operator.rightBumper())
-    //     .whileTrue(turret.manualTurret(InputStream.of(() -> operator.getLeftX())));
+    if (fuelVisualizer != null)
+      shooting.shouldIndex().whileTrue(fuelVisualizer.launchProjectiles());
   }
 
   /**

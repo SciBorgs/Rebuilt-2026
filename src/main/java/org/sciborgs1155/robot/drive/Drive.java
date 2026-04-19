@@ -763,6 +763,45 @@ public class Drive extends SubsystemBase implements AutoCloseable {
   }
 
   /**
+   * Command factory that automatically path-follows, in a straight line, to the position on the
+   * field specified by the supplier. Will update on target change.
+   *
+   * @param target The pose to reach.
+   * @return The command to run the control loop.
+   */
+  public Command follow(Supplier<Pose2d> target) {
+    return run(() -> {
+          if (atPose(target.get(), Translation.TOLERANCE, Rotation.TOLERANCE)) {
+            setChassisSpeeds(
+                ChassisSpeeds.fromFieldRelativeSpeeds(0, 0, 0, pose().getRotation()),
+                ControlMode.CLOSED_LOOP_VELOCITY);
+            return;
+          }
+
+          Pose2d targetPose = target.get();
+          Pose2d pose = pose();
+          Vector<N3> difference =
+              VecBuilder.fill(
+                  pose.getX() - targetPose.getX(),
+                  pose.getY() - targetPose.getY(),
+                  MathUtil.angleModulus(
+                          pose.getRotation().getRadians() - targetPose.getRotation().getRadians())
+                      * RADIUS.in(Meters));
+          double out = translationController.calculate(difference.norm(), 0);
+          Vector<N3> velocities = difference.unit().times(out);
+          log("/Robot/drive/follow goal", targetPose, Pose2d.struct);
+          setChassisSpeeds(
+              ChassisSpeeds.fromFieldRelativeSpeeds(
+                  velocities.get(0),
+                  velocities.get(1),
+                  velocities.get(2) / RADIUS.in(Meters),
+                  pose().getRotation()),
+              ControlMode.CLOSED_LOOP_VELOCITY);
+        })
+        .withName("follow pose");
+  }
+
+  /**
    * Command factory that automatically path-follows, in a straight line, to a position on the
    * field.
    *

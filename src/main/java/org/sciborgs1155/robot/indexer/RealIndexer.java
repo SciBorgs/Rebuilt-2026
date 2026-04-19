@@ -22,7 +22,6 @@ public class RealIndexer implements IndexerIO {
     config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     config.Feedback.SensorToMechanismRatio = GEARING;
 
-
     motor.getConfigurator().apply(config);
   }
 

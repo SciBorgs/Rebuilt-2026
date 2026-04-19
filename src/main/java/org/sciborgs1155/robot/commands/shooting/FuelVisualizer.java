@@ -1,241 +1,352 @@
 package org.sciborgs1155.robot.commands.shooting;
 
-import static edu.wpi.first.units.Units.Meters;
-import static org.sciborgs1155.robot.Constants.Robot.ROBOT_TO_SHOOTER;
-import static org.sciborgs1155.robot.Constants.Robot.SHOOTER_LENGTH;
+import static edu.wpi.first.units.Units.Radians;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.DRAG_CONSTANT;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.FUEL_RADIUS;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.LIFT_CONSTANT;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.ROBOT_TO_SHOOTER;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.SHOOTER_RADIUS;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.SHOOTER_TO_FLYWHEEL;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.toHoodAngle;
+import static org.sciborgs1155.robot.hood.HoodConstants.MIN_ANGLE;
 
-import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import java.util.function.DoubleSupplier;
-import java.util.function.Supplier;
+import org.sciborgs1155.lib.LoggingUtils;
+import org.sciborgs1155.lib.ProjectileVisualizer;
 import org.sciborgs1155.robot.FieldConstants.Hub;
+import org.sciborgs1155.robot.drive.Drive;
 
-/**
- * A class that manages the creation, simulation, and logging of simulated FUEL projectiles.
- *
- * @see Fuel
- */
-public class FuelVisualizer extends ProjectileVisualizer {
-  /**
-   * A class that manages the creation, simulation, and logging of simulated FUEL projectiles.
-   *
-   * @param launchVelocity a supplier that provides the velocity of the FUEL at launch time
-   * @param robotPose a supplier that provides the pose of the robot at launch time
-   * @param robotVelocity a supplier that provides the velocity of the robot at launch time
-   */
-  public FuelVisualizer(
-      Supplier<double[]> launchVelocity,
-      Supplier<Pose3d> robotPose,
-      Supplier<ChassisSpeeds> robotVelocity) {
+@SuppressWarnings("PMD.OneDeclarationPerLine")
+public final class FuelVisualizer extends ProjectileVisualizer {
+  private double scoreTolerance = Hub.INNER_WIDTH / 2;
+  private final double[] targetPose = fromTranslation(Hub.TOP_CENTER_POINT);
+  private double scoreDepth;
+
+  private final DoubleSupplier speed, pitch, yaw;
+  private final DoubleSupplier robotVx, robotVy, robotOmega;
+  private final DoubleSupplier robotX, robotY, heading;
+  private final CachedVector initialTranslation, initialVelocity, initialRotation;
+
+  private FuelVisualizer(
+      DoubleSupplier speed,
+      DoubleSupplier pitch,
+      DoubleSupplier yaw,
+      DoubleSupplier robotX,
+      DoubleSupplier robotY,
+      DoubleSupplier heading,
+      DoubleSupplier vx,
+      DoubleSupplier vy,
+      DoubleSupplier robotOmega,
+      CachedVector initialTranslation,
+      CachedVector initialVelocity,
+      CachedVector initialRotation,
+      DoubleSupplier initialRotationalVelocity) {
     super(
-        () -> launchTranslation(launchVelocity.get(), robotPose.get()),
-        () -> launchVelocity(launchVelocity.get(), robotPose.get(), robotVelocity.get()),
-        () -> launchRotation(launchVelocity.get(), robotPose.get()),
-        () -> launchRotationalVelocity());
+        initialTranslation.x(),
+        initialTranslation.y(),
+        initialTranslation.z(),
+        initialVelocity.x(),
+        initialVelocity.y(),
+        initialVelocity.z(),
+        initialRotation.x(),
+        initialRotation.y(),
+        initialRotation.z(),
+        initialRotationalVelocity);
+
+    this.speed = speed;
+    this.pitch = pitch;
+    this.yaw = yaw;
+    this.robotVx = vx;
+    this.robotVy = vy;
+    this.robotOmega = robotOmega;
+    this.heading = heading;
+    this.robotX = robotX;
+    this.robotY = robotY;
+
+    this.initialTranslation = initialTranslation;
+    this.initialVelocity = initialVelocity;
+    this.initialRotation = initialRotation;
+  }
+
+  protected static FuelVisualizer fromLaunchParameters(
+      DoubleSupplier speed, DoubleSupplier pitch, DoubleSupplier yaw, Drive drive) {
+    DoubleSupplier robotX = () -> drive.pose().getX();
+    DoubleSupplier robotY = () -> drive.pose().getY();
+    DoubleSupplier heading = () -> drive.heading().getRadians();
+    DoubleSupplier robotVx = () -> drive.velocity().getX();
+    DoubleSupplier robotVy = () -> drive.velocity().getY();
+    DoubleSupplier robotOmega = () -> drive.omega();
+
+    CachedVector initialTranslation =
+        new CachedVector(
+            () ->
+                initialTranslation(
+                    robotX.getAsDouble(),
+                    robotY.getAsDouble(),
+                    pitch.getAsDouble(),
+                    yaw.getAsDouble(),
+                    heading.getAsDouble()));
+
+    CachedVector initialVelocity =
+        new CachedVector(
+            () ->
+                initialVelocity(
+                    speed.getAsDouble(),
+                    pitch.getAsDouble(),
+                    yaw.getAsDouble(),
+                    heading.getAsDouble(),
+                    robotVx.getAsDouble(),
+                    robotVy.getAsDouble(),
+                    robotOmega.getAsDouble()));
+
+    CachedVector initialRotation =
+        new CachedVector(() -> initialRotation(yaw.getAsDouble(), heading.getAsDouble()));
+
+    return new FuelVisualizer(
+        speed,
+        pitch,
+        yaw,
+        robotX,
+        robotY,
+        heading,
+        robotVx,
+        robotVy,
+        robotOmega,
+        initialTranslation,
+        initialVelocity,
+        initialRotation,
+        FuelVisualizer::initialRotationalVelocity);
   }
 
   /**
-   * A class that manages the creation, simulation, and logging of simulated FUEL projectiles.
+   * Configures visualizer scoring parameters.
    *
-   * @param launchTranslation a supplier that provides the translation of the FUEL at launch time
-   * @param launchVelocity a supplier that provides the velocity of the FUEL at launch time
-   * @param launchRotation a supplier that provides the rotation of the FUEL at launch time
-   * @param launchRotationalVelocity a supplier that provides the rotational velocity of the FUEL at
-   *     launch time
+   * @param goal the translation of the goal
+   * @param tolerance the planar tolerance to be considered 'scored'
+   * @param depth the vertical distance below the goal to check for scoring/missing
    */
-  public FuelVisualizer(
-      Supplier<double[]> launchTranslation,
-      Supplier<double[]> launchVelocity,
-      Supplier<double[]> launchRotation,
-      DoubleSupplier launchRotationalVelocity) {
-    super(launchTranslation, launchVelocity, launchRotation, launchRotationalVelocity);
+  public FuelVisualizer withScoringParameters(double[] goal, double tolerance, double depth) {
+    System.arraycopy(goal, 0, targetPose, 0, 3);
+    scoreDepth = depth;
+    scoreTolerance = tolerance;
+
+    return this;
   }
 
   @Override
-  protected Projectile createProjectile(
-      double resolution,
-      boolean weightEnabled,
-      boolean dragEnabled,
-      boolean torqueEnabled,
-      boolean liftEnabled) {
-    return new Fuel().config(resolution, weightEnabled, dragEnabled, torqueEnabled, liftEnabled);
+  protected Projectile createProjectile() {
+    return new Fuel().withScoringParameters(targetPose, scoreTolerance, scoreDepth);
   }
 
-  protected static double[] launchTranslation(double[] shotVelocity, Pose3d robotPose) {
-    double[] robotTranslation = {robotPose.getX(), robotPose.getY(), robotPose.getZ()};
-    return Projectile.add3(robotToFuel(shotVelocity, robotPose), robotTranslation);
+  @Override
+  public void updateLogging() {
+    super.updateLogging();
+
+    initialTranslation.invalidate();
+    initialVelocity.invalidate();
+    initialRotation.invalidate();
+
+    if (ending() == null) return;
+    double deltaX = targetPose[X] - ending().getTranslation().getX();
+    double deltaY = targetPose[Y] - ending().getTranslation().getY();
+    double distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+    LoggingUtils.log("Projectile Visualizer/Distance From Goal", distance);
+
+    LoggingUtils.log("Projectile Visualizer/Launch Data/SPEED", speed.getAsDouble());
+    LoggingUtils.log("Projectile Visualizer/Launch Data/PITCH", pitch.getAsDouble());
+
+    LoggingUtils.log("Projectile Visualizer/Launch Data/YAW", yaw.getAsDouble());
+
+    LoggingUtils.log("Projectile Visualizer/Launch Data/ROBOT X", robotX.getAsDouble());
+    LoggingUtils.log("Projectile Visualizer/Launch Data/ROBOT Y", robotY.getAsDouble());
+    LoggingUtils.log("Projectile Visualizer/Launch Data/HEADING", heading.getAsDouble());
+
+    LoggingUtils.log("Projectile Visualizer/Launch Data/ROBOT VX", robotVx.getAsDouble());
+    LoggingUtils.log("Projectile Visualizer/Launch Data/ROBOT VY", robotVy.getAsDouble());
+    LoggingUtils.log("Projectile Visualizer/Launch Data/ROBOT OMEGA", robotOmega.getAsDouble());
   }
 
-  protected static double[] launchVelocity(
-      double[] shotVelocity, Pose3d robotPose, ChassisSpeeds robotVelocity) {
-    return Projectile.add3(shotVelocity, shooterVelocity(shotVelocity, robotPose, robotVelocity));
+  protected static double[] robotToShooter(double heading) {
+    double cosHeading = Math.cos(heading);
+    double sinHeading = Math.sin(heading);
+
+    return new double[] {
+      ROBOT_TO_SHOOTER[X] * cosHeading - ROBOT_TO_SHOOTER[Y] * sinHeading,
+      ROBOT_TO_SHOOTER[X] * sinHeading + ROBOT_TO_SHOOTER[Y] * cosHeading,
+      ROBOT_TO_SHOOTER[Z]
+    };
   }
 
-  protected static double[] launchRotation(double[] shotVelocity, Pose3d robotPose) {
-    double[] axis = Projectile.rotateAroundZ(shotVelocity, Math.PI / 2.0);
-    return Projectile.scale4(
-        new double[] {0, axis[Fuel.X], axis[Fuel.Y], axis[Fuel.Z]},
-        1 / Projectile.norm3(shotVelocity));
+  protected static double[] shooterToInitial(double pitch, double yaw, double heading) {
+    double angle = toHoodAngle(pitch) + MIN_ANGLE.in(Radians);
+    double horizontal = SHOOTER_TO_FLYWHEEL[X] - SHOOTER_RADIUS * Math.cos(angle);
+    double vertical = SHOOTER_TO_FLYWHEEL[Z] + SHOOTER_RADIUS * Math.sin(angle);
+
+    return fieldRelative(new double[] {horizontal, 0, vertical}, yaw + heading);
   }
 
-  protected static double launchRotationalVelocity() {
-    return 0.5; // TODO: UPDATE.
+  protected static double[] initialTranslation(
+      double robotX, double robotY, double pitch, double yaw, double heading) {
+    double[] robotToShooter = robotToShooter(heading);
+    double[] shooterToInitial = shooterToInitial(pitch, yaw, heading);
+
+    return new double[] {
+      robotToShooter[X] + robotX + shooterToInitial[X],
+      robotToShooter[Y] + robotY + shooterToInitial[Y],
+      robotToShooter[Z] + shooterToInitial[Z]
+    };
   }
 
-  /**
-   * Converts shooter properties to a shot velocity vector (X, Y, and Z) which is compatible with
-   * visualizers.
-   *
-   * @param speed the launch speed of the FUEL.
-   * @param pitch the pitch of the shooter.
-   * @param yaw the yaw of the shooter.
-   * @param robotPose the pose of the drivetrain.
-   * @return A double[] that can be passed into the constructor of a visualizer.
-   */
-  public static double[] shotVelocity(double speed, double pitch, double yaw, Pose3d robotPose) {
-    return Projectile.scale3(
-        Fuel.rotateAroundZ(
-            Projectile.toDirectionVector(pitch, yaw), robotPose.getRotation().getZ()),
-        speed);
+  protected static double[] initialVelocity(
+      double speed,
+      double pitch,
+      double yaw,
+      double heading,
+      double robotVx,
+      double robotVy,
+      double robotOmega) {
+    double[] fieldRelative = fieldRelative(robotRelativeShotVelocity(speed, pitch, yaw), heading);
+    double[] shooterVelocity = shooterVelocity(robotVx, robotVy, robotOmega, heading);
+
+    return new double[] {
+      fieldRelative[X] + shooterVelocity[X],
+      fieldRelative[Y] + shooterVelocity[Y],
+      fieldRelative[Z] + shooterVelocity[Z]
+    };
   }
 
-  /**
-   * Converts a shooting algorithm output to a shot velocity vector (X, Y, and Z) which is
-   * compatible with visualizers.
-   *
-   * @param shootingAlgorithm the shooting algorithm used to calculate the shot velocity.
-   * @param robotPose the pose of the drivetrain.
-   * @param robotVelocity the velocity of the drivetrain.
-   * @return A double[] that can be passed into the constructor of a visualizer.
-   */
-  public static double[] shotVelocity(
-      ShootingAlgorithm shootingAlgorithm, Pose3d robotPose, ChassisSpeeds robotVelocity) {
-    return shootingAlgorithm
-        .calculate(
-            robotPose.getTranslation(),
-            VecBuilder.fill(robotVelocity.vxMetersPerSecond, robotVelocity.vyMetersPerSecond))
-        .getData();
+  protected static double[] initialRotation(double yaw, double heading) {
+    return new double[] {0, 0, yaw + heading};
   }
 
-  protected static double[] robotToFuel(double[] shotVelocity, Pose3d robotPose) {
-    double[] shooterToFuel =
-        Projectile.scale3(shotVelocity, SHOOTER_LENGTH.in(Meters) / Projectile.norm3(shotVelocity));
-    double[] robotToShooter =
-        Projectile.rotateAroundZ(
-            Projectile.fromTranslation(ROBOT_TO_SHOOTER), robotPose.getRotation().getZ());
-
-    return Projectile.add3(shooterToFuel, robotToShooter);
+  protected static double initialRotationalVelocity() {
+    return 0;
   }
 
   protected static double[] shooterVelocity(
-      double[] shotVelocity, Pose3d robotPose, ChassisSpeeds robotVelocity) {
-    double tangentialSpeed =
-        robotVelocity.omegaRadiansPerSecond
-            * Projectile.norm3(robotToFuel(shotVelocity, robotPose));
-    double tangentialDirection = robotPose.getRotation().getZ() + Math.PI / 2.0;
+      double robotVx, double robotVy, double robotOmega, double heading) {
+    double[] robotToShooter = robotToShooter(heading);
 
-    double xVelocity =
-        robotVelocity.vxMetersPerSecond + tangentialSpeed * Math.cos(tangentialDirection);
-    double yVelocity =
-        robotVelocity.vyMetersPerSecond + tangentialSpeed * Math.sin(tangentialDirection);
+    double shooterVx = robotVx - robotOmega * robotToShooter[Y];
+    double shooterVy = robotVy + robotOmega * robotToShooter[X];
 
-    return new double[] {xVelocity, yVelocity, 0};
+    return new double[] {shooterVx, shooterVy, 0};
   }
 
-  /** Models the launch physics of a FUEL projectile. */
-  public static class Fuel extends Projectile {
-    /** Mass of the fuel projectile in kilograms. */
-    protected static final double FUEL_MASS = 0.225;
+  protected static double[] robotRelativeShotVelocity(double speed, double pitch, double yaw) {
+    double cosPitch = Math.cos(pitch);
+    double sinPitch = Math.sin(pitch);
+    double cosYaw = Math.cos(yaw);
+    double sinYaw = Math.sin(yaw);
 
-    /** Radius of the fuel projectile in meters. */
-    protected static final double FUEL_RADIUS = 0.075;
+    return new double[] {cosPitch * cosYaw * speed, cosPitch * sinYaw * speed, sinPitch * speed};
+  }
 
-    protected static final double SCORE_TOLERANCE = 0;
-    protected static final double GRAVITY = -9.80665;
-    protected static final double AIR_DENSITY = 1.225;
-    protected static final double AIR_VISCOSITY = 15.24 * Math.pow(10, -6);
+  protected static double[] fieldRelative(double[] robotRelative, double heading) {
+    double fieldRelativeX =
+        robotRelative[X] * Math.cos(heading) - robotRelative[Y] * Math.sin(heading);
+    double fieldRelativeY =
+        robotRelative[X] * Math.sin(heading) + robotRelative[Y] * Math.cos(heading);
 
-    /** Multiplied by velocity squared to compute drag force. */
-    private static final double DRAG_CONSTANT =
-        0.5 * 0.47 * AIR_DENSITY * Math.PI * FUEL_RADIUS * FUEL_RADIUS;
+    return new double[] {fieldRelativeX, fieldRelativeY, robotRelative[Z]};
+  }
 
-    /** Multiplied by velocity * angular speed to compute lift force. */
-    private static final double LIFT_CONSTANT =
-        4 / 3 * 4 * Math.PI * Math.PI * FUEL_RADIUS * FUEL_RADIUS * FUEL_RADIUS * AIR_DENSITY;
+  protected static double[] robotRelative(double[] fieldRelative, double heading) {
+    double fieldRelativeX =
+        fieldRelative[X] * Math.cos(-heading) - fieldRelative[Y] * Math.sin(-heading);
+    double fieldRelativeY =
+        fieldRelative[X] * Math.sin(-heading) + fieldRelative[Y] * Math.cos(-heading);
 
-    /** Multiplied by angular speed to compute torque. */
-    private static final double TORQUE_CONSTANT =
-        -8 * Math.PI * AIR_VISCOSITY * Math.pow(FUEL_RADIUS, 3);
+    return new double[] {fieldRelativeX, fieldRelativeY, fieldRelative[Z]};
+  }
 
-    @Override
-    protected double[] weight() {
-      // SOURCE: https://spaceplace.nasa.gov/what-is-gravity/en/
-      return new double[] {0, 0, GRAVITY};
+  protected static class Fuel extends Projectile {
+    protected double scoreDepth;
+    protected final double[] targetPose = fromTranslation(Hub.TOP_CENTER_POINT);
+
+    protected double scoreRadius = Hub.INNER_WIDTH + FUEL_RADIUS;
+    protected double scoreRadiusSq = scoreRadius * scoreRadius;
+
+    protected boolean inScoringPlane, inScoringRadius;
+    private double prevX, prevY, prevZ;
+
+    protected Fuel() {
+      withDrag(
+          (state, output) -> {
+            // https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/drag-of-a-sphere/
+            double scale =
+                -DRAG_CONSTANT
+                    * Math.sqrt(state.vx * state.vx + state.vy * state.vy + state.vz * state.vz);
+            output[X] = state.vx * scale;
+            output[Y] = state.vy * scale;
+            output[Z] = state.vz * scale;
+          });
+
+      withLift(
+          (state, output) -> {
+            // https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/ideal-lift-of-a-spinning-ball/
+            double scale = LIFT_CONSTANT * state.omega;
+            output[X] = scale * state.vz;
+            output[Y] = 0;
+            output[Z] = scale * -state.vx;
+          });
+
+      withTorque(state -> 0.0);
+
+      withScoreCondition(state -> inScoringPlane && inScoringRadius);
+      withMissCondition(
+          state ->
+              (inScoringPlane && !inScoringRadius) || (state.z < targetPose[Z] && state.vz < 0));
+    }
+
+    protected Fuel withScoringParameters(double[] goal, double tolerance, double depth) {
+      System.arraycopy(goal, 0, targetPose, 0, 3);
+      scoreDepth = depth;
+      scoreRadius = tolerance + FUEL_RADIUS;
+      scoreRadiusSq = scoreRadius * scoreRadius;
+      return this;
     }
 
     @Override
-    protected double[] drag() {
-      // https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/drag-of-a-sphere/
-      return new double[] {
-        velocity[X] * velocity[X] * DRAG_CONSTANT / FUEL_MASS,
-        velocity[Y] * velocity[Y] * DRAG_CONSTANT / FUEL_MASS,
-        velocity[Z] * velocity[Z] * DRAG_CONSTANT / FUEL_MASS
-      };
+    public void step() {
+      prevX = x;
+      prevY = y;
+      prevZ = z;
+
+      super.step();
+
+      checkScoringCrossing();
+    }
+
+    private void checkScoringCrossing() {
+      double planeZ = targetPose[Z] + scoreDepth;
+
+      boolean crossedPlane = prevZ > planeZ && z <= planeZ && vz < 0;
+
+      if (!crossedPlane) {
+        inScoringPlane = false;
+        return;
+      }
+
+      // Interpolate the exact XY position when the ball crossed the scoring plane
+      double t = (planeZ - prevZ) / (z - prevZ);
+
+      double intersectX = prevX + t * (x - prevX);
+      double intersectY = prevY + t * (y - prevY);
+
+      double dx = intersectX - targetPose[X];
+      double dy = intersectY - targetPose[Y];
+
+      inScoringPlane = true;
+      inScoringRadius = (dx * dx + dy * dy) <= scoreRadiusSq;
     }
 
     @Override
-    protected double torque() {
-      // https://physics.wooster.edu/wp-content/uploads/2021/08/Junior-IS-Thesis-Web_1998_Grugel.pdf
-      return rotationalVelocity * TORQUE_CONSTANT / FUEL_MASS;
-    }
-
-    @Override
-    protected double[] lift() {
-      // https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/ideal-lift-of-a-spinning-ball/
-      return new double[] {0, 0, LIFT_CONSTANT * norm3(velocity) * rotationalVelocity / FUEL_MASS};
-    }
-
-    @Override
-    protected boolean willScore() {
-      double hub1XDisplacement = translation[X] - Hub.TOP_CENTER_POINT.getX();
-      double hub1YDisplacement = translation[Y] - Hub.TOP_CENTER_POINT.getY();
-
-      double hub2XDisplacement = translation[X] - Hub.OPP_TOP_CENTER_POINT.getX();
-      double hub2YDisplacement = translation[Y] - Hub.OPP_TOP_CENTER_POINT.getY();
-
-      double hub1Distance = Math.hypot(hub1XDisplacement, hub1YDisplacement);
-      double hub2Distance = Math.hypot(hub2XDisplacement, hub2YDisplacement);
-
-      double planarDistance = Math.min(hub1Distance, hub2Distance);
-      double verticalDisplacement = Hub.HEIGHT - translation[Z];
-      double scoreRadius = SCORE_TOLERANCE + FUEL_RADIUS + Hub.WIDTH / 2;
-
-      return verticalDisplacement < 0
-          && verticalDisplacement > -FUEL_RADIUS
-          && planarDistance <= scoreRadius
-          && velocity[Z] < 0;
-    }
-
-    @Override
-    protected boolean willMiss() {
-      double hub1XDisplacement = translation[X] - Hub.TOP_CENTER_POINT.getX();
-      double hub1YDisplacement = translation[Y] - Hub.TOP_CENTER_POINT.getY();
-
-      double hub2XDisplacement = translation[X] - Hub.OPP_TOP_CENTER_POINT.getX();
-      double hub2YDisplacement = translation[Y] - Hub.OPP_TOP_CENTER_POINT.getY();
-
-      double hub1Distance = Math.hypot(hub1XDisplacement, hub1YDisplacement);
-      double hub2Distance = Math.hypot(hub2XDisplacement, hub2YDisplacement);
-
-      double planarDistance = Math.min(hub1Distance, hub2Distance);
-      double verticalDisplacement = Hub.HEIGHT - translation[Z];
-      double scoreRadius = SCORE_TOLERANCE + FUEL_RADIUS + Hub.WIDTH / 2;
-
-      return (verticalDisplacement > -FUEL_RADIUS
-              && planarDistance > scoreRadius
-              && velocity[Z] < 0)
-          || translation[Z] < FUEL_RADIUS;
+    public void reset() {
+      super.reset();
+      inScoringPlane = false;
+      inScoringRadius = false;
     }
   }
 }

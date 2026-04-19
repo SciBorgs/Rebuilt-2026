@@ -6,12 +6,10 @@ import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Proj
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.fromTranslation;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.CENTER_TO_SHOOTER;
 
-import org.sciborgs1155.robot.Robot;
-
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Filesystem;
-
 import org.sciborgs1155.robot.FieldConstants.Hub;
+import org.sciborgs1155.robot.Robot;
 import org.sciborgs1155.robot.hood.HoodConstants;
 
 /** Constants used in the shooting algorithm. */
@@ -20,7 +18,8 @@ public final class ShootingConstants {
   // PREVENTS INSTANTIATION
   private ShootingConstants() {}
 
-  public static final String TABLE_DIRECTORY = Robot.isReal() ? Filesystem.getDeployDirectory() + "/shooting/" : "resources/shooting/";
+  public static final String TABLE_DIRECTORY =
+      Robot.isReal() ? Filesystem.getDeployDirectory() + "/shooting/" : "resources/shooting/";
 
   public static final class DistanceTableConstants {
     /** Array indices for data stored within the DistanceTable. */
@@ -201,5 +200,19 @@ public final class ShootingConstants {
    */
   public static double toPitch(double hoodAngle) {
     return Math.PI / 2 - hoodAngle;
+  }
+
+  public static final class TestingConstants {
+    public static final double SPEED_TOLERANCE = 1; // meters/s
+    public static final double ANGLE_TOLERANCE = 15; // degrees
+    public static final double DISTANCE_TOLERANCE = 0.5; // meters
+
+    public static final double AIRTIME_TEST_SPEED = 7.190; // meter/s
+    public static final double AIRTIME_TEST_PITCH = 1.124; // rads
+    public static final double AIRTIME_TEST_DISTANCE = 0.007; // meters
+
+    public static final double ACCURACY_TEST_SPEED = 6.955; // meter/s
+
+    public static final double SPEED_TEST_SPEED = 7.951; // meter/s
   }
 }

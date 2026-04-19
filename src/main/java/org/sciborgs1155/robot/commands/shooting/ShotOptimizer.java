@@ -8,6 +8,7 @@ import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Proj
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.Projectile.Z;
 import static org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer.diff;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.LaunchParameters.PITCH;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.LaunchParameters.SPEED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.LaunchParameters.YAW;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.OptimizerConstants.MAX_AIR_TIME;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.OptimizerConstants.MAX_OPTIMIZER_ITERATIONS;
@@ -35,11 +36,21 @@ import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.Scoring
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ScoringConstants.SCORE_RADIUS;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ScoringConstants.TOF_DEPTH;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ScoringConstants.TOF_RADIUS;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.TestingConstants.ACCURACY_TEST_SPEED;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.TestingConstants.AIRTIME_TEST_DISTANCE;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.TestingConstants.AIRTIME_TEST_PITCH;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.TestingConstants.AIRTIME_TEST_SPEED;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.TestingConstants.ANGLE_TOLERANCE;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.TestingConstants.DISTANCE_TOLERANCE;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.TestingConstants.SPEED_TEST_SPEED;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.TestingConstants.SPEED_TOLERANCE;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj2.command.Command;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.DoubleFunction;
+import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.robot.commands.shooting.FuelVisualizer.Fuel;
 
 /**
@@ -283,5 +294,58 @@ public final class ShotOptimizer {
     }
 
     return value;
+  }
+
+  /**
+   * Does a test command to check if method estimateSpeed is accurate
+   *
+   * @return
+   */
+  public Command speedTest() {
+    return FaultLogger.reportEquals(
+        "EstimateSpeed check speed",
+        () -> SPEED_TEST_SPEED,
+        () -> ShotOptimizer.estimateSpeed(3, 45, 1),
+        SPEED_TOLERANCE);
+  }
+
+  /**
+   * Does a test command to check if method optimizeForAccuracy is accurate
+   *
+   * @return
+   */
+  public Command accuracyTest() {
+    return FaultLogger.reportEquals(
+        "AccuracyTest check angle",
+        () -> ACCURACY_TEST_SPEED,
+        () -> ShotOptimizer.optimizeForAccuracy(3, 7, 45),
+        SPEED_TOLERANCE);
+  }
+
+  /**
+   * Does a test command to check if method optimizeForAirTime is accurate
+   *
+   * @return
+   */
+  public Command airTimeTest() {
+    double[] actual = ShotOptimizer.optimizeForAirTime(3);
+
+    return (FaultLogger.reportEquals(
+            "AirTimeTest check speed",
+            () -> AIRTIME_TEST_SPEED,
+            () -> actual[SPEED],
+            SPEED_TOLERANCE)
+        .andThen(
+            FaultLogger.reportEquals(
+                "AirtimeTest check pitch",
+                () -> AIRTIME_TEST_PITCH,
+                () -> actual[PITCH],
+                ANGLE_TOLERANCE))
+        .andThen(
+            FaultLogger.reportEquals(
+                "AirtimeTest check distance",
+                () -> AIRTIME_TEST_DISTANCE,
+                () -> actual[2],
+                DISTANCE_TOLERANCE)));
   }
 }

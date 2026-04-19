@@ -1,6 +1,5 @@
 package org.sciborgs1155.robot.commands.shooting;
 
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.TABLE_DIRECTORY;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterTableConstants.DELIMITER;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterTableConstants.DISTANCE;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterTableConstants.DISTANCE_RESOLUTION;
@@ -17,6 +16,7 @@ import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.Physica
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MIN_DISTANCE;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MIN_PITCH;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MIN_SPEED;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.TABLE_DIRECTORY;
 
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -29,6 +29,7 @@ import java.nio.file.Path;
 import java.util.Scanner;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.function.BooleanSupplier;
 import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.robot.commands.shooting.ShootingConstants.LaunchParameters;
 
@@ -42,6 +43,7 @@ public final class ParameterLookup {
   private static InterpolatingDoubleTreeMap errorLookup = new InterpolatingDoubleTreeMap();
 
   private static boolean status;
+  private static volatile BooleanSupplier isFinished = () -> true;
   private static double averageError;
 
   private static int entriesGenerated;
@@ -54,20 +56,24 @@ public final class ParameterLookup {
   private ParameterLookup() {}
 
   /**
-   * Generates a new lookup table.
+   * Generates a new lookup table, ending the command when the table is finished generating.
    *
    * @return a command to generate the lookup table
    */
-  public static Command generate() {
+  public static Command generate(BooleanSupplier isFinished) {
     return Commands.runOnce(
-        () ->
-            executor.submit(
-                () ->
-                    generateTable(
-                        PARAMETER_TABLE_PATH, MIN_DISTANCE, MAX_DISTANCE, DISTANCE_RESOLUTION)));
+            () ->
+                executor.submit(
+                    () ->
+                        generateTable(
+                            PARAMETER_TABLE_PATH, MIN_DISTANCE, MAX_DISTANCE, DISTANCE_RESOLUTION)))
+        .andThen(Commands.run(() -> {}))
+        .until(isFinished);
   }
 
   private static void generateTable(String name, double min, double max, double resolution) {
+
+    isFinished = () -> false;
     entriesGenerated = 0;
     double increment = 1 / resolution;
 
@@ -95,6 +101,8 @@ public final class ParameterLookup {
         writer.newLine();
         entriesGenerated++;
       }
+      isFinished = () -> true;
+
     } catch (IOException exception) {
       exception.printStackTrace();
     }
@@ -184,5 +192,6 @@ public final class ParameterLookup {
     LoggingUtils.log("Shooting/Parameter Lookup/Average Error", averageError);
     LoggingUtils.log("Shooting/Parameter Lookup/Entries Generated", entriesGenerated);
     LoggingUtils.log("Shooting/Parameter Lookup/Entries Loaded", entriesLoaded);
+    LoggingUtils.log("Shooting/Parameter Lookup/isFinished", isFinished.getAsBoolean());
   }
 }

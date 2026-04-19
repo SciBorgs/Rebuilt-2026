@@ -46,9 +46,11 @@
       "Robot/drive/rotationController": "PIDController",
       "Robot/drive/translationController": "ProfiledPIDController",
       "Robot/hood/fb": "ProfiledPIDController",
+      "Robot/hood/fbVel": "PIDController",
       "Robot/shooter/controller": "ProfiledPIDController",
       "Robot/slapdown/pid": "ProfiledPIDController",
-      "Robot/turret/controller": "ProfiledPIDController"
+      "Robot/turret/controller": "ProfiledPIDController",
+      "Robot/turret/velocityController": "PIDController"
     },
     "windows": {
       "/SmartDashboard/Auto Chooser": {

@@ -120,10 +120,14 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
 
     crtSolver = new EasyCRT(crtConfig);
 
-    crtSolver.getAngleOptional().ifPresentOrElse((angle) -> {
-      hardware.setPosition(angle);
-      System.out.println("yes i updated");
-    }, () -> System.out.println("no i DESTROYED THE CODE"));
+    crtSolver
+        .getAngleOptional()
+        .ifPresentOrElse(
+            (angle) -> {
+              hardware.setPosition(angle);
+              System.out.println("yes i updated");
+            },
+            () -> System.out.println("no i DESTROYED THE CODE"));
 
     sysIdRoutine =
         new SysIdRoutine(
@@ -374,7 +378,9 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
     var command = getCurrentCommand();
     LoggingUtils.log("Robot/turret/Encoder A", hardware.encoderA());
     LoggingUtils.log("Robot/turret/Encoder B", hardware.encoderB());
-    // crtSolver.getAngleOptional().ifPresentOrElse((angle) -> LoggingUtils.log("Robot/turret/crtAngle", angle.in(Radians)), () -> LoggingUtils.log("Robot/turret/crtAngle", 0));
+    // crtSolver.getAngleOptional().ifPresentOrElse((angle) ->
+    // LoggingUtils.log("Robot/turret/crtAngle", angle.in(Radians)), () ->
+    // LoggingUtils.log("Robot/turret/crtAngle", 0));
     LoggingUtils.log("Robot/turret/current command", command != null ? command.getName() : "None");
 
     hardware.periodic();

@@ -2,7 +2,6 @@ package org.sciborgs1155.robot;
 
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
-import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
@@ -17,12 +16,12 @@ import static org.sciborgs1155.robot.drive.DriveConstants.MAX_ANGULAR_ACCEL;
 import static org.sciborgs1155.robot.drive.DriveConstants.MAX_SPEED;
 import static org.sciborgs1155.robot.drive.DriveConstants.TELEOP_ANGULAR_SPEED;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.CENTER_TO_SHOOTER;
-import static org.sciborgs1155.robot.turret.TurretConstants.START_ANGLE;
 
 import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -43,8 +42,10 @@ import org.littletonrobotics.urcl.URCL;
 import org.sciborgs1155.lib.CommandRobot;
 import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.lib.InputStream;
+import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.lib.ShiftTracker;
 import org.sciborgs1155.lib.Tracer;
+import org.sciborgs1155.robot.FieldConstants.Hub;
 import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.climb.Climb;
 import org.sciborgs1155.robot.commands.Alignment;
@@ -53,6 +54,7 @@ import org.sciborgs1155.robot.commands.shooting.ParameterLookup;
 import org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer;
 import org.sciborgs1155.robot.commands.shooting.RollerTable;
 import org.sciborgs1155.robot.commands.shooting.Shooting;
+import org.sciborgs1155.robot.commands.shooting.TurretLockOn;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.hood.Hood;
 import org.sciborgs1155.robot.hood.HoodVisualizer;
@@ -115,6 +117,32 @@ public class Robot extends CommandRobot {
   @Override
   public void robotPeriodic() {
     Tracer.startTrace("commands");
+
+    LoggingUtils.log("Shooting/test/calc r", r.getAsDouble());
+    LoggingUtils.log(
+        "Shooting/test/joystick vx",
+        TurretLockOn.joystickChassisSpeeds(rawX, rawY, driver).vxMetersPerSecond);
+    LoggingUtils.log(
+        "Shooting/test/joystick vy",
+        TurretLockOn.joystickChassisSpeeds(rawX, rawY, driver).vyMetersPerSecond);
+    LoggingUtils.log(
+        "Shooting/test/joystick omega",
+        TurretLockOn.joystickChassisSpeeds(rawX, rawY, driver).omegaRadiansPerSecond);
+    LoggingUtils.log(
+        "Shooting/test/projected pos",
+        TurretLockOn.projectPose(
+            TurretLockOn.joystickChassisSpeeds(rawX, rawY, driver),
+            drive.pose(),
+            new Rotation2d(turret.position())),
+        Pose2d.struct);
+
+    LoggingUtils.log(
+        "Shooting/test/ang vel",
+        TurretLockOn.FindTurretAngularVelocity(
+            TurretLockOn.joystickChassisSpeeds(rawX, rawY, driver),
+            drive.pose(),
+            new Rotation2d(turret.position())));
+
     CommandScheduler.getInstance().run();
     Tracer.endTrace();
   }
@@ -177,6 +205,11 @@ public class Robot extends CommandRobot {
     }
   }
 
+  static InputStream r;
+
+  public InputStream rawX = InputStream.of(driver::getLeftY);
+  public InputStream rawY = InputStream.of(driver::getLeftX);
+
   /** Configures trigger -> command bindings. */
   private void configureBindings() {
     teleop().onTrue(ShiftTracker.startTracking());
@@ -186,7 +219,7 @@ public class Robot extends CommandRobot {
     InputStream rawY = InputStream.of(driver::getLeftX).log("/Robot/raw y"); // .negate();
 
     // Apply speed multiplier, deadband, square inputs, and scale translation to max speed
-    InputStream r =
+    r =
         InputStream.hypot(rawX, rawY)
             .log("/Robot/raw joystick")
             .scale(() -> speedMultiplier)
@@ -245,11 +278,40 @@ public class Robot extends CommandRobot {
         .and(operator.a())
         .whileTrue(shooting.runDiscreteShooter(x, y, omega))
         .whileFalse(shooting.runDynamicShooter(x, y, omega));
-    
-    shooting.shouldIndex().and(operator.a()).whileTrue(fuelVisualizer.launchProjectiles());
 
+    shooting.shouldIndex().and(operator.a()).whileTrue(fuelVisualizer.launchProjectiles());
+    operator.a().onTrue(ParameterLookup.generate(() -> false));
     operator.b().onTrue(ParameterLookup.load());
     operator.x().onTrue(RollerTable.load());
+    operator.y().whileTrue(turret.goLeft());
+  }
+
+  public static InputStream r(InputStream rawX, InputStream rawY) {
+    r =
+        InputStream.hypot(rawX, rawY)
+            .log("/Robot/raw joystick")
+            .scale(() -> FULL_SPEED_MULTIPLIER)
+            .clamp(1.0)
+            .deadband(DEADBAND, 1.0)
+            .signedPow(2.0)
+            .log("/Robot/processed joystick")
+            .scale(MAX_SPEED.in(MetersPerSecond));
+
+    return r;
+  }
+
+  public static InputStream omega(CommandXboxController driver) {
+    InputStream omega =
+        InputStream.of(driver::getRightX)
+            .negate()
+            .scale(() -> FULL_SPEED_MULTIPLIER)
+            .clamp(1.0)
+            .deadband(DEADBAND, 1.0)
+            .signedPow(2.0)
+            .scale(TELEOP_ANGULAR_SPEED.in(RadiansPerSecond))
+            .rateLimit(MAX_ANGULAR_ACCEL.in(RadiansPerSecond.per(Second)));
+
+    return omega;
   }
 
   /**

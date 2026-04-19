@@ -27,7 +27,7 @@ public class IndexerConstants {
   public static final Distance STAGE_ONE_RADIUS = Inches.of(0.5);
   public static final Distance STAGE_TWO_RADIUS = Inches.of(0.75);
 
-  public static final LinearVelocity PASSTHROUGH_SPEED = MetersPerSecond.of(1.5);
+  public static final LinearVelocity PASSTHROUGH_SPEED = MetersPerSecond.of(2);
 
   public static final double RADIANS_PER_SEC =
       PASSTHROUGH_SPEED.in(MetersPerSecond) / STAGE_ONE_RADIUS.in(Meters);

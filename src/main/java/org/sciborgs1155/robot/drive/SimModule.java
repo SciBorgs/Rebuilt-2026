@@ -32,7 +32,7 @@ public class SimModule implements ModuleIO {
 
   private final DCMotorSim turn =
       new DCMotorSim(
-          LinearSystemId.createDCMotorSystem(Turning.FF.V, Turning.FF.A), DCMotor.getNeo550(1));
+          LinearSystemId.createDCMotorSystem(Turning.FF.V, Turning.FF.A), DCMotor.getKrakenX60(1));
 
   private final PIDController turnFeedback =
       new PIDController(Turning.PID.P, Turning.PID.I, Turning.PID.D);

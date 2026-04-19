@@ -89,6 +89,7 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
             .dynamic(Direction.kReverse)
             // .until(() -> atPosition(MIN_ANGLE.in(Radians)))
             .withName("slapdown dynamic backward"));
+    setDefaultCommand(run(() -> hardware.setVoltage(0)));
   }
 
   /**

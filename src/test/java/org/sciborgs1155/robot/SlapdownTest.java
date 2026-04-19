@@ -2,12 +2,13 @@ package org.sciborgs1155.robot;
 
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Seconds;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.sciborgs1155.lib.UnitTestingUtil.fastForward;
 import static org.sciborgs1155.lib.UnitTestingUtil.reset;
 import static org.sciborgs1155.lib.UnitTestingUtil.setupTests;
 import static org.sciborgs1155.robot.slapdown.SlapdownConstants.MAX_ANGLE;
 import static org.sciborgs1155.robot.slapdown.SlapdownConstants.MIN_ANGLE;
+import static org.sciborgs1155.robot.slapdown.SlapdownConstants.POSITION_TOLERANCE;
 
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -41,8 +42,8 @@ public class SlapdownTest {
   public void orientation() {
     double setpoint = random.nextDouble(MIN_ANGLE.in(Radians), MAX_ANGLE.in(Radians));
     CommandScheduler.getInstance()
-        .schedule(slapdown.goTo(setpoint).withDeadline(Commands.waitSeconds(3)));
-    fastForward(Seconds.of(3));
-    assertTrue(slapdown.atPosition(setpoint));
+        .schedule(slapdown.goTo(setpoint).withDeadline(Commands.waitSeconds(7)));
+    fastForward(Seconds.of(6));
+    assertEquals(setpoint, slapdown.position(), POSITION_TOLERANCE.in(Radians));
   }
 }

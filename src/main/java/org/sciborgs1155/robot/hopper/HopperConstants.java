@@ -26,7 +26,7 @@ public class HopperConstants {
 
   public static final Distance BIG_WHEEL_RADIUS = Inches.of(1.5);
 
-  public static final LinearVelocity PASSTHROUGH_SPEED = MetersPerSecond.of(1);
+  public static final LinearVelocity PASSTHROUGH_SPEED = MetersPerSecond.of(1.6);
 
   public static final double RADIANS_PER_SEC =
       PASSTHROUGH_SPEED.in(MetersPerSecond) / BIG_WHEEL_RADIUS.in(Meters);

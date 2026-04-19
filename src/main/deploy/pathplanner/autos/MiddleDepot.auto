@@ -11,16 +11,35 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Middle.0"
+                  "pathName": "MiddleDepot.0"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "deploy"
                 }
               }
             ]
           }
         },
         {
-          "type": "wait",
+          "type": "deadline",
           "data": {
-            "waitTime": 0.5
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "MiddleDepot.1"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "intake"
+                }
+              }
+            ]
           }
         },
         {

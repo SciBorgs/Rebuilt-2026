@@ -17,6 +17,8 @@ import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
@@ -45,6 +47,7 @@ import org.sciborgs1155.robot.commands.shooting.ParameterLookup;
 import org.sciborgs1155.robot.commands.shooting.Shooting;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.hood.Hood;
+import org.sciborgs1155.robot.hood.HoodVisualizer;
 import org.sciborgs1155.robot.hopper.Hopper;
 import org.sciborgs1155.robot.indexer.Indexer;
 import org.sciborgs1155.robot.intake.Intake;
@@ -126,6 +129,7 @@ public class Robot extends CommandRobot {
     addPeriodic(ParameterLookup::updateLogging, PERIOD);
     addPeriodic(shooting::updateLogging, PERIOD);
     addPeriodic(calibrator::updateLogging, PERIOD);
+    addPeriodic(this::updateAdvantageScopeModel, PERIOD);
     Epilogue.bind(this);
 
     // FaultLogger.register(pdh);
@@ -316,6 +320,21 @@ public class Robot extends CommandRobot {
               driver.getHID().setRumble(rumbleType, 0);
               operator.getHID().setRumble(rumbleType, 0);
             });
+  }
+
+  private void updateAdvantageScopeModel() {
+    log("RobotModel/driveOrigin", drive.pose3d(), Pose3d.struct);
+    log(
+        "RobotModel/turretOrigin",
+        new Transform3d(
+            CENTER_TO_SHOOTER.getTranslation(), new Rotation3d(0, 0, turret.position())),
+        Transform3d.struct);
+    log("RobotModel/intakeOrigin", new Transform3d(), Transform3d.struct);
+    log("RobotModel/hopperOrigin", new Transform3d(), Transform3d.struct);
+    log(
+        "RobotModel/hoodOrigin",
+        HoodVisualizer.transformFromOrigin(hood.angle(), turret.position()),
+        Transform3d.struct);
   }
 
   /**

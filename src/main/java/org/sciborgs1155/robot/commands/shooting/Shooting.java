@@ -148,7 +148,13 @@ public class Shooting {
                 && shooter.atSetpoint()
                 && hood.atGoal()
                 && distance <= MAX_DISTANCE
-                && distance >= MIN_DISTANCE);
+                && distance >= MIN_DISTANCE
+                && running);
+  }
+
+  /** Whether or not a shoot command is running. */
+  public Trigger running() {
+    return new Trigger(() -> running);
   }
 
   /**

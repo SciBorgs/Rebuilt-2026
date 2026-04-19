@@ -18,7 +18,6 @@ import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.lib.PolynomialRegression;
 import org.sciborgs1155.lib.PolynomialRegression.ModelSelector;
 import org.sciborgs1155.robot.commands.shooting.ShootingConstants.DirectLaunchParameters;
-import org.sciborgs1155.robot.commands.shooting.ShootingConstants.LaunchParameterLookup;
 import org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterLookupConstants.LookupID;
 
 /**
@@ -146,5 +145,97 @@ public final class ParameterLookup {
     LoggingUtils.log("Shooting/Model/Generation/Pitch/R^2", pitchR2);
 
     return lookup;
+  }
+
+  /** Combines polynomial regression models into a singular parameter lookup. */
+  public static class LaunchParameterLookup {
+    private final double minDistance, maxDistance;
+    private final double[] speedCoefficients;
+    private final double[] pitchCoefficients;
+
+    /**
+     * Combines polynomial regression models into a singular parameter lookup.
+     *
+     * @param speedRegression the polynomial coefficients to model launch speed as a function of
+     *     distance
+     * @param pitchRegression the polynomial coefficients to model launch pitch as a function of
+     *     distance
+     * @param minDistance the minimum distance from the HUB, in meters
+     * @param maxDistance the maximum distance from the HUB, in meters
+     */
+    public LaunchParameterLookup(
+        double[] speedCoefficients,
+        double[] pitchCoefficients,
+        double minDistance,
+        double maxDistance) {
+      this.speedCoefficients = speedCoefficients.clone();
+      this.pitchCoefficients = pitchCoefficients.clone();
+
+      this.minDistance = minDistance;
+      this.maxDistance = maxDistance;
+    }
+
+    /**
+     * The launch speed of the FUEL (meters per second).
+     *
+     * @param distance the planar distance from the HUB to the shooter's origin, in meters
+     */
+    public double speed(double distance) {
+      if (tooFar(distance)) return evaluate(MAX_DISTANCE, speedCoefficients);
+      if (tooClose(distance)) return evaluate(MIN_DISTANCE, speedCoefficients);
+      return evaluate(distance, speedCoefficients);
+    }
+
+    /** The coefficients for the speed regression model. */
+    public double[] speedCoefficients() {
+      return speedCoefficients.clone();
+    }
+
+    /**
+     * The launch pitch of the FUEL (radians).
+     *
+     * @param distance the planar distance from the HUB to the shooter's origin, in meters
+     */
+    public double pitch(double distance) {
+      if (tooFar(distance)) return evaluate(MAX_DISTANCE, pitchCoefficients);
+      if (tooClose(distance)) return evaluate(MIN_DISTANCE, pitchCoefficients);
+      return evaluate(distance, pitchCoefficients);
+    }
+
+    /** The coefficients for the pitch regression model. */
+    public double[] pitchCoefficients() {
+      return pitchCoefficients.clone();
+    }
+
+    /**
+     * Whether or not the specified distance is above the lookup range.
+     *
+     * @param distance the distance from the HUB, in meters
+     */
+    public boolean tooFar(double distance) {
+      return distance > maxDistance;
+    }
+
+    /**
+     * Whether or not the specified distance is below the lookup range.
+     *
+     * @param distance the distance from the HUB, in meters
+     */
+    public boolean tooClose(double distance) {
+      return distance < minDistance;
+    }
+
+    /**
+     * Evaluates the value of a polynomial at a specified x value.
+     *
+     * @param x the x value to input into the polynomial
+     * @param coefficients an array of coefficients describing the polynomial
+     */
+    public static double evaluate(double x, double[] coefficients) {
+      double result = 0;
+      for (int degree = 0; degree < coefficients.length; degree++)
+        result += coefficients[degree] * Math.pow(x, degree);
+      return result;
+    }
   }
 }

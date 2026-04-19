@@ -2,6 +2,7 @@ package org.sciborgs1155.robot.slapdown;
 
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Radians;
+import static org.sciborgs1155.robot.Constants.DRIVE_CANIVORE;
 import static org.sciborgs1155.robot.Constants.INTAKE_CANIVORE;
 import static org.sciborgs1155.robot.Ports.Slapdown.ENCODER;
 import static org.sciborgs1155.robot.Ports.Slapdown.EXTENSION;
@@ -28,7 +29,7 @@ public class RealSlapdown implements SlapdownIO {
   /** Configures the motors */
   public RealSlapdown() {
     motor = new TalonFX(EXTENSION, INTAKE_CANIVORE);
-    encoder = new CANcoder(ENCODER, INTAKE_CANIVORE);
+    encoder = new CANcoder(ENCODER, DRIVE_CANIVORE);
     // Rollers - Kraken X44
     // Check how integrated encoder works
 
@@ -38,19 +39,19 @@ public class RealSlapdown implements SlapdownIO {
     motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     motorConfig.CurrentLimits.SupplyCurrentLimit = CURRENT_LIMIT.in(Amps);
     motorConfig.Feedback.FeedbackRemoteSensorID = ENCODER;
-    motorConfig.Feedback.SensorToMechanismRatio = GEARING;
+    motorConfig.Feedback.SensorToMechanismRatio = 1;
     motorConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
-    encoderConfig.MagnetSensor.MagnetOffset = 0;
+    encoderConfig.MagnetSensor.MagnetOffset = -0.760254;
     encoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1;
 
-    encoder.getConfigurator().apply(encoderConfig);
-
+    
     motor.getConfigurator().apply(motorConfig);
-    motor.setPosition(MAX_ANGLE);
+    encoder.getConfigurator().apply(encoderConfig);
 
     TalonUtils.addMotor(motor);
     FaultLogger.register(motor);
+    FaultLogger.register(encoder);
   }
 
   // extending/retracting the intake
@@ -62,7 +63,7 @@ public class RealSlapdown implements SlapdownIO {
   // getting position of the intake (extended or retracted)
   @Override
   public double position() {
-    return motor.getPosition().getValue().in(Radians);
+    return encoder.getPosition().getValue().in(Radians);
   }
 
   @Override

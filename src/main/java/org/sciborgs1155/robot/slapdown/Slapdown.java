@@ -168,7 +168,7 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
    * @return The repeating sequence.
    */
   public Command squeeze() {
-    return goTo(SQUEEZE_EXTEND.in(Radians)).andThen(goTo(SQUEEZE_RETRACT.in(Radians))).repeatedly();
+    return goTo(SQUEEZE_EXTEND.in(Radians));
   }
 
   /**

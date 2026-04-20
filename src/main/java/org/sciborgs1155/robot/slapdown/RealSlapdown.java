@@ -7,8 +7,6 @@ import static org.sciborgs1155.robot.Constants.INTAKE_CANIVORE;
 import static org.sciborgs1155.robot.Ports.Slapdown.ENCODER;
 import static org.sciborgs1155.robot.Ports.Slapdown.EXTENSION;
 import static org.sciborgs1155.robot.slapdown.SlapdownConstants.CURRENT_LIMIT;
-import static org.sciborgs1155.robot.slapdown.SlapdownConstants.GEARING;
-import static org.sciborgs1155.robot.slapdown.SlapdownConstants.MAX_ANGLE;
 import static org.sciborgs1155.robot.slapdown.SlapdownConstants.MIN_ANGLE;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
@@ -42,10 +40,9 @@ public class RealSlapdown implements SlapdownIO {
     motorConfig.Feedback.SensorToMechanismRatio = 1;
     motorConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
-    encoderConfig.MagnetSensor.MagnetOffset = -0.760254;
-    encoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1;
+    encoderConfig.MagnetSensor.MagnetOffset = -0.734375;
+    encoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 0.9;
 
-    
     motor.getConfigurator().apply(motorConfig);
     encoder.getConfigurator().apply(encoderConfig);
 
@@ -63,7 +60,7 @@ public class RealSlapdown implements SlapdownIO {
   // getting position of the intake (extended or retracted)
   @Override
   public double position() {
-    return encoder.getPosition().getValue().in(Radians);
+    return encoder.getAbsolutePosition().getValue().in(Radians);
   }
 
   @Override

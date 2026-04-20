@@ -251,13 +251,14 @@ public class Robot extends CommandRobot {
     driver
         .povDown()
         .or(operator.povDown())
-        .whileTrue(slapdown.extend())
-        .onFalse(slapdown.nothing()); // jank jank jank
+        .whileTrue(slapdown.squeeze())
+        .onFalse(slapdown.extend()); // jank jank jank
+
     driver
         .povRight()
         .or(operator.povRight())
         .whileTrue(slapdown.retract())
-        .onFalse(slapdown.nothing()); // jank jank jank
+        .onFalse(slapdown.extend()); // jank jank jank
 
     // OUTTAKE THE INTAKE
     driver

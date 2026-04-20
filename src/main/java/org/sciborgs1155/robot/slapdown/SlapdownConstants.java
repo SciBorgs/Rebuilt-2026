@@ -54,8 +54,8 @@ public class SlapdownConstants {
   public static final double GEARING = 25.0 * 2.5; // ratio of gearing
   public static final double MOI = 0.2135396026; // moment of inertia
   public static final Distance LENGTH = Inches.of(18.5);
-  public static final Angle MIN_ANGLE = Radians.of(0.0); // 0.0 
-  public static final Angle MAX_ANGLE = Radians.of(1.864-0.07); // 1.864 
+  public static final Angle MIN_ANGLE = Radians.of(0.0); // 0.0
+  public static final Angle MAX_ANGLE = Radians.of(1.864 - 0.07); // 1.864
   public static final Angle START_ANGLE = MAX_ANGLE;
 
   public static final Angle POSITION_TOLERANCE = Radians.of(0.07);

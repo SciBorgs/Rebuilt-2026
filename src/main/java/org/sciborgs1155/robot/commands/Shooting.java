@@ -125,7 +125,6 @@ public class Shooting {
             Commands.parallel(
                 hopper.intake(),
                 indexer.forward(),
-                slapdown.squeeze(),
                 Commands.run(
                     () -> {
                       if (fuelVisualizer != null) fuelVisualizer.launchProjectile();

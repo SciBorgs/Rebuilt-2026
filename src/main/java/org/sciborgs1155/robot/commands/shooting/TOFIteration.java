@@ -2,6 +2,8 @@ package org.sciborgs1155.robot.commands.shooting;
 
 import static org.sciborgs1155.robot.Constants.ShootingData.*;
 
+import org.sciborgs1155.lib.Tuning;
+
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -9,6 +11,9 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.networktables.DoubleEntry;
+import static org.sciborgs1155.robot.Constants.ShootingData.SIGGYS_CONSTANT;
+
 import org.sciborgs1155.robot.commands.Shooting;
 
 /**
@@ -51,7 +56,7 @@ public class TOFIteration implements ShootingAlgorithm {
 
     Translation3d result =
         new Translation3d(
-            DISTANCE_TO_RADS.get(distance),
+            DISTANCE_TO_RADS.get(distance) + SIGGYS_CONSTANT.get(),
             new Rotation3d(
                 0,
                 -DISTANCE_TO_HOOD_ANGLE.get(distance).getRadians(),

@@ -24,8 +24,10 @@ import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.Optimiz
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.DRAG_ENABLED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.FUEL_RADIUS;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.LIFT_ENABLED;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MAX_DISTANCE;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MAX_PITCH;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MAX_SPEED;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MIN_DISTANCE;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MIN_PITCH;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MIN_SPEED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.ROBOT_TO_SHOOTER;
@@ -34,6 +36,7 @@ import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.Scoring
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ScoringConstants.GOAL;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ScoringConstants.SCORE_DEPTH;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ScoringConstants.SCORE_RADIUS;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.diff;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -42,7 +45,6 @@ import java.util.List;
 import java.util.function.DoubleFunction;
 import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.robot.commands.shooting.FuelVisualizer.Fuel;
-import org.sciborgs1155.robot.commands.shooting.ShootingConstants.DirectLaunchParameters;
 
 /**
  * A utility class that uses simulated trajectories and closed-loop iteration to estimate launch
@@ -357,5 +359,82 @@ public final class ShotOptimizer {
 
     errorFunction.apply(value);
     return value;
+  }
+
+  /** Launch parameters for a single direct shot to the HUB (no yaw). */
+  public static class DirectLaunchParameters {
+    private double distance;
+    private double speed;
+    private double pitch;
+
+    /** Launch parameters for a single direct shot to the HUB (no yaw). */
+    public DirectLaunchParameters(double distance, double speed, double pitch) {
+      this.distance = distance;
+      this.speed = speed;
+      this.pitch = pitch;
+    }
+
+    /** The planar distance of the shooter from the HUB in meters. */
+    public double distance() {
+      return distance;
+    }
+
+    /** The launch speed of the FUEL in meters per second. */
+    public double speed() {
+      return speed;
+    }
+
+    /** The launch pitch of the FUEL in radians. */
+    public double pitch() {
+      return pitch;
+    }
+
+    /**
+     * Updates the launch distance parameter.
+     *
+     * @param distance the planar distance of the shooter from the HUB in meters
+     */
+    public void setDistance(double distance) {
+      this.distance = distance;
+    }
+
+    /**
+     * Updates the launch speed of the FUEL.
+     *
+     * @param speed the launch speed of the FUEL in meters per second
+     */
+    public void setSpeed(double speed) {
+      this.speed = speed;
+    }
+
+    /**
+     * Updates the launch pitch of the FUEL.
+     *
+     * @param pitch the launch pitch of the FUEL in radians
+     */
+    public void setPitch(double pitch) {
+      this.pitch = pitch;
+    }
+
+    /**
+     * Whether or not these launch parameters are the same as the given launch parameters.
+     *
+     * @param launchParameters the launch parameters to compare to
+     */
+    public boolean differsFrom(DirectLaunchParameters launchParameters) {
+      return diff(distance, launchParameters.distance())
+          || diff(speed, launchParameters.speed())
+          || diff(pitch, launchParameters.pitch());
+    }
+
+    /** Whether or not the shot specified by this object is impossible. */
+    public boolean isOutOfBounds() {
+      return distance < MIN_DISTANCE
+          || distance > MAX_DISTANCE
+          || speed < MIN_SPEED
+          || speed > MAX_SPEED
+          || pitch < MIN_PITCH
+          || pitch > MAX_PITCH;
+    }
   }
 }

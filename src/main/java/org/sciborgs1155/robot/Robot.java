@@ -45,6 +45,7 @@ import org.sciborgs1155.robot.commands.Autos;
 import org.sciborgs1155.robot.commands.shooting.Calibrator;
 import org.sciborgs1155.robot.commands.shooting.ParameterLookup;
 import org.sciborgs1155.robot.commands.shooting.Shooting;
+import org.sciborgs1155.robot.commands.shooting.VelocityLookup;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.drive.DriveConstants;
 import org.sciborgs1155.robot.hood.Hood;
@@ -128,6 +129,7 @@ public class Robot extends CommandRobot {
     SignalLogger.enableAutoLogging(true);
     addPeriodic(FaultLogger::update, 2);
     addPeriodic(ParameterLookup::updateLogging, PERIOD);
+    addPeriodic(VelocityLookup::updateLogging, PERIOD);
     addPeriodic(shooting::updateLogging, PERIOD);
     addPeriodic(calibrator::updateLogging, PERIOD);
     addPeriodic(this::updateAdvantageScopeModel, PERIOD);

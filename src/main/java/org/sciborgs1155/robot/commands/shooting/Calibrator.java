@@ -4,11 +4,8 @@ import static org.sciborgs1155.lib.ProjectileVisualizer.X;
 import static org.sciborgs1155.lib.ProjectileVisualizer.Y;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.CalibrationConstants.CALIBRATION_ENTRIES;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.CalibrationConstants.CALIBRATION_INCREMENT;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.CalibrationConstants.DISTANCE;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.CalibrationConstants.HOOD_ANGLE;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.CalibrationConstants.ROLLER_SPEED;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.CalibrationConstants.STARTING_ROLLER_SPEED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MIN_DISTANCE;
+import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MIN_ROLLER_SPEED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ScoringConstants.GOAL;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -24,6 +21,7 @@ import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.lib.Tuning;
 import org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterLookupConstants.LookupID;
 import org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants;
+import org.sciborgs1155.robot.commands.shooting.VelocityLookup.CalibrationEntry;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.hood.Hood;
 import org.sciborgs1155.robot.hopper.Hopper;
@@ -47,11 +45,11 @@ public class Calibrator {
   private boolean shooting;
 
   /** The results of the calibration. */
-  private static double[][] calibrationResults = new double[CALIBRATION_ENTRIES][3];
+  private static CalibrationEntry[] calibrationResults = new CalibrationEntry[CALIBRATION_ENTRIES];
 
   /** The speed of the shooter roller in radians per second. */
   private static final DoubleEntry shooterSpeed =
-      Tuning.entry("Shooting/Calibrator/TEST RADS", STARTING_ROLLER_SPEED);
+      Tuning.entry("Shooting/Calibrator/TEST RADS", MIN_ROLLER_SPEED);
 
   /** The index of the calibration. */
   private static final IntegerEntry index = Tuning.entry("Shooting/Calibrator/INDEX", 0);
@@ -80,9 +78,10 @@ public class Calibrator {
         () -> {
           if (index.get() < 0 || index.get() > CALIBRATION_ENTRIES)
             throw new UnsupportedOperationException("Invalid calibration index!");
-          calibrationResults[(int) index.get()][DISTANCE] = distance(index.get());
-          calibrationResults[(int) index.get()][ROLLER_SPEED] = shooterSpeed.get();
-          calibrationResults[(int) index.get()][HOOD_ANGLE] = hoodAngle().getAsDouble();
+          else
+            calibrationResults[(int) index.get()] =
+                new CalibrationEntry(
+                    distance(index.get()), shooterSpeed.get(), hoodAngle().getAsDouble());
         });
   }
 
@@ -123,8 +122,10 @@ public class Calibrator {
         "Shooting/Calibrator/Calibration Pose", calibrationPose().get(), Pose2d.struct);
 
     for (int index = 0; index < calibrationResults.length; index++)
-      LoggingUtils.log(
-          "Shooting/Calibrator/Results/Calibration" + index, calibrationResults[index]);
+      if (calibrationResults[index] != null)
+        LoggingUtils.log(
+            "Shooting/Calibrator/Results/Calibration" + index,
+            calibrationResults[index].toString());
   }
 
   /** Returns the calibration pose for the specific calibration index. */

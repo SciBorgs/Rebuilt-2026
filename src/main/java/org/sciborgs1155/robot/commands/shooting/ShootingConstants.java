@@ -1,16 +1,10 @@
 package org.sciborgs1155.robot.commands.shooting;
 
-import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static org.sciborgs1155.lib.ProjectileVisualizer.Projectile.AIR_DENSITY;
 import static org.sciborgs1155.robot.Constants.EPS;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MAX_DISTANCE;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MAX_PITCH;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MAX_SPEED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MIN_DISTANCE;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MIN_PITCH;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MIN_SPEED;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.CENTER_TO_SHOOTER;
 
 import edu.wpi.first.math.util.Units;
@@ -19,14 +13,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.sciborgs1155.lib.ProjectileVisualizer;
 import org.sciborgs1155.robot.FieldConstants.Hub;
 import org.sciborgs1155.robot.commands.shooting.ParameterLookup.LaunchParameterLookup;
-import org.sciborgs1155.robot.drive.DriveConstants;
+import org.sciborgs1155.robot.commands.shooting.VelocityLookup.CalibrationEntry;
 import org.sciborgs1155.robot.hood.HoodConstants;
-import org.sciborgs1155.robot.shooter.ShooterConstants;
 
 /** Constants used in the shooting algorithm. */
 @SuppressWarnings("PMD.OneDeclarationPerLine")
 public final class ShootingConstants {
-  private static boolean diff(double a, double b) {
+  protected static boolean diff(double a, double b) {
     return Math.abs(a - b) > EPS;
   }
 
@@ -41,28 +34,13 @@ public final class ShootingConstants {
     /** Array indices for data stored within the parameter table. */
     public static final int DISTANCE = 0, SPEED = 1, PITCH = 2, YAW = 3;
 
+    public static final int DEGREE = 3;
+
     /** Identifiers for specific lookup models. */
     public enum LookupID {
       MINIMAL_AIR_TIME,
       MAXIMUM_SPEED
     }
-
-    /** A model for the conversion between launch speed and roller speed. */
-    public static final VelocityLookup velocityLookup =
-        new VelocityLookup(
-            new double[][] {
-              {1.512, 10, 0.262}, // ENTRY 1
-              {1.972, 20, 0.262}, // ENTRY 2
-              {2.433, 50, 0.262}, // ENTRY 3
-              {2.894, 100, 0.262}, // ENTRY 4
-              {3.355, 150, 0.262}, // ENTRY 5
-              {3.816, 200, 0.262}, // ENTRY 6
-              {4.277, 250, 0.262}, // ENTRY 7
-              {4.277, 300, 0.262}, // ENTRY 8
-              {5.198, 350, 0.262}, // ENTRY 9
-              {5.658, 400, 0.262}, // ENTRY 10
-            },
-            ShooterConstants.MAX_VELOCITY.in(RadiansPerSecond));
 
     /** A map for each launch-parameter lookup model. */
     public static final Map<LookupID, LaunchParameterLookup> parameterLookupSelector =
@@ -84,6 +62,16 @@ public final class ShootingConstants {
               new double[] {1.309, 0.0, 0.0, 0.0},
               MIN_DISTANCE,
               MAX_DISTANCE));
+
+      VelocityLookup.useData(
+          new CalibrationEntry[] {
+            new CalibrationEntry(1.37, 135, Units.degreesToRadians(15)),
+            new CalibrationEntry(1.87, 148, Units.degreesToRadians(18)),
+            new CalibrationEntry(2.52, 130, Units.degreesToRadians(27)),
+            new CalibrationEntry(3.61, 153, Units.degreesToRadians(30)),
+            new CalibrationEntry(4.58, 173, Units.degreesToRadians(34)),
+            new CalibrationEntry(5.67, 195, Units.degreesToRadians(38)),
+          });
     }
   }
 
@@ -91,8 +79,6 @@ public final class ShootingConstants {
     public static final int CALIBRATION_ENTRIES = 10;
     public static final double CALIBRATION_INCREMENT =
         (MAX_DISTANCE - MIN_DISTANCE) / CALIBRATION_ENTRIES;
-
-    public static final double STARTING_ROLLER_SPEED = 200;
 
     /** Array indices for data stored within the calibration table. */
     public static final int DISTANCE = 0, ROLLER_SPEED = 1, HOOD_ANGLE = 2;
@@ -159,7 +145,7 @@ public final class ShootingConstants {
   }
 
   public static final class PhysicalConstants {
-    public static final double HUB_BUFFER = 0.5;
+    public static final double HUB_BUFFER = 0.1;
 
     /** The translation from the center of the robot the center of the turret */
     public static final double[] ROBOT_TO_SHOOTER = {
@@ -174,6 +160,9 @@ public final class ShootingConstants {
     public static final double FUEL_MASS = 0.225;
     public static final double FUEL_RADIUS = 0.075;
 
+    public static final double MIN_ROLLER_SPEED = 0;
+    public static final double MAX_ROLLER_SPEED = 400;
+
     public static final double MAX_SPEED = 20;
     public static final double MIN_SPEED = 0;
 
@@ -183,8 +172,7 @@ public final class ShootingConstants {
     public static final double MAX_YAW = Integer.MAX_VALUE;
     public static final double MIN_YAW = Integer.MIN_VALUE;
 
-    public static final double MIN_DISTANCE =
-        Hub.WIDTH / 2 + DriveConstants.CHASSIS_WIDTH.in(Meters) / 2 + HUB_BUFFER;
+    public static final double MIN_DISTANCE = 1.36;
     public static final double MAX_DISTANCE = 6.12;
 
     /**
@@ -223,82 +211,5 @@ public final class ShootingConstants {
    */
   public static double toPitch(double hoodAngle) {
     return Math.PI / 2 - hoodAngle;
-  }
-
-  /** Launch parameters for a single direct shot to the HUB (no yaw). */
-  public static class DirectLaunchParameters {
-    private double distance;
-    private double speed;
-    private double pitch;
-
-    /** Launch parameters for a single direct shot to the HUB (no yaw). */
-    public DirectLaunchParameters(double distance, double speed, double pitch) {
-      this.distance = distance;
-      this.speed = speed;
-      this.pitch = pitch;
-    }
-
-    /** The planar distance of the shooter from the HUB in meters. */
-    public double distance() {
-      return distance;
-    }
-
-    /** The launch speed of the FUEL in meters per second. */
-    public double speed() {
-      return speed;
-    }
-
-    /** The launch pitch of the FUEL in radians. */
-    public double pitch() {
-      return pitch;
-    }
-
-    /**
-     * Updates the launch distance parameter.
-     *
-     * @param distance the planar distance of the shooter from the HUB in meters
-     */
-    public void setDistance(double distance) {
-      this.distance = distance;
-    }
-
-    /**
-     * Updates the launch speed of the FUEL.
-     *
-     * @param speed the launch speed of the FUEL in meters per second
-     */
-    public void setSpeed(double speed) {
-      this.speed = speed;
-    }
-
-    /**
-     * Updates the launch pitch of the FUEL.
-     *
-     * @param pitch the launch pitch of the FUEL in radians
-     */
-    public void setPitch(double pitch) {
-      this.pitch = pitch;
-    }
-
-    /**
-     * Whether or not these launch parameters are the same as the given launch parameters.
-     *
-     * @param launchParameters the launch parameters to compare to
-     */
-    public boolean differsFrom(DirectLaunchParameters launchParameters) {
-      return diff(distance, launchParameters.distance())
-          || diff(speed, launchParameters.speed())
-          || diff(pitch, launchParameters.pitch());
-    }
-
-    /** Whether or not the shot specified by this object is impossible. */
-    public boolean isOutOfBounds() {
-      return distance < MIN_DISTANCE
-          || distance > MAX_DISTANCE
-          || speed < MIN_SPEED
-          || speed > MAX_SPEED
-          || pitch < MIN_PITCH
-          || pitch > MAX_PITCH;
-    }
   }
 }

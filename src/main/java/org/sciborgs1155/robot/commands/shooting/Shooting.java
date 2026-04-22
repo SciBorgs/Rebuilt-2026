@@ -17,7 +17,6 @@ import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.Paramet
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterLookupConstants.PITCH;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterLookupConstants.SPEED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterLookupConstants.YAW;
-import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.ParameterLookupConstants.velocityLookup;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.DRAG_ENABLED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.LIFT_ENABLED;
 import static org.sciborgs1155.robot.commands.shooting.ShootingConstants.PhysicalConstants.MAX_DISTANCE;
@@ -185,7 +184,7 @@ public class Shooting {
     pitch = currentLaunchParameters[PITCH];
     yaw = currentLaunchParameters[YAW];
 
-    rollerSpeed = velocityLookup.rollerSpeed(speed);
+    rollerSpeed = VelocityLookup.rollerSpeed(speed);
   }
 
   /**
@@ -270,7 +269,7 @@ public class Shooting {
   /** Creates a visualizer that utilizes the subsystem positions to predict a trajectory. */
   public ProjectileVisualizer createVisualizer() {
     return fromLaunchParameters(
-            () -> velocityLookup.launchSpeed(shooter.velocity()),
+            () -> VelocityLookup.launchSpeed(shooter.velocity()),
             () -> toPitch(hood.angle()),
             () -> turret.position(),
             drive)

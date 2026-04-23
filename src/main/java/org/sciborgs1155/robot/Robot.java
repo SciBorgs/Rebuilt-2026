@@ -73,13 +73,13 @@ public class Robot extends CommandRobot {
   // SUBSYSTEMS
   private final Drive drive = Drive.create();
   private final Vision vision = Vision.create();
-  private final Intake intake = Intake.create();
-  private final Turret turret = Turret.create();
-  private final Hood hood = Hood.create();
-  private final Shooter shooter = Shooter.create();
-  private final Indexer indexer = Indexer.create();
-  private final Hopper hopper = Hopper.create();
-  private final Slapdown slapdown = Slapdown.create();
+  private final Intake intake = Intake.none();
+  private final Turret turret = Turret.none();
+  private final Hood hood = Hood.none();
+  private final Shooter shooter = Shooter.none();
+  private final Indexer indexer = Indexer.none();
+  private final Hopper hopper = Hopper.none();
+  private final Slapdown slapdown = Slapdown.none();
   private final Climb climb = Climb.none();
   private final LEDs leds = LEDs.create();
 

@@ -15,7 +15,6 @@ import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
 import java.util.List;
-import org.sciborgs1155.robot.Robot;
 
 /**
  * Constants for our 2026 Swerve X2t drivetrain! All fields in this file should be updated for the
@@ -91,6 +90,8 @@ public final class DriveConstants {
 
   public record FFConstants(double kS, double kV, double kA) {}
 
+  public record PIDConstants(double kP, double kI, double kD) {}
+
   public static final class Assisted {
     // The angle between the velocity and the displacement from a target, above which the robot will
     // not use assisted driving to the target. (the driver must be driving in the general direction
@@ -157,18 +158,21 @@ public final class DriveConstants {
 
       public static final Current CURRENT_LIMIT = Amps.of(20);
 
-      public static final class PID {
-        public static final double P = Robot.isReal() ? 100 : 50;
-        public static final double I = 0.0;
-        public static final double D = 0.5;
-      }
+      public static final PIDConstants FRONT_RIGHT_PID = new PIDConstants(100, 0, 0.5);
+      public static final PIDConstants REAR_LEFT_PID = new PIDConstants(100, 0, 0.5);
+      public static final PIDConstants REAR_RIGHT_PID = new PIDConstants(100, 0, 0.5);
+      public static final PIDConstants FRONT_LEFT_PID = new PIDConstants(100, 0, 0.5);
 
-      // system constants only used in simulation
-      public static final class FF {
-        public static final double S = 0.30817;
-        public static final double V = 0.55;
-        public static final double A = 0.03;
-      }
+      public static final List<PIDConstants> PID_CONSTANTS =
+          List.of(FRONT_LEFT_PID, FRONT_RIGHT_PID, REAR_LEFT_PID, REAR_RIGHT_PID);
+
+      public static final FFConstants FRONT_RIGHT_FF = new FFConstants(0.30817, 0.55, 0.03);
+      public static final FFConstants FRONT_LEFT_FF = new FFConstants(0.30817, 0.55, 0.03);
+      public static final FFConstants REAR_LEFT_FF = new FFConstants(0.30817, 0.55, 0.03);
+      public static final FFConstants REAR_RIGHT_FF = new FFConstants(0.30817, 0.55, 0.03);
+
+      public static final List<FFConstants> FF_CONSTANTS =
+          List.of(FRONT_LEFT_FF, FRONT_RIGHT_FF, REAR_LEFT_FF, REAR_RIGHT_FF);
     }
   }
 }

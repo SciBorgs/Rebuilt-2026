@@ -86,6 +86,7 @@ import org.sciborgs1155.robot.Robot;
 import org.sciborgs1155.robot.drive.DriveConstants.Assisted;
 import org.sciborgs1155.robot.drive.DriveConstants.ControlMode;
 import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Driving;
+import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Turning;
 import org.sciborgs1155.robot.drive.DriveConstants.Rotation;
 import org.sciborgs1155.robot.drive.DriveConstants.Translation;
 import org.sciborgs1155.robot.vision.Vision.PoseEstimate;
@@ -188,6 +189,8 @@ public class Drive extends SubsystemBase implements AutoCloseable {
               FRONT_LEFT_CANCODER,
               ANGULAR_OFFSETS.get(0),
               Driving.FF_CONSTANTS.get(0),
+              Turning.FF_CONSTANTS.get(0),
+              Turning.PID_CONSTANTS.get(0),
               "FL",
               true,
               true),
@@ -197,6 +200,8 @@ public class Drive extends SubsystemBase implements AutoCloseable {
               FRONT_RIGHT_CANCODER,
               ANGULAR_OFFSETS.get(1),
               Driving.FF_CONSTANTS.get(1),
+              Turning.FF_CONSTANTS.get(1),
+              Turning.PID_CONSTANTS.get(1),
               "FR",
               false,
               true),
@@ -206,6 +211,8 @@ public class Drive extends SubsystemBase implements AutoCloseable {
               REAR_LEFT_CANCODER,
               ANGULAR_OFFSETS.get(2),
               Driving.FF_CONSTANTS.get(2),
+              Turning.FF_CONSTANTS.get(2),
+              Turning.PID_CONSTANTS.get(2),
               "RL",
               true,
               true),
@@ -215,6 +222,8 @@ public class Drive extends SubsystemBase implements AutoCloseable {
               REAR_RIGHT_CANCODER,
               ANGULAR_OFFSETS.get(3),
               Driving.FF_CONSTANTS.get(3),
+              Turning.FF_CONSTANTS.get(3),
+              Turning.PID_CONSTANTS.get(3),
               "RR",
               false,
               true));

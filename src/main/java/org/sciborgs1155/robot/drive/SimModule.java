@@ -32,10 +32,13 @@ public class SimModule implements ModuleIO {
 
   private final DCMotorSim turn =
       new DCMotorSim(
-          LinearSystemId.createDCMotorSystem(Turning.FF.V, Turning.FF.A), DCMotor.getKrakenX60(1));
+          LinearSystemId.createDCMotorSystem(
+              Turning.FRONT_LEFT_FF.kV(), Turning.FRONT_LEFT_FF.kA()),
+          DCMotor.getKrakenX60(1));
 
   private final PIDController turnFeedback =
-      new PIDController(Turning.PID.P, Turning.PID.I, Turning.PID.D);
+      new PIDController(
+          Turning.FRONT_LEFT_PID.kP(), Turning.FRONT_LEFT_PID.kI(), Turning.FRONT_LEFT_PID.kD());
 
   private SwerveModuleState setpoint = new SwerveModuleState();
 

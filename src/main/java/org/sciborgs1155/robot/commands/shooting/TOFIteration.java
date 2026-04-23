@@ -1,8 +1,7 @@
 package org.sciborgs1155.robot.commands.shooting;
 
 import static org.sciborgs1155.robot.Constants.ShootingData.*;
-
-import org.sciborgs1155.lib.Tuning;
+import static org.sciborgs1155.robot.Constants.ShootingData.SIGGYS_CONSTANT;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
@@ -11,9 +10,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.networktables.DoubleEntry;
-import static org.sciborgs1155.robot.Constants.ShootingData.SIGGYS_CONSTANT;
-
 import org.sciborgs1155.robot.commands.Shooting;
 
 /**

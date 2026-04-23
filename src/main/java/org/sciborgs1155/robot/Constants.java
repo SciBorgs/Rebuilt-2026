@@ -21,7 +21,6 @@ import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-
 import org.sciborgs1155.lib.Tuning;
 import org.sciborgs1155.robot.drive.DriveConstants;
 
@@ -80,7 +79,8 @@ public final class Constants {
 
   /** Lookup tables mapping shot distance (meters) to shooter parameters. */
   public static final class ShootingData {
-    public static final DoubleEntry SIGGYS_CONSTANT = Tuning.entry("Robot/shooting/siggysConstant", 16.7);
+    public static final DoubleEntry SIGGYS_CONSTANT =
+        Tuning.entry("Robot/shooting/siggysConstant", 16.7);
 
     // minimum velocity to use SOTM algorithm rather than stationary. measured in m/s
     public static final double MINIMUM_VELOCITY = 0.01;

@@ -30,6 +30,7 @@ import org.sciborgs1155.robot.drive.DriveConstants.ControlMode;
 import org.sciborgs1155.robot.drive.DriveConstants.FFConstants;
 import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Driving;
 import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Turning;
+import org.sciborgs1155.robot.drive.DriveConstants.PIDConstants;
 
 public class TalonModule implements ModuleIO {
   private final TalonFX driveMotor; // Kraken X60
@@ -45,6 +46,7 @@ public class TalonModule implements ModuleIO {
   private final Queue<Double> timestamp;
 
   private final SimpleMotorFeedforward driveFF;
+  private final SimpleMotorFeedforward turnFF;
 
   @Logged private SwerveModuleState setpoint = new SwerveModuleState();
 
@@ -66,13 +68,20 @@ public class TalonModule implements ModuleIO {
       int turnPort,
       int sensorID,
       Rotation2d angularOffset,
-      FFConstants ff,
+      FFConstants driveFFConstants,
+      FFConstants turnFFConstants,
+      PIDConstants fb,
       String name,
       boolean invertDrive,
       boolean invertTurn) {
     // drive motor
     driveMotor = new TalonFX(drivePort, DRIVE_CANIVORE);
-    driveFF = new SimpleMotorFeedforward(ff.kS(), ff.kV(), ff.kA());
+    driveFF =
+        new SimpleMotorFeedforward(
+            driveFFConstants.kS(), driveFFConstants.kV(), driveFFConstants.kA());
+    turnFF =
+        new SimpleMotorFeedforward(
+            turnFFConstants.kS(), turnFFConstants.kV(), turnFFConstants.kA());
 
     TalonFXConfiguration talonDriveConfig = new TalonFXConfiguration();
 
@@ -104,9 +113,9 @@ public class TalonModule implements ModuleIO {
 
     talonTurnConfig.ClosedLoopGeneral.ContinuousWrap = true;
 
-    talonTurnConfig.Slot0.kP = Turning.PID.P;
-    talonTurnConfig.Slot0.kI = Turning.PID.I;
-    talonTurnConfig.Slot0.kD = Turning.PID.D;
+    talonTurnConfig.Slot0.kP = fb.kP();
+    talonTurnConfig.Slot0.kI = fb.kI();
+    talonTurnConfig.Slot0.kD = fb.kD();
 
     talonTurnConfig.CurrentLimits.StatorCurrentLimit = Turning.CURRENT_LIMIT.in(Amps);
 
@@ -211,7 +220,11 @@ public class TalonModule implements ModuleIO {
 
   @Override
   public void setTurnSetpoint(Rotation2d angle) {
-    turnMotor.setControl(rotationsIn.withPosition(angle.getRotations()).withSlot(0));
+    turnMotor.setControl(
+        rotationsIn
+            .withPosition(angle.getRotations())
+            .withSlot(0)
+            .withFeedForward(turnFF.calculate(angle.getRotations())));
   }
 
   @Override

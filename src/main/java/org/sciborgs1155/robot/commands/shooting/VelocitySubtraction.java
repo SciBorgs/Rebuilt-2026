@@ -1,6 +1,7 @@
 package org.sciborgs1155.robot.commands.shooting;
 
 import static org.sciborgs1155.robot.Constants.ShootingData.DISTANCE_TO_HORIZONTAL_VELOCITY;
+import static org.sciborgs1155.robot.Constants.ShootingData.SIGGYS_CONSTANT;
 import static org.sciborgs1155.robot.Constants.ShootingData.VELOCITY_TO_HOOD_ANGLE;
 import static org.sciborgs1155.robot.Constants.ShootingData.VELOCITY_TO_RADS;
 
@@ -10,7 +11,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
-import static org.sciborgs1155.robot.Constants.ShootingData.SIGGYS_CONSTANT;
 
 public class VelocitySubtraction implements ShootingAlgorithm {
   @Override

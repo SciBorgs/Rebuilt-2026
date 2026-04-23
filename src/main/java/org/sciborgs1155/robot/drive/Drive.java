@@ -290,7 +290,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
                 volts ->
                     modules.forEach(
                         m ->
-                            m.updateInputs(
+                            m.updateInputsDrive(
                                 new SwerveModuleState(volts.in(Volts), Rotation2d.kZero))),
                 null,
                 this,
@@ -304,16 +304,10 @@ public class Drive extends SubsystemBase implements AutoCloseable {
                 (state) -> SignalLogger.writeString("rotation state", state.toString())),
             new SysIdRoutine.Mechanism(
                 volts -> {
-                  this.frontLeft.updateInputs(
-                      new SwerveModuleState(
-                          volts.in(Volts), Rotation2d.fromRadians(3 * Math.PI / 4)));
-                  this.frontRight.updateInputs(
-                      new SwerveModuleState(volts.in(Volts), Rotation2d.fromRadians(Math.PI / 4)));
-                  this.rearLeft.updateInputs(
-                      new SwerveModuleState(
-                          volts.in(Volts), Rotation2d.fromRadians(-3 * Math.PI / 4)));
-                  this.rearRight.updateInputs(
-                      new SwerveModuleState(volts.in(Volts), Rotation2d.fromRadians(-Math.PI / 4)));
+                  modules.forEach(
+                      module ->
+                          module.updateInputsTurn(
+                              new SwerveModuleState(0.0, Rotation2d.fromRadians(volts.in(Volts)))));
                 },
                 null,
                 this,

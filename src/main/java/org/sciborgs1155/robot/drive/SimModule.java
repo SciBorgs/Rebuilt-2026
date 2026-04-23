@@ -137,7 +137,7 @@ public class SimModule implements ModuleIO {
   }
 
   @Override
-  public void updateInputs(SwerveModuleState voltage) {
+  public void updateInputsDrive(SwerveModuleState voltage) {
     setpoint.angle = voltage.angle;
 
     double turnVolts = turnFeedback.calculate(rotation().getRadians(), setpoint.angle.getRadians());
@@ -163,4 +163,7 @@ public class SimModule implements ModuleIO {
 
   @Override
   public void close() {}
+
+  @Override
+  public void updateInputsTurn(SwerveModuleState voltage) {}
 }

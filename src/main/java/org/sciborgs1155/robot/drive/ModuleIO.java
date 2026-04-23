@@ -105,7 +105,10 @@ public interface ModuleIO extends AutoCloseable {
    * @param voltage The voltage to supply to the drive motor, with the angle of the
    *     SwerveModuleState being the direction of the module.
    */
-  void updateInputs(SwerveModuleState voltage);
+  void updateInputsDrive(SwerveModuleState voltage);
+
+  /** this is sped and i apoligize as ethan jones. */
+  void updateInputsTurn(SwerveModuleState voltage);
 
   /**
    * Returns raw odometry data from the module.

@@ -2,6 +2,8 @@ package org.sciborgs1155.robot.drive;
 
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 import static org.sciborgs1155.lib.FaultLogger.register;
 import static org.sciborgs1155.robot.Constants.DRIVE_CANIVORE;
@@ -11,7 +13,7 @@ import static org.sciborgs1155.robot.Constants.PERIOD;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.ParentDevice;
@@ -38,7 +40,7 @@ public class TalonModule implements ModuleIO {
   private final CANcoder encoder;
 
   private final VelocityVoltage velocityOut = new VelocityVoltage(0);
-  private final PositionVoltage rotationsIn = new PositionVoltage(0);
+  private final MotionMagicVoltage rotationsIn = new MotionMagicVoltage(0).withSlot(0);
 
   private final OdometryThread talonThread;
   private final Queue<Double> position;
@@ -111,11 +113,18 @@ public class TalonModule implements ModuleIO {
     talonTurnConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
     talonTurnConfig.Feedback.FeedbackRemoteSensorID = sensorID;
 
+    talonTurnConfig.MotionMagic.MotionMagicCruiseVelocity =
+        Turning.MAX_VELOCITY.in(RotationsPerSecond);
+    talonTurnConfig.MotionMagic.MotionMagicAcceleration =
+        Turning.MAX_ACCEL.in(RotationsPerSecondPerSecond);
+
     talonTurnConfig.ClosedLoopGeneral.ContinuousWrap = true;
 
     talonTurnConfig.Slot0.kP = fb.kP();
     talonTurnConfig.Slot0.kI = fb.kI();
     talonTurnConfig.Slot0.kD = fb.kD();
+    talonTurnConfig.Slot0.kS = turnFF.getKs();
+    talonTurnConfig.Slot0.kV = turnFF.getKv();
 
     talonTurnConfig.CurrentLimits.StatorCurrentLimit = Turning.CURRENT_LIMIT.in(Amps);
 
@@ -220,11 +229,7 @@ public class TalonModule implements ModuleIO {
 
   @Override
   public void setTurnSetpoint(Rotation2d angle) {
-    turnMotor.setControl(
-        rotationsIn
-            .withPosition(angle.getRotations())
-            .withSlot(0)
-            .withFeedForward(turnFF.calculate(angle.getRotations())));
+    turnMotor.setControl(rotationsIn.withPosition(angle.getRotations()));
   }
 
   @Override

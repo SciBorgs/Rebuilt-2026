@@ -131,14 +131,18 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
    * @return slap down the intake with volts
    */
   public Command extendVolts() {
-    return Commands.run(() -> hardware.setVoltage(EXTEND_VOLTAGE));
+    return Commands.run(() -> hardware.setVoltage(EXTEND_VOLTAGE))
+        .until(() -> hardware.current() > STALLING_CURRENT)
+        .andThen(() -> hardware.resetPosition());
   }
 
   /**
    * @return bring up the intake with volts
    */
   public Command retractVolts() {
-    return Commands.run(() -> hardware.setVoltage(RETRACT_VOLTAGE));
+    return Commands.run(() -> hardware.setVoltage(RETRACT_VOLTAGE))
+        .until(() -> hardware.current() > STALLING_CURRENT)
+        .andThen(() -> hardware.setVoltage(KEEP_US_UP_VOLTAGE));
   }
 
   /**
@@ -190,8 +194,12 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
   //   return Commands.sequence(
   //           retractVolts().withTimeout(SQUEEZE_RETRACT),
   //           extendVolts().withTimeout(SQUEEZE_EXTEND))
-  //       .repeatedly().finallyDo(() -> hardware.setVoltage(0)); // TODO jank jank jank
-  // }
+  //       .repeatedly().finallyDo(() -> hardware.setVoltage(0));
+
+  public Command squeezeVolts() {
+    return Commands.run(() -> hardware.setVoltage(SQUEEZE_VOLTS))
+        .until(() -> hardware.current() > STALLING_CURRENT);
+  }
 
   /**
    * @return the position of the slapdown

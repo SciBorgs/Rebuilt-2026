@@ -190,12 +190,9 @@ public class Shooting {
    * adjust the velocity and angle until it goes in, and record it in the lookup tables.
    */
   public Command shootWithTestData() {
-    return runShooterSuperstructure(
-            () ->
-                new ShooterParams(
-                    RADS_TEST.get(),
-                    HOOD_DEGREES_TEST.get() * Math.PI / 180,
-                    calculateShot(HUB_TARGET).turretAngle))
+    return shooter
+        .runShooter(() -> RADS_TEST.get())
+        .alongWith(hood.goTo(() -> HOOD_DEGREES_TEST.get() * Math.PI / 180))
         .alongWith(fuelVisualizer != null ? fuelVisualizer.launchProjectiles() : Commands.none());
   }
 

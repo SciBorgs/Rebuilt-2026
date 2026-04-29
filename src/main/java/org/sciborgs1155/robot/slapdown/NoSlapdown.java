@@ -15,4 +15,9 @@ public class NoSlapdown implements SlapdownIO {
 
   @Override
   public void resetPosition() {}
+
+  @Override
+  public double current() {
+    return 0;
+  }
 }

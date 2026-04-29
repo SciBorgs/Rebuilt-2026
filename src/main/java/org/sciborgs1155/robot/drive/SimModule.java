@@ -20,9 +20,7 @@ import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Turning;
 public class SimModule implements ModuleIO {
   private final DCMotorSim drive =
       new DCMotorSim(
-          LinearSystemId.createDCMotorSystem(
-              SIM_FF.V, SIM_FF.A),
-          DCMotor.getKrakenX60(1));
+          LinearSystemId.createDCMotorSystem(SIM_FF.V, SIM_FF.A), DCMotor.getKrakenX60(1));
 
   private final PIDController driveFeedback =
       new PIDController(Driving.PID.P, Driving.PID.I, Driving.PID.D);
@@ -33,9 +31,7 @@ public class SimModule implements ModuleIO {
 
   private final DCMotorSim turn =
       new DCMotorSim(
-          LinearSystemId.createDCMotorSystem(
-              SIM_FF.V, SIM_FF.A),
-          DCMotor.getKrakenX60(1));
+          LinearSystemId.createDCMotorSystem(SIM_FF.V, SIM_FF.A), DCMotor.getKrakenX60(1));
 
   private final PIDController turnFeedback =
       new PIDController(

@@ -93,10 +93,16 @@ public final class VisionConstants {
   // Blue Outpost 29, 30
 
   public static final double[] TAG_WEIGHTS = {
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+    1, 1, .5, 1, 1,
+    1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1,
+    1, 1
   };
 
-  public static final Set<Integer> UNREPUTABLE_TAGS = Set.of();
+  public static final Set<Integer> UNREPUTABLE_TAGS = Set.of(29);
 
   // Prevents instantiation
   private VisionConstants() {}

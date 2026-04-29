@@ -27,15 +27,16 @@ public class SlapdownConstants {
   public static final double G = 0.17;
   public static final double A = 0.62;
 
-  public static final double EXTEND_VOLTAGE = -2.0; // down
-  public static final double RETRACT_VOLTAGE = 3.0; // up
+  public static final double EXTEND_VOLTAGE = -6.0; // down
+  public static final double RETRACT_VOLTAGE = 6.0; // up
+  public static final double KEEP_US_UP_VOLTAGE = 1.0;
 
   public static final Velocity<VoltageUnit> RAMP_RATE = Volts.of(0.3).per(Second);
   public static final Voltage STEP_VOLTAGE = Volts.of(0.7);
   public static final Time TIME_OUT = Seconds.of(30);
 
-  public static final AngularVelocity MAX_VELOCITY = RadiansPerSecond.of(4);
-  public static final AngularAcceleration MAX_ACCELERATION = RadiansPerSecondPerSecond.of(7);
+  public static final AngularVelocity MAX_VELOCITY = RadiansPerSecond.of(5);
+  public static final AngularAcceleration MAX_ACCELERATION = RadiansPerSecondPerSecond.of(8);
   public static final TrapezoidProfile.Constraints CONSTRAINTS =
       new TrapezoidProfile.Constraints(
           MAX_VELOCITY.in(RadiansPerSecond), MAX_ACCELERATION.in(RadiansPerSecondPerSecond));
@@ -55,7 +56,7 @@ public class SlapdownConstants {
   public static final double MOI = 0.2135396026; // moment of inertia
   public static final Distance LENGTH = Inches.of(18.5);
   public static final Angle MIN_ANGLE = Radians.of(0.0); // 0.0
-  public static final Angle MAX_ANGLE = Radians.of(1.864 - 0.07); // 1.864
+  public static final Angle MAX_ANGLE = Radians.of(1.864 - 0.07); // 1.864 // 2.04
   public static final Angle START_ANGLE = MAX_ANGLE;
 
   public static final Angle POSITION_TOLERANCE = Radians.of(0.07);
@@ -64,4 +65,6 @@ public class SlapdownConstants {
 
   public static final Angle SQUEEZE_RETRACT = Degrees.of(0);
   public static final Angle SQUEEZE_EXTEND = Degrees.of(60);
+  public static final double SQUEEZE_VOLTS = 2.0;
+  public static final double STALLING_CURRENT = 40.0; // if over, motor is stalling
 }

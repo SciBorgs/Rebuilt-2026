@@ -12,6 +12,8 @@ public interface SlapdownIO extends AutoCloseable {
    */
   double position();
 
+  double current();
+
   /** Resets the position of the intake to te min angle. */
   void resetPosition();
 }

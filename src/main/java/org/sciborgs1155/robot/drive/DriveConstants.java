@@ -156,6 +156,9 @@ public final class DriveConstants {
       public static final double GEARING = 12.1;
       public static final double ENCODER_GEARING = 1;
 
+      public static final AngularVelocity MAX_VELOCITY = RotationsPerSecond.of(10);
+      public static final AngularAcceleration MAX_ACCEL = RotationsPerSecondPerSecond.of(100);
+
       public static final Current CURRENT_LIMIT = Amps.of(20);
 
       public static final PIDConstants FRONT_RIGHT_PID = new PIDConstants(50, 0, 0.5);
@@ -174,6 +177,7 @@ public final class DriveConstants {
       public static final List<FFConstants> FF_CONSTANTS =
           List.of(FRONT_LEFT_FF, FRONT_RIGHT_FF, REAR_LEFT_FF, REAR_RIGHT_FF);
     }
+
     public static final class SIM_FF {
       public static final double S = 0.30817;
       public static final double V = 0.55;

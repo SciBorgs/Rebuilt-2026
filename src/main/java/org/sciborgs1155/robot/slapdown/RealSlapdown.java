@@ -40,7 +40,7 @@ public class RealSlapdown implements SlapdownIO {
     motorConfig.Feedback.SensorToMechanismRatio = 1;
     motorConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
-    encoderConfig.MagnetSensor.MagnetOffset = -0.186279296875;
+    encoderConfig.MagnetSensor.MagnetOffset = -0.280029296875;
     encoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 0.9;
 
     motor.getConfigurator().apply(motorConfig);

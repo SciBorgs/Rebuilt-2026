@@ -49,7 +49,7 @@ import org.sciborgs1155.robot.hood.Hood;
 import org.sciborgs1155.robot.hopper.Hopper;
 import org.sciborgs1155.robot.indexer.Indexer;
 import org.sciborgs1155.robot.intake.Intake;
-import org.sciborgs1155.robot.led.LEDs;
+// import org.sciborgs1155.robot.led.LEDs;
 import org.sciborgs1155.robot.shooter.Shooter;
 import org.sciborgs1155.robot.shooter.ShooterConstants;
 import org.sciborgs1155.robot.slapdown.Slapdown;
@@ -81,7 +81,7 @@ public class Robot extends CommandRobot {
   private final Hopper hopper = Hopper.create();
   private final Slapdown slapdown = Slapdown.create();
   private final Climb climb = Climb.none();
-  private final LEDs leds = LEDs.create();
+//   private final LEDs leds = LEDs.create();
 
   // COMMANDS
   private final Alignment align = new Alignment(drive);
@@ -234,7 +234,7 @@ public class Robot extends CommandRobot {
     }
 
     autonomous()
-        .whileTrue(Commands.deferredProxy(autos::getSelected).asProxy().alongWith(leds.autos()));
+        .whileTrue(Commands.deferredProxy(autos::getSelected).asProxy()); //.alongWith(leds.autos()));
 
     test().whileTrue(systemsCheck());
 

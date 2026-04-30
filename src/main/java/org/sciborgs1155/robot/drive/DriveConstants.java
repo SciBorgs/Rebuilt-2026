@@ -132,8 +132,8 @@ public final class DriveConstants {
 
       public static final double GEARING = 5.68;
 
-      public static final Current STATOR_LIMIT = Amps.of(100); // 120A max slip current
-      public static final Current SUPPLY_LIMIT = Amps.of(100);
+      public static final Current STATOR_LIMIT = Amps.of(80); // 120A max slip current
+      public static final Current SUPPLY_LIMIT = Amps.of(70);
 
       public static final Current CURRENT_LIMIT = Amps.of(80);
 
@@ -161,18 +161,18 @@ public final class DriveConstants {
 
       public static final Current CURRENT_LIMIT = Amps.of(20);
 
-      public static final PIDConstants FRONT_RIGHT_PID = new PIDConstants(50, 0, 0.5);
-      public static final PIDConstants REAR_LEFT_PID = new PIDConstants(50, 0, 0.5);
-      public static final PIDConstants REAR_RIGHT_PID = new PIDConstants(50, 0, 0.5);
-      public static final PIDConstants FRONT_LEFT_PID = new PIDConstants(50, 0, 0.5);
+      public static final PIDConstants FRONT_RIGHT_PID = new PIDConstants(25, 0, 0.0);
+      public static final PIDConstants REAR_LEFT_PID = new PIDConstants(25, 0, 0.0);
+      public static final PIDConstants REAR_RIGHT_PID = new PIDConstants(25, 0, 0.0);
+      public static final PIDConstants FRONT_LEFT_PID = new PIDConstants(25, 0, 0.0);
 
       public static final List<PIDConstants> PID_CONSTANTS =
           List.of(FRONT_LEFT_PID, FRONT_RIGHT_PID, REAR_LEFT_PID, REAR_RIGHT_PID);
 
-      public static final FFConstants FRONT_RIGHT_FF = new FFConstants(0.1, 0, 0);
-      public static final FFConstants FRONT_LEFT_FF = new FFConstants(0.1, 0, 0);
-      public static final FFConstants REAR_LEFT_FF = new FFConstants(0.1, 0, 0);
-      public static final FFConstants REAR_RIGHT_FF = new FFConstants(0.1, 0, 0);
+      public static final FFConstants FRONT_RIGHT_FF = new FFConstants(0.0, 0, 0);
+      public static final FFConstants FRONT_LEFT_FF = new FFConstants(0.0, 0, 0);
+      public static final FFConstants REAR_LEFT_FF = new FFConstants(0.0, 0, 0);
+      public static final FFConstants REAR_RIGHT_FF = new FFConstants(0.0, 0, 0);
 
       public static final List<FFConstants> FF_CONSTANTS =
           List.of(FRONT_LEFT_FF, FRONT_RIGHT_FF, REAR_LEFT_FF, REAR_RIGHT_FF);

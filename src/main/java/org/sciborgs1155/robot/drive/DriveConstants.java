@@ -3,6 +3,7 @@ package org.sciborgs1155.robot.drive;
 import static edu.wpi.first.units.Units.*;
 import static java.lang.Math.PI;
 
+import com.ctre.phoenix6.signals.SensorDirectionValue;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -154,12 +155,17 @@ public final class DriveConstants {
 
     public static final class Turning {
       public static final double GEARING = 12.1;
-      public static final double ENCODER_GEARING = 1;
 
-      public static final AngularVelocity MAX_VELOCITY = RotationsPerSecond.of(10);
-      public static final AngularAcceleration MAX_ACCEL = RotationsPerSecondPerSecond.of(100);
+      // Must match the turn motor's positive direction at the module output shaft.
+      // Verify on bench: rotate module clockwise — if encoder reads negative, flip to Clockwise_Positive.
+      public static final SensorDirectionValue ENCODER_DIRECTION =
+          SensorDirectionValue.CounterClockwise_Positive;
 
       public static final Current CURRENT_LIMIT = Amps.of(20);
+
+      // MotionMagicExpo profile gains — tune with SysId rotationalCharacterization.
+      public static final double EXPO_KV = 0.12; // V per rps of module
+      public static final double EXPO_KA = 0.10; // V per rps^2 of module
 
       public static final PIDConstants FRONT_RIGHT_PID = new PIDConstants(25, 0, 0.0);
       public static final PIDConstants REAR_LEFT_PID = new PIDConstants(25, 0, 0.0);
@@ -169,10 +175,10 @@ public final class DriveConstants {
       public static final List<PIDConstants> PID_CONSTANTS =
           List.of(FRONT_LEFT_PID, FRONT_RIGHT_PID, REAR_LEFT_PID, REAR_RIGHT_PID);
 
-      public static final FFConstants FRONT_RIGHT_FF = new FFConstants(0.0, 0, 0);
-      public static final FFConstants FRONT_LEFT_FF = new FFConstants(0.0, 0, 0);
-      public static final FFConstants REAR_LEFT_FF = new FFConstants(0.0, 0, 0);
-      public static final FFConstants REAR_RIGHT_FF = new FFConstants(0.0, 0, 0);
+      public static final FFConstants FRONT_RIGHT_FF = new FFConstants(0.18, 0.12, 0);
+      public static final FFConstants FRONT_LEFT_FF = new FFConstants(0.18, 0.12, 0);
+      public static final FFConstants REAR_LEFT_FF = new FFConstants(0.18, 0.12, 0);
+      public static final FFConstants REAR_RIGHT_FF = new FFConstants(0.18, 0.12, 0);
 
       public static final List<FFConstants> FF_CONSTANTS =
           List.of(FRONT_LEFT_FF, FRONT_RIGHT_FF, REAR_LEFT_FF, REAR_RIGHT_FF);

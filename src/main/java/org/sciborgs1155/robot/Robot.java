@@ -81,7 +81,7 @@ public class Robot extends CommandRobot {
   private final Hopper hopper = Hopper.create();
   private final Slapdown slapdown = Slapdown.create();
   private final Climb climb = Climb.none();
-//   private final LEDs leds = LEDs.create();
+  //   private final LEDs leds = LEDs.create();
 
   // COMMANDS
   private final Alignment align = new Alignment(drive);
@@ -234,7 +234,8 @@ public class Robot extends CommandRobot {
     }
 
     autonomous()
-        .whileTrue(Commands.deferredProxy(autos::getSelected).asProxy()); //.alongWith(leds.autos()));
+        .whileTrue(
+            Commands.deferredProxy(autos::getSelected).asProxy()); // .alongWith(leds.autos()));
 
     test().whileTrue(systemsCheck());
 

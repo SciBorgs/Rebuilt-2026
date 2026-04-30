@@ -48,11 +48,12 @@ public final class DriveConstants {
   // Percentage of the max speed we can do while shooting
   public static final double SHOOTING_TRANSLATIONAL_SPEED = 0.5;
   public static final double SHOOTING_ANGULAR_SPEED = 0;
+
   // Maximum achievable translational and rotation velocities and accelerations of the robot.
-  public static final LinearVelocity MAX_SPEED = MetersPerSecond.of(5);
-  public static final LinearAcceleration MAX_ACCEL = MetersPerSecondPerSecond.of(40);
+  public static final LinearVelocity MAX_SPEED = MetersPerSecond.of(2);
+  public static final LinearAcceleration MAX_ACCEL = MetersPerSecondPerSecond.of(15);
   public static final LinearAcceleration MAX_SKID_ACCEL =
-      MetersPerSecondPerSecond.of(38); // TODO: Tune
+      MetersPerSecondPerSecond.of(16); // TODO: Tune
   public static final LinearAcceleration MAX_TILT_ACCEL =
       MetersPerSecondPerSecond.of(12); // TODO: Tune
   // Percentage of the max angular speed we can do while shooting
@@ -75,10 +76,10 @@ public final class DriveConstants {
   // ignored (used as 0) in simulation because the simulated robot doesn't have offsets
   public static final List<Rotation2d> ANGULAR_OFFSETS =
       List.of(
-          Rotation2d.kZero, // front left
-          Rotation2d.kZero, // front right
-          Rotation2d.kZero, // rear left
-          Rotation2d.kZero // rear right
+          Rotation2d.fromRotations(0.093505859375), // front left
+          Rotation2d.fromRotations(0.076416015625), // front right
+          Rotation2d.fromRotations(0.371826171875), // rear left
+          Rotation2d.fromRotations(-0.280517578125) // rear right
           );
 
   public static final Rotation3d GYRO_OFFSET = new Rotation3d(0, 0, PI);
@@ -167,18 +168,18 @@ public final class DriveConstants {
       public static final double EXPO_KV = 0.12; // V per rps of module
       public static final double EXPO_KA = 0.10; // V per rps^2 of module
 
-      public static final PIDConstants FRONT_RIGHT_PID = new PIDConstants(25, 0, 0.0);
-      public static final PIDConstants REAR_LEFT_PID = new PIDConstants(25, 0, 0.0);
-      public static final PIDConstants REAR_RIGHT_PID = new PIDConstants(25, 0, 0.0);
-      public static final PIDConstants FRONT_LEFT_PID = new PIDConstants(25, 0, 0.0);
+      public static final PIDConstants FRONT_RIGHT_PID = new PIDConstants(60, 0,0.5);
+      public static final PIDConstants REAR_LEFT_PID = new PIDConstants(60, 0, 0.5);
+      public static final PIDConstants REAR_RIGHT_PID = new PIDConstants(60, 0, 0.5);
+      public static final PIDConstants FRONT_LEFT_PID = new PIDConstants(60, 0, 0.5);
 
       public static final List<PIDConstants> PID_CONSTANTS =
           List.of(FRONT_LEFT_PID, FRONT_RIGHT_PID, REAR_LEFT_PID, REAR_RIGHT_PID);
 
-      public static final FFConstants FRONT_RIGHT_FF = new FFConstants(0.18, 0.12, 0);
-      public static final FFConstants FRONT_LEFT_FF = new FFConstants(0.18, 0.12, 0);
-      public static final FFConstants REAR_LEFT_FF = new FFConstants(0.18, 0.12, 0);
-      public static final FFConstants REAR_RIGHT_FF = new FFConstants(0.18, 0.12, 0);
+      public static final FFConstants FRONT_RIGHT_FF = new FFConstants(0.1, 0.0, 0);
+      public static final FFConstants FRONT_LEFT_FF = new FFConstants(0.1, 0.0, 0);
+      public static final FFConstants REAR_LEFT_FF = new FFConstants(0.1, 0.0, 0);
+      public static final FFConstants REAR_RIGHT_FF = new FFConstants(0.1, 0.0, 0);
 
       public static final List<FFConstants> FF_CONSTANTS =
           List.of(FRONT_LEFT_FF, FRONT_RIGHT_FF, REAR_LEFT_FF, REAR_RIGHT_FF);

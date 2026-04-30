@@ -45,6 +45,7 @@ import org.sciborgs1155.robot.commands.shooting.FuelVisualizer;
 import org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer;
 import org.sciborgs1155.robot.commands.shooting.ShootingAlgorithm;
 import org.sciborgs1155.robot.drive.Drive;
+import org.sciborgs1155.robot.drive.DriveConstants;
 import org.sciborgs1155.robot.hood.Hood;
 import org.sciborgs1155.robot.hopper.Hopper;
 import org.sciborgs1155.robot.indexer.Indexer;
@@ -200,7 +201,8 @@ public class Robot extends CommandRobot {
             .deadband(DEADBAND, 1.0)
             .signedPow(2.0)
             .log("/Robot/processed joystick")
-            .scale(MAX_SPEED.in(MetersPerSecond));
+            .scale(MAX_SPEED.in(MetersPerSecond))
+            .rateLimit(DriveConstants.MAX_ACCEL.in(MetersPerSecondPerSecond));
 
     InputStream theta = InputStream.atan(rawX, rawY);
 

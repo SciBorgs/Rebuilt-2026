@@ -2,6 +2,8 @@ package org.sciborgs1155.robot.drive;
 
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 import static org.sciborgs1155.lib.FaultLogger.register;
 import static org.sciborgs1155.robot.Constants.DRIVE_CANIVORE;
@@ -104,6 +106,7 @@ public class TalonModule implements ModuleIO {
     // CANcoder — magnet offsets are burned into the encoder via Phoenix Tuner X.
     CANcoderConfiguration encoderConfig = new CANcoderConfiguration();
     encoderConfig.MagnetSensor.SensorDirection = Turning.ENCODER_DIRECTION;
+    encoderConfig.MagnetSensor.MagnetOffset = angularOffset.getRotations();
     encoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 0.5;
 
     for (int i = 0; i < 5; i++) {
@@ -121,9 +124,8 @@ public class TalonModule implements ModuleIO {
     // Sync rotor sensor with the CANcoder: closed loop runs on the rotor at 1 kHz,
     // periodically syncing absolute zero from the CANcoder. RotorToSensorRatio is the
     // module gearing so the controller knows how rotor revs map to module revs.
-    talonTurnConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.SyncCANcoder;
+    talonTurnConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
     talonTurnConfig.Feedback.FeedbackRemoteSensorID = sensorID;
-    talonTurnConfig.Feedback.RotorToSensorRatio = Turning.GEARING;
     talonTurnConfig.Feedback.SensorToMechanismRatio = 1.0;
 
     talonTurnConfig.MotionMagic.MotionMagicExpo_kV = Turning.EXPO_KV;
@@ -138,6 +140,9 @@ public class TalonModule implements ModuleIO {
     talonTurnConfig.Slot0.kV = turnFF.getKv();
 
     talonTurnConfig.CurrentLimits.StatorCurrentLimit = Turning.CURRENT_LIMIT.in(Amps);
+
+    talonTurnConfig.MotionMagic.MotionMagicCruiseVelocity = 10;
+    talonTurnConfig.MotionMagic.MotionMagicAcceleration = 10;
 
     for (int i = 0; i < 5; i++) {
       StatusCode success = driveMotor.getConfigurator().apply(talonDriveConfig);

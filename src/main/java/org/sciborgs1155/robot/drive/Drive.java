@@ -192,7 +192,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
               Turning.FF_CONSTANTS.get(0),
               Turning.PID_CONSTANTS.get(0),
               "FL",
-              true,
+              false,
               true),
           new TalonModule(
               FRONT_RIGHT_DRIVE,
@@ -203,7 +203,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
               Turning.FF_CONSTANTS.get(1),
               Turning.PID_CONSTANTS.get(1),
               "FR",
-              false,
+              true,
               true),
           new TalonModule(
               REAR_LEFT_DRIVE,
@@ -214,7 +214,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
               Turning.FF_CONSTANTS.get(2),
               Turning.PID_CONSTANTS.get(2),
               "RL",
-              true,
+              false,
               true),
           new TalonModule(
               REAR_RIGHT_DRIVE,
@@ -225,7 +225,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
               Turning.FF_CONSTANTS.get(3),
               Turning.PID_CONSTANTS.get(3),
               "RR",
-              false,
+              true,
               true));
     } else {
       return new Drive(

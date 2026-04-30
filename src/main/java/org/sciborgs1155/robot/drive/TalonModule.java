@@ -2,8 +2,6 @@ package org.sciborgs1155.robot.drive;
 
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
-import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 import static org.sciborgs1155.lib.FaultLogger.register;
 import static org.sciborgs1155.robot.Constants.DRIVE_CANIVORE;
@@ -12,8 +10,9 @@ import static org.sciborgs1155.robot.Constants.PERIOD;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusCode;
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.MotionMagicExpoVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.ParentDevice;
@@ -40,7 +39,7 @@ public class TalonModule implements ModuleIO {
   private final CANcoder encoder;
 
   private final VelocityVoltage velocityOut = new VelocityVoltage(0);
-  private final MotionMagicVoltage rotationsIn = new MotionMagicVoltage(0).withSlot(0);
+  private final MotionMagicExpoVoltage rotationsIn = new MotionMagicExpoVoltage(0).withSlot(0);
 
   private final OdometryThread talonThread;
   private final Queue<Double> position;
@@ -102,6 +101,16 @@ public class TalonModule implements ModuleIO {
     turnMotor = new TalonFX(turnPort, DRIVE_CANIVORE);
     encoder = new CANcoder(sensorID, DRIVE_CANIVORE);
 
+    // CANcoder — magnet offsets are burned into the encoder via Phoenix Tuner X.
+    CANcoderConfiguration encoderConfig = new CANcoderConfiguration();
+    encoderConfig.MagnetSensor.SensorDirection = Turning.ENCODER_DIRECTION;
+    encoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 0.5;
+
+    for (int i = 0; i < 5; i++) {
+      StatusCode success = encoder.getConfigurator().apply(encoderConfig);
+      if (success.isOK()) break;
+    }
+
     // turn motor
     TalonFXConfiguration talonTurnConfig = new TalonFXConfiguration();
 
@@ -109,14 +118,16 @@ public class TalonModule implements ModuleIO {
     talonTurnConfig.MotorOutput.Inverted =
         invertTurn ? InvertedValue.Clockwise_Positive : InvertedValue.CounterClockwise_Positive;
 
-    talonTurnConfig.Feedback.SensorToMechanismRatio = Turning.ENCODER_GEARING;
-    talonTurnConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
+    // Sync rotor sensor with the CANcoder: closed loop runs on the rotor at 1 kHz,
+    // periodically syncing absolute zero from the CANcoder. RotorToSensorRatio is the
+    // module gearing so the controller knows how rotor revs map to module revs.
+    talonTurnConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.SyncCANcoder;
     talonTurnConfig.Feedback.FeedbackRemoteSensorID = sensorID;
+    talonTurnConfig.Feedback.RotorToSensorRatio = Turning.GEARING;
+    talonTurnConfig.Feedback.SensorToMechanismRatio = 1.0;
 
-    talonTurnConfig.MotionMagic.MotionMagicCruiseVelocity =
-        Turning.MAX_VELOCITY.in(RotationsPerSecond);
-    talonTurnConfig.MotionMagic.MotionMagicAcceleration =
-        Turning.MAX_ACCEL.in(RotationsPerSecondPerSecond);
+    talonTurnConfig.MotionMagic.MotionMagicExpo_kV = Turning.EXPO_KV;
+    talonTurnConfig.MotionMagic.MotionMagicExpo_kA = Turning.EXPO_KA;
 
     talonTurnConfig.ClosedLoopGeneral.ContinuousWrap = true;
 
@@ -143,11 +154,10 @@ public class TalonModule implements ModuleIO {
     ParentDevice.optimizeBusUtilizationForAll(driveMotor, turnMotor);
 
     BaseStatusSignal.setUpdateFrequencyForAll(
-        1 / ODOMETRY_PERIOD.in(Seconds),
-        driveMotor.getPosition(),
-        driveMotor.getVelocity(),
-        turnMotor.getPosition(),
-        turnMotor.getVelocity());
+        1 / ODOMETRY_PERIOD.in(Seconds), driveMotor.getPosition(), driveMotor.getVelocity());
+
+    BaseStatusSignal.setUpdateFrequencyForAll(
+        200, turnMotor.getPosition(), turnMotor.getVelocity());
 
     BaseStatusSignal.setUpdateFrequencyForAll(
         1 / PERIOD.in(Seconds), driveMotor.getMotorVoltage(), turnMotor.getMotorVoltage());

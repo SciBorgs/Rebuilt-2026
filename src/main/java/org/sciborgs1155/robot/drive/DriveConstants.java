@@ -51,11 +51,11 @@ public final class DriveConstants {
 
   // Maximum achievable translational and rotation velocities and accelerations of the robot.
   public static final LinearVelocity MAX_SPEED = MetersPerSecond.of(5);
-  public static final LinearAcceleration MAX_ACCEL = MetersPerSecondPerSecond.of(15);
+  public static final LinearAcceleration MAX_ACCEL = MetersPerSecondPerSecond.of(40);
   public static final LinearAcceleration MAX_SKID_ACCEL =
-      MetersPerSecondPerSecond.of(16); // TODO: Tune
+      MetersPerSecondPerSecond.of(28); // TODO: Tune
   public static final LinearAcceleration MAX_TILT_ACCEL =
-      MetersPerSecondPerSecond.of(12); // TODO: Tune
+      MetersPerSecondPerSecond.of(20); // TODO: Tune
   // Percentage of the max angular speed we can do while shooting
   public static final AngularVelocity MAX_ANGULAR_SPEED =
       RadiansPerSecond.of(MAX_SPEED.in(MetersPerSecond) / RADIUS.in(Meters));
@@ -105,10 +105,10 @@ public final class DriveConstants {
     public static final double ROTATING_THRESHOLD = 0.02;
   }
 
-  public static final class Skid {
-    // TODO: find a value (3 is currently random, should change)
-    public static final LinearVelocity THRESHOLD = MetersPerSecond.of(3);
-  }
+  // public static final class Skid {
+  //   // TODO: find a value (3 is currently random, should change)
+  //   public static final LinearVelocity THRESHOLD = MetersPerSecond.of(3);
+  // }
 
   // TODO: Change ALL characterization constants for each unique robot as needed.
   public static final class Translation {
@@ -139,10 +139,10 @@ public final class DriveConstants {
 
       public static final Current CURRENT_LIMIT = Amps.of(80);
 
-      public static final FFConstants FRONT_RIGHT_FF = new FFConstants(0.27372, 2.3131, 0.2385);
-      public static final FFConstants FRONT_LEFT_FF = new FFConstants(0.14985, 2.313, 0.19269);
-      public static final FFConstants REAR_LEFT_FF = new FFConstants(0.21295, 2.265, 0.085833);
-      public static final FFConstants REAR_RIGHT_FF = new FFConstants(0.26806, 2.3948, 0.079315);
+      public static final FFConstants FRONT_RIGHT_FF = new FFConstants(0.18984, 2.5193, 0.22823);
+      public static final FFConstants FRONT_LEFT_FF = new FFConstants(0.19491, 2.2614, 0.041899);
+      public static final FFConstants REAR_LEFT_FF = new FFConstants(0.08037, 2.2685, 0.22776);
+      public static final FFConstants REAR_RIGHT_FF = new FFConstants(0.20194, 2.5175, 0.19175);
 
       public static final List<FFConstants> FF_CONSTANTS =
           List.of(FRONT_LEFT_FF, FRONT_RIGHT_FF, REAR_LEFT_FF, REAR_RIGHT_FF);

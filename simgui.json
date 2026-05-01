@@ -75,6 +75,21 @@
         "window": {
           "visible": true
         }
+      },
+      "/SmartDashboard/Robot/turret/TurretVisualizer": {
+        "window": {
+          "visible": true
+        }
+      }
+    }
+  },
+  "NetworkTables": {
+    "transitory": {
+      "Robot": {
+        "open": true,
+        "turret": {
+          "open": true
+        }
       }
     }
   },

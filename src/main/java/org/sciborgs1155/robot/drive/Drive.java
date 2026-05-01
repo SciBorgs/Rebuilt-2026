@@ -462,7 +462,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
                     vy.getAsDouble(),
                     vOmega.getAsDouble(),
                     heading().plus(allianceRotation())),
-                ControlMode.OPEN_LOOP_VELOCITY));
+                ControlMode.CLOSED_LOOP_VELOCITY));
   }
 
   /**

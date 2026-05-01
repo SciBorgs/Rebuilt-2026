@@ -47,10 +47,10 @@ public final class DriveConstants {
 
   // Percentage of the max speed we can do while shooting
   public static final double SHOOTING_TRANSLATIONAL_SPEED = 0.5;
-  public static final double SHOOTING_ANGULAR_SPEED = 0;
+  public static final double SHOOTING_ANGULAR_SPEED = 0.5;
 
   // Maximum achievable translational and rotation velocities and accelerations of the robot.
-  public static final LinearVelocity MAX_SPEED = MetersPerSecond.of(2);
+  public static final LinearVelocity MAX_SPEED = MetersPerSecond.of(5);
   public static final LinearAcceleration MAX_ACCEL = MetersPerSecondPerSecond.of(15);
   public static final LinearAcceleration MAX_SKID_ACCEL =
       MetersPerSecondPerSecond.of(16); // TODO: Tune
@@ -148,9 +148,9 @@ public final class DriveConstants {
           List.of(FRONT_LEFT_FF, FRONT_RIGHT_FF, REAR_LEFT_FF, REAR_RIGHT_FF);
 
       public static final class PID {
-        public static final double P = 0.5;
+        public static final double P = 1;
         public static final double I = 0.0;
-        public static final double D = 0.05;
+        public static final double D = 0;
       }
     }
 
@@ -176,10 +176,10 @@ public final class DriveConstants {
       public static final List<PIDConstants> PID_CONSTANTS =
           List.of(FRONT_LEFT_PID, FRONT_RIGHT_PID, REAR_LEFT_PID, REAR_RIGHT_PID);
 
-      public static final FFConstants FRONT_RIGHT_FF = new FFConstants(0.1, 0.0, 0);
-      public static final FFConstants FRONT_LEFT_FF = new FFConstants(0.1, 0.0, 0);
-      public static final FFConstants REAR_LEFT_FF = new FFConstants(0.1, 0.0, 0);
-      public static final FFConstants REAR_RIGHT_FF = new FFConstants(0.1, 0.0, 0);
+      public static final FFConstants FRONT_RIGHT_FF = new FFConstants(0.0, 0.0, 0);
+      public static final FFConstants FRONT_LEFT_FF = new FFConstants(0.0, 0.0, 0);
+      public static final FFConstants REAR_LEFT_FF = new FFConstants(0.0, 0.0, 0);
+      public static final FFConstants REAR_RIGHT_FF = new FFConstants(0.0, 0.0, 0);
 
       public static final List<FFConstants> FF_CONSTANTS =
           List.of(FRONT_LEFT_FF, FRONT_RIGHT_FF, REAR_LEFT_FF, REAR_RIGHT_FF);

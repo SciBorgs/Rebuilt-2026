@@ -117,7 +117,7 @@ public class TalonModule implements ModuleIO {
     // turn motor
     TalonFXConfiguration talonTurnConfig = new TalonFXConfiguration();
 
-    talonTurnConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    talonTurnConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     talonTurnConfig.MotorOutput.Inverted =
         invertTurn ? InvertedValue.Clockwise_Positive : InvertedValue.CounterClockwise_Positive;
 
@@ -139,7 +139,7 @@ public class TalonModule implements ModuleIO {
     talonTurnConfig.Slot0.kS = turnFF.getKs();
     talonTurnConfig.Slot0.kV = turnFF.getKv();
 
-    talonTurnConfig.CurrentLimits.StatorCurrentLimit = Turning.CURRENT_LIMIT.in(Amps);
+    talonTurnConfig.CurrentLimits.SupplyCurrentLimit = Turning.CURRENT_LIMIT.in(Amps);
 
     talonTurnConfig.MotionMagic.MotionMagicCruiseVelocity = 10;
     talonTurnConfig.MotionMagic.MotionMagicAcceleration = 10;

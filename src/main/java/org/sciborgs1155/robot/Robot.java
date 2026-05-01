@@ -243,16 +243,17 @@ public class Robot extends CommandRobot {
 
     driver.povUp().whileTrue(drive.zeroHeading());
 
-    driver
-        .x()
-        .onTrue(Commands.runOnce(() -> speedMultiplier = SLOW_SPEED_MULTIPLIER))
-        .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
+    // driver
+    //     .x()
+    //     .onTrue(Commands.runOnce(() -> speedMultiplier = SLOW_SPEED_MULTIPLIER))
+    //     .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
 
     // INTAKE TOGGLE
     driver.leftTrigger().whileTrue(intake.intake());
 
     driver
-        .povDown()
+        .x()
+        .or(driver.povDown())
         .or(operator.povDown())
         .whileTrue(slapdown.squeeze())
         .onFalse(slapdown.extend()); // jank jank jank
@@ -291,7 +292,7 @@ public class Robot extends CommandRobot {
         .whileTrue(
             hopper
                 .intake()
-                .alongWith(indexer.forward().alongWith(shooter.runShooter(170)))
+                .alongWith(indexer.forward().alongWith(shooter.runShooter(150)))
                 .withName("fallback"));
 
     // driver.b().whileTrue(slapdown.squeezeVolts()).onFalse(slapdown.extend());
@@ -316,7 +317,7 @@ public class Robot extends CommandRobot {
     // operator.a().whileTrue(indexer.forward());
     operator.a().whileTrue(hood.goTo(Radians.of(3)));
 
-    operator.povUp().whileTrue(indexer.backward());
+    operator.povUp().whileTrue(slapdown.homingSequence());
 
     operator.leftTrigger().whileTrue(turret.goLeft().withName("left"));
     operator.rightTrigger().whileTrue(turret.goRight().withName("right"));

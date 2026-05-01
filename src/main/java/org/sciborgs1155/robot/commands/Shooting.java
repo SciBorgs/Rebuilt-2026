@@ -77,7 +77,6 @@ public class Shooting {
   private final Drive drive;
   private final Hopper hopper;
   private final Indexer indexer;
-  private final Slapdown slapdown;
 
   ProjectileVisualizer fuelVisualizer;
 
@@ -101,7 +100,6 @@ public class Shooting {
     this.drive = drive;
     this.hopper = hopper;
     this.indexer = indexer;
-    this.slapdown = slapdown;
     this.fuelVisualizer = fuelVisualizer;
   }
 

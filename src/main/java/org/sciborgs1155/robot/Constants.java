@@ -80,7 +80,7 @@ public final class Constants {
   /** Lookup tables mapping shot distance (meters) to shooter parameters. */
   public static final class ShootingData {
     public static final DoubleEntry SIGGYS_CONSTANT =
-        Tuning.entry("Robot/shooting/siggysConstant", 16.7);
+        Tuning.entry("Robot/shooting/siggysConstant", 0.0);
 
     // minimum velocity to use SOTM algorithm rather than stationary. measured in m/s
     public static final double MINIMUM_VELOCITY = 0.01;

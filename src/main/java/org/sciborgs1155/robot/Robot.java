@@ -82,7 +82,7 @@ public class Robot extends CommandRobot {
   private final Hopper hopper = Hopper.create();
   private final Slapdown slapdown = Slapdown.create();
   private final Climb climb = Climb.none();
-    private final LEDs leds = LEDs.create();
+  private final LEDs leds = LEDs.create();
 
   // COMMANDS
   private final Alignment align = new Alignment(drive);
@@ -276,6 +276,10 @@ public class Robot extends CommandRobot {
         .leftBumper()
         .whileTrue(shooting.shootDriving(Shooting.LEFT_FEED, x, y, omega).withName("left feed"));
 
+    operator
+        .a()
+        .whileTrue(shooting.shootDriving(Shooting.LEFT_FEED, x, y, omega).withName("left feed"));
+
     // FEED CONTINUOUS (RIGHT SIDE)
     driver
         .rightBumper()
@@ -313,9 +317,6 @@ public class Robot extends CommandRobot {
 
     // operator.a().whileTrue(turret.goTo(() -> 3 * Math.PI / 2));
     operator.b().whileTrue(hopper.outtake());
-
-    // operator.a().whileTrue(indexer.forward());
-    operator.a().whileTrue(hood.goTo(Radians.of(3)));
 
     operator.povUp().whileTrue(slapdown.homingSequence());
 

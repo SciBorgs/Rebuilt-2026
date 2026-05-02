@@ -2,8 +2,6 @@ package org.sciborgs1155.robot.drive;
 
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
-import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 import static org.sciborgs1155.lib.FaultLogger.register;
 import static org.sciborgs1155.robot.Constants.DRIVE_CANIVORE;

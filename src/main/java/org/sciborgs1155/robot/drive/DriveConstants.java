@@ -158,7 +158,8 @@ public final class DriveConstants {
       public static final double GEARING = 12.1;
 
       // Must match the turn motor's positive direction at the module output shaft.
-      // Verify on bench: rotate module clockwise — if encoder reads negative, flip to Clockwise_Positive.
+      // Verify on bench: rotate module clockwise — if encoder reads negative, flip to
+      // Clockwise_Positive.
       public static final SensorDirectionValue ENCODER_DIRECTION =
           SensorDirectionValue.CounterClockwise_Positive;
 
@@ -168,7 +169,7 @@ public final class DriveConstants {
       public static final double EXPO_KV = 0.12; // V per rps of module
       public static final double EXPO_KA = 0.10; // V per rps^2 of module
 
-      public static final PIDConstants FRONT_RIGHT_PID = new PIDConstants(60, 0,0.5);
+      public static final PIDConstants FRONT_RIGHT_PID = new PIDConstants(60, 0, 0.5);
       public static final PIDConstants REAR_LEFT_PID = new PIDConstants(60, 0, 0.5);
       public static final PIDConstants REAR_RIGHT_PID = new PIDConstants(60, 0, 0.5);
       public static final PIDConstants FRONT_LEFT_PID = new PIDConstants(60, 0, 0.5);

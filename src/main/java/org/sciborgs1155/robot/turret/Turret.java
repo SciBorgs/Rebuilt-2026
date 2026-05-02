@@ -235,6 +235,9 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
    * @param double The position setpoint in radians.
    */
   public void update(double positionSetpoint) {
+    while (positionSetpoint > MAX_ANGLE.in(Radians) || positionSetpoint < MIN_ANGLE.in(Radians)) {
+      positionSetpoint += 2 * Math.PI * Math.signum(MAX_ANGLE.in(Radians) - positionSetpoint);
+    }
     double pos = position();
     double pidVolts =
         controller.calculate(
@@ -267,6 +270,7 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
             double pos = position();
             return Math.abs(c1 - pos) <= Math.abs(c2 - pos) ? c1 : c2;
           }
+
           return c1Valid ? c1 : c2;
         });
   }

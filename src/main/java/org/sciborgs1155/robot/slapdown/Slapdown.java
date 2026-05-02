@@ -31,6 +31,8 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
   private final SlapdownIO hardware;
 
   private final ProfiledPIDController pid = new ProfiledPIDController(P, I, D, CONSTRAINTS);
+  private final ProfiledPIDController slowPID =
+      new ProfiledPIDController(P, I, D, SLOW_CONSTRAINTS);
 
   private final ArmFeedforward ff = new ArmFeedforward(S, G, V, A);
 
@@ -176,6 +178,13 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
   }
 
   /**
+   * @return
+   */
+  public Command slowSqueeze() {
+    return run(() -> updateSlow(MAX_ANGLE.in(Radians)));
+  }
+
+  /**
    * A sequence to home the intake that sets the position to 0 when released
    *
    * @return A command to reset the position of the slapdown pivot.
@@ -235,10 +244,18 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
     return pid.atGoal();
   }
 
+  public void update(double angle) {
+    update(angle, pid);
+  }
+
+  public void updateSlow(double angle) {
+    update(angle, slowPID);
+  }
+
   /**
    * @param angle set the Slapdown to be at said angle
    */
-  public void update(double angle) {
+  public void update(double angle, ProfiledPIDController pid) {
     double rads = MathUtil.clamp(angle, MIN_ANGLE.in(Radians), MAX_ANGLE.in(Radians));
     double pidVoltage = pid.calculate(hardware.position(), rads);
     double ffVoltage = ff.calculate(pid.getSetpoint().position, pid.getSetpoint().velocity);

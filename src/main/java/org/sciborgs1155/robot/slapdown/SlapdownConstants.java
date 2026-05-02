@@ -3,7 +3,7 @@ package org.sciborgs1155.robot.slapdown;
 import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
@@ -36,10 +36,14 @@ public class SlapdownConstants {
   public static final Time TIME_OUT = Seconds.of(30);
 
   public static final AngularVelocity MAX_VELOCITY = RadiansPerSecond.of(5);
+  public static final AngularVelocity LIMITED_VELOCITY = RadiansPerSecond.of(1);
   public static final AngularAcceleration MAX_ACCELERATION = RadiansPerSecondPerSecond.of(8);
-  public static final TrapezoidProfile.Constraints CONSTRAINTS =
-      new TrapezoidProfile.Constraints(
+  public static final Constraints CONSTRAINTS =
+      new Constraints(
           MAX_VELOCITY.in(RadiansPerSecond), MAX_ACCELERATION.in(RadiansPerSecondPerSecond));
+  public static final Constraints SLOW_CONSTRAINTS =
+      new Constraints(
+          LIMITED_VELOCITY.in(RadiansPerSecond), MAX_ACCELERATION.in(RadiansPerSecondPerSecond));
 
   // 4-bar, old
   // public static final DCMotor GEARBOX = DCMotor.getKrakenX44(1);

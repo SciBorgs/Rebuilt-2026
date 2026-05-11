@@ -1,9 +1,6 @@
 package org.sciborgs1155.robot.turret;
 
 import static edu.wpi.first.units.Units.*;
-import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.Seconds;
-import static edu.wpi.first.units.Units.Volts;
 import static edu.wpi.first.wpilibj2.command.button.RobotModeTriggers.disabled;
 import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.Constants.TUNING;
@@ -32,6 +29,7 @@ import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.LoggingUtils;
 import org.sciborgs1155.lib.Tuning;
+import org.sciborgs1155.lib.FaultLogger.FaultType;
 import org.sciborgs1155.robot.Robot;
 import yams.units.EasyCRT;
 import yams.units.EasyCRTConfig;
@@ -99,6 +97,10 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
    * @param pivot The hardware implementation to use.
    */
   private Turret(TurretIO turretIO) {
+    if (MAX_ANGLE.minus(MIN_ANGLE).in(Radians) < 2 * Math.PI) {
+      FaultLogger.report("Turret range", "Turret range is is less than the minimum amount of one rotation!", FaultType.ERROR);
+    }
+
     hardware = turretIO;
 
     controller.setTolerance(TOLERANCE.in(Radians));
@@ -230,14 +232,26 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
   }
 
   /**
+   * Wraps an angle from any range to be within [min, 2pi) radians.
+   * Should only be used if > 360 degree range, and does not optimize the angle
+   * setpoint to be the nearest angle to current position.
+   */
+  public static double wrapAngle(double angle, double min) {
+    double period = 2 * Math.PI;
+    double wrapped = ((angle % period) + period) % period;
+    
+    wrapped += Math.ceil((min - wrapped) / period) * period;
+    
+    return wrapped;
+  }
+
+  /**
    * Applies voltage to the motor based on setpoint.
    *
    * @param double The position setpoint in radians.
    */
   public void update(double positionSetpoint) {
-    while (positionSetpoint > MAX_ANGLE.in(Radians) || positionSetpoint < MIN_ANGLE.in(Radians)) {
-      positionSetpoint += 2 * Math.PI * Math.signum(MAX_ANGLE.in(Radians) - positionSetpoint);
-    }
+    positionSetpoint = wrapAngle(positionSetpoint, MIN_ANGLE.in(Radians));
     double pos = position();
     double pidVolts =
         controller.calculate(

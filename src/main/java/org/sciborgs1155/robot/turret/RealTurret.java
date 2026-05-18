@@ -39,10 +39,10 @@ public class RealTurret implements TurretIO {
     motor.getConfigurator().apply(configuration);
 
     final CANcoderConfiguration encoderAConfig = new CANcoderConfiguration();
-    encoderAConfig.MagnetSensor.MagnetOffset = -0.461;
+    encoderAConfig.MagnetSensor.MagnetOffset = -0.464599609375;
     encoderAConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1;
     final CANcoderConfiguration encoderBConfig = new CANcoderConfiguration();
-    encoderBConfig.MagnetSensor.MagnetOffset = -0.862;
+    encoderBConfig.MagnetSensor.MagnetOffset = -0.9462890625;
     encoderBConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 1;
     encoderA.getConfigurator().apply(encoderAConfig);
     encoderB.getConfigurator().apply(encoderBConfig);

@@ -111,7 +111,7 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
             .withCommonDriveGear(1, TURRET_GEARING, ENCODER_A_GEARING, ENCODER_B_GEARING)
             .withMatchTolerance(CRT_MATCH_TOLERANCE)
             .withMechanismRange(MIN_ANGLE, MAX_ANGLE);
-    // .withAbsoluteEncoderOffsets(Rotations.of(-0.442), Rotations.of(-0.847));
+    // .withAbsoluteEncoderOffsets(Rotations.of(-0.4609375), Rotations.of(-0.86181640625));
 
     crtSolver = new EasyCRT(crtConfig);
 

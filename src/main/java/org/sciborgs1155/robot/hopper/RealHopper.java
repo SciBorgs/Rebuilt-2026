@@ -5,6 +5,9 @@ import static org.sciborgs1155.robot.Constants.INTAKE_CANIVORE;
 import static org.sciborgs1155.robot.Ports.Hopper.MOTOR;
 import static org.sciborgs1155.robot.hopper.HopperConstants.*;
 
+import org.sciborgs1155.lib.FaultLogger;
+import org.sciborgs1155.lib.TalonUtils;
+
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -22,6 +25,9 @@ public class RealHopper implements HopperIO {
     config.Feedback.SensorToMechanismRatio = GEARING;
 
     motor.getConfigurator().apply(config);
+
+    FaultLogger.register(motor);
+    TalonUtils.addMotor(motor);
   }
 
   @Override

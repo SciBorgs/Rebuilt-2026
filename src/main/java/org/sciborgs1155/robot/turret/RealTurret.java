@@ -52,6 +52,8 @@ public class RealTurret implements TurretIO {
 
     // FAULT LOGGER
     FaultLogger.register(motor);
+    FaultLogger.register(encoderA);
+    FaultLogger.register(encoderB);
   }
 
   @Override

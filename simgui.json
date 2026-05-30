@@ -57,6 +57,7 @@
       "Robot/indexer/pid": "PIDController",
       "Robot/shooter/controller": "ProfiledPIDController",
       "Robot/slapdown/pid": "ProfiledPIDController",
+      "Robot/slapdown/slowPID": "ProfiledPIDController",
       "Robot/turret/controller": "ProfiledPIDController"
     },
     "windows": {

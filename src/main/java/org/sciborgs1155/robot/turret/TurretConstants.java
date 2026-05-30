@@ -22,8 +22,8 @@ public class TurretConstants {
   public static final AngularVelocity MAX_VELOCITY = RadiansPerSecond.of(25);
   public static final AngularAcceleration MAX_ACCELERATION = RadiansPerSecondPerSecond.of(10);
 
-  public static final Angle MAX_ANGLE = Degrees.of(540);
-  public static final Angle MIN_ANGLE = Degrees.of(-90);
+  public static final Angle MAX_ANGLE = Degrees.of(360);
+  public static final Angle MIN_ANGLE = Degrees.of(-45);
   public static final Angle START_ANGLE = Radians.of(0);
   public static final Angle FULL_ANGLE_RANGE = MAX_ANGLE.minus(MIN_ANGLE);
 
@@ -41,7 +41,6 @@ public class TurretConstants {
   public static final int ENCODER_B_GEARING = 13;
   public static double ENCODER_A_OFFSET = 0;
   public static double ENCODER_B_OFFSET = 0;
-  
 
   public static final Angle CRT_MATCH_TOLERANCE = Degrees.of(2);
 

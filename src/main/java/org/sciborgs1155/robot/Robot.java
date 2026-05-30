@@ -36,6 +36,7 @@ import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.ShiftTracker;
 import org.sciborgs1155.lib.Tracer;
+import org.sciborgs1155.robot.Constants.ShootingData;
 import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.climb.Climb;
 import org.sciborgs1155.robot.commands.Alignment;
@@ -323,6 +324,9 @@ public class Robot extends CommandRobot {
     operator.leftTrigger().whileTrue(turret.goLeft().withName("left"));
     operator.rightTrigger().whileTrue(turret.goRight().withName("right"));
 
+    operator.povUp().onTrue(ShootingData.changeSC(1));
+    operator.povDown().onTrue(ShootingData.changeSC(-1));
+
     // operator.povLeft().whileTrue(slapdown.homingSequence());
 
     shooting
@@ -343,7 +347,7 @@ public class Robot extends CommandRobot {
     // operator.y().whileTrue(turret.goTo(() -> 0));
     // operator.leftTrigger().whileTrue(hood.goTo(Degrees.of(45)).withName("goto 45"));
     // operator.rightTrigger().whileTrue(hood.goTo(Degrees.of(25)).withName("goto 25"));
-    // operator.a().whileTrue(hood.homingSequence());
+    driver.povLeft().or(operator.povLeft()).whileTrue(hood.homingSequence());
 
     // operator
     //     .leftBumper()

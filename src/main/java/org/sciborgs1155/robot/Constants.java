@@ -21,6 +21,9 @@ import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+
 import org.sciborgs1155.lib.Tuning;
 import org.sciborgs1155.robot.drive.DriveConstants;
 
@@ -81,6 +84,7 @@ public final class Constants {
   public static final class ShootingData {
     public static final DoubleEntry SIGGYS_CONSTANT =
         Tuning.entry("Robot/shooting/siggysConstant", 0.0);
+      
 
     // minimum velocity to use SOTM algorithm rather than stationary. measured in m/s
     public static final double MINIMUM_VELOCITY = 0.01;
@@ -98,7 +102,13 @@ public final class Constants {
     public static final InterpolatingTreeMap<Double, Rotation2d> VELOCITY_TO_HOOD_ANGLE =
         new InterpolatingTreeMap<>(InverseInterpolator.forDouble(), Rotation2d::interpolate);
 
-    private ShootingData() {}
+    private ShootingData() {
+      
+    }
+
+    public static Command changeSC(double delta){
+      return Commands.runOnce(() -> SIGGYS_CONSTANT.set(SIGGYS_CONSTANT.get()+delta));
+    }
 
     /**
      * Applies a point to the three linear interpolations.
@@ -149,4 +159,6 @@ public final class Constants {
     public static final Translation3d ROBOT_TO_SHOOTER =
         new Translation3d(-0.14006, 0.13983, 0.3286252);
   }
+
+
 }

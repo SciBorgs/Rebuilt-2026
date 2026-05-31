@@ -74,8 +74,15 @@ public final class Autos {
     NamedCommands.registerCommand(
         "shoot",
         shooting
-            .shootDriving(Shooting.HUB_TARGET, () -> 0, () -> 0, () -> 0)
+            .shootNoDrive(Shooting.HUB_TARGET)
             .withTimeout(7)
+            .asProxy());
+    NamedCommands.registerCommand(
+        "shootpreload",
+        shooting
+            .shootNoDrive(Shooting.HUB_TARGET)
+            .withTimeout(
+                3)
             .asProxy());
     NamedCommands.registerCommand("intake", intake.intake());
     NamedCommands.registerCommand("deploy", slapdown.extend());

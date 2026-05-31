@@ -135,6 +135,24 @@ public class Shooting {
                 omega.scale(DriveConstants.SHOOTING_ANGULAR_SPEED)));
   }
 
+  public Command shootNoDrive(Translation2d target) {
+    return Commands.waitUntil(
+            () ->
+                shooter.atSetpoint()
+                    && shooter.setpoint() > IDLE_VELOCITY.in(RadiansPerSecond)
+                    && hood.atGoal()
+                    && turret.atGoal())
+        .andThen(
+            Commands.parallel(
+                hopper.intake(),
+                indexer.forward(),
+                Commands.run(
+                    () -> {
+                      if (fuelVisualizer != null) fuelVisualizer.launchProjectile();
+                    })))
+        .deadlineFor(runShooterSuperstructure(() -> calculateShot(target)));
+  }
+
   private Command runShooterSuperstructure(Supplier<ShooterParams> params) {
     return Commands.parallel(
         shooter.runShooter(() -> params.get().RADS),

@@ -255,13 +255,13 @@ public class Robot extends CommandRobot {
     driver
         .x()
         .or(driver.povDown())
-        .or(operator.povDown())
+        // .or(operator.povDown())
         .whileTrue(slapdown.squeeze())
         .onFalse(slapdown.extend()); // jank jank jank
 
     driver
         .povRight()
-        .or(operator.povRight())
+        // .or(operator.povRight())
         .whileTrue(slapdown.retract())
         .onFalse(slapdown.extend()); // jank jank jank
 
@@ -272,15 +272,16 @@ public class Robot extends CommandRobot {
         .a()
         .whileTrue(intake.outtake().alongWith(hopper.outtake()).alongWith(indexer.backward()));
 
-    // FEED CONTINUOUS (LEFT SIDE)
-    driver
-        .leftBumper()
-        .whileTrue(shooting.shootDriving(Shooting.LEFT_FEED, x, y, omega).withName("left feed"));
 
     operator
         .a()
         .whileTrue(shooting.shootDriving(Shooting.LEFT_FEED, x, y, omega).withName("left feed"));
 
+    // FEED CONTINUOUS (LEFT SIDE)
+    driver
+        .leftBumper()
+        .whileTrue(shooting.shootDriving(Shooting.LEFT_FEED, x, y, omega).withName("left feed"));
+        
     // FEED CONTINUOUS (RIGHT SIDE)
     driver
         .rightBumper()
@@ -319,7 +320,7 @@ public class Robot extends CommandRobot {
     // operator.a().whileTrue(turret.goTo(() -> 3 * Math.PI / 2));
     operator.b().whileTrue(hopper.outtake());
 
-    operator.povUp().whileTrue(slapdown.homingSequence());
+    operator.povRight().whileTrue(slapdown.homingSequence());   
 
     operator.leftTrigger().whileTrue(turret.goLeft().withName("left"));
     operator.rightTrigger().whileTrue(turret.goRight().withName("right"));

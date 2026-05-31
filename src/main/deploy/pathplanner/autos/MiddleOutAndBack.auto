@@ -1,0 +1,31 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "MiddleOutAndBack.0"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shootpreload"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "MiddleOutAndBack.1"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": true
+}

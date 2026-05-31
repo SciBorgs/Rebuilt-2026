@@ -24,8 +24,8 @@ public final class Ports {
           entry(Drive.REAR_RIGHT_CANCODER, "RR cancoder"),
 
           // Intaking and Indexing
-          entry(Intake.ROLLERS, "intake extension"),
-          entry(Slapdown.EXTENSION, "intake extension"),
+          entry(Intake.ROLLERS, "intake rollers"),
+          entry(Slapdown.EXTENSION, "slapdown"),
           entry(Hopper.MOTOR, "hopper"),
           entry(Indexer.MOTOR, "indexer"),
 

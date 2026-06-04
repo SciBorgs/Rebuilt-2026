@@ -112,6 +112,7 @@ public class Robot extends CommandRobot {
       Autos.configureAutos(drive, intake, slapdown, shooting, climb, align);
 
   @Logged private double speedMultiplier = FULL_SPEED_MULTIPLIER;
+  private double deadband = DEADBAND;
 
   /** The robot contains subsystems, OI devices, and commands. */
   public Robot() {
@@ -244,10 +245,15 @@ public class Robot extends CommandRobot {
 
     driver.povUp().whileTrue(drive.zeroHeading());
 
-    // driver
-    //     .x()
-    //     .onTrue(Commands.runOnce(() -> speedMultiplier = SLOW_SPEED_MULTIPLIER))
-    //     .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
+    operator
+        .leftBumper()
+        .and(operator.rightBumper())
+        .onTrue(
+            Commands.runOnce(() -> speedMultiplier = SLOW_SPEED_MULTIPLIER)
+                .alongWith(Commands.runOnce(() -> deadband = SLOW_DEADBAND)))
+        .onFalse(
+            Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER)
+                .alongWith(Commands.runOnce(() -> deadband = DEADBAND)));
 
     // INTAKE TOGGLE
     driver.leftTrigger().whileTrue(intake.intake());

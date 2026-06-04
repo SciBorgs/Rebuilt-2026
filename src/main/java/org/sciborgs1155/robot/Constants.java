@@ -38,6 +38,7 @@ import org.sciborgs1155.robot.drive.DriveConstants;
 public final class Constants {
   public static final Time PERIOD = Seconds.of(0.02); // roborio tickrate (s)
   public static final Time ODOMETRY_PERIOD = Seconds.of(1.0 / 100.0); // 4 ms (speedy!)
+  public static final double SLOW_DEADBAND = 0.3;
   public static final double DEADBAND = 0.2;
   public static final double MAX_RATE =
       DriveConstants.MAX_ACCEL.baseUnitMagnitude()

@@ -145,6 +145,10 @@ public interface InputStream extends DoubleSupplier {
     return map(filter::calculate);
   }
 
+  // public static InputStream setDeadband(InputStream stream, double deadband) {
+  //   return stream.map(x -> x * deadband);
+  // }
+
   /**
    * Deadbands the stream outputs by a minimum bound and scales them from 0 to a maximum bound.
    *
@@ -152,8 +156,8 @@ public interface InputStream extends DoubleSupplier {
    * @param max The maximum value to scale with.
    * @return A deadbanded stream.
    */
-  default InputStream deadband(double deadband, double max) {
-    return map(x -> MathUtil.applyDeadband(x, deadband, max));
+  default InputStream deadband(DoubleSupplier deadband, double max) {
+    return map(x -> MathUtil.applyDeadband(x, deadband.getAsDouble(), max));
   }
 
   /**

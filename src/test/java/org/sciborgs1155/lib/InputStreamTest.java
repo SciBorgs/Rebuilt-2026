@@ -58,8 +58,8 @@ public class InputStreamTest {
 
   @Test
   void deadband() {
-    assertEquals(0, stream(-0.5).deadband(0.6, 1).get());
-    assertEquals(2.25, stream(2).deadband(0.2, 1).get());
+    assertEquals(0, stream(-0.5).deadband(() -> 0.6, 1).get());
+    assertEquals(2.25, stream(2).deadband(() -> 0.2, 1).get());
   }
 
   @Test

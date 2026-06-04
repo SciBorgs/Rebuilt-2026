@@ -225,7 +225,7 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
    */
   public Command manualTurret(InputStream input) {
     return goTo(input
-            .deadband(.15, 1)
+            .deadband(() -> .15, 1)
             .scale(MAX_VELOCITY.in(RadiansPerSecond))
             .scale(2)
             .scale(PERIOD.in(Seconds))

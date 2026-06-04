@@ -199,7 +199,7 @@ public class Robot extends CommandRobot {
             .log("/Robot/raw joystick")
             .scale(() -> speedMultiplier)
             .clamp(1.0)
-            .deadband(DEADBAND, 1.0)
+            .deadband(() -> DEADBAND, 1.0)
             .signedPow(2.0)
             .log("/Robot/processed joystick")
             .scale(MAX_SPEED.in(MetersPerSecond))
@@ -221,7 +221,7 @@ public class Robot extends CommandRobot {
             .negate()
             .scale(() -> speedMultiplier)
             .clamp(1.0)
-            .deadband(DEADBAND, 1.0)
+            .deadband(() -> DEADBAND, 1.0)
             .signedPow(2.0)
             .scale(TELEOP_ANGULAR_SPEED.in(RadiansPerSecond))
             .rateLimit(MAX_ANGULAR_ACCEL.in(RadiansPerSecond.per(Second)));
@@ -272,7 +272,6 @@ public class Robot extends CommandRobot {
         .a()
         .whileTrue(intake.outtake().alongWith(hopper.outtake()).alongWith(indexer.backward()));
 
-
     operator
         .a()
         .whileTrue(shooting.shootDriving(Shooting.LEFT_FEED, x, y, omega).withName("left feed"));
@@ -281,7 +280,7 @@ public class Robot extends CommandRobot {
     driver
         .leftBumper()
         .whileTrue(shooting.shootDriving(Shooting.LEFT_FEED, x, y, omega).withName("left feed"));
-        
+
     // FEED CONTINUOUS (RIGHT SIDE)
     driver
         .rightBumper()
@@ -320,7 +319,7 @@ public class Robot extends CommandRobot {
     // operator.a().whileTrue(turret.goTo(() -> 3 * Math.PI / 2));
     operator.b().whileTrue(hopper.outtake());
 
-    operator.povRight().whileTrue(slapdown.homingSequence());   
+    operator.povRight().whileTrue(slapdown.homingSequence());
 
     operator.leftTrigger().whileTrue(turret.goLeft().withName("left"));
     operator.rightTrigger().whileTrue(turret.goRight().withName("right"));

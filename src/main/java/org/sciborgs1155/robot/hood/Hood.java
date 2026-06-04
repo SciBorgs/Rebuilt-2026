@@ -254,7 +254,7 @@ public final class Hood extends SubsystemBase implements AutoCloseable {
    */
   public Command manualHood(InputStream input) {
     return goTo(input
-            .deadband(.15, 1)
+            .deadband(() -> .15, 1)
             .scale(MAX_VELOCITY.in(RadiansPerSecond))
             .scale(PERIOD.in(Seconds))
             .rateLimit(MAX_ACCEL.in(RadiansPerSecondPerSecond))

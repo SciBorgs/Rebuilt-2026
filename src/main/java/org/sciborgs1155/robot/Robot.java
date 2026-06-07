@@ -247,13 +247,8 @@ public class Robot extends CommandRobot {
 
     operator
         .rightBumper()
-        .and(operator.leftBumper())
-        .onTrue(
-            Commands.runOnce(() -> speedMultiplier = SLOW_SPEED_MULTIPLIER)
-                .alongWith(Commands.runOnce(() -> deadband = SLOW_DEADBAND)))
-        .onFalse(
-            Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER)
-                .alongWith(Commands.runOnce(() -> deadband = DEADBAND)));
+        .onTrue(Commands.runOnce(() -> speedMultiplier = SLOW_SPEED_MULTIPLIER));
+    operator.povLeft().onTrue(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
 
     // INTAKE TOGGLE
     driver.leftTrigger().whileTrue(intake.intake());

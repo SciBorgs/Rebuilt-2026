@@ -25,7 +25,6 @@ public final class VisionConstants {
 
   /** TODO: Create cameras with updated constants; be sure to add in {@link Vision#create} */
   // WARNING: EMPTY TRANSFORMS WILL CRASH SIMULATION UPON TAG DETECTION
-  // TODO: actually add camera positions, figure out if its actually 148 fov
   public static final CameraConfig FL_CAMERA = // CAMERA 0
       new CameraConfig(
           "FL cam",
@@ -45,7 +44,7 @@ public final class VisionConstants {
               Inches.of(11.265),
               Inches.of(-12.617898),
               Inches.of(9.232183),
-              yawPitchRoll(-90, -20, 180)),
+              yawPitchRoll(90, -20, 180)),
           PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
 
   public static final CameraConfig F_CAMERA = // CAMERA 4

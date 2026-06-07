@@ -61,6 +61,11 @@
       "Robot/turret/controller": "ProfiledPIDController"
     },
     "windows": {
+      "/FMSInfo": {
+        "window": {
+          "visible": true
+        }
+      },
       "/SmartDashboard/Auto Chooser": {
         "window": {
           "visible": true
@@ -86,6 +91,9 @@
   },
   "NetworkTables": {
     "transitory": {
+      "FMSInfo": {
+        "open": true
+      },
       "Robot": {
         "open": true,
         "turret": {
@@ -96,6 +104,9 @@
   },
   "NetworkTables Info": {
     "Connections": {
+      "open": true
+    },
+    "Server": {
       "open": true
     },
     "visible": true

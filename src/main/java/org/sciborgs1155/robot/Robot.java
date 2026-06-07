@@ -246,8 +246,8 @@ public class Robot extends CommandRobot {
     driver.povUp().whileTrue(drive.zeroHeading());
 
     operator
-        .y()
-        //.and(operator.b())
+        .rightBumper()
+        .and(operator.leftBumper())
         .onTrue(
             Commands.runOnce(() -> speedMultiplier = SLOW_SPEED_MULTIPLIER)
                 .alongWith(Commands.runOnce(() -> deadband = SLOW_DEADBAND)))

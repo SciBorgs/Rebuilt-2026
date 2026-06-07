@@ -34,4 +34,18 @@ public class StationaryShooting implements ShootingAlgorithm {
 
     return result.toVector();
   }
-}
+
+  public Vector<N3> calculateHoop(Translation3d displacement, Vector<N2> velocity){
+    Translation2d target = displacement.toTranslation2d();
+    double distance = target.getNorm();
+
+    Translation3d result =
+        new Translation3d(
+              DISTANCE_TO_RADS.get(distance) + SIGGYS_CONSTANT.get(),
+              new Rotation3d(
+                  0,
+                  -DISTANCE_TO_HOOD_ANGLE.get(distance).getRadians(),
+                  target.getAngle().getRadians()));
+
+      return result.toVector();
+  }}

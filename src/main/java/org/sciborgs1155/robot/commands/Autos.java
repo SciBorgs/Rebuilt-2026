@@ -82,7 +82,7 @@ public final class Autos {
         shooting
             .shootNoDrive(Shooting.HUB_TARGET)
             .withTimeout(
-                3)
+                3).andThen(slapdown.extend()).until(() -> slapdown.atGoal()).andThen(slapdown.retract())
             .asProxy());
     NamedCommands.registerCommand("intake", intake.intake());
     NamedCommands.registerCommand("deploy", slapdown.extend());

@@ -88,6 +88,9 @@
     "transitory": {
       "Robot": {
         "open": true,
+        "slapdown": {
+          "open": true
+        },
         "turret": {
           "open": true
         }

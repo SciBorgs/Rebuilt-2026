@@ -138,6 +138,11 @@ public class Shooting {
                 omega.scale(DriveConstants.SHOOTING_ANGULAR_SPEED)));
   }
 
+  /**
+   * Shoots the ball at a target.
+   *
+   * @return a command that shoots at the hub
+   */
   public Command shootNoDrive(Translation2d target) {
     return Commands.waitUntil(
             () ->

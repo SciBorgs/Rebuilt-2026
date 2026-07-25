@@ -178,7 +178,9 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * @return
+   * A slower squeeze.
+   *
+   * @return A command for a slower squeeze.
    */
   public Command slowSqueeze() {
     return run(() -> updateSlow(MAX_ANGLE.in(Radians)));
@@ -205,6 +207,7 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
   //           extendVolts().withTimeout(SQUEEZE_EXTEND))
   //       .repeatedly().finallyDo(() -> hardware.setVoltage(0));
 
+  /** Squeeze but it's done by voltage. */
   public Command squeezeVolts() {
     return Commands.run(() -> hardware.setVoltage(SQUEEZE_VOLTS))
         .until(() -> hardware.current() > STALLING_CURRENT);
@@ -244,10 +247,12 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
     return pid.atGoal();
   }
 
+  /** Updates with normal pid. */
   public void update(double angle) {
     update(angle, pid);
   }
 
+  /** Updates with slower pid. */
   public void updateSlow(double angle) {
     update(angle, slowPID);
   }

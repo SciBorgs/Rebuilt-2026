@@ -14,6 +14,7 @@ import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.units.measure.Voltage;
 
 /** Constants used in the {@code Turret} subsystem. */
+@SuppressWarnings("PMD")
 public class TurretConstants {
   public static final Current CURRENT_LIMIT = Amps.of(30);
 

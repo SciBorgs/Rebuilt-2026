@@ -245,10 +245,11 @@ public class Robot extends CommandRobot {
 
     driver.povUp().whileTrue(drive.zeroHeading());
 
-    // driver
-    //     .x()
-    //     .onTrue(Commands.runOnce(() -> speedMultiplier = SLOW_SPEED_MULTIPLIER))
-    //     .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
+    // never gonna be slowing downnnnn!!!
+    driver
+        .b()
+        .onTrue(Commands.runOnce(() -> speedMultiplier = SLOW_SPEED_MULTIPLIER))
+        .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
 
     // INTAKE TOGGLE
     driver.leftTrigger().whileTrue(intake.intake());

@@ -12,8 +12,9 @@ public interface SlapdownIO extends AutoCloseable {
    */
   double position();
 
+  /** Returns the motor current. */
   double current();
 
-  /** Resets the position of the intake to te min angle. */
+  /** Resets the position of the intake to the min angle. */
   void resetPosition();
 }

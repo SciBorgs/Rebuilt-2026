@@ -64,6 +64,7 @@ public class TalonModule implements ModuleIO {
    * @param name The name of the module.
    * @param invertTurn Whether to invert the motor direction.
    */
+  @SuppressWarnings({"PMD.NcssCount", "PMD.ExcessiveParameterList"})
   public TalonModule(
       int drivePort,
       int turnPort,

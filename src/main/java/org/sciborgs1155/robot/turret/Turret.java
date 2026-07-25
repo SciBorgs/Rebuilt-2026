@@ -254,11 +254,12 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
    * @param double The position setpoint in radians.
    */
   public void update(double positionSetpoint) {
-    positionSetpoint = wrapAngle(positionSetpoint, MIN_ANGLE.in(Radians));
+    double positionSetpointWrapped = wrapAngle(positionSetpoint, MIN_ANGLE.in(Radians));
     double pos = position();
     double pidVolts =
         controller.calculate(
-            pos, MathUtil.clamp(positionSetpoint, MIN_ANGLE.in(Radians), MAX_ANGLE.in(Radians)));
+            pos,
+            MathUtil.clamp(positionSetpointWrapped, MIN_ANGLE.in(Radians), MAX_ANGLE.in(Radians)));
     double ffdVolts = feedforward.calculate(controller.getSetpoint().velocity);
 
     double voltage = pidVolts + ffdVolts;

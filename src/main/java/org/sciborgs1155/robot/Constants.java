@@ -109,6 +109,7 @@ public final class Constants {
 
     private ShootingData() {}
 
+    /** command that changes siggy's constant */
     public static Command changeSC(double delta) {
       return Commands.runOnce(() -> SIGGYS_CONSTANT.set(SIGGYS_CONSTANT.get() + delta));
     }
@@ -153,12 +154,11 @@ public final class Constants {
     }
   }
 
+  /** adds data for shooting into the hoop */
   public static void putHoop(double dist, double degIncline, double speed) {
     Rotation2d hoodAngle = Rotation2d.fromDegrees(degIncline);
     DISTANCE_TO_HOOD_HOOP.put(dist, hoodAngle);
     DISTANCE_TO_RADS_HOOP.put(dist, speed);
-
-    double velocity = dist;
   }
 
   static {

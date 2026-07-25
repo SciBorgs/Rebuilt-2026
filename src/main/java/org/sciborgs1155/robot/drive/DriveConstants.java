@@ -186,7 +186,7 @@ public final class DriveConstants {
           List.of(FRONT_LEFT_FF, FRONT_RIGHT_FF, REAR_LEFT_FF, REAR_RIGHT_FF);
     }
 
-    public static final class SIM_FF {
+    public static final class SimFF {
       public static final double S = 0.30817;
       public static final double V = 0.55;
       public static final double A = 0.03;

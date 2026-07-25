@@ -35,6 +35,11 @@ public class StationaryShooting implements ShootingAlgorithm {
     return result.toVector();
   }
 
+  /**
+   * Shoots the ball at a hoop.
+   *
+   * @return a command that shoots at a hoop
+   */
   public Vector<N3> calculateHoop(Translation3d displacement, Vector<N2> velocity) {
     Translation2d target = displacement.toTranslation2d();
     double distance = target.getNorm();

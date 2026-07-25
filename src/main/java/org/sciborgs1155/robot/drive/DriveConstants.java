@@ -147,13 +147,13 @@ public final class DriveConstants {
       public static final List<FFConstants> FF_CONSTANTS =
           List.of(FRONT_LEFT_FF, FRONT_RIGHT_FF, REAR_LEFT_FF, REAR_RIGHT_FF);
 
+      public static final PIDConstants SIM = new PIDConstants(3.2, 0.0, 0.0);
+
       public static final class PID {
         public static final double P = 1.0;
         public static final double I = 0.0;
         public static final double D = 0.0;
       }
-
-      public static final PIDConstants SIM = new PIDConstants(3.2, 0.0, 0.0);
     }
 
     public static final class Turning {

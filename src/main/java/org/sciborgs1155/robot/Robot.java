@@ -1,25 +1,19 @@
 package org.sciborgs1155.robot;
 
-import static edu.wpi.first.units.Units.MetersPerSecond;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.Second;
-import static edu.wpi.first.units.Units.Seconds;
+import static edu.wpi.first.units.Units.*;
 import static edu.wpi.first.wpilibj2.command.button.RobotModeTriggers.autonomous;
 import static edu.wpi.first.wpilibj2.command.button.RobotModeTriggers.disabled;
 import static edu.wpi.first.wpilibj2.command.button.RobotModeTriggers.teleop;
 import static edu.wpi.first.wpilibj2.command.button.RobotModeTriggers.test;
 import static org.sciborgs1155.lib.LoggingUtils.log;
-import static org.sciborgs1155.robot.Constants.DEADBAND;
-import static org.sciborgs1155.robot.Constants.FULL_SPEED_MULTIPLIER;
-import static org.sciborgs1155.robot.Constants.PERIOD;
-import static org.sciborgs1155.robot.Constants.ROBOT_TYPE;
-import static org.sciborgs1155.robot.Constants.SLOW_SPEED_MULTIPLIER;
-import static org.sciborgs1155.robot.Constants.TUNING;
+import static org.sciborgs1155.robot.Constants.*;
 import static org.sciborgs1155.robot.drive.DriveConstants.MAX_ANGULAR_ACCEL;
 import static org.sciborgs1155.robot.drive.DriveConstants.MAX_SPEED;
 import static org.sciborgs1155.robot.drive.DriveConstants.TELEOP_ANGULAR_SPEED;
+import static org.sciborgs1155.robot.shooter.ShooterConstants.CENTER_TO_SHOOTER;
 
 import com.ctre.phoenix6.SignalLogger;
+import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
@@ -32,24 +26,35 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import java.util.Arrays;
-import java.util.Set;
 import org.littletonrobotics.urcl.URCL;
 import org.sciborgs1155.lib.CommandRobot;
 import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.ShiftTracker;
-import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.lib.Tracer;
+import org.sciborgs1155.robot.Constants.ShootingData;
 import org.sciborgs1155.robot.Ports.OI;
+import org.sciborgs1155.robot.climb.Climb;
 import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
+import org.sciborgs1155.robot.commands.Shooting;
+import org.sciborgs1155.robot.commands.shooting.FuelVisualizer;
+import org.sciborgs1155.robot.commands.shooting.ProjectileVisualizer;
+import org.sciborgs1155.robot.commands.shooting.ShootingAlgorithm;
 import org.sciborgs1155.robot.drive.Drive;
+import org.sciborgs1155.robot.drive.DriveConstants;
 import org.sciborgs1155.robot.hood.Hood;
+import org.sciborgs1155.robot.hopper.Hopper;
+import org.sciborgs1155.robot.indexer.Indexer;
+import org.sciborgs1155.robot.intake.Intake;
+import org.sciborgs1155.robot.led.LEDs;
 import org.sciborgs1155.robot.shooter.Shooter;
+import org.sciborgs1155.robot.shooter.ShooterConstants;
 import org.sciborgs1155.robot.slapdown.Slapdown;
 import org.sciborgs1155.robot.turret.Turret;
 import org.sciborgs1155.robot.vision.Vision;
@@ -66,29 +71,48 @@ public class Robot extends CommandRobot {
   private final CommandXboxController operator = new CommandXboxController(OI.OPERATOR);
   private final CommandXboxController driver = new CommandXboxController(OI.DRIVER);
 
-  private final PowerDistribution pdh = new PowerDistribution();
+  @NotLogged private final PowerDistribution pdh = new PowerDistribution();
 
   // SUBSYSTEMS
   private final Drive drive = Drive.create();
-  private final Hood hood = Hood.create();
   private final Vision vision = Vision.create();
-  private final Shooter shooter = Shooter.create();
+  private final Intake intake = Intake.create();
   private final Turret turret = Turret.create();
+  private final Hood hood = Hood.create();
+  private final Shooter shooter = Shooter.create();
+  private final Indexer indexer = Indexer.create();
+  private final Hopper hopper = Hopper.create();
+  private final Slapdown slapdown = Slapdown.create();
+  private final Climb climb = Climb.none();
+  private final LEDs leds = LEDs.create();
 
   // COMMANDS
   private final Alignment align = new Alignment(drive);
 
-  @NotLogged private final SendableChooser<Command> autos = Autos.configureAutos(drive);
+  @NotLogged
+  private final ProjectileVisualizer fuelVisualizer =
+      isReal()
+          ? null
+          : new FuelVisualizer(
+                  ShootingAlgorithm.toShotVelocitySupplier(
+                      () -> shooter.velocity() * ShooterConstants.RADIUS.in(Meters),
+                      () -> Math.PI / 2 - hood.angle(),
+                      () -> turret.position(),
+                      drive::pose3d),
+                  () -> drive.pose3d().plus(CENTER_TO_SHOOTER),
+                  drive::fieldRelativeChassisSpeeds)
+              .configPhysics(true, true, false, false)
+              .configGeneration(.5, 80, 60)
+              .config(true, true);
+
+  private final Shooting shooting =
+      new Shooting(shooter, turret, hood, drive, hopper, indexer, slapdown, fuelVisualizer);
+
+  @NotLogged
+  private final SendableChooser<Command> autos =
+      Autos.configureAutos(drive, intake, slapdown, shooting, climb, align);
 
   @Logged private double speedMultiplier = FULL_SPEED_MULTIPLIER;
-
-  @Logged
-  @SuppressWarnings("PMD.TooFewBranchesForSwitch") // will be more values in the future
-  private final Slapdown slapdown =
-      switch (ROBOT_TYPE) {
-        case FULL -> Slapdown.create();
-        default -> Slapdown.none();
-      };
 
   /** The robot contains subsystems, OI devices, and commands. */
   public Robot() {
@@ -116,7 +140,7 @@ public class Robot extends CommandRobot {
     addPeriodic(FaultLogger::update, 2);
     Epilogue.bind(this);
 
-    FaultLogger.register(pdh);
+    // FaultLogger.register(pdh);
     SmartDashboard.putData("Auto Chooser", autos);
 
     if (TUNING) {
@@ -155,7 +179,10 @@ public class Robot extends CommandRobot {
       pdh.setSwitchableChannel(true);
     } else {
       DriverStation.silenceJoystickConnectionWarning(true);
-      addPeriodic(() -> vision.simulationPeriodic(drive.pose()), PERIOD.in(Seconds));
+      addPeriodic(fuelVisualizer::updateLogging, PERIOD);
+      addPeriodic(fuelVisualizer::updateLaunchSimulation, ProjectileVisualizer.LAUNCH_PERIOD);
+      addPeriodic(
+          fuelVisualizer::updateTrajectorySimulation, ProjectileVisualizer.TRAJECTORY_PERIOD);
     }
   }
 
@@ -176,7 +203,8 @@ public class Robot extends CommandRobot {
             .deadband(DEADBAND, 1.0)
             .signedPow(2.0)
             .log("/Robot/processed joystick")
-            .scale(MAX_SPEED.in(MetersPerSecond));
+            .scale(MAX_SPEED.in(MetersPerSecond))
+            .rateLimit(DriveConstants.MAX_ACCEL.in(MetersPerSecondPerSecond));
 
     InputStream theta = InputStream.atan(rawX, rawY);
 
@@ -209,18 +237,127 @@ public class Robot extends CommandRobot {
       disabled().onTrue(Commands.runOnce(() -> SignalLogger.stop()));
     }
 
-    autonomous().whileTrue(Commands.defer(autos::getSelected, Set.of(drive)).asProxy());
+    autonomous()
+        .whileTrue(
+            Commands.deferredProxy(autos::getSelected).asProxy()); // .alongWith(leds.autos()));
 
     test().whileTrue(systemsCheck());
 
-    driver.b().whileTrue(drive.zeroHeading());
+    driver.povUp().whileTrue(drive.zeroHeading());
+
+    // never gonna be slowing downnnnn!!!
     driver
-        .leftBumper()
-        .or(driver.rightBumper())
+        .b()
         .onTrue(Commands.runOnce(() -> speedMultiplier = SLOW_SPEED_MULTIPLIER))
         .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
 
-    // TODO: Add any additional bindings.
+    // INTAKE TOGGLE
+    driver.leftTrigger().whileTrue(intake.intake());
+
+    driver
+        .x()
+        .or(driver.povDown())
+        // .or(operator.povDown())
+        .whileTrue(slapdown.squeeze())
+        .onFalse(slapdown.extend()); // jank jank jank
+
+    driver
+        .povRight()
+        // .or(operator.povRight())
+        .whileTrue(slapdown.retract())
+        .onFalse(slapdown.extend()); // jank jank jank
+
+    // driver.povLeft().or(operator.povLeft()).whileTrue(slapdown.extend());
+
+    // OUTTAKE THE INTAKE
+    driver
+        .a()
+        .whileTrue(intake.outtake().alongWith(hopper.outtake()).alongWith(indexer.backward()));
+
+    operator
+        .a()
+        .whileTrue(shooting.shootDriving(Shooting.LEFT_FEED, x, y, omega).withName("left feed"));
+
+    // FEED CONTINUOUS (LEFT SIDE)
+    driver
+        .leftBumper()
+        .whileTrue(shooting.shootDriving(Shooting.LEFT_FEED, x, y, omega).withName("left feed"));
+
+    // FEED CONTINUOUS (RIGHT SIDE)
+    driver
+        .rightBumper()
+        .whileTrue(shooting.shootDriving(Shooting.RIGHT_FEED, x, y, omega).withName("right feed"));
+
+    // SCORE CONTINUOUS
+    driver
+        .rightTrigger()
+        .whileTrue(shooting.shootDriving(Shooting.HUB_TARGET, x, y, omega).withName("HUB"));
+
+    // SCORING FALL BACK (FIXED POSITION)
+    driver
+        .y()
+        .whileTrue(
+            hopper
+                .intake()
+                .alongWith(indexer.forward().alongWith(shooter.runShooter(150)))
+                .withName("fallback"));
+
+    // driver.b().whileTrue(slapdown.squeezeVolts()).onFalse(slapdown.extend());
+
+    // CLIMB
+    // operator
+    //     .y()
+    //     .whileTrue(climb.extend())
+    //     .onFalse(climb.retract());
+
+    operator.x().whileTrue(shooting.shootWithTestData().withName("test data"));
+
+    operator
+        .rightBumper()
+        .onTrue(Commands.waitSeconds(3).andThen(NamedCommands.getCommand("shootpreload")));
+    operator
+        .leftBumper()
+        .whileTrue(intake.intake().alongWith(indexer.forward()).alongWith(hopper.intake()));
+
+    operator.y().whileTrue(hopper.intake());
+
+    // operator.a().whileTrue(turret.goTo(() -> 3 * Math.PI / 2));
+    operator.b().whileTrue(hopper.outtake());
+
+    operator.povRight().whileTrue(slapdown.homingSequence());
+
+    operator.leftTrigger().whileTrue(turret.goLeft().withName("left"));
+    operator.rightTrigger().whileTrue(turret.goRight().withName("right"));
+
+    operator.povUp().onTrue(ShootingData.changeSC(1));
+    operator.povDown().onTrue(ShootingData.changeSC(-1));
+
+    // operator.povLeft().whileTrue(slapdown.homingSequence());
+
+    shooting
+        .crossingAlliance()
+        .whileTrue(
+            shooting
+                .hideAway()
+                .withInterruptBehavior(InterruptionBehavior.kCancelIncoming)
+                .withName("crossing"));
+
+    // DEBUG
+    // TODO: various operator debug stuff (turret, hood, shooter)
+
+    // operator
+    //     .a()
+    //     .whileTrue(turret.goTo(() ->
+    // TurretConstants.MIN_ANGLE.plus(Degrees.of(20)).in(Radians)));
+    // operator.y().whileTrue(turret.goTo(() -> 0));
+    // operator.leftTrigger().whileTrue(hood.goTo(Degrees.of(45)).withName("goto 45"));
+    // operator.rightTrigger().whileTrue(hood.goTo(Degrees.of(25)).withName("goto 25"));
+    driver.povLeft().or(operator.povLeft()).whileTrue(hood.homingSequence());
+
+    // operator
+    //     .leftBumper()
+    //     .or(operator.rightBumper())
+    //     .whileTrue(turret.manualTurret(InputStream.of(() -> operator.getLeftX())));
   }
 
   /**
@@ -250,7 +387,14 @@ public class Robot extends CommandRobot {
    * @return A command that tests all mechanisms.
    */
   public Command systemsCheck() {
-    return Test.toCommand(drive.systemsCheck()).withName("Test Mechanisms");
+    return Commands.sequence(
+            // drive.systemsCheck(),
+            turret.systemsCheck().withTimeout(6),
+            hood.systemsCheck().withTimeout(6),
+            shooter.systemsCheck().withTimeout(6),
+            slapdown.systemsCheck().withTimeout(1),
+            intake.intake().withTimeout(3))
+        .withName("Test Mechansims");
   }
 
   @Override

@@ -1,0 +1,84 @@
+{
+ "name":"Autos-Master",
+ "version":2,
+ "type":"Swerve",
+ "variables":{
+  "expressions":{},
+  "poses":{}
+ },
+ "config":{
+  "frontLeft":{
+   "x":{
+    "exp":"11 in",
+    "val":0.2794
+   },
+   "y":{
+    "exp":"11 in",
+    "val":0.2794
+   }
+  },
+  "backLeft":{
+   "x":{
+    "exp":"-11 in",
+    "val":-0.2794
+   },
+   "y":{
+    "exp":"11 in",
+    "val":0.2794
+   }
+  },
+  "mass":{
+   "exp":"130.37 lbs",
+   "val":59.13483727690001
+  },
+  "inertia":{
+   "exp":"6.9 kg m ^ 2",
+   "val":6.9
+  },
+  "gearing":{
+   "exp":"7.67",
+   "val":7.67
+  },
+  "radius":{
+   "exp":"1.75 in",
+   "val":0.04445
+  },
+  "vmax":{
+   "exp":"6000 RPM",
+   "val":628.3185307179587
+  },
+  "tmax":{
+   "exp":"7.09 N * m",
+   "val":7.09
+  },
+  "cof":{
+   "exp":"1",
+   "val":1.0
+  },
+  "bumper":{
+   "front":{
+    "exp":"16.7 in",
+    "val":0.42417999999999995
+   },
+   "side":{
+    "exp":"16.9 in",
+    "val":0.4292599999999999
+   },
+   "back":{
+    "exp":"16.7 in",
+    "val":0.42417999999999995
+   }
+  },
+  "differentialTrackWidth":{
+   "exp":"22 in",
+   "val":0.5588
+  }
+ },
+ "generationFeatures":[],
+ "codegen":{
+  "root":null,
+  "genVars":true,
+  "genTrajData":true,
+  "useChoreoLib":true
+ }
+}

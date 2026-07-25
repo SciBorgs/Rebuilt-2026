@@ -1,6 +1,7 @@
 package org.sciborgs1155.robot.commands;
 
-import static org.sciborgs1155.robot.Constants.Robot.*;
+import static org.sciborgs1155.robot.Constants.Robot.MASS;
+import static org.sciborgs1155.robot.Constants.Robot.MOI;
 import static org.sciborgs1155.robot.Constants.alliance;
 import static org.sciborgs1155.robot.drive.DriveConstants.MAX_SPEED;
 import static org.sciborgs1155.robot.drive.DriveConstants.MODULE_OFFSET;
@@ -8,6 +9,7 @@ import static org.sciborgs1155.robot.drive.DriveConstants.WHEEL_COF;
 import static org.sciborgs1155.robot.drive.DriveConstants.WHEEL_RADIUS;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
@@ -18,11 +20,15 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import org.sciborgs1155.robot.Constants;
+import org.sciborgs1155.robot.climb.Climb;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.drive.DriveConstants.ControlMode;
 import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Driving;
 import org.sciborgs1155.robot.drive.DriveConstants.Rotation;
 import org.sciborgs1155.robot.drive.DriveConstants.Translation;
+import org.sciborgs1155.robot.intake.Intake;
+import org.sciborgs1155.robot.slapdown.Slapdown;
 
 public final class Autos {
 
@@ -36,12 +42,18 @@ public final class Autos {
    * @return A SendableChooser for selecting autonomous commands.
    */
   @NotLogged
-  public static SendableChooser<Command> configureAutos(Drive drive) {
+  public static SendableChooser<Command> configureAutos(
+      Drive drive,
+      Intake intake,
+      Slapdown slapdown,
+      Shooting shooting,
+      Climb climb,
+      Alignment alignment) {
     AutoBuilder.configure(
         drive::pose,
         drive::resetOdometry,
         drive::robotRelativeChassisSpeeds,
-        (s, g) -> drive.setChassisSpeeds(s, ControlMode.CLOSED_LOOP_VELOCITY),
+        (s, g) -> drive.setChassisSpeeds(s, ControlMode.OPEN_LOOP_VELOCITY),
         new PPHolonomicDriveController(
             new PIDConstants(Translation.P, Translation.I, Translation.D),
             new PIDConstants(Rotation.P, Rotation.I, Rotation.D)),
@@ -56,11 +68,28 @@ public final class Autos {
                 Driving.STATOR_LIMIT,
                 1),
             MODULE_OFFSET),
-        () -> alliance() == Alliance.Red,
+        () -> alliance() != Alliance.Blue,
         drive);
 
-    PPHolonomicDriveController.overrideRotationFeedback(() -> drive.heading().getRadians());
-
+    NamedCommands.registerCommand(
+        "shoot", shooting.shootNoDrive(Shooting.HUB_TARGET).withTimeout(7).asProxy());
+    NamedCommands.registerCommand(
+        "shootpreload",
+        shooting
+            .shootNoDrive(Shooting.HUB_TARGET)
+            .withTimeout(3)
+            .andThen(slapdown.extend())
+            .until(() -> slapdown.atGoal())
+            .andThen(slapdown.retract())
+            .asProxy());
+    NamedCommands.registerCommand("intake", intake.intake());
+    NamedCommands.registerCommand("deploy", slapdown.extend());
+    NamedCommands.registerCommand(
+        "climb",
+        alignment
+            .alignTo(() -> Constants.CLIMB_POSE)
+            .andThen(climb.extend())
+            .andThen(climb.retract()));
     SendableChooser<Command> chooser = AutoBuilder.buildAutoChooser();
     chooser.addOption("no auto", Commands.none());
     return chooser;

@@ -24,7 +24,7 @@ public class SimModule implements ModuleIO {
           DCMotor.getKrakenX60(1));
 
   private final PIDController driveFeedback =
-      new PIDController(Driving.PID.P, Driving.PID.I, Driving.PID.D);
+      new PIDController(Driving.SIM.kP(), Driving.SIM.kI(), Driving.SIM.kD());
 
   private final SimpleMotorFeedforward driveFF =
       new SimpleMotorFeedforward(
@@ -32,10 +32,12 @@ public class SimModule implements ModuleIO {
 
   private final DCMotorSim turn =
       new DCMotorSim(
-          LinearSystemId.createDCMotorSystem(Turning.FF.V, Turning.FF.A), DCMotor.getNeo550(1));
+          LinearSystemId.createDCMotorSystem(Turning.SIM.kV(), Turning.SIM.kA()),
+          DCMotor.getKrakenX60(1));
 
   private final PIDController turnFeedback =
-      new PIDController(Turning.PID.P, Turning.PID.I, Turning.PID.D);
+      new PIDController(
+          Turning.FRONT_LEFT_PID.kP(), Turning.FRONT_LEFT_PID.kI(), Turning.FRONT_LEFT_PID.kD());
 
   private SwerveModuleState setpoint = new SwerveModuleState();
 
@@ -134,12 +136,12 @@ public class SimModule implements ModuleIO {
   }
 
   @Override
-  public void updateInputs(Rotation2d angle, double voltage) {
-    setpoint.angle = angle;
+  public void updateInputsDrive(SwerveModuleState voltage) {
+    setpoint.angle = voltage.angle;
 
     double turnVolts = turnFeedback.calculate(rotation().getRadians(), setpoint.angle.getRadians());
 
-    setDriveVoltage(voltage);
+    setDriveVoltage(voltage.speedMetersPerSecond);
     setTurnVoltage(turnVolts);
   }
 
@@ -160,4 +162,7 @@ public class SimModule implements ModuleIO {
 
   @Override
   public void close() {}
+
+  @Override
+  public void updateInputsTurn(SwerveModuleState voltage) {}
 }

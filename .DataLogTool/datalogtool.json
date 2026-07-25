@@ -1,1 +1,7 @@
-{}
+{
+  "download": {
+    "deleteAfter": false,
+    "localDir": "C:\\Users\\sciborgs\\Downloads",
+    "serverTeam": "1155"
+  }
+}

@@ -1,5 +1,8 @@
 package org.sciborgs1155.robot.turret;
 
+import static edu.wpi.first.units.Units.Degrees;
+import static org.sciborgs1155.robot.turret.TurretConstants.MAX_ANGLE;
+import static org.sciborgs1155.robot.turret.TurretConstants.MIN_ANGLE;
 import static org.sciborgs1155.robot.turret.TurretConstants.VISUALIZER_HEIGHT;
 import static org.sciborgs1155.robot.turret.TurretConstants.VISUALIZER_WIDTH;
 
@@ -38,9 +41,9 @@ public class TurretVisualizer {
 
   /** Visualizes the {@code Turret} subsystem using {@code Mechanism2d}. */
   public TurretVisualizer(int width, int height) {
-    SmartDashboard.putData("TurretVisualizer", mechanism);
-    blindspotA.setAngle(175);
-    blindspotB.setAngle(-175);
+    SmartDashboard.putData("Robot/turret/TurretVisualizer", mechanism);
+    blindspotA.setAngle(MAX_ANGLE.in(Degrees));
+    blindspotB.setAngle(MIN_ANGLE.in(Degrees));
   }
 
   /**

@@ -34,5 +34,14 @@ public class NoGyro implements GyroIO {
   }
 
   @Override
+  public double alpha() {
+    // TODO Auto-generated method stub
+    return 0;
+  }
+
+  @Override
   public void reset(Rotation2d heading) {}
+
+  @Override
+  public void periodic() {}
 }

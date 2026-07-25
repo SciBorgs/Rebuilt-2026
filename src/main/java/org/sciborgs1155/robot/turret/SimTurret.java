@@ -3,16 +3,14 @@ package org.sciborgs1155.robot.turret;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Seconds;
 import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.turret.TurretConstants.*;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
-import yams.units.EasyCRT;
-import yams.units.EasyCRTConfig;
 
 /** Simulated hardware interface for the {@code Turret} subsystem. */
 public class SimTurret implements TurretIO {
@@ -27,20 +25,6 @@ public class SimTurret implements TurretIO {
           MAX_ANGLE.in(Radians), // MAXIMUM ANGLE
           false, // GRAVITY DISBLAED
           START_ANGLE.in(Radians)); // STARTING ANGLE
-
-  /** Cached last valid CRT solution */
-  private double lastGoodPositionRad = START_ANGLE.in(Radians);
-
-  /** EasyCRT solver */
-  private final EasyCRTConfig crtConfig =
-      new EasyCRTConfig(() -> Rotations.of(encoderA()), () -> Rotations.of(encoderB()))
-          .withEncoderRatios(
-              (double) TURRET_GEARING / ENCODER_A_GEARING,
-              (double) TURRET_GEARING / ENCODER_B_GEARING)
-          .withMechanismRange(MIN_ANGLE, MAX_ANGLE)
-          .withMatchTolerance(CRT_MATCH_TOLERANCE);
-
-  private final EasyCRT solverCRT = new EasyCRT(crtConfig);
 
   /** True turret angle in radians (mechanism space). */
   public double trueAngleRad() {
@@ -70,22 +54,25 @@ public class SimTurret implements TurretIO {
   }
 
   @Override
-  public double position() {
-    return solverCRT
-        .getAngleOptional()
-        .map(
-            a -> {
-              lastGoodPositionRad = a.in(Radians);
-              return lastGoodPositionRad;
-            })
-        .orElse(lastGoodPositionRad);
-  }
-
-  @Override
   public double velocity() {
     return simulation.getVelocityRadPerSec();
   }
 
   @Override
+  public double voltage() {
+    return simulation.getInput(0);
+  }
+
+  @Override
   public void close() throws Exception {}
+
+  @Override
+  public void setPosition(Angle angle) {
+    simulation.setState(angle.in(Radians), 0);
+  }
+
+  @Override
+  public Angle getPosition() {
+    return Radians.of(simulation.getAngleRads());
+  }
 }

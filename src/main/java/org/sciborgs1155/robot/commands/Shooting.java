@@ -12,7 +12,6 @@ import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -65,8 +64,7 @@ public class Shooting {
       FieldConstants.Hub.TOP_CENTER_POINT.toTranslation2d();
 
   /** Field-relative position of the hub target. */
-  public static final Translation2d HOOP =
-      FieldConstants.Hub.TOP_CENTER_POINT.toTranslation2d();
+  public static final Translation2d HOOP = FieldConstants.Hub.TOP_CENTER_POINT.toTranslation2d();
 
   public static final Translation2d LEFT_FEED = FieldConstants.Hub.LEFT_FEED.toTranslation2d();
   public static final Translation2d RIGHT_FEED = FieldConstants.Hub.RIGHT_FEED.toTranslation2d();
@@ -280,9 +278,9 @@ public class Shooting {
     return new ShooterParams(rads, hoodAngle, turretAngle);
   }
 
-//   public ShooterParams shootHoop(double rads){
-//    return calculateShot(rads, )
-// }
+  //   public ShooterParams shootHoop(double rads){
+  //    return calculateShot(rads, )
+  // }
 
   /**
    * @return The last target of the shooting.

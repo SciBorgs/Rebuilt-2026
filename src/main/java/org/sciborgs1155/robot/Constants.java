@@ -5,6 +5,8 @@ import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Pounds;
 import static edu.wpi.first.units.Units.Seconds;
+import static org.sciborgs1155.robot.Constants.ShootingData.DISTANCE_TO_HOOD_HOOP;
+import static org.sciborgs1155.robot.Constants.ShootingData.DISTANCE_TO_RADS_HOOP;
 
 import com.ctre.phoenix6.CANBus;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -23,10 +25,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-
-import static org.sciborgs1155.robot.Constants.ShootingData.DISTANCE_TO_HOOD_HOOP;
-import static org.sciborgs1155.robot.Constants.ShootingData.DISTANCE_TO_RADS_HOOP;
-
 import org.sciborgs1155.lib.Tuning;
 import org.sciborgs1155.robot.drive.DriveConstants;
 
@@ -103,9 +101,11 @@ public final class Constants {
         new InterpolatingDoubleTreeMap();
     public static final InterpolatingTreeMap<Double, Rotation2d> VELOCITY_TO_HOOD_ANGLE =
         new InterpolatingTreeMap<>(InverseInterpolator.forDouble(), Rotation2d::interpolate);
-    
-    public static final InterpolatingDoubleTreeMap DISTANCE_TO_RADS_HOOP = new InterpolatingDoubleTreeMap();
-    public static final InterpolatingTreeMap DISTANCE_TO_HOOD_HOOP = new InterpolatingTreeMap<>(InverseInterpolator.forDouble(), Rotation2d::interpolate);
+
+    public static final InterpolatingDoubleTreeMap DISTANCE_TO_RADS_HOOP =
+        new InterpolatingDoubleTreeMap();
+    public static final InterpolatingTreeMap DISTANCE_TO_HOOD_HOOP =
+        new InterpolatingTreeMap<>(InverseInterpolator.forDouble(), Rotation2d::interpolate);
 
     private ShootingData() {}
 
@@ -154,33 +154,32 @@ public final class Constants {
   }
 
   public static void putHoop(double dist, double degIncline, double speed) {
-      Rotation2d hoodAngle = Rotation2d.fromDegrees(degIncline);
-      DISTANCE_TO_HOOD_HOOP.put(dist, hoodAngle);
-      DISTANCE_TO_RADS_HOOP.put(dist, speed);
+    Rotation2d hoodAngle = Rotation2d.fromDegrees(degIncline);
+    DISTANCE_TO_HOOD_HOOP.put(dist, hoodAngle);
+    DISTANCE_TO_RADS_HOOP.put(dist, speed);
 
-      double velocity = dist;
-    }
+    double velocity = dist;
+  }
 
-    static {
-      putHoop(3.372, 15, 190);
-      putHoop(4.293, 25, 168);
-      // put(2.555, 15, 147, 1.0);
-      // put(3.022, 26, 135, 1.0);
-      // put(3.309, 28, 138, 0.98);
-      // put(4.079, 30, 147, 1.34);
-      // put(4.766, 34, 166, 1.06);
+  static {
+    putHoop(3.372, 15, 190);
+    putHoop(4.293, 25, 168);
+    // put(2.555, 15, 147, 1.0);
+    // put(3.022, 26, 135, 1.0);
+    // put(3.309, 28, 138, 0.98);
+    // put(4.079, 30, 147, 1.34);
+    // put(4.766, 34, 166, 1.06);
 
-      // put(2.33, 26, 166.7, 0.96);
-      // put(3.4, 30, 195, 1.05);
+    // put(2.33, 26, 166.7, 0.96);
+    // put(3.4, 30, 195, 1.05);
 
-      // put(1.37, 15, 135, 0.89);
-      // put(1.873, 18, 148, 1.08);
-      // put(2.518, 27, 130, 0.95);
-      // put(3.605, 30, 153, 1.09);
-      // put(4.58, 34, 173, 1.09);
-      // put(5.67, 38, 195, 1.25);
-    }
-  
+    // put(1.37, 15, 135, 0.89);
+    // put(1.873, 18, 148, 1.08);
+    // put(2.518, 27, 130, 0.95);
+    // put(3.605, 30, 153, 1.09);
+    // put(4.58, 34, 173, 1.09);
+    // put(5.67, 38, 195, 1.25);
+  }
 
   // TODO: UPDATE ALL OF THESE VALUES.
   /** Describes physical properites of the robot. */

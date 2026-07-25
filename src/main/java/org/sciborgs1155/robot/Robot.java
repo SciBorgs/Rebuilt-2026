@@ -14,7 +14,6 @@ import static org.sciborgs1155.robot.shooter.ShooterConstants.CENTER_TO_SHOOTER;
 
 import com.ctre.phoenix6.SignalLogger;
 import com.pathplanner.lib.auto.NamedCommands;
-
 import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
@@ -185,41 +184,41 @@ public class Robot extends CommandRobot {
       addPeriodic(
           fuelVisualizer::updateTrajectorySimulation, ProjectileVisualizer.TRAJECTORY_PERIOD);
     }
-}
+  }
 
-/** Configures trigger -> command bindings. */
-private void configureBindings() {
+  /** Configures trigger -> command bindings. */
+  private void configureBindings() {
     teleop().onTrue(ShiftTracker.startTracking());
-    
+
     // x and y are switched: we use joystick Y axis to control field x motion
     InputStream rawX = InputStream.of(driver::getLeftY).log("/Robot/raw x").negate();
     InputStream rawY = InputStream.of(driver::getLeftX).log("/Robot/raw y").negate();
-    
+
     // Apply speed multiplier, deadband, square inputs, and scale translation to max speed
     InputStream r =
-    InputStream.hypot(rawX, rawY)
-    .log("/Robot/raw joystick")
-    .scale(() -> speedMultiplier)
-    .clamp(1.0)
-    .deadband(DEADBAND, 1.0)
-    .signedPow(2.0)
-    .log("/Robot/processed joystick")
-    .scale(MAX_SPEED.in(MetersPerSecond))
-    .rateLimit(DriveConstants.MAX_ACCEL.in(MetersPerSecondPerSecond));
-    
+        InputStream.hypot(rawX, rawY)
+            .log("/Robot/raw joystick")
+            .scale(() -> speedMultiplier)
+            .clamp(1.0)
+            .deadband(DEADBAND, 1.0)
+            .signedPow(2.0)
+            .log("/Robot/processed joystick")
+            .scale(MAX_SPEED.in(MetersPerSecond))
+            .rateLimit(DriveConstants.MAX_ACCEL.in(MetersPerSecondPerSecond));
+
     InputStream theta = InputStream.atan(rawX, rawY);
-    
+
     // Split x and y components of translation input
     InputStream x =
-    r.scale(theta.map(Math::cos))
-    .log("/Robot/final x"); // .rateLimit(MAX_ACCEL.in(MetersPerSecondPerSecond));
+        r.scale(theta.map(Math::cos))
+            .log("/Robot/final x"); // .rateLimit(MAX_ACCEL.in(MetersPerSecondPerSecond));
     InputStream y =
         r.scale(theta.map(Math::sin))
-        .log("/Robot/final y"); // .rateLimit(MAX_ACCEL.in(MetersPerSecondPerSecond));
-        
-        // Apply speed multiplier, deadband, square inputs, and scale rotation to max teleop speed
+            .log("/Robot/final y"); // .rateLimit(MAX_ACCEL.in(MetersPerSecondPerSecond));
+
+    // Apply speed multiplier, deadband, square inputs, and scale rotation to max teleop speed
     InputStream omega =
-    InputStream.of(driver::getRightX)
+        InputStream.of(driver::getRightX)
             .negate()
             .scale(() -> speedMultiplier)
             .clamp(1.0)
@@ -227,9 +226,8 @@ private void configureBindings() {
             .signedPow(2.0)
             .scale(TELEOP_ANGULAR_SPEED.in(RadiansPerSecond))
             .rateLimit(MAX_ANGULAR_ACCEL.in(RadiansPerSecond.per(Second)));
-            
-            drive.setDefaultCommand(drive.drive(x, y, omega).withName("joysticks"));
 
+    drive.setDefaultCommand(drive.drive(x, y, omega).withName("joysticks"));
 
     if (TUNING) {
       SignalLogger.enableAutoLogging(false);
@@ -240,61 +238,61 @@ private void configureBindings() {
     }
 
     autonomous()
-    .whileTrue(
-        Commands.deferredProxy(autos::getSelected).asProxy()); // .alongWith(leds.autos()));
-        
-        test().whileTrue(systemsCheck());
-        
-        driver.povUp().whileTrue(drive.zeroHeading());
-        
-        // driver
-        //     .x()
-        //     .onTrue(Commands.runOnce(() -> speedMultiplier = SLOW_SPEED_MULTIPLIER))
-        //     .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
-        
-        // INTAKE TOGGLE
-        driver.leftTrigger().whileTrue(intake.intake());
-        
-        driver
+        .whileTrue(
+            Commands.deferredProxy(autos::getSelected).asProxy()); // .alongWith(leds.autos()));
+
+    test().whileTrue(systemsCheck());
+
+    driver.povUp().whileTrue(drive.zeroHeading());
+
+    // driver
+    //     .x()
+    //     .onTrue(Commands.runOnce(() -> speedMultiplier = SLOW_SPEED_MULTIPLIER))
+    //     .onFalse(Commands.runOnce(() -> speedMultiplier = FULL_SPEED_MULTIPLIER));
+
+    // INTAKE TOGGLE
+    driver.leftTrigger().whileTrue(intake.intake());
+
+    driver
         .x()
         .or(driver.povDown())
         // .or(operator.povDown())
         .whileTrue(slapdown.squeeze())
         .onFalse(slapdown.extend()); // jank jank jank
-        
-        driver
+
+    driver
         .povRight()
         // .or(operator.povRight())
         .whileTrue(slapdown.retract())
         .onFalse(slapdown.extend()); // jank jank jank
-        
-        // driver.povLeft().or(operator.povLeft()).whileTrue(slapdown.extend());
-        
-        // OUTTAKE THE INTAKE
-        driver
+
+    // driver.povLeft().or(operator.povLeft()).whileTrue(slapdown.extend());
+
+    // OUTTAKE THE INTAKE
+    driver
         .a()
         .whileTrue(intake.outtake().alongWith(hopper.outtake()).alongWith(indexer.backward()));
 
-        operator
+    operator
         .a()
         .whileTrue(shooting.shootDriving(Shooting.LEFT_FEED, x, y, omega).withName("left feed"));
 
-        // FEED CONTINUOUS (LEFT SIDE)
-        driver
+    // FEED CONTINUOUS (LEFT SIDE)
+    driver
         .leftBumper()
         .whileTrue(shooting.shootDriving(Shooting.LEFT_FEED, x, y, omega).withName("left feed"));
-        
-        // FEED CONTINUOUS (RIGHT SIDE)
-        driver
+
+    // FEED CONTINUOUS (RIGHT SIDE)
+    driver
         .rightBumper()
         .whileTrue(shooting.shootDriving(Shooting.RIGHT_FEED, x, y, omega).withName("right feed"));
-        
-        // SCORE CONTINUOUS
-        driver
+
+    // SCORE CONTINUOUS
+    driver
         .rightTrigger()
         .whileTrue(shooting.shootDriving(Shooting.HUB_TARGET, x, y, omega).withName("HUB"));
-        
-        // SCORING FALL BACK (FIXED POSITION)
+
+    // SCORING FALL BACK (FIXED POSITION)
     driver
         .y()
         .whileTrue(
@@ -302,22 +300,24 @@ private void configureBindings() {
                 .intake()
                 .alongWith(indexer.forward().alongWith(shooter.runShooter(150)))
                 .withName("fallback"));
-                
+
     // driver.b().whileTrue(slapdown.squeezeVolts()).onFalse(slapdown.extend());
-    
+
     // CLIMB
     // operator
     //     .y()
     //     .whileTrue(climb.extend())
     //     .onFalse(climb.retract());
-    
+
     operator.x().whileTrue(shooting.shootWithTestData().withName("test data"));
-    
-    operator.rightBumper().onTrue(Commands.waitSeconds(3).andThen(NamedCommands.getCommand("shootpreload")));
+
     operator
-    .leftBumper()
-    .whileTrue(intake.intake().alongWith(indexer.forward()).alongWith(hopper.intake()));
-    
+        .rightBumper()
+        .onTrue(Commands.waitSeconds(3).andThen(NamedCommands.getCommand("shootpreload")));
+    operator
+        .leftBumper()
+        .whileTrue(intake.intake().alongWith(indexer.forward()).alongWith(hopper.intake()));
+
     operator.y().whileTrue(hopper.intake());
 
     // operator.a().whileTrue(turret.goTo(() -> 3 * Math.PI / 2));

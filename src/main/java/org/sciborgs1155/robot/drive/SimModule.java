@@ -14,22 +14,26 @@ import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import org.sciborgs1155.robot.Constants;
 import org.sciborgs1155.robot.drive.DriveConstants.ControlMode;
 import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Driving;
-import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.SimFF;
 import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Turning;
 
 public class SimModule implements ModuleIO {
   private final DCMotorSim drive =
-      new DCMotorSim(LinearSystemId.createDCMotorSystem(SimFF.V, SimFF.A), DCMotor.getKrakenX60(1));
+      new DCMotorSim(
+          LinearSystemId.createDCMotorSystem(
+              Driving.FRONT_LEFT_FF.kV(), Driving.FRONT_LEFT_FF.kA()),
+          DCMotor.getKrakenX60(1));
 
   private final PIDController driveFeedback =
-      new PIDController(Driving.PID.P, Driving.PID.I, Driving.PID.D);
+      new PIDController(Driving.SIM.kP(), Driving.SIM.kI(), Driving.SIM.kD());
 
   private final SimpleMotorFeedforward driveFF =
       new SimpleMotorFeedforward(
           Driving.FRONT_LEFT_FF.kS(), Driving.FRONT_LEFT_FF.kV(), Driving.FRONT_LEFT_FF.kA());
 
   private final DCMotorSim turn =
-      new DCMotorSim(LinearSystemId.createDCMotorSystem(SimFF.V, SimFF.A), DCMotor.getKrakenX60(1));
+      new DCMotorSim(
+          LinearSystemId.createDCMotorSystem(Turning.SIM.kV(), Turning.SIM.kA()),
+          DCMotor.getKrakenX60(1));
 
   private final PIDController turnFeedback =
       new PIDController(

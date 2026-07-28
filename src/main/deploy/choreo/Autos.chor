@@ -1,0 +1,84 @@
+{
+ "name":"Autos",
+ "version":2,
+ "type":"Swerve",
+ "variables":{
+  "expressions":{},
+  "poses":{}
+ },
+ "config":{
+  "frontLeft":{
+   "x":{
+    "exp":"10.369 in",
+    "val":0.26337259999999996
+   },
+   "y":{
+    "exp":"10.249 in",
+    "val":0.2603246
+   }
+  },
+  "backLeft":{
+   "x":{
+    "exp":"-10.369 in",
+    "val":-0.26337259999999996
+   },
+   "y":{
+    "exp":"10.249 in",
+    "val":0.2603246
+   }
+  },
+  "mass":{
+   "exp":"132.773 lbs",
+   "val":60.22481974201
+  },
+  "inertia":{
+   "exp":"6.9 kg m ^ 2",
+   "val":6.9
+  },
+  "gearing":{
+   "exp":"7.67",
+   "val":7.67
+  },
+  "radius":{
+   "exp":"2 in",
+   "val":0.0508
+  },
+  "vmax":{
+   "exp":"6000 RPM",
+   "val":628.3185307179587
+  },
+  "tmax":{
+   "exp":"7.09 N * m",
+   "val":7.09
+  },
+  "cof":{
+   "exp":"1",
+   "val":1.0
+  },
+  "bumper":{
+   "front":{
+    "exp":"16.75 in",
+    "val":0.42545
+   },
+   "side":{
+    "exp":"17.125 in",
+    "val":0.434975
+   },
+   "back":{
+    "exp":"16.75 in",
+    "val":0.42545
+   }
+  },
+  "differentialTrackWidth":{
+   "exp":"22 in",
+   "val":0.5588
+  }
+ },
+ "generationFeatures":[],
+ "codegen":{
+  "root":null,
+  "genVars":true,
+  "genTrajData":true,
+  "useChoreoLib":true
+ }
+}

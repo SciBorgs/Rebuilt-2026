@@ -20,7 +20,7 @@ public class SimpleMotorTest {
 
     assert motor.getAngularAcceleration().in(RadiansPerSecondPerSecond) == 0;
 
-    SimpleMotor sm = new SimpleMotor(motor::setInput, () -> {});
+    SimpleMotor sm = new SimpleMotor(motor::setInput, motor::setInputVoltage, () -> {});
     run(Commands.run(() -> motor.update(0.02)));
 
     sm.set(0.5);

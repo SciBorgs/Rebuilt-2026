@@ -1,5 +1,9 @@
 package org.sciborgs1155.robot.turret;
 
+import static edu.wpi.first.units.Units.Rotations;
+
+import edu.wpi.first.units.measure.Angle;
+
 /** Fake hardware interface for the {@code Turret} subsystem. */
 public class NoTurret implements TurretIO {
   /** Fake hardware interface for the {@code Turret} subsystem. */
@@ -9,12 +13,12 @@ public class NoTurret implements TurretIO {
   public void setVoltage(double voltage) {}
 
   @Override
-  public double position() {
+  public double velocity() {
     return 0;
   }
 
   @Override
-  public double velocity() {
+  public double voltage() {
     return 0;
   }
 
@@ -30,4 +34,12 @@ public class NoTurret implements TurretIO {
 
   @Override
   public void close() throws Exception {}
+
+  @Override
+  public void setPosition(Angle angle) {}
+
+  @Override
+  public Angle getPosition() {
+    return Rotations.zero();
+  }
 }

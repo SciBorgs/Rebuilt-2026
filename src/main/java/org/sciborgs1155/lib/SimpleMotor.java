@@ -14,6 +14,9 @@ public class SimpleMotor {
   /** Function for setting motor power. */
   private final DoubleConsumer set;
 
+  /** Function for setting voltage. */
+  private final DoubleConsumer setVoltage;
+
   /** Function for closing the motor. */
   private final Runnable close;
 
@@ -23,9 +26,10 @@ public class SimpleMotor {
    * @param set : {@link DoubleConsumer} for setting motor power.
    * @param close : {@link Runnable} interface for the motor.
    */
-  public SimpleMotor(DoubleConsumer set, Runnable close) {
+  public SimpleMotor(DoubleConsumer set, DoubleConsumer setVoltage, Runnable close) {
     this.set = set;
     this.close = close;
+    this.setVoltage = setVoltage;
   }
 
   /**
@@ -38,17 +42,22 @@ public class SimpleMotor {
     FaultLogger.register(motor);
     TalonUtils.addMotor(motor);
     motor.getConfigurator().apply(config);
-    return new SimpleMotor(motor::set, motor::close);
+    return new SimpleMotor(motor::set, motor::setVoltage, motor::close);
   }
 
   /** Returns a new {@link SimpleMotor} that does absolutely nothing. */
   public static SimpleMotor none() {
-    return new SimpleMotor(v -> {}, () -> {});
+    return new SimpleMotor(v -> {}, v -> {}, () -> {});
   }
 
   /** Passes power into the '{@link #set}' consumer specified in the constructor. */
   public void set(double power) {
     set.accept(power);
+  }
+
+  /** Sets voltage. */
+  public void setVoltage(double voltage) {
+    setVoltage.accept(voltage);
   }
 
   /** Closes the motor by running the close runnable specified in the constructor. */

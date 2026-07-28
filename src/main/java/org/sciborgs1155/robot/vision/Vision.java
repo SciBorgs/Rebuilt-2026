@@ -53,7 +53,7 @@ public class Vision {
 
   /** A factory to create new vision classes with our cameras. */
   public static Vision create() {
-    return new Vision(CAMERA_0, CAMERA_1); // , CAMERA_2, CAMERA_3, CAMERA_4, CAMERA_5);
+    return new Vision(FL_CAMERA, FR_CAMERA, F_CAMERA); // , CAMERA_2, CAMERA_3, CAMERA_4, CAMERA_5);
   }
 
   /**
@@ -180,6 +180,13 @@ public class Vision {
               change.targets.stream().filter(t -> t.poseAmbiguity < MAX_AMBIGUITY).toList();
           change.multitagResult =
               change.multitagResult.filter(r -> r.estimatedPose.ambiguity < MAX_AMBIGUITY);
+
+          // remove tags that are too far from the camera
+          // change.targets =
+          //     change.targets.stream()
+          //         .filter(t -> t.getBestCameraToTarget().getTranslation().getNorm() <
+          // MAX_DISTANCE)
+          //         .toList();
 
           estimate = updateEstimate(estimators[i], change, estimatorStrategies[i]);
 
@@ -319,7 +326,13 @@ public class Vision {
     avgWeight /= targets.size();
 
     // Decrease std devs if multiple targets are visibleX
-    if (targets.size() > 1) estStdDevs = MULTIPLE_TAG_STD_DEVS;
+    if (targets.size() > 1) {
+      if (avgDist < 10) {
+        estStdDevs = MULTIPLE_TAG_STD_DEVS;
+      } else {
+        estStdDevs = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
+      }
+    }
     // Increase std devs based on (average) distance
     if (targets.size() == 1 && avgDist > 4)
       estStdDevs = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
@@ -332,12 +345,7 @@ public class Vision {
   @Logged
   public Transform3d[] cameraTransforms() {
     return new Transform3d[] {
-      CAMERA_0.robotToCam(),
-      CAMERA_1.robotToCam(),
-      CAMERA_2.robotToCam(),
-      CAMERA_3.robotToCam(),
-      CAMERA_4.robotToCam(),
-      CAMERA_5.robotToCam()
+      FL_CAMERA.robotToCam(), FR_CAMERA.robotToCam(), F_CAMERA.robotToCam(), B_CAMERA.robotToCam(),
     };
   }
 

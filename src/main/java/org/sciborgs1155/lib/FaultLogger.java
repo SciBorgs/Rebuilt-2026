@@ -14,6 +14,8 @@ import edu.wpi.first.networktables.StringArrayPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -22,6 +24,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.photonvision.PhotonCamera;
 import org.sciborgs1155.robot.Ports;
@@ -199,6 +202,36 @@ public final class FaultLogger {
       report(fault);
     }
     return condition;
+  }
+
+  /**
+   * Asserts that a condition is true and reports as either Fault or Info. Used expressedly for
+   * systems checks
+   */
+  public static Command reportTrue(
+      BooleanSupplier condition, String faultName, Supplier<String> description) {
+    return Commands.runOnce(
+        () ->
+            report(
+                faultName,
+                (condition.getAsBoolean() ? "success! " : "") + description.get(),
+                condition.getAsBoolean() ? FaultType.INFO : FaultType.WARNING));
+  }
+
+  /**
+   * Asserts that two values are equal (with some tolerance) and reports as either Fault or Info.
+   * Used expressedly for systems checks.
+   *
+   * @param delta tolerance
+   */
+  public static Command reportEquals(
+      String faultName, DoubleSupplier expected, DoubleSupplier actual, double delta) {
+    return Commands.runOnce(
+        () ->
+            reportTrue(
+                () -> Math.abs(expected.getAsDouble() - actual.getAsDouble()) <= delta,
+                faultName,
+                () -> "expected: " + expected.getAsDouble() + "; actual: " + actual.getAsDouble()));
   }
 
   /**

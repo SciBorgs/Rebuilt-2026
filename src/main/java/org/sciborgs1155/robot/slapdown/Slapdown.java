@@ -5,6 +5,7 @@ import static edu.wpi.first.units.Units.Volts;
 import static org.sciborgs1155.robot.Constants.*;
 import static org.sciborgs1155.robot.slapdown.SlapdownConstants.*;
 
+import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.MathUtil;
@@ -13,15 +14,14 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.networktables.DoubleEntry;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
-import java.util.Set;
-import org.sciborgs1155.lib.Assertion;
-import org.sciborgs1155.lib.Assertion.EqualityAssertion;
-import org.sciborgs1155.lib.Test;
+import java.util.function.DoubleSupplier;
+import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.lib.Tuning;
 import org.sciborgs1155.robot.Robot;
 
@@ -31,6 +31,8 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
   private final SlapdownIO hardware;
 
   private final ProfiledPIDController pid = new ProfiledPIDController(P, I, D, CONSTRAINTS);
+  private final ProfiledPIDController slowPID =
+      new ProfiledPIDController(P, I, D, SLOW_CONSTRAINTS);
 
   private final ArmFeedforward ff = new ArmFeedforward(S, G, V, A);
 
@@ -55,36 +57,41 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
     pid.reset(hardware.position());
     pid.setGoal(START_ANGLE.in(Radians));
 
-    setDefaultCommand(retract());
+    // setDefaultCommand(nothing());
 
     sysIdRoutine =
         new SysIdRoutine(
-            new Config(RAMP_RATE, STEP_VOLTAGE, TIME_OUT),
+            new Config(
+                RAMP_RATE,
+                STEP_VOLTAGE,
+                TIME_OUT,
+                (state) -> SignalLogger.writeString("slapdown state", state.toString())),
             new Mechanism(voltage -> hardware.setVoltage(voltage.in(Volts)), null, this));
     SmartDashboard.putData(
         "Robot/slapdown/quasistatic forward",
         sysIdRoutine
             .quasistatic(Direction.kForward)
-            .until(() -> atPosition(MAX_ANGLE.in(Radians)))
+            // .until(() -> atPosition(MAX_ANGLE.in(Radians)))
             .withName("slapdown quasistatic forward"));
     SmartDashboard.putData(
         "Robot/slapdown/quasistatic backward",
         sysIdRoutine
             .quasistatic(Direction.kReverse)
-            .until(() -> atPosition(MIN_ANGLE.in(Radians)))
+            // .until(() -> atPosition(MIN_ANGLE.in(Radians)))
             .withName("slapdown quasistatic backward"));
     SmartDashboard.putData(
         "Robot/slapdown/dynamic forward",
         sysIdRoutine
             .dynamic(Direction.kForward)
-            .until(() -> atPosition(MAX_ANGLE.in(Radians)))
+            // .until(() -> atPosition(MAX_ANGLE.in(Radians)))
             .withName("slapdown dynamic forward"));
     SmartDashboard.putData(
         "Robot/slapdown/dynamic backward",
         sysIdRoutine
             .dynamic(Direction.kReverse)
-            .until(() -> atPosition(MIN_ANGLE.in(Radians)))
+            // .until(() -> atPosition(MIN_ANGLE.in(Radians)))
             .withName("slapdown dynamic backward"));
+    setDefaultCommand(run(() -> hardware.setVoltage(0)));
   }
 
   /**
@@ -113,6 +120,41 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
   }
 
   /**
+   * Command Factory
+   *
+   * @param angle go to angle
+   * @return command to make the Slapdown go to the angle
+   */
+  public Command goTo(DoubleSupplier angle) {
+    return run(() -> update(angle.getAsDouble())).withName("go to angle");
+  }
+
+  /**
+   * @return slap down the intake with volts
+   */
+  public Command extendVolts() {
+    return Commands.run(() -> hardware.setVoltage(EXTEND_VOLTAGE))
+        .until(() -> hardware.current() > STALLING_CURRENT)
+        .andThen(() -> hardware.resetPosition());
+  }
+
+  /**
+   * @return bring up the intake with volts
+   */
+  public Command retractVolts() {
+    return Commands.run(() -> hardware.setVoltage(RETRACT_VOLTAGE))
+        .until(() -> hardware.current() > STALLING_CURRENT)
+        .andThen(() -> hardware.setVoltage(KEEP_US_UP_VOLTAGE));
+  }
+
+  /**
+   * @return 0 Volt Command
+   */
+  public Command nothing() {
+    return Commands.run(() -> hardware.setVoltage(0));
+  }
+
+  /**
    * @return slap down the intake
    */
   public Command extend() {
@@ -127,6 +169,51 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
   }
 
   /**
+   * A repeating sequence of retracting and extending the hopper to help feed fuel into the indexer.
+   *
+   * @return The repeating sequence.
+   */
+  public Command squeeze() {
+    return goTo(SQUEEZE_EXTEND.in(Radians));
+  }
+
+  /**
+   * A slower squeeze.
+   *
+   * @return A command for a slower squeeze.
+   */
+  public Command slowSqueeze() {
+    return run(() -> updateSlow(MAX_ANGLE.in(Radians)));
+  }
+
+  /**
+   * A sequence to home the intake that sets the position to 0 when released
+   *
+   * @return A command to reset the position of the slapdown pivot.
+   */
+  public Command homingSequence() {
+    return run(() -> hardware.setVoltage(-1)).finallyDo(() -> hardware.resetPosition());
+  }
+
+  //   /**
+  //  * A repeating sequence of retracting and extending the hopper to help feed fuel into the
+  // indexer.
+  //  *
+  //  * @return The repeating sequence.
+  //  */
+  // public Command squeezeVolts() {
+  //   return Commands.sequence(
+  //           retractVolts().withTimeout(SQUEEZE_RETRACT),
+  //           extendVolts().withTimeout(SQUEEZE_EXTEND))
+  //       .repeatedly().finallyDo(() -> hardware.setVoltage(0));
+
+  /** Squeeze but it's done by voltage. */
+  public Command squeezeVolts() {
+    return Commands.run(() -> hardware.setVoltage(SQUEEZE_VOLTS))
+        .until(() -> hardware.current() > STALLING_CURRENT);
+  }
+
+  /**
    * @return the position of the slapdown
    */
   @Logged
@@ -135,7 +222,7 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * @return the position of the pid
+   * @return the goal of the pid
    */
   @Logged
   public double setpoint() {
@@ -160,10 +247,20 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
     return pid.atGoal();
   }
 
+  /** Updates with normal pid. */
+  public void update(double angle) {
+    update(angle, pid);
+  }
+
+  /** Updates with slower pid. */
+  public void updateSlow(double angle) {
+    update(angle, slowPID);
+  }
+
   /**
    * @param angle set the Slapdown to be at said angle
    */
-  public void update(double angle) {
+  public void update(double angle, ProfiledPIDController pid) {
     double rads = MathUtil.clamp(angle, MIN_ANGLE.in(Radians), MAX_ANGLE.in(Radians));
     double pidVoltage = pid.calculate(hardware.position(), rads);
     double ffVoltage = ff.calculate(pid.getSetpoint().position, pid.getSetpoint().velocity);
@@ -174,12 +271,15 @@ public class Slapdown extends SubsystemBase implements AutoCloseable {
    * @param angle test if the Slapdown will go to the angle
    * @return the test
    */
-  public Test goToTest(double angle) {
-    EqualityAssertion atGoal =
-        Assertion.eAssert(
-            "Slapdown angle", () -> angle, hardware::position, POSITION_TOLERANCE.in(Radians));
-    Command testCommand = goTo(angle).until(pid::atGoal).withTimeout(5);
-    return new Test(testCommand, Set.of(atGoal));
+  public Command systemsCheck() {
+    double angle = MAX_ANGLE.in(Radians);
+
+    return goTo(angle)
+        .until(pid::atGoal)
+        .withTimeout(5)
+        .andThen(
+            FaultLogger.reportEquals(
+                "Slapdown angle", () -> angle, hardware::position, POSITION_TOLERANCE.in(Radians)));
   }
 
   @Override

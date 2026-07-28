@@ -1,6 +1,7 @@
 package org.sciborgs1155.robot;
 
 import static edu.wpi.first.units.Units.Meters;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.sciborgs1155.lib.UnitTestingUtil.fastForward;
 import static org.sciborgs1155.lib.UnitTestingUtil.reset;
 import static org.sciborgs1155.lib.UnitTestingUtil.setupTests;
@@ -37,13 +38,13 @@ public class ClimbTest {
     CommandScheduler.getInstance()
         .schedule(climb.goTo(MIN_HEIGHT.in(Meters)).withDeadline(Commands.waitSeconds(3)));
     fastForward();
-    assert climb.atPosition(MIN_HEIGHT.in(Meters));
+    assertTrue(climb.atPosition(MIN_HEIGHT.in(Meters)));
   }
 
   /** test for climb to go to minimum height */
   @Test
   public void goUp() {
     climb.goTo(MAX_HEIGHT.in(Meters)).withDeadline(Commands.waitSeconds(3)).execute();
-    assert climb.atPosition(MAX_HEIGHT.in(Meters));
+    assertTrue(climb.atPosition(MAX_HEIGHT.in(Meters)));
   }
 }

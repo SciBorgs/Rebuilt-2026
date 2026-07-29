@@ -14,26 +14,33 @@ public class MovingShot implements ShootingAlgorithm {
   @Override
   public Vector<N3> calculate(Translation3d displacement, Vector<N2> velocity) {
 
-    Vector<N3> projectedDisplacement = displacement.toVector();
+    Vector<N3> targetVector = displacement.toVector();
+    Vector<N3> projectionDisplacement = targetVector;
 
     for (int i = 0; i < 3; i++) {
-      double flightTime = DISTANCE_TO_TOF.get(displacement.getNorm());
 
-      Vector<N2> drift = velocity.times(flightTime);
+    double currentDistance = projectionDisplacement.norm();
+    double flightTime =
+        DISTANCE_TO_TOF.get(currentDistance);
 
-      projectedDisplacement =
-          projectedDisplacement.plus(VecBuilder.fill(drift.get(0), drift.get(1), 0));
+    Vector<N2> drift = velocity.times(flightTime);
+
+    projectionDisplacement = VecBuilder.fill(
+      targetVector.get(0,0) - drift.get(0,0),
+      targetVector.get(1, 0) - drift.get(1,0),
+      targetVector.get(2,0)
+    );
     }
 
-    double distance = projectedDisplacement.norm();
+    double finalDistance = projectionDisplacement.norm();
 
     Translation3d result =
         new Translation3d(
-            DISTANCE_TO_RADS.get(distance) + SIGGYS_CONSTANT.get(),
+            DISTANCE_TO_RADS.get(finalDistance) + SIGGYS_CONSTANT.get(),
             new Rotation3d(
                 0.0,
-                -DISTANCE_TO_HOOD_ANGLE.get(distance).getRadians(),
-                new Rotation3d(projectedDisplacement).getZ()));
-    return result.toVector();
+                -DISTANCE_TO_HOOD_ANGLE.get(finalDistance).getRadians(), 0.0));
+    
+   return result.toVector();
   }
 }

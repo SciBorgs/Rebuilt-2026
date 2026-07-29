@@ -276,7 +276,7 @@ public class Robot extends CommandRobot {
 
     operator
         .a()
-        .whileTrue(shooting.shootDriving(Shooting.HUB_TARGET, x, y, omega).withName("left feed"));
+        .whileTrue(shooting.shootDriving(Shooting.HUB_TARGET, x, y, omega).withName("op shoot"));
 
     // FEED CONTINUOUS (LEFT SIDE)
     driver

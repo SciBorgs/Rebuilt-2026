@@ -56,10 +56,10 @@ public final class Climb extends SubsystemBase implements AutoCloseable {
   private final ClimbVisualizer measurement =
       new ClimbVisualizer("measurement visualizer", new Color8Bit(255, 0, 0));
 
-  private final DoubleEntry kS = Tuning.entry("/Robot/tuning/elevator/kS", S);
-  private final DoubleEntry kG = Tuning.entry("/Robot/tuning/elevator/kG", G);
-  private final DoubleEntry kV = Tuning.entry("/Robot/tuning/elevator/kV", V);
-  private final DoubleEntry kA = Tuning.entry("/Robot/tuning/elevator/kA", A);
+  private final DoubleEntry kS = Tuning.entry("/Robot/tuning/climb/kS", S);
+  private final DoubleEntry kG = Tuning.entry("/Robot/tuning/climb/kG", G);
+  private final DoubleEntry kV = Tuning.entry("/Robot/tuning/climb/kV", V);
+  private final DoubleEntry kA = Tuning.entry("/Robot/tuning/climb/kA", A);
 
   /**
    * @return A climb object that either returns a climb with hardware or a simulated climb depending

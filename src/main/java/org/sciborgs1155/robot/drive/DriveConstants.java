@@ -74,7 +74,7 @@ public final class DriveConstants {
 
   // angular offsets of the modules, since we use absolute encoders
   // ignored (used as 0) in simulation because the simulated robot doesn't have offsets
-  public static final List<Rotation2d> ANGULAR_OFFSETS =
+  public static final List<Rotation2d> ANGULAR_OFFSETS = 
       List.of(
           Rotation2d.fromRotations(0.093505859375), // front left
           Rotation2d.fromRotations(0.076416015625), // front right

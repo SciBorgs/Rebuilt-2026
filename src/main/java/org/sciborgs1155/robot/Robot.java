@@ -11,6 +11,7 @@ import static org.sciborgs1155.robot.drive.DriveConstants.MAX_ANGULAR_ACCEL;
 import static org.sciborgs1155.robot.drive.DriveConstants.MAX_SPEED;
 import static org.sciborgs1155.robot.drive.DriveConstants.TELEOP_ANGULAR_SPEED;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.CENTER_TO_SHOOTER;
+import static org.sciborgs1155.robot.turret.TurretConstants.MAX_ANGLE;
 
 import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.epilogue.Epilogue;
@@ -325,8 +326,10 @@ public class Robot extends CommandRobot {
     operator.leftTrigger().whileTrue(turret.goLeft().withName("left"));
     operator.rightTrigger().whileTrue(turret.goRight().withName("right"));
 
-    operator.povUp().onTrue(ShootingData.changeSC(1));
-    operator.povDown().onTrue(ShootingData.changeSC(-1));
+    // operator.povUp().onTrue(ShootingData.changeSC(1));
+    // operator.povDown().onTrue(ShootingData.changeSC(-1));
+    operator.povUp().whileTrue(hood.goTo(MAX_ANGLE.minus(Degrees.of(5))));
+    // operator.povDown().whileTrue(turret.goTo(() -> 0));
 
     // operator.povLeft().whileTrue(slapdown.homingSequence());
 

@@ -33,7 +33,7 @@ public final class VisionConstants {
               Inches.of(11.265),
               Inches.of(12.617898),
               Inches.of(9.232183),
-              yawPitchRoll(90, -20, 180)),
+              yawPitchRoll(90, -20, 0)),
           PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
 
   public static final CameraConfig FR_CAMERA = // CAMERA 1
@@ -44,7 +44,7 @@ public final class VisionConstants {
               Inches.of(11.265),
               Inches.of(-12.617898),
               Inches.of(9.232183),
-              yawPitchRoll(90, -20, 180)),
+              yawPitchRoll(-90, -20, 0)),
           PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
 
   public static final CameraConfig F_CAMERA = // CAMERA 4
@@ -52,7 +52,7 @@ public final class VisionConstants {
           "F cam",
           78,
           new Transform3d(
-              Inches.of(13.514), Inches.of(2.699), Inches.of(10.581108), yawPitchRoll(0, 15, 0)),
+              Inches.of(13.514), Inches.of(2.699), Inches.of(10.581108), yawPitchRoll(0, 15, 180)),
           PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
 
   public static final CameraConfig B_CAMERA = // CAMEwRA 2

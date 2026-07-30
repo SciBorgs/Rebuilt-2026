@@ -190,7 +190,7 @@ public final class Shooter extends SubsystemBase implements AutoCloseable {
    * above IDLE_VELOCITY.
    */
   public Command idleShooter() {
-    return run(() -> update(IDLE_VELOCITY.in(RadiansPerSecond), true)).withName("Idle");
+    return run(() -> update(0, true)).withName("Idle");
   }
 
   /**

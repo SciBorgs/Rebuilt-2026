@@ -5,8 +5,6 @@
     "data": {
       "commands": [
         {
-<<<<<<< HEAD
-=======
           "type": "deadline",
           "data": {
             "commands": [
@@ -26,7 +24,6 @@
           }
         },
         {
->>>>>>> 938fb3abe1edc0f782803f4863d1cb1aac896243
           "type": "path",
           "data": {
             "pathName": "BlueDepotSafe.0"

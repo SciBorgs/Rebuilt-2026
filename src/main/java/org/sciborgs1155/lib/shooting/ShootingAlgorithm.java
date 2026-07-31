@@ -4,6 +4,7 @@ import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N2;
 
+@FunctionalInterface
 public interface ShootingAlgorithm {
 
   // To hold the values

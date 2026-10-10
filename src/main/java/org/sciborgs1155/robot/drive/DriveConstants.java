@@ -50,7 +50,7 @@ public final class DriveConstants {
   public static final double SHOOTING_ANGULAR_SPEED = 0.5;
 
   // Maximum achievable translational and rotation velocities and accelerations of the robot.
-  public static final LinearVelocity MAX_SPEED = MetersPerSecond.of(5);
+  public static final LinearVelocity MAX_SPEED = MetersPerSecond.of(8);
   public static final LinearAcceleration MAX_ACCEL = MetersPerSecondPerSecond.of(40);
   public static final LinearAcceleration MAX_SKID_ACCEL =
       MetersPerSecondPerSecond.of(28); // TODO: Tune
@@ -134,10 +134,10 @@ public final class DriveConstants {
 
       public static final double GEARING = 5.68;
 
-      public static final Current STATOR_LIMIT = Amps.of(80); // 120A max slip current
-      public static final Current SUPPLY_LIMIT = Amps.of(70);
+      public static final Current STATOR_LIMIT = Amps.of(100); // 120A max slip current
+      public static final Current SUPPLY_LIMIT = Amps.of(100);
 
-      public static final Current CURRENT_LIMIT = Amps.of(80);
+      public static final Current CURRENT_LIMIT = Amps.of(100);
 
       public static final FFConstants FRONT_RIGHT_FF = new FFConstants(0.18984, 2.5193, 0.22823);
       public static final FFConstants FRONT_LEFT_FF = new FFConstants(0.19491, 2.2614, 0.041899);

@@ -350,7 +350,7 @@ public final class Turret extends SubsystemBase implements AutoCloseable {
         .ifPresent(
             (angle) -> {
               LoggingUtils.log("Robot/turret/crtAngle", angle.in(Radians));
-              if (disabled().getAsBoolean()) hardware.setPosition(angle);
+              hardware.setPosition(angle);
             });
     LoggingUtils.log("Robot/turret/current command", command != null ? command.getName() : "None");
 

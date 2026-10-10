@@ -24,7 +24,7 @@ public class TurretConstants {
   public static final AngularAcceleration MAX_ACCELERATION = RadiansPerSecondPerSecond.of(25);
 
   public static final Angle MAX_ANGLE = Degrees.of(360);
-  public static final Angle MIN_ANGLE = Degrees.of(-20);
+  public static final Angle MIN_ANGLE = Degrees.of(0);
   public static final Angle START_ANGLE = Radians.of(0);
   public static final Angle FULL_ANGLE_RANGE = MAX_ANGLE.minus(MIN_ANGLE);
 
